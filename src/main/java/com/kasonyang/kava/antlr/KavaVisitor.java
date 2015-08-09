@@ -1,0 +1,159 @@
+// Generated from Kava.g4 by ANTLR 4.5
+package com.kasonyang.kava.antlr;
+import org.antlr.v4.runtime.misc.NotNull;
+import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+
+/**
+ * This interface defines a complete generic visitor for a parse tree produced
+ * by {@link KavaParser}.
+ *
+ * @param <T> The return type of the visit operation. Use {@link Void} for
+ * operations with no return type.
+ */
+public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#start}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStart(KavaParser.StartContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#statList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStatList(KavaParser.StatListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#ifStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIfStat(KavaParser.IfStatContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#ifStatSuffix}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIfStatSuffix(KavaParser.IfStatSuffixContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#stat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStat(KavaParser.StatContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#whileStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhileStat(KavaParser.WhileStatContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#doWhileStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDoWhileStat(KavaParser.DoWhileStatContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#forStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForStat(KavaParser.ForStatContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#forInit}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForInit(KavaParser.ForInitContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#forUpdate}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForUpdate(KavaParser.ForUpdateContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#expressionList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpressionList(KavaParser.ExpressionListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#exprStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprStat(KavaParser.ExprStatContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprPrimay}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprPrimay(KavaParser.ExprPrimayContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprMidOp}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprMidOp(KavaParser.ExprMidOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprAssign}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprAssign(KavaParser.ExprAssignContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprInvocation}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprInvocation(KavaParser.ExprInvocationContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code primayParen}
+	 * labeled alternative in {@link KavaParser#primary}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrimayParen(KavaParser.PrimayParenContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code primaryLiteral}
+	 * labeled alternative in {@link KavaParser#primary}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrimaryLiteral(KavaParser.PrimaryLiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code primaryIdentifier}
+	 * labeled alternative in {@link KavaParser#primary}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrimaryIdentifier(KavaParser.PrimaryIdentifierContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#literal}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLiteral(KavaParser.LiteralContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#genericInvocation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGenericInvocation(KavaParser.GenericInvocationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#arguments}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArguments(KavaParser.ArgumentsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#argumentList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArgumentList(KavaParser.ArgumentListContext ctx);
+}

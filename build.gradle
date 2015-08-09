@@ -1,0 +1,10 @@
+apply plugin:'groovy'
+apply plugin:'eclipse'
+
+repositories{
+	mavenCentral()
+}
+
+dependencies{
+	compile 'org.antlr:antlr4-runtime:4.5'
+}
