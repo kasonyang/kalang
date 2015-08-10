@@ -3,13 +3,13 @@ package com.kasonyang.kava.runtime;
 import java.util.HashMap;
 
 public class ConstTable {
-	private HashMap<Long,Object> tb = new HashMap();
-	private Long idx = (long) 0;
-	public Object get(Long key){
+	private HashMap<Integer,Object> tb = new HashMap();
+	private Integer idx = 0;
+	public Object get(Integer key){
 		return tb.get(key);
 	}
-	public Long create(Object value){
-		Long key = idx++;
+	public Integer create(Object value){
+		Integer key = idx++;
 		tb.put(key, value);
 		return key;
 	}

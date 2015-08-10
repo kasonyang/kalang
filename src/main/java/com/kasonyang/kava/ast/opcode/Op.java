@@ -2,12 +2,12 @@ package com.kasonyang.kava.ast.opcode;
 
 public class Op {
 	
-	private OpType op;
-	public long v1=-1;
-	public long v2=-1;
-	public long result=-1;
+	public OpType op;
+	public Integer v1=null;
+	public Integer v2=null;
+	public Integer result=null;
 	
-	public Op(OpType op,long result,long v1,long v2){
+	public Op(OpType op,Integer result,Integer v1,Integer v2){
 		this.op = op;
 		this.v1 = v1;
 		this.v2 = v2;

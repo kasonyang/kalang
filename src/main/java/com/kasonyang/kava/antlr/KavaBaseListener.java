@@ -77,6 +77,30 @@ public class KavaBaseListener implements KavaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterBreakStat(KavaParser.BreakStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBreakStat(KavaParser.BreakStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterContinueStat(KavaParser.ContinueStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitContinueStat(KavaParser.ContinueStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterWhileStat(KavaParser.WhileStatContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -173,6 +197,30 @@ public class KavaBaseListener implements KavaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExprNotOp(KavaParser.ExprNotOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprNotOp(KavaParser.ExprNotOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprLogicCmp(KavaParser.ExprLogicCmpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprLogicCmp(KavaParser.ExprLogicCmpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprMidOp(KavaParser.ExprMidOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -197,6 +245,18 @@ public class KavaBaseListener implements KavaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExprSelfOp(KavaParser.ExprSelfOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprSelfOp(KavaParser.ExprSelfOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprInvocation(KavaParser.ExprInvocationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -204,6 +264,18 @@ public class KavaBaseListener implements KavaListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprInvocation(KavaParser.ExprInvocationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprSelfOpPre(KavaParser.ExprSelfOpPreContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprSelfOpPre(KavaParser.ExprSelfOpPreContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

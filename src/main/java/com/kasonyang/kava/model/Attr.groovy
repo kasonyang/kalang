@@ -13,12 +13,12 @@ public class Attr {
     //String rvalue;
     //String lvalue;
     //VarObject value;
-	long value;
+	int value;
 	
 	// String code;
      //String type;
      //String expr;
-	Attr(long value){
+	Attr(int value){
 		this.value = value;
 	}
 	Attr(){

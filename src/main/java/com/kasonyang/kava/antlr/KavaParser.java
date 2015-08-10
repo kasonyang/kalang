@@ -35,14 +35,15 @@ public class KavaParser extends Parser {
 		Identifier=100, AT=101, ELLIPSIS=102, WS=103, COMMENT=104, LINE_COMMENT=105;
 	public static final int
 		RULE_start = 0, RULE_statList = 1, RULE_ifStat = 2, RULE_ifStatSuffix = 3, 
-		RULE_stat = 4, RULE_whileStat = 5, RULE_doWhileStat = 6, RULE_forStat = 7, 
-		RULE_forInit = 8, RULE_forUpdate = 9, RULE_expressionList = 10, RULE_exprStat = 11, 
-		RULE_expression = 12, RULE_primary = 13, RULE_literal = 14, RULE_genericInvocation = 15, 
-		RULE_arguments = 16, RULE_argumentList = 17;
+		RULE_stat = 4, RULE_breakStat = 5, RULE_continueStat = 6, RULE_whileStat = 7, 
+		RULE_doWhileStat = 8, RULE_forStat = 9, RULE_forInit = 10, RULE_forUpdate = 11, 
+		RULE_expressionList = 12, RULE_exprStat = 13, RULE_expression = 14, RULE_primary = 15, 
+		RULE_literal = 16, RULE_genericInvocation = 17, RULE_arguments = 18, RULE_argumentList = 19;
 	public static final String[] ruleNames = {
-		"start", "statList", "ifStat", "ifStatSuffix", "stat", "whileStat", "doWhileStat", 
-		"forStat", "forInit", "forUpdate", "expressionList", "exprStat", "expression", 
-		"primary", "literal", "genericInvocation", "arguments", "argumentList"
+		"start", "statList", "ifStat", "ifStatSuffix", "stat", "breakStat", "continueStat", 
+		"whileStat", "doWhileStat", "forStat", "forInit", "forUpdate", "expressionList", 
+		"exprStat", "expression", "primary", "literal", "genericInvocation", "arguments", 
+		"argumentList"
 	};
 
 	private static final String[] _LITERAL_NAMES = {
@@ -156,7 +157,7 @@ public class KavaParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(36);
+			setState(40);
 			statList();
 			}
 		}
@@ -204,17 +205,17 @@ public class KavaParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(41);
+			setState(45);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << DO) | (1L << FOR) | (1L << IF) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral) | (1L << NullLiteral) | (1L << LPAREN))) != 0) || _la==Identifier) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BREAK) | (1L << CONTINUE) | (1L << DO) | (1L << FOR) | (1L << IF) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral) | (1L << NullLiteral) | (1L << LPAREN))) != 0) || ((((_la - 69)) & ~0x3f) == 0 && ((1L << (_la - 69)) & ((1L << (BANG - 69)) | (1L << (TILDE - 69)) | (1L << (INC - 69)) | (1L << (DEC - 69)) | (1L << (ADD - 69)) | (1L << (SUB - 69)) | (1L << (Identifier - 69)))) != 0)) {
 				{
 				{
-				setState(38);
+				setState(42);
 				stat();
 				}
 				}
-				setState(43);
+				setState(47);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -268,25 +269,25 @@ public class KavaParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(44);
-			match(IF);
-			setState(45);
-			match(LPAREN);
-			setState(46);
-			expression(0);
-			setState(47);
-			match(RPAREN);
 			setState(48);
-			match(LBRACE);
+			match(IF);
 			setState(49);
-			statList();
+			match(LPAREN);
 			setState(50);
-			match(RBRACE);
+			expression(0);
+			setState(51);
+			match(RPAREN);
 			setState(52);
+			match(LBRACE);
+			setState(53);
+			statList();
+			setState(54);
+			match(RBRACE);
+			setState(56);
 			_la = _input.LA(1);
 			if (_la==ELSE) {
 				{
-				setState(51);
+				setState(55);
 				ifStatSuffix();
 				}
 			}
@@ -334,13 +335,13 @@ public class KavaParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(54);
+			setState(58);
 			match(ELSE);
-			setState(55);
+			setState(59);
 			match(LBRACE);
-			setState(56);
+			setState(60);
 			statList();
-			setState(57);
+			setState(61);
 			match(RBRACE);
 			}
 		}
@@ -371,6 +372,12 @@ public class KavaParser extends Parser {
 		public ForStatContext forStat() {
 			return getRuleContext(ForStatContext.class,0);
 		}
+		public BreakStatContext breakStat() {
+			return getRuleContext(BreakStatContext.class,0);
+		}
+		public ContinueStatContext continueStat() {
+			return getRuleContext(ContinueStatContext.class,0);
+		}
 		public StatContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -394,7 +401,7 @@ public class KavaParser extends Parser {
 		StatContext _localctx = new StatContext(_ctx, getState());
 		enterRule(_localctx, 8, RULE_stat);
 		try {
-			setState(64);
+			setState(70);
 			switch (_input.LA(1)) {
 			case IntegerLiteral:
 			case FloatingPointLiteral:
@@ -403,43 +410,151 @@ public class KavaParser extends Parser {
 			case StringLiteral:
 			case NullLiteral:
 			case LPAREN:
+			case BANG:
+			case TILDE:
+			case INC:
+			case DEC:
+			case ADD:
+			case SUB:
 			case Identifier:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(59);
+				setState(63);
 				exprStat();
 				}
 				break;
 			case IF:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(60);
+				setState(64);
 				ifStat();
 				}
 				break;
 			case WHILE:
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(61);
+				setState(65);
 				whileStat();
 				}
 				break;
 			case DO:
 				enterOuterAlt(_localctx, 4);
 				{
-				setState(62);
+				setState(66);
 				doWhileStat();
 				}
 				break;
 			case FOR:
 				enterOuterAlt(_localctx, 5);
 				{
-				setState(63);
+				setState(67);
 				forStat();
+				}
+				break;
+			case BREAK:
+				enterOuterAlt(_localctx, 6);
+				{
+				setState(68);
+				breakStat();
+				}
+				break;
+			case CONTINUE:
+				enterOuterAlt(_localctx, 7);
+				{
+				setState(69);
+				continueStat();
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class BreakStatContext extends ParserRuleContext {
+		public TerminalNode BREAK() { return getToken(KavaParser.BREAK, 0); }
+		public BreakStatContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_breakStat; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).enterBreakStat(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).exitBreakStat(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KavaVisitor ) return ((KavaVisitor<? extends T>)visitor).visitBreakStat(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final BreakStatContext breakStat() throws RecognitionException {
+		BreakStatContext _localctx = new BreakStatContext(_ctx, getState());
+		enterRule(_localctx, 10, RULE_breakStat);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(72);
+			match(BREAK);
+			setState(73);
+			match(SEMI);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class ContinueStatContext extends ParserRuleContext {
+		public TerminalNode CONTINUE() { return getToken(KavaParser.CONTINUE, 0); }
+		public ContinueStatContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_continueStat; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).enterContinueStat(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).exitContinueStat(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KavaVisitor ) return ((KavaVisitor<? extends T>)visitor).visitContinueStat(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+
+	public final ContinueStatContext continueStat() throws RecognitionException {
+		ContinueStatContext _localctx = new ContinueStatContext(_ctx, getState());
+		enterRule(_localctx, 12, RULE_continueStat);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(75);
+			match(CONTINUE);
+			setState(76);
+			match(SEMI);
 			}
 		}
 		catch (RecognitionException re) {
@@ -482,23 +597,23 @@ public class KavaParser extends Parser {
 
 	public final WhileStatContext whileStat() throws RecognitionException {
 		WhileStatContext _localctx = new WhileStatContext(_ctx, getState());
-		enterRule(_localctx, 10, RULE_whileStat);
+		enterRule(_localctx, 14, RULE_whileStat);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(66);
+			setState(78);
 			match(WHILE);
-			setState(67);
+			setState(79);
 			match(LPAREN);
-			setState(68);
+			setState(80);
 			expression(0);
-			setState(69);
+			setState(81);
 			match(RPAREN);
-			setState(70);
+			setState(82);
 			match(LBRACE);
-			setState(71);
+			setState(83);
 			statList();
-			setState(72);
+			setState(84);
 			match(RBRACE);
 			}
 		}
@@ -543,27 +658,27 @@ public class KavaParser extends Parser {
 
 	public final DoWhileStatContext doWhileStat() throws RecognitionException {
 		DoWhileStatContext _localctx = new DoWhileStatContext(_ctx, getState());
-		enterRule(_localctx, 12, RULE_doWhileStat);
+		enterRule(_localctx, 16, RULE_doWhileStat);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(74);
+			setState(86);
 			match(DO);
-			setState(75);
+			setState(87);
 			match(LBRACE);
-			setState(76);
+			setState(88);
 			statList();
-			setState(77);
+			setState(89);
 			match(RBRACE);
-			setState(78);
+			setState(90);
 			match(WHILE);
-			setState(79);
+			setState(91);
 			match(LPAREN);
-			setState(80);
+			setState(92);
 			expression(0);
-			setState(81);
+			setState(93);
 			match(RPAREN);
-			setState(82);
+			setState(94);
 			match(SEMI);
 			}
 		}
@@ -613,53 +728,53 @@ public class KavaParser extends Parser {
 
 	public final ForStatContext forStat() throws RecognitionException {
 		ForStatContext _localctx = new ForStatContext(_ctx, getState());
-		enterRule(_localctx, 14, RULE_forStat);
+		enterRule(_localctx, 18, RULE_forStat);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(84);
+			setState(96);
 			match(FOR);
-			setState(85);
+			setState(97);
 			match(LPAREN);
-			setState(87);
+			setState(99);
 			_la = _input.LA(1);
-			if (((((_la - 51)) & ~0x3f) == 0 && ((1L << (_la - 51)) & ((1L << (IntegerLiteral - 51)) | (1L << (FloatingPointLiteral - 51)) | (1L << (BooleanLiteral - 51)) | (1L << (CharacterLiteral - 51)) | (1L << (StringLiteral - 51)) | (1L << (NullLiteral - 51)) | (1L << (LPAREN - 51)) | (1L << (Identifier - 51)))) != 0)) {
+			if (((((_la - 51)) & ~0x3f) == 0 && ((1L << (_la - 51)) & ((1L << (IntegerLiteral - 51)) | (1L << (FloatingPointLiteral - 51)) | (1L << (BooleanLiteral - 51)) | (1L << (CharacterLiteral - 51)) | (1L << (StringLiteral - 51)) | (1L << (NullLiteral - 51)) | (1L << (LPAREN - 51)) | (1L << (BANG - 51)) | (1L << (TILDE - 51)) | (1L << (INC - 51)) | (1L << (DEC - 51)) | (1L << (ADD - 51)) | (1L << (SUB - 51)) | (1L << (Identifier - 51)))) != 0)) {
 				{
-				setState(86);
+				setState(98);
 				forInit();
 				}
 			}
 
-			setState(89);
+			setState(101);
 			match(SEMI);
-			setState(91);
+			setState(103);
 			_la = _input.LA(1);
-			if (((((_la - 51)) & ~0x3f) == 0 && ((1L << (_la - 51)) & ((1L << (IntegerLiteral - 51)) | (1L << (FloatingPointLiteral - 51)) | (1L << (BooleanLiteral - 51)) | (1L << (CharacterLiteral - 51)) | (1L << (StringLiteral - 51)) | (1L << (NullLiteral - 51)) | (1L << (LPAREN - 51)) | (1L << (Identifier - 51)))) != 0)) {
+			if (((((_la - 51)) & ~0x3f) == 0 && ((1L << (_la - 51)) & ((1L << (IntegerLiteral - 51)) | (1L << (FloatingPointLiteral - 51)) | (1L << (BooleanLiteral - 51)) | (1L << (CharacterLiteral - 51)) | (1L << (StringLiteral - 51)) | (1L << (NullLiteral - 51)) | (1L << (LPAREN - 51)) | (1L << (BANG - 51)) | (1L << (TILDE - 51)) | (1L << (INC - 51)) | (1L << (DEC - 51)) | (1L << (ADD - 51)) | (1L << (SUB - 51)) | (1L << (Identifier - 51)))) != 0)) {
 				{
-				setState(90);
+				setState(102);
 				expression(0);
 				}
 			}
 
-			setState(93);
+			setState(105);
 			match(SEMI);
-			setState(95);
+			setState(107);
 			_la = _input.LA(1);
-			if (((((_la - 51)) & ~0x3f) == 0 && ((1L << (_la - 51)) & ((1L << (IntegerLiteral - 51)) | (1L << (FloatingPointLiteral - 51)) | (1L << (BooleanLiteral - 51)) | (1L << (CharacterLiteral - 51)) | (1L << (StringLiteral - 51)) | (1L << (NullLiteral - 51)) | (1L << (LPAREN - 51)) | (1L << (Identifier - 51)))) != 0)) {
+			if (((((_la - 51)) & ~0x3f) == 0 && ((1L << (_la - 51)) & ((1L << (IntegerLiteral - 51)) | (1L << (FloatingPointLiteral - 51)) | (1L << (BooleanLiteral - 51)) | (1L << (CharacterLiteral - 51)) | (1L << (StringLiteral - 51)) | (1L << (NullLiteral - 51)) | (1L << (LPAREN - 51)) | (1L << (BANG - 51)) | (1L << (TILDE - 51)) | (1L << (INC - 51)) | (1L << (DEC - 51)) | (1L << (ADD - 51)) | (1L << (SUB - 51)) | (1L << (Identifier - 51)))) != 0)) {
 				{
-				setState(94);
+				setState(106);
 				forUpdate();
 				}
 			}
 
-			setState(97);
+			setState(109);
 			match(RPAREN);
-			setState(98);
+			setState(110);
 			match(LBRACE);
-			setState(99);
+			setState(111);
 			statList();
-			setState(100);
+			setState(112);
 			match(RBRACE);
 			}
 		}
@@ -699,11 +814,11 @@ public class KavaParser extends Parser {
 
 	public final ForInitContext forInit() throws RecognitionException {
 		ForInitContext _localctx = new ForInitContext(_ctx, getState());
-		enterRule(_localctx, 16, RULE_forInit);
+		enterRule(_localctx, 20, RULE_forInit);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(102);
+			setState(114);
 			expressionList();
 			}
 		}
@@ -743,11 +858,11 @@ public class KavaParser extends Parser {
 
 	public final ForUpdateContext forUpdate() throws RecognitionException {
 		ForUpdateContext _localctx = new ForUpdateContext(_ctx, getState());
-		enterRule(_localctx, 18, RULE_forUpdate);
+		enterRule(_localctx, 22, RULE_forUpdate);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(104);
+			setState(116);
 			expressionList();
 			}
 		}
@@ -790,26 +905,26 @@ public class KavaParser extends Parser {
 
 	public final ExpressionListContext expressionList() throws RecognitionException {
 		ExpressionListContext _localctx = new ExpressionListContext(_ctx, getState());
-		enterRule(_localctx, 20, RULE_expressionList);
+		enterRule(_localctx, 24, RULE_expressionList);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(106);
+			setState(118);
 			expression(0);
-			setState(111);
+			setState(123);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				setState(107);
+				setState(119);
 				match(COMMA);
-				setState(108);
+				setState(120);
 				expression(0);
 				}
 				}
-				setState(113);
+				setState(125);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -851,13 +966,13 @@ public class KavaParser extends Parser {
 
 	public final ExprStatContext exprStat() throws RecognitionException {
 		ExprStatContext _localctx = new ExprStatContext(_ctx, getState());
-		enterRule(_localctx, 22, RULE_exprStat);
+		enterRule(_localctx, 26, RULE_exprStat);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(114);
+			setState(126);
 			expression(0);
-			setState(115);
+			setState(127);
 			match(SEMI);
 			}
 		}
@@ -899,6 +1014,53 @@ public class KavaParser extends Parser {
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof KavaVisitor ) return ((KavaVisitor<? extends T>)visitor).visitExprPrimay(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class ExprNotOpContext extends ExpressionContext {
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public ExprNotOpContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).enterExprNotOp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).exitExprNotOp(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KavaVisitor ) return ((KavaVisitor<? extends T>)visitor).visitExprNotOp(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class ExprLogicCmpContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode LE() { return getToken(KavaParser.LE, 0); }
+		public TerminalNode GE() { return getToken(KavaParser.GE, 0); }
+		public TerminalNode GT() { return getToken(KavaParser.GT, 0); }
+		public TerminalNode LT() { return getToken(KavaParser.LT, 0); }
+		public TerminalNode EQUAL() { return getToken(KavaParser.EQUAL, 0); }
+		public TerminalNode NOTEQUAL() { return getToken(KavaParser.NOTEQUAL, 0); }
+		public ExprLogicCmpContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).enterExprLogicCmp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).exitExprLogicCmp(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KavaVisitor ) return ((KavaVisitor<? extends T>)visitor).visitExprLogicCmp(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -952,6 +1114,27 @@ public class KavaParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
+	public static class ExprSelfOpContext extends ExpressionContext {
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public TerminalNode INC() { return getToken(KavaParser.INC, 0); }
+		public TerminalNode DEC() { return getToken(KavaParser.DEC, 0); }
+		public ExprSelfOpContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).enterExprSelfOp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).exitExprSelfOp(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KavaVisitor ) return ((KavaVisitor<? extends T>)visitor).visitExprSelfOp(this);
+			else return visitor.visitChildren(this);
+		}
+	}
 	public static class ExprInvocationContext extends ExpressionContext {
 		public GenericInvocationContext genericInvocation() {
 			return getRuleContext(GenericInvocationContext.class,0);
@@ -971,6 +1154,29 @@ public class KavaParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
+	public static class ExprSelfOpPreContext extends ExpressionContext {
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public TerminalNode ADD() { return getToken(KavaParser.ADD, 0); }
+		public TerminalNode SUB() { return getToken(KavaParser.SUB, 0); }
+		public TerminalNode INC() { return getToken(KavaParser.INC, 0); }
+		public TerminalNode DEC() { return getToken(KavaParser.DEC, 0); }
+		public ExprSelfOpPreContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).enterExprSelfOpPre(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KavaListener ) ((KavaListener)listener).exitExprSelfOpPre(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KavaVisitor ) return ((KavaVisitor<? extends T>)visitor).visitExprSelfOpPre(this);
+			else return visitor.visitChildren(this);
+		}
+	}
 
 	public final ExpressionContext expression() throws RecognitionException {
 		return expression(0);
@@ -981,37 +1187,69 @@ public class KavaParser extends Parser {
 		int _parentState = getState();
 		ExpressionContext _localctx = new ExpressionContext(_ctx, _parentState);
 		ExpressionContext _prevctx = _localctx;
-		int _startState = 24;
-		enterRecursionRule(_localctx, 24, RULE_expression, _p);
+		int _startState = 28;
+		enterRecursionRule(_localctx, 28, RULE_expression, _p);
 		int _la;
 		try {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(120);
+			setState(136);
 			switch ( getInterpreter().adaptivePredict(_input,7,_ctx) ) {
 			case 1:
 				{
-				_localctx = new ExprPrimayContext(_localctx);
+				_localctx = new ExprSelfOpPreContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 
-				setState(118);
-				primary();
+				setState(130);
+				_la = _input.LA(1);
+				if ( !(((((_la - 79)) & ~0x3f) == 0 && ((1L << (_la - 79)) & ((1L << (INC - 79)) | (1L << (DEC - 79)) | (1L << (ADD - 79)) | (1L << (SUB - 79)))) != 0)) ) {
+				_errHandler.recoverInline(this);
+				} else {
+					consume();
+				}
+				setState(131);
+				expression(7);
 				}
 				break;
 			case 2:
 				{
+				_localctx = new ExprNotOpContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(132);
+				_la = _input.LA(1);
+				if ( !(_la==BANG || _la==TILDE) ) {
+				_errHandler.recoverInline(this);
+				} else {
+					consume();
+				}
+				setState(133);
+				expression(6);
+				}
+				break;
+			case 3:
+				{
+				_localctx = new ExprPrimayContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(134);
+				primary();
+				}
+				break;
+			case 4:
+				{
 				_localctx = new ExprInvocationContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(119);
+				setState(135);
 				genericInvocation();
 				}
 				break;
 			}
 			_ctx.stop = _input.LT(-1);
-			setState(133);
+			setState(157);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
@@ -1019,60 +1257,109 @@ public class KavaParser extends Parser {
 					if ( _parseListeners!=null ) triggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					setState(131);
+					setState(155);
 					switch ( getInterpreter().adaptivePredict(_input,8,_ctx) ) {
 					case 1:
 						{
 						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(122);
-						if (!(precpred(_ctx, 3))) throw new FailedPredicateException(this, "precpred(_ctx, 3)");
-						setState(123);
+						setState(138);
+						if (!(precpred(_ctx, 5))) throw new FailedPredicateException(this, "precpred(_ctx, 5)");
+						setState(139);
 						_la = _input.LA(1);
 						if ( !(((((_la - 83)) & ~0x3f) == 0 && ((1L << (_la - 83)) & ((1L << (MUL - 83)) | (1L << (DIV - 83)) | (1L << (MOD - 83)))) != 0)) ) {
 						_errHandler.recoverInline(this);
 						} else {
 							consume();
 						}
-						setState(124);
-						expression(4);
+						setState(140);
+						expression(6);
 						}
 						break;
 					case 2:
 						{
 						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(125);
-						if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
-						setState(126);
+						setState(141);
+						if (!(precpred(_ctx, 4))) throw new FailedPredicateException(this, "precpred(_ctx, 4)");
+						setState(142);
 						_la = _input.LA(1);
 						if ( !(_la==ADD || _la==SUB) ) {
 						_errHandler.recoverInline(this);
 						} else {
 							consume();
 						}
-						setState(127);
-						expression(3);
+						setState(143);
+						expression(5);
 						}
 						break;
 					case 3:
 						{
+						_localctx = new ExprLogicCmpContext(new ExpressionContext(_parentctx, _parentState));
+						pushNewRecursionContext(_localctx, _startState, RULE_expression);
+						setState(144);
+						if (!(precpred(_ctx, 3))) throw new FailedPredicateException(this, "precpred(_ctx, 3)");
+						setState(145);
+						_la = _input.LA(1);
+						if ( !(((((_la - 67)) & ~0x3f) == 0 && ((1L << (_la - 67)) & ((1L << (GT - 67)) | (1L << (LT - 67)) | (1L << (LE - 67)) | (1L << (GE - 67)))) != 0)) ) {
+						_errHandler.recoverInline(this);
+						} else {
+							consume();
+						}
+						setState(146);
+						expression(4);
+						}
+						break;
+					case 4:
+						{
+						_localctx = new ExprLogicCmpContext(new ExpressionContext(_parentctx, _parentState));
+						pushNewRecursionContext(_localctx, _startState, RULE_expression);
+						setState(147);
+						if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
+						setState(148);
+						_la = _input.LA(1);
+						if ( !(_la==EQUAL || _la==NOTEQUAL) ) {
+						_errHandler.recoverInline(this);
+						} else {
+							consume();
+						}
+						setState(149);
+						expression(3);
+						}
+						break;
+					case 5:
+						{
 						_localctx = new ExprAssignContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(128);
+						setState(150);
 						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
 						{
-						setState(129);
+						setState(151);
 						match(ASSIGN);
 						}
-						setState(130);
+						setState(152);
 						expression(1);
+						}
+						break;
+					case 6:
+						{
+						_localctx = new ExprSelfOpContext(new ExpressionContext(_parentctx, _parentState));
+						pushNewRecursionContext(_localctx, _startState, RULE_expression);
+						setState(153);
+						if (!(precpred(_ctx, 8))) throw new FailedPredicateException(this, "precpred(_ctx, 8)");
+						setState(154);
+						_la = _input.LA(1);
+						if ( !(_la==INC || _la==DEC) ) {
+						_errHandler.recoverInline(this);
+						} else {
+							consume();
+						}
 						}
 						break;
 					}
 					} 
 				}
-				setState(135);
+				setState(159);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			}
@@ -1160,19 +1447,19 @@ public class KavaParser extends Parser {
 
 	public final PrimaryContext primary() throws RecognitionException {
 		PrimaryContext _localctx = new PrimaryContext(_ctx, getState());
-		enterRule(_localctx, 26, RULE_primary);
+		enterRule(_localctx, 30, RULE_primary);
 		try {
-			setState(142);
+			setState(166);
 			switch (_input.LA(1)) {
 			case LPAREN:
 				_localctx = new PrimayParenContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(136);
+				setState(160);
 				match(LPAREN);
-				setState(137);
+				setState(161);
 				expression(0);
-				setState(138);
+				setState(162);
 				match(RPAREN);
 				}
 				break;
@@ -1185,7 +1472,7 @@ public class KavaParser extends Parser {
 				_localctx = new PrimaryLiteralContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(140);
+				setState(164);
 				literal();
 				}
 				break;
@@ -1193,7 +1480,7 @@ public class KavaParser extends Parser {
 				_localctx = new PrimaryIdentifierContext(_localctx);
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(141);
+				setState(165);
 				match(Identifier);
 				}
 				break;
@@ -1239,12 +1526,12 @@ public class KavaParser extends Parser {
 
 	public final LiteralContext literal() throws RecognitionException {
 		LiteralContext _localctx = new LiteralContext(_ctx, getState());
-		enterRule(_localctx, 28, RULE_literal);
+		enterRule(_localctx, 32, RULE_literal);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(144);
+			setState(168);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral) | (1L << NullLiteral))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -1290,13 +1577,13 @@ public class KavaParser extends Parser {
 
 	public final GenericInvocationContext genericInvocation() throws RecognitionException {
 		GenericInvocationContext _localctx = new GenericInvocationContext(_ctx, getState());
-		enterRule(_localctx, 30, RULE_genericInvocation);
+		enterRule(_localctx, 34, RULE_genericInvocation);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(146);
+			setState(170);
 			match(Identifier);
-			setState(147);
+			setState(171);
 			arguments();
 			}
 		}
@@ -1336,23 +1623,23 @@ public class KavaParser extends Parser {
 
 	public final ArgumentsContext arguments() throws RecognitionException {
 		ArgumentsContext _localctx = new ArgumentsContext(_ctx, getState());
-		enterRule(_localctx, 32, RULE_arguments);
+		enterRule(_localctx, 36, RULE_arguments);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(149);
+			setState(173);
 			match(LPAREN);
-			setState(151);
+			setState(175);
 			_la = _input.LA(1);
-			if (((((_la - 51)) & ~0x3f) == 0 && ((1L << (_la - 51)) & ((1L << (IntegerLiteral - 51)) | (1L << (FloatingPointLiteral - 51)) | (1L << (BooleanLiteral - 51)) | (1L << (CharacterLiteral - 51)) | (1L << (StringLiteral - 51)) | (1L << (NullLiteral - 51)) | (1L << (LPAREN - 51)) | (1L << (Identifier - 51)))) != 0)) {
+			if (((((_la - 51)) & ~0x3f) == 0 && ((1L << (_la - 51)) & ((1L << (IntegerLiteral - 51)) | (1L << (FloatingPointLiteral - 51)) | (1L << (BooleanLiteral - 51)) | (1L << (CharacterLiteral - 51)) | (1L << (StringLiteral - 51)) | (1L << (NullLiteral - 51)) | (1L << (LPAREN - 51)) | (1L << (BANG - 51)) | (1L << (TILDE - 51)) | (1L << (INC - 51)) | (1L << (DEC - 51)) | (1L << (ADD - 51)) | (1L << (SUB - 51)) | (1L << (Identifier - 51)))) != 0)) {
 				{
-				setState(150);
+				setState(174);
 				argumentList();
 				}
 			}
 
-			setState(153);
+			setState(177);
 			match(RPAREN);
 			}
 		}
@@ -1395,26 +1682,26 @@ public class KavaParser extends Parser {
 
 	public final ArgumentListContext argumentList() throws RecognitionException {
 		ArgumentListContext _localctx = new ArgumentListContext(_ctx, getState());
-		enterRule(_localctx, 34, RULE_argumentList);
+		enterRule(_localctx, 38, RULE_argumentList);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(155);
+			setState(179);
 			expression(0);
-			setState(160);
+			setState(184);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				setState(156);
+				setState(180);
 				match(COMMA);
-				setState(157);
+				setState(181);
 				expression(0);
 				}
 				}
-				setState(162);
+				setState(186);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -1433,7 +1720,7 @@ public class KavaParser extends Parser {
 
 	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
 		switch (ruleIndex) {
-		case 12:
+		case 14:
 			return expression_sempred((ExpressionContext)_localctx, predIndex);
 		}
 		return true;
@@ -1441,61 +1728,78 @@ public class KavaParser extends Parser {
 	private boolean expression_sempred(ExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 0:
-			return precpred(_ctx, 3);
+			return precpred(_ctx, 5);
 		case 1:
-			return precpred(_ctx, 2);
+			return precpred(_ctx, 4);
 		case 2:
+			return precpred(_ctx, 3);
+		case 3:
+			return precpred(_ctx, 2);
+		case 4:
 			return precpred(_ctx, 1);
+		case 5:
+			return precpred(_ctx, 8);
 		}
 		return true;
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3k\u00a6\4\2\t\2\4"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3k\u00be\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
-		"\4\23\t\23\3\2\3\2\3\3\7\3*\n\3\f\3\16\3-\13\3\3\4\3\4\3\4\3\4\3\4\3\4"+
-		"\3\4\3\4\5\4\67\n\4\3\5\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3\6\5\6C\n\6\3"+
-		"\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b"+
-		"\3\t\3\t\3\t\5\tZ\n\t\3\t\3\t\5\t^\n\t\3\t\3\t\5\tb\n\t\3\t\3\t\3\t\3"+
-		"\t\3\t\3\n\3\n\3\13\3\13\3\f\3\f\3\f\7\fp\n\f\f\f\16\fs\13\f\3\r\3\r\3"+
-		"\r\3\16\3\16\3\16\5\16{\n\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3\16\3"+
-		"\16\7\16\u0086\n\16\f\16\16\16\u0089\13\16\3\17\3\17\3\17\3\17\3\17\3"+
-		"\17\5\17\u0091\n\17\3\20\3\20\3\21\3\21\3\21\3\22\3\22\5\22\u009a\n\22"+
-		"\3\22\3\22\3\23\3\23\3\23\7\23\u00a1\n\23\f\23\16\23\u00a4\13\23\3\23"+
-		"\2\3\32\24\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$\2\5\4\2UVZZ\3\2"+
-		"ST\3\2\65:\u00a5\2&\3\2\2\2\4+\3\2\2\2\6.\3\2\2\2\b8\3\2\2\2\nB\3\2\2"+
-		"\2\fD\3\2\2\2\16L\3\2\2\2\20V\3\2\2\2\22h\3\2\2\2\24j\3\2\2\2\26l\3\2"+
-		"\2\2\30t\3\2\2\2\32z\3\2\2\2\34\u0090\3\2\2\2\36\u0092\3\2\2\2 \u0094"+
-		"\3\2\2\2\"\u0097\3\2\2\2$\u009d\3\2\2\2&\'\5\4\3\2\'\3\3\2\2\2(*\5\n\6"+
-		"\2)(\3\2\2\2*-\3\2\2\2+)\3\2\2\2+,\3\2\2\2,\5\3\2\2\2-+\3\2\2\2./\7\30"+
-		"\2\2/\60\7;\2\2\60\61\5\32\16\2\61\62\7<\2\2\62\63\7=\2\2\63\64\5\4\3"+
-		"\2\64\66\7>\2\2\65\67\5\b\5\2\66\65\3\2\2\2\66\67\3\2\2\2\67\7\3\2\2\2"+
-		"89\7\21\2\29:\7=\2\2:;\5\4\3\2;<\7>\2\2<\t\3\2\2\2=C\5\30\r\2>C\5\6\4"+
-		"\2?C\5\f\7\2@C\5\16\b\2AC\5\20\t\2B=\3\2\2\2B>\3\2\2\2B?\3\2\2\2B@\3\2"+
-		"\2\2BA\3\2\2\2C\13\3\2\2\2DE\7\64\2\2EF\7;\2\2FG\5\32\16\2GH\7<\2\2HI"+
-		"\7=\2\2IJ\5\4\3\2JK\7>\2\2K\r\3\2\2\2LM\7\17\2\2MN\7=\2\2NO\5\4\3\2OP"+
-		"\7>\2\2PQ\7\64\2\2QR\7;\2\2RS\5\32\16\2ST\7<\2\2TU\7A\2\2U\17\3\2\2\2"+
-		"VW\7\27\2\2WY\7;\2\2XZ\5\22\n\2YX\3\2\2\2YZ\3\2\2\2Z[\3\2\2\2[]\7A\2\2"+
-		"\\^\5\32\16\2]\\\3\2\2\2]^\3\2\2\2^_\3\2\2\2_a\7A\2\2`b\5\24\13\2a`\3"+
-		"\2\2\2ab\3\2\2\2bc\3\2\2\2cd\7<\2\2de\7=\2\2ef\5\4\3\2fg\7>\2\2g\21\3"+
-		"\2\2\2hi\5\26\f\2i\23\3\2\2\2jk\5\26\f\2k\25\3\2\2\2lq\5\32\16\2mn\7B"+
-		"\2\2np\5\32\16\2om\3\2\2\2ps\3\2\2\2qo\3\2\2\2qr\3\2\2\2r\27\3\2\2\2s"+
-		"q\3\2\2\2tu\5\32\16\2uv\7A\2\2v\31\3\2\2\2wx\b\16\1\2x{\5\34\17\2y{\5"+
-		" \21\2zw\3\2\2\2zy\3\2\2\2{\u0087\3\2\2\2|}\f\5\2\2}~\t\2\2\2~\u0086\5"+
-		"\32\16\6\177\u0080\f\4\2\2\u0080\u0081\t\3\2\2\u0081\u0086\5\32\16\5\u0082"+
-		"\u0083\f\3\2\2\u0083\u0084\7D\2\2\u0084\u0086\5\32\16\3\u0085|\3\2\2\2"+
-		"\u0085\177\3\2\2\2\u0085\u0082\3\2\2\2\u0086\u0089\3\2\2\2\u0087\u0085"+
-		"\3\2\2\2\u0087\u0088\3\2\2\2\u0088\33\3\2\2\2\u0089\u0087\3\2\2\2\u008a"+
-		"\u008b\7;\2\2\u008b\u008c\5\32\16\2\u008c\u008d\7<\2\2\u008d\u0091\3\2"+
-		"\2\2\u008e\u0091\5\36\20\2\u008f\u0091\7f\2\2\u0090\u008a\3\2\2\2\u0090"+
-		"\u008e\3\2\2\2\u0090\u008f\3\2\2\2\u0091\35\3\2\2\2\u0092\u0093\t\4\2"+
-		"\2\u0093\37\3\2\2\2\u0094\u0095\7f\2\2\u0095\u0096\5\"\22\2\u0096!\3\2"+
-		"\2\2\u0097\u0099\7;\2\2\u0098\u009a\5$\23\2\u0099\u0098\3\2\2\2\u0099"+
-		"\u009a\3\2\2\2\u009a\u009b\3\2\2\2\u009b\u009c\7<\2\2\u009c#\3\2\2\2\u009d"+
-		"\u00a2\5\32\16\2\u009e\u009f\7B\2\2\u009f\u00a1\5\32\16\2\u00a0\u009e"+
-		"\3\2\2\2\u00a1\u00a4\3\2\2\2\u00a2\u00a0\3\2\2\2\u00a2\u00a3\3\2\2\2\u00a3"+
-		"%\3\2\2\2\u00a4\u00a2\3\2\2\2\17+\66BY]aqz\u0085\u0087\u0090\u0099\u00a2";
+		"\4\23\t\23\4\24\t\24\4\25\t\25\3\2\3\2\3\3\7\3.\n\3\f\3\16\3\61\13\3\3"+
+		"\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4;\n\4\3\5\3\5\3\5\3\5\3\5\3\6\3\6\3"+
+		"\6\3\6\3\6\3\6\3\6\5\6I\n\6\3\7\3\7\3\7\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3"+
+		"\t\3\t\3\t\3\t\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\13\3\13\3\13"+
+		"\5\13f\n\13\3\13\3\13\5\13j\n\13\3\13\3\13\5\13n\n\13\3\13\3\13\3\13\3"+
+		"\13\3\13\3\f\3\f\3\r\3\r\3\16\3\16\3\16\7\16|\n\16\f\16\16\16\177\13\16"+
+		"\3\17\3\17\3\17\3\20\3\20\3\20\3\20\3\20\3\20\3\20\5\20\u008b\n\20\3\20"+
+		"\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20"+
+		"\3\20\3\20\7\20\u009e\n\20\f\20\16\20\u00a1\13\20\3\21\3\21\3\21\3\21"+
+		"\3\21\3\21\5\21\u00a9\n\21\3\22\3\22\3\23\3\23\3\23\3\24\3\24\5\24\u00b2"+
+		"\n\24\3\24\3\24\3\25\3\25\3\25\7\25\u00b9\n\25\f\25\16\25\u00bc\13\25"+
+		"\3\25\2\3\36\26\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(\2\n\3\2Q"+
+		"T\3\2GH\4\2UVZZ\3\2ST\4\2EFLM\4\2KKNN\3\2QR\3\2\65:\u00c2\2*\3\2\2\2\4"+
+		"/\3\2\2\2\6\62\3\2\2\2\b<\3\2\2\2\nH\3\2\2\2\fJ\3\2\2\2\16M\3\2\2\2\20"+
+		"P\3\2\2\2\22X\3\2\2\2\24b\3\2\2\2\26t\3\2\2\2\30v\3\2\2\2\32x\3\2\2\2"+
+		"\34\u0080\3\2\2\2\36\u008a\3\2\2\2 \u00a8\3\2\2\2\"\u00aa\3\2\2\2$\u00ac"+
+		"\3\2\2\2&\u00af\3\2\2\2(\u00b5\3\2\2\2*+\5\4\3\2+\3\3\2\2\2,.\5\n\6\2"+
+		"-,\3\2\2\2.\61\3\2\2\2/-\3\2\2\2/\60\3\2\2\2\60\5\3\2\2\2\61/\3\2\2\2"+
+		"\62\63\7\30\2\2\63\64\7;\2\2\64\65\5\36\20\2\65\66\7<\2\2\66\67\7=\2\2"+
+		"\678\5\4\3\28:\7>\2\29;\5\b\5\2:9\3\2\2\2:;\3\2\2\2;\7\3\2\2\2<=\7\21"+
+		"\2\2=>\7=\2\2>?\5\4\3\2?@\7>\2\2@\t\3\2\2\2AI\5\34\17\2BI\5\6\4\2CI\5"+
+		"\20\t\2DI\5\22\n\2EI\5\24\13\2FI\5\f\7\2GI\5\16\b\2HA\3\2\2\2HB\3\2\2"+
+		"\2HC\3\2\2\2HD\3\2\2\2HE\3\2\2\2HF\3\2\2\2HG\3\2\2\2I\13\3\2\2\2JK\7\6"+
+		"\2\2KL\7A\2\2L\r\3\2\2\2MN\7\r\2\2NO\7A\2\2O\17\3\2\2\2PQ\7\64\2\2QR\7"+
+		";\2\2RS\5\36\20\2ST\7<\2\2TU\7=\2\2UV\5\4\3\2VW\7>\2\2W\21\3\2\2\2XY\7"+
+		"\17\2\2YZ\7=\2\2Z[\5\4\3\2[\\\7>\2\2\\]\7\64\2\2]^\7;\2\2^_\5\36\20\2"+
+		"_`\7<\2\2`a\7A\2\2a\23\3\2\2\2bc\7\27\2\2ce\7;\2\2df\5\26\f\2ed\3\2\2"+
+		"\2ef\3\2\2\2fg\3\2\2\2gi\7A\2\2hj\5\36\20\2ih\3\2\2\2ij\3\2\2\2jk\3\2"+
+		"\2\2km\7A\2\2ln\5\30\r\2ml\3\2\2\2mn\3\2\2\2no\3\2\2\2op\7<\2\2pq\7=\2"+
+		"\2qr\5\4\3\2rs\7>\2\2s\25\3\2\2\2tu\5\32\16\2u\27\3\2\2\2vw\5\32\16\2"+
+		"w\31\3\2\2\2x}\5\36\20\2yz\7B\2\2z|\5\36\20\2{y\3\2\2\2|\177\3\2\2\2}"+
+		"{\3\2\2\2}~\3\2\2\2~\33\3\2\2\2\177}\3\2\2\2\u0080\u0081\5\36\20\2\u0081"+
+		"\u0082\7A\2\2\u0082\35\3\2\2\2\u0083\u0084\b\20\1\2\u0084\u0085\t\2\2"+
+		"\2\u0085\u008b\5\36\20\t\u0086\u0087\t\3\2\2\u0087\u008b\5\36\20\b\u0088"+
+		"\u008b\5 \21\2\u0089\u008b\5$\23\2\u008a\u0083\3\2\2\2\u008a\u0086\3\2"+
+		"\2\2\u008a\u0088\3\2\2\2\u008a\u0089\3\2\2\2\u008b\u009f\3\2\2\2\u008c"+
+		"\u008d\f\7\2\2\u008d\u008e\t\4\2\2\u008e\u009e\5\36\20\b\u008f\u0090\f"+
+		"\6\2\2\u0090\u0091\t\5\2\2\u0091\u009e\5\36\20\7\u0092\u0093\f\5\2\2\u0093"+
+		"\u0094\t\6\2\2\u0094\u009e\5\36\20\6\u0095\u0096\f\4\2\2\u0096\u0097\t"+
+		"\7\2\2\u0097\u009e\5\36\20\5\u0098\u0099\f\3\2\2\u0099\u009a\7D\2\2\u009a"+
+		"\u009e\5\36\20\3\u009b\u009c\f\n\2\2\u009c\u009e\t\b\2\2\u009d\u008c\3"+
+		"\2\2\2\u009d\u008f\3\2\2\2\u009d\u0092\3\2\2\2\u009d\u0095\3\2\2\2\u009d"+
+		"\u0098\3\2\2\2\u009d\u009b\3\2\2\2\u009e\u00a1\3\2\2\2\u009f\u009d\3\2"+
+		"\2\2\u009f\u00a0\3\2\2\2\u00a0\37\3\2\2\2\u00a1\u009f\3\2\2\2\u00a2\u00a3"+
+		"\7;\2\2\u00a3\u00a4\5\36\20\2\u00a4\u00a5\7<\2\2\u00a5\u00a9\3\2\2\2\u00a6"+
+		"\u00a9\5\"\22\2\u00a7\u00a9\7f\2\2\u00a8\u00a2\3\2\2\2\u00a8\u00a6\3\2"+
+		"\2\2\u00a8\u00a7\3\2\2\2\u00a9!\3\2\2\2\u00aa\u00ab\t\t\2\2\u00ab#\3\2"+
+		"\2\2\u00ac\u00ad\7f\2\2\u00ad\u00ae\5&\24\2\u00ae%\3\2\2\2\u00af\u00b1"+
+		"\7;\2\2\u00b0\u00b2\5(\25\2\u00b1\u00b0\3\2\2\2\u00b1\u00b2\3\2\2\2\u00b2"+
+		"\u00b3\3\2\2\2\u00b3\u00b4\7<\2\2\u00b4\'\3\2\2\2\u00b5\u00ba\5\36\20"+
+		"\2\u00b6\u00b7\7B\2\2\u00b7\u00b9\5\36\20\2\u00b8\u00b6\3\2\2\2\u00b9"+
+		"\u00bc\3\2\2\2\u00ba\u00b8\3\2\2\2\u00ba\u00bb\3\2\2\2\u00bb)\3\2\2\2"+
+		"\u00bc\u00ba\3\2\2\2\17/:Heim}\u008a\u009d\u009f\u00a8\u00b1\u00ba";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

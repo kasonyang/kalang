@@ -9,10 +9,10 @@ import com.kasonyang.kava.model.VarObject;
 public class VarTable {
 	
 	//private varNames = []
-	private HashMap<Long,VarObject> vars = new HashMap(); //id => var
-	private HashMap<String,Long> ids = new HashMap();//name -> id
-	private long tmpIdx = 0;
-	private long varIdx = 0;
+	private HashMap<Integer,VarObject> vars = new HashMap(); //id => var
+	private HashMap<String,Integer> ids = new HashMap();//name -> id
+	private int tmpIdx = 0;
+	private int varIdx = 0;
 	
 	/*
 	public List<VarObject> getVarObjects(){
@@ -24,7 +24,7 @@ public class VarTable {
 	}
 	*/
 	
-	public VarObject get(Long idx){
+	public VarObject get(Integer idx){
 		return vars.get(idx);
 	}
 	
@@ -32,24 +32,24 @@ public class VarTable {
 		return ids.containsKey(name);
 	}
 	
-	public long getId(String name){
+	public int getId(String name){
 		return ids.get(name);
 	}
 	
-	public long create(){
+	public int create(){
 		VarObject vo = new VarObject();
 		return create(vo);
 	}
 	
-	public long create(String name){
+	public int create(String name){
 		return create(name,new VarObject());
 	}
 	
-	public long create(VarObject vo){
+	public int create(VarObject vo){
 		return create("@"+(tmpIdx++),vo);
 	}
-	public long create(String name,VarObject vo){
-		Long id = varIdx++;
+	public int create(String name,VarObject vo){
+		Integer id = varIdx++;
 		vars.put(id,vo);
 		ids.put(name,id);
 		return id;
@@ -57,7 +57,7 @@ public class VarTable {
 		
 	public String toString(){
 		String str = "";
-		for(Entry<String, Long> e:this.ids.entrySet()){
+		for(Entry<String, Integer> e:this.ids.entrySet()){
 			VarObject vo = vars.get(e.getValue());
 			str += String.format("%s(%d):%s",e.getKey(),e.getValue(),vo) + "\n";
 		}

@@ -20,7 +20,11 @@ stat:
     |whileStat
     |doWhileStat
     |forStat
+    |breakStat
+    |continueStat
 ;
+breakStat:BREAK ';';
+continueStat:CONTINUE ';';
 whileStat:
     WHILE '(' expression ')' '{' statList '}'
 ;
@@ -65,15 +69,15 @@ expression
     //|   expression '(' expressionList? ')'
     //|   NEW creator
     //|   LPAREN type RPAREN expression
-    //|   expression (INC | DEC) #exprPostOp
-    //|   (ADD|SUB|INC|DEC) expression #exprPreOp
-    //|   (TILDE|BANG) expression  #exprPreLogic
+    |   expression (INC | DEC) #exprSelfOp
+    |   (ADD|SUB|INC|DEC) expression #exprSelfOpPre
+    |   ('~'|'!') expression  #exprNotOp
     |   expression (MUL|DIV|MOD) expression #exprMidOp
     |   expression (ADD|SUB) expression #exprMidOp
    // |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression
-    //|   expression (LE | GE | GT | LT) expression #exprMidLogic
+    |   expression (LE | GE | GT | LT) expression #exprLogicCmp
     //|   expression INSTANCEOF type
-   // |   expression (EQUAL|NOTEQUAL) expression #exprMidLogic2
+    |   expression (EQUAL|NOTEQUAL) expression #exprLogicCmp
     /*
     |   expression BITAND expression #exprMidLogic3
     |   expression CARET expression

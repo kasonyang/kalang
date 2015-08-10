@@ -15,8 +15,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import com.kasonyang.kava.antlr.*;
 import com.kasonyang.kava.antlr.KavaParser.ArgumentListContext;
 import com.kasonyang.kava.antlr.KavaParser.ArgumentsContext;
+import com.kasonyang.kava.antlr.KavaParser.BreakStatContext;
+import com.kasonyang.kava.antlr.KavaParser.ContinueStatContext;
 import com.kasonyang.kava.antlr.KavaParser.DoWhileStatContext;
 import com.kasonyang.kava.antlr.KavaParser.ExprInvocationContext;
+//import com.kasonyang.kava.antlr.KavaParser.ExprLogicEqCmpContext;
+//import com.kasonyang.kava.antlr.KavaParser.ExprLogicLgCmpContext;
+import com.kasonyang.kava.antlr.KavaParser.ExprNotOpContext;
+import com.kasonyang.kava.antlr.KavaParser.ExprSelfOpContext;
+import com.kasonyang.kava.antlr.KavaParser.ExprSelfOpPreContext;
 import com.kasonyang.kava.antlr.KavaParser.ExprStatContext;
 import com.kasonyang.kava.antlr.KavaParser.ExpressionContext;
 import com.kasonyang.kava.antlr.KavaParser.ExpressionListContext;
@@ -45,7 +52,12 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 	private String code = "";
 	private ArrayList<Op> ops = new ArrayList();
 	private int paramCounter = 0;
+	private ArrayList<Op> continueList = new ArrayList<Op>();
+	private ArrayList<Op> breakList = new ArrayList<Op>();
 	
+	public ConstTable getConstTable(){
+		return constTb;
+	}
 	public void op(String op,Object v1,Object v2,Object vr){
 		code += op + " @" + v1 + " @" + v2 + "->@" + vr + "\n";
 	}
@@ -88,9 +100,9 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 			break;
 		}
 		vo.setType(type);
-		Long varId = varTb.create(vo);
-		Long constId = constTb.create(value);
-		ops.add(new Op(OpType.LCONST,varId,constId,-1));
+		Integer varId = varTb.create(vo);
+		//Integer constId = constTb.create(value);
+		ops.add(new Op(OpType.ICONST,varId,(Integer)value,null));
 		attr.setValue(varId);
 		//attr.setType("const");
 		//var.setIsConst(true);
@@ -129,11 +141,11 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 		Attr at = new Attr();
 		Attr attr1 =this.visit(ctx.expression(0));
 		Attr attr2 = this.visit(ctx.expression(1));
-		long vo1 = attr1.getValue();
-		long vo2 = attr2.getValue();
+		int vo1 = attr1.getValue();
+		int vo2 = attr2.getValue();
 		VarObject voR = new VarObject();
 		voR.setType("mixed");
-		long ret = varTb.create(voR);
+		int ret = varTb.create(voR);
 		String opStr = ctx.getChild(1).getText();
 		OpType ot = this.getOpTypeByString(opStr);
 		ops.add(new Op(ot,ret,vo1,vo2));
@@ -145,7 +157,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 	public Attr visitExprAssign(ExprAssignContext ctx) {
 		Attr at1 = visit(ctx.expression(1));
 		Attr at0 = visit(ctx.expression(0));
-		ops.add(new Op(OpType.ASSIGN,at0.getValue(),at1.getValue(),-1));
+		ops.add(new Op(OpType.ASSIGN,at0.getValue(),at1.getValue(),null));
 		Attr attr = new Attr();
 		attr.setValue(at0.getValue());
 		return attr;
@@ -163,7 +175,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 	public Attr visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
 		Attr attr = new Attr();
 		String name = ctx.Identifier().getText();
-    	long idInt;
+    	int idInt;
     	if(varTb.contains(name)){
     		idInt = varTb.getId(name);
     	}else{
@@ -189,11 +201,11 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 	public Attr visitGenericInvocation(GenericInvocationContext ctx) {
 		String invName = ctx.Identifier().getText();
 		Attr at = visit(ctx.arguments());
-		long size = at.getValue();
+		int size = at.getValue();
 		VarObject vo = new VarObject();
 		vo.setValue(invName);
-		long invId = varTb.create(vo);
-		long ret = varTb.create();
+		int invId = varTb.create(vo);
+		int ret = varTb.create();
 		ops.add(new Op(OpType.INVOKE,ret,invId,size));
 		return new Attr(ret);
 	}
@@ -216,7 +228,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 		for(ExpressionContext e:ctx.expression()){
 			Attr at = visit(e);
 			paramCount++;
-			ops.add(new Op(OpType.PARAM,at.getValue(),-1,-1));
+			ops.add(new Op(OpType.PARAM,at.getValue(),null,null));
 		}
 		Attr attr= new Attr();
 		attr.setValue(paramCount);
@@ -231,8 +243,9 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 	@Override
 	public Attr visitStart(StartContext ctx) {
 		if(ctx.statList() != null){
-			return visit(ctx.statList());
+			visit(ctx.statList());
 		}
+		ops.add(new Op(OpType.NOOP,null,null,null));
 		return null;
 	}
 
@@ -249,13 +262,13 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 	@Override
 	public Attr visitIfStat(IfStatContext ctx) {
 		Attr at = visit(ctx.expression());
-		Op op = new Op(OpType.IFFALSE,-1,at.getValue(),-1);
+		Op op = new Op(OpType.IFFALSE,null,at.getValue(),null);
 		ops.add(op);
 		visit(ctx.statList());
-		Long goVal = (long) ops.size();
+		Integer goVal = (int) ops.size();
 		if(ctx.ifStatSuffix()!=null){
 			goVal+=1;
-			Op trueGoOp = new Op(OpType.GOTO,-1,-1,-1);
+			Op trueGoOp = new Op(OpType.GOTO,null,null,null);
 			ops.add(trueGoOp);
 			visit(ctx.ifStatSuffix());
 			trueGoOp.v1 = ops.size();
@@ -283,37 +296,73 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 
 	@Override
 	public Attr visitWhileStat(WhileStatContext ctx) {
-		Long begin = (long) ops.size();
+		ArrayList<Op> bList,cList;
+		bList = this.breakList;
+		cList = this.continueList;
+		
+		Integer begin = (int) ops.size();
 		Attr at = visit(ctx.expression());
-		Op opIfF = new Op(OpType.IFFALSE,-1,at.getValue(),-1);
+		Op opIfF = new Op(OpType.IFFALSE,null,at.getValue(),null);
 		ops.add(opIfF);
 		visit(ctx.statList());
-		Op opGoto = new Op(OpType.GOTO,-1,begin,-1);
+		Op opGoto = new Op(OpType.GOTO,null,begin,null);
 		ops.add(opGoto);
-		opIfF.v2 = ops.size();
+		Integer end;
+		opIfF.v2 = end=ops.size();
+		
+		setGoto(bList,end);
+		setGoto(cList,begin);
+		this.breakList = bList;
+		this.continueList = cList;
 		return null;
 	}
 
 	@Override
 	public Attr visitDoWhileStat(DoWhileStatContext ctx) {
-		Long begin = (long) ops.size();
+		ArrayList<Op> clist,blist;
+		clist = this.continueList;
+		blist = this.breakList;
+		
+		Integer begin = (int) ops.size();
 		visit(ctx.statList());
 		Attr at = visit(ctx.expression());
-		ops.add(new Op(OpType.IFTRUE,-1,at.getValue(),begin));
+		ops.add(new Op(OpType.IFTRUE,null,at.getValue(),begin));
+		Integer end = ops.size();
+		
+		setGoto(clist,begin);
+		setGoto(blist,end);
+		this.continueList = clist;
+		this.breakList = blist;
 		return null;
 	}
 
+	private void setGoto(ArrayList<Op> list,Integer position){
+		for(Op o:list){
+			o.v1 = position;
+		}
+	}
+	
 	@Override
 	public Attr visitForStat(ForStatContext ctx) {
+		ArrayList<Op> bList,cList;
+		bList= this.breakList;
+		cList = this.continueList;
+		
 		if(ctx.forInit()!=null) visit(ctx.forInit());
-		Long begin = (long) ops.size();
+		Integer begin = (int) ops.size();
 		Attr exAt = visit(ctx.expression());
-		Op opIfF = new Op(OpType.IFFALSE,-1,exAt.getValue(),-1);
+		Op opIfF = new Op(OpType.IFFALSE,null,exAt.getValue(),null);
 		ops.add(opIfF);
 		visit(ctx.statList());
 		visit(ctx.forUpdate());
-		ops.add(new Op(OpType.GOTO,-1,begin,-1));
-		opIfF.v2 = ops.size();
+		ops.add(new Op(OpType.GOTO,null,begin,null));
+		Integer end; 
+		opIfF.v2 = end = ops.size();
+		
+		setGoto(bList,end);
+		setGoto(cList,begin);
+		this.breakList = bList;
+		this.continueList = cList;
 		return null;
 	}
 
@@ -334,6 +383,90 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<Attr> implements Ka
 		for(ExpressionContext e:ctx.expression()){
 			visit(e);
 		}
+		return null;
+	}
+	@Override
+	public Attr visitExprNotOp(ExprNotOpContext ctx) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public Attr visitExprSelfOp(ExprSelfOpContext ctx) {
+		Attr at = visit(ctx.expression());
+		VarObject vo = new VarObject();
+		int result = varTb.create(vo);
+		ops.add(new Op(OpType.ASSIGN,result,at.getValue(),null));
+		int incDelta = ctx.INC() != null ? 1 : -1;
+		ops.add(new Op(OpType.IINC,null,at.getValue(),incDelta));
+		return new Attr(result);
+	}
+	@Override
+	public Attr visitExprSelfOpPre(ExprSelfOpPreContext ctx) {
+		Attr at = visit(ctx.expression());
+		int result = varTb.create();
+		int tmpVar = varTb.create();
+		switch(ctx.getChild(0).getText()){
+		case "-":
+			ops.add(new Op(OpType.ICONST,tmpVar,0,null));
+			ops.add(new Op(OpType.SUB,result,tmpVar,at.getValue()));
+			//ops.add(new Op(OpType.a)
+			break;
+		case "--":
+			ops.add(new Op(OpType.IINC,null,at.getValue(),-1));
+			ops.add(new Op(OpType.ASSIGN,result,at.getValue(),null));
+			break;
+		case "++":
+			ops.add(new Op(OpType.IINC,null,at.getValue(),1));
+			ops.add(new Op(OpType.ASSIGN,result,at.getValue(),null));
+			break;
+		case "+":
+			ops.add(new Op(OpType.ASSIGN,result,at.getValue(),null));
+			break;
+		default:
+			throw new RuntimeException("未识别的操作符！");
+		}
+		return new Attr(result);
+	}
+	
+	@Override
+	public Attr visitExprLogicCmp(ExprLogicCmpContext ctx) {
+		Attr at = visit(ctx.expression(0));
+		Attr at2 = visit(ctx.expression(1));
+		OpType type;
+		switch(ctx.getChild(1).getText()){
+		case ">":type = OpType.IFGT;break;
+		case "<":type = OpType.IFLT;break;
+		case ">=":type = OpType.IFGE;break;
+		case "<=":type = OpType.IFLE;break;
+		case "==":type = OpType.IFEQ;break;
+		case "!=":type = OpType.IFNE;break;
+		default:throw new RuntimeException("Wrong op");
+		}
+		int result = varTb.create();
+		int tmpVar = varTb.create();
+		ops.add(new Op(OpType.SUB,tmpVar,at.getValue(),at2.getValue()));
+		Op opIFGoto = new Op(type,null,tmpVar,null);
+		ops.add(opIFGoto);
+		ops.add(new Op(OpType.ICONST,result,0,null));
+		Op opGoto = new Op(OpType.GOTO,null,null,null);
+		ops.add(opGoto);
+		opIFGoto.v2 = ops.size();
+		ops.add(new Op(OpType.ICONST,result,1,null));
+		opGoto.v1 = ops.size();
+		return new Attr(result);
+	}
+	@Override
+	public Attr visitBreakStat(BreakStatContext ctx) {
+		Op op;
+		ops.add(op = new Op(OpType.GOTO,null,null,null));
+		breakList.add(op);
+		return null;
+	}
+	@Override
+	public Attr visitContinueStat(ContinueStatContext ctx) {
+		Op op;
+		ops.add(op = new Op(OpType.GOTO,null,null,null));
+		continueList.add(op);
 		return null;
 	}
 
