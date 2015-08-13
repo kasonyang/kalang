@@ -8,3 +8,124 @@ repositories{
 dependencies{
 	compile 'org.antlr:antlr4-runtime:4.5'
 }
+buildscript {
+	repositories {
+		      mavenCentral()  
+	}
+	dependencies {
+		classpath files(['libs/freemarker.jar'])  
+	} 
+}
+import freemarker.template.Template
+task op {
+	buildOp()
+}
+
+class OpCreator{
+	//def importRoot = "kava/opcode"
+	def packageDir = "kava/opcode/op"
+	def srcDir = "src/main/java"
+	def paramType = [
+		'v':'kava.opcode.VarObject',
+		'l':'Integer',
+		'c':'kava.opcode.Constant',
+		'i' : 'Integer'
+		]
+	def paramName = ['result','v1','v2']	
+	def ops = []
+	def packageName = packageDir.replace('/','.')
+	def dirName = "${srcDir}/${packageDir}"
+	private model = [
+		'packageName' : packageName
+	]
+	
+	public OpCreator(){
+		def dir =new File(dirName)
+		if(!dir.exists()){
+			dir.mkdirs()
+		}
+	}
+	
+	private def getOpModel(String name,String paramStr){
+		def params = paramStr.split(",")
+		def model = [:]
+		model.params = []
+		if(params){
+			def idx = 0;
+			def methodParam = []
+			for(p in params){
+				def type = paramType[p] ?: "Unknown"
+				def pname = paramName[idx++]
+				if(p.trim() == '') continue
+				def ntPair = [:]
+				ntPair.type = type
+				ntPair.name = pname
+				methodParam.add ntPair
+			}
+			model.params = methodParam
+		}
+		//model.packageName = packageName
+		model.name = name
+		return model
+	}
+	
+	def createOp(Map model,String extend){
+		def tplFile = 'script/tpl/Op.tpl'
+		def targetFile ="${dirName}/${model.name}.java"
+		//def targetWirter = new FileWriter(targetFile)
+		model.extend = extend
+		model.putAll(this.model)
+		renderFile(model.name,targetFile,tplFile,model)
+		//ops.add model
+	}
+	
+	def creatVisitor(List models){
+		def model = [:]
+		model.putAll(this.model);
+		model.ops = models
+		renderFile("OpVisitor","${dirName}/OpVisitor.java","script/tpl/OpVisitor.tpl",model)	
+	}
+	
+	def renderFile(String name,String dest,String src,Map model){
+		def destFile = new File(dest)
+		if(!destFile.exists()) destFile.createNewFile()
+		def targetWriter = new FileWriter(destFile)
+		def tpl = new Template(name,new FileReader(new File(src)))
+		tpl.process(model,targetWriter)
+	}
+}
+
+def buildOp(){
+	def creator = new OpCreator()
+	def opsFile = "script/opcodes"
+	//creator.createOp("Test","op",'v,v')
+	def ops = []
+	new File(opsFile).eachLine { ln ->
+		if(ln.startsWith("//")) return
+		def eles = ln.split(" ")
+		def paramStr = ""
+		if(eles.length>1) paramStr = eles[1]
+		def opsName,opsExtend,opsNameStr
+		def opsInfo = eles[0].split(":",2)
+		if(opsInfo.length>1){
+			opsExtend = opsInfo[0]
+			opsNameStr = opsInfo[1]
+		}else{
+			opsNameStr = opsInfo[0]
+			//opsExtend = "Op"
+		}
+		if(opsExtend){
+			def extendModel = creator.getOpModel(opsExtend,paramStr)
+			creator.createOp(extendModel,null)
+		}else{
+			//opsExtend = "Op"
+		}
+		opsName = opsNameStr.split(",")
+		for(o in opsName){
+			def model = creator.getOpModel(o,paramStr)
+			creator.createOp(model,opsExtend)
+			ops.add(model)
+		}
+	}
+	creator.creatVisitor(ops);
+}
