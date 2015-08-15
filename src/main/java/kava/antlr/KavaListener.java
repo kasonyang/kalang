@@ -193,6 +193,18 @@ public interface KavaListener extends ParseTreeListener {
 	 */
 	void exitExprNotOp(KavaParser.ExprNotOpContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code arrayAssign}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayAssign(KavaParser.ArrayAssignContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code arrayAssign}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayAssign(KavaParser.ArrayAssignContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code exprLogicCmp}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree
@@ -205,18 +217,6 @@ public interface KavaListener extends ParseTreeListener {
 	 */
 	void exitExprLogicCmp(KavaParser.ExprLogicCmpContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code exprMidOp}
-	 * labeled alternative in {@link KavaParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprMidOp(KavaParser.ExprMidOpContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprMidOp}
-	 * labeled alternative in {@link KavaParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprMidOp(KavaParser.ExprMidOpContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code exprAssign}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree
@@ -228,6 +228,18 @@ public interface KavaListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExprAssign(KavaParser.ExprAssignContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code exprMidOp}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprMidOp(KavaParser.ExprMidOpContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code exprMidOp}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprMidOp(KavaParser.ExprMidOpContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code exprSelfOp}
 	 * labeled alternative in {@link KavaParser#expression}.
@@ -264,6 +276,28 @@ public interface KavaListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExprSelfOpPre(KavaParser.ExprSelfOpPreContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code exprGetArrayElement}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprGetArrayElement(KavaParser.ExprGetArrayElementContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code exprGetArrayElement}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprGetArrayElement(KavaParser.ExprGetArrayElementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KavaParser#offset}.
+	 * @param ctx the parse tree
+	 */
+	void enterOffset(KavaParser.OffsetContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KavaParser#offset}.
+	 * @param ctx the parse tree
+	 */
+	void exitOffset(KavaParser.OffsetContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code primayParen}
 	 * labeled alternative in {@link KavaParser#primary}.

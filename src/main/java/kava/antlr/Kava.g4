@@ -29,7 +29,7 @@ varDeclStat:
 varDecl ';'
 ;
 varDecl:
-    (INT|LONG|FLOAT|DOUBLE) Identifier ('=' expression)?
+    (INT|LONG|FLOAT|DOUBLE) ('[' IntegerLiteral ']')? Identifier ('=' expression)?
 ;
 
 breakStat:BREAK ';';
@@ -96,7 +96,8 @@ expression
     |   expression OR expression
     |   expression QUESTION expression ':' expression
     */
-    |   <assoc=right> expression
+    |  expression offset #exprGetArrayElement
+    |   <assoc=right> Identifier
          (  ASSIGN
                 /*
         |    ADD_ASSIGN
@@ -111,7 +112,12 @@ expression
         |   RSHIFT_ASSIGN
         |     MOD_ASSIGN*/ )
         expression #exprAssign
-    ;
+    |<assoc=right>
+    (Identifier offset) ASSIGN expression #arrayAssign
+;
+offset:
+    '[' expression ']'
+;
 primary
     :   LPAREN 
         expression 

@@ -47,15 +47,15 @@ public class VarTable {
 	}
 	*/
 	
-	public VarObject createTmp(Integer type){
-		return create("@"+(tmpIdx++),type);
+	public VarObject createTmp(/*Integer type*/){
+		return create("@"+(tmpIdx++)/*,type*/);
 	}
-	public VarObject create(String name,Integer type){
+	public VarObject create(String name/*,Integer type*/){
 		VarObject vo = new VarObject();
 		Integer id = varIdx++;
 		vo.setId(id);
 		vo.setName(name);
-		vo.setType(type);
+		//vo.setType(type);
 		vars.put(id,vo);
 		ids.put(name,id);
 		return vo;

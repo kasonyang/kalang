@@ -1,9 +1,9 @@
 package kava.opcode;
 
 public class VarObject {
-	public static final int INT = 0,LONG=1,FLOAT = 2,DOUBLE = 3,CHAR=4,STRING=5,NULL=6,BOOLEAN=7,REFERENCE=8,BYTE=9,AUTO=10;
+	//public static final int INT = 0,LONG=1,FLOAT = 2,DOUBLE = 3,CHAR=4,STRING=5,NULL=6,BOOLEAN=7,REFERENCE=8,BYTE=9,AUTO=10;
 	Integer id;
-	Integer type;
+	//Integer type;
 	public String className;
 	String name;
 	//Boolean isConst
@@ -19,14 +19,14 @@ public class VarObject {
 	public Integer getId(){
 		return id;
 	}
-	
+	/*
 	public void setType(Integer type){
 		this.type = type;
 	}
 	public Integer getType(){
 		return this.type;
 	}
-	
+	*/
 	
 	
 	public String toString(){

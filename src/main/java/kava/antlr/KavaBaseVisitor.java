@@ -144,6 +144,13 @@ public class KavaBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements K
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitArrayAssign(KavaParser.ArrayAssignContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitExprLogicCmp(KavaParser.ExprLogicCmpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -151,14 +158,14 @@ public class KavaBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements K
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExprMidOp(KavaParser.ExprMidOpContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExprAssign(KavaParser.ExprAssignContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExprAssign(KavaParser.ExprAssignContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExprMidOp(KavaParser.ExprMidOpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -180,6 +187,20 @@ public class KavaBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements K
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitExprSelfOpPre(KavaParser.ExprSelfOpPreContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitExprGetArrayElement(KavaParser.ExprGetArrayElementContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitOffset(KavaParser.OffsetContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

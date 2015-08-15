@@ -233,6 +233,18 @@ public class KavaBaseListener implements KavaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterArrayAssign(KavaParser.ArrayAssignContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArrayAssign(KavaParser.ArrayAssignContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprLogicCmp(KavaParser.ExprLogicCmpContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -245,18 +257,6 @@ public class KavaBaseListener implements KavaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExprMidOp(KavaParser.ExprMidOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExprMidOp(KavaParser.ExprMidOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterExprAssign(KavaParser.ExprAssignContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -264,6 +264,18 @@ public class KavaBaseListener implements KavaListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprAssign(KavaParser.ExprAssignContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprMidOp(KavaParser.ExprMidOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprMidOp(KavaParser.ExprMidOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -300,6 +312,30 @@ public class KavaBaseListener implements KavaListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprSelfOpPre(KavaParser.ExprSelfOpPreContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprGetArrayElement(KavaParser.ExprGetArrayElementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprGetArrayElement(KavaParser.ExprGetArrayElementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOffset(KavaParser.OffsetContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOffset(KavaParser.OffsetContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

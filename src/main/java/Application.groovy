@@ -1,6 +1,7 @@
 import kava.antlr.*
 import kava.compiler.Optimizer;
 import kava.compiler.TheKavaVisitor;
+import kava.compiler4j.Register2Stack
 
 import kava.opcode.Op
 import kava.vm.TheKavaExecutor
@@ -24,7 +25,8 @@ int a=0;while(a<100){a=a+1;if(a==9){break;}}
 int a=0;do {a=a+1;}while(a<9);
 int a=0;for(int i=0;i<9;i++){a++;}
 int a=0;int i;for(i=0;i<9.0;i=i+1){a++;}
-int a=0;int i;for(i=0;i<90;i++){a++;if(a==9){break;}}''';
+int a=0;int i;for(i=0;i<90;i++){a++;if(a==9){break;}}
+int a=0;int[2] b;b[1]=9;a=b[1];''';
 		def lnIdx = 0;
 		def opsList = [];
 		def ip = new StringReader(input);
@@ -51,24 +53,22 @@ int a=0;int i;for(i=0;i<90;i++){a++;if(a==9){break;}}''';
 			new File("output/${name}.kc").withWriter{w->
 				w.write(opc2String(opc) + "\n${opcStrBeforeOptim}")
 			}
-			def executor = new TheKavaExecutor()
-			try{
-				executor.execute(opc)
-				println executor.getVar('a')
-			}catch(Exception e){
-				println name + ":" +  e.getMessage()
-				println opc2String(opc)
-				throw e
-			}
+			print name
+			print " "
+			this.executeOnVm(opc)
+			print " "
+			this.executeOnJvm(name,visitor)
+			println ''
 			return
+			//return
 			def opcOut = "";
 			def opIdx = 0;
 			//opcOut += "${visitor.getVarTable()}"
 			def getOpStr = { Op o->
 				def str = "";
-				def r = o.result
-				def v1 = o.v1
-				def v2 = o.v2
+				def r = o.getParameter("result")
+				def v1 = o.getParameter("v1")
+				def v2 = o.getParameter("v2")
 				str = o.class.getSimpleName() + " ${r} ${v1} ${v2}"
 				return str 
 			}
@@ -85,19 +85,8 @@ int a=0;int i;for(i=0;i<90;i++){a++;if(a==9){break;}}''';
 			 }
 			 */
 			
-			return
-			def former = new Register2Stack(name,visitor)
-
-			byte[] bs = former.toByteArray();
-
-			new File("output/${name}.class").withOutputStream {os->
-				os.write(bs)
-			}
-			def classLoader = new KavaClassLoader()
-			def cls = classLoader.defineClass(name,bs)
-			def result = cls.invokeMethod("run",null)
-			println name + ":"+ result
-			//TheKavaRunner.execute(opc,tb)
+			//return
+						//TheKavaRunner.execute(opc,tb)
 			//println tb
 			//println ret.expr
 		}
@@ -114,6 +103,33 @@ int a=0;int i;for(i=0;i<90;i++){a++;if(a==9){break;}}''';
 		str  +=o.class.getSimpleName() + " ${r} ${v1} ${v2}\n"
 		}
 		return str
+	}
+	
+	static void executeOnVm(List opc){
+		def executor = new TheKavaExecutor()
+		try{
+			executor.execute(opc)
+			print executor.getVar('a')
+		}catch(Exception e){
+			println e.getMessage()
+			println opc2String(opc)
+			throw e
+		}
+	}
+	
+	static void executeOnJvm(name,visitor){
+		def former = new Register2Stack(name,visitor)
+
+		byte[] bs = former.toByteArray();
+
+		new File("output/${name}.class").withOutputStream {os->
+			os.write(bs)
+		}
+		def classLoader = new KavaClassLoader()
+		def cls = classLoader.defineClass(name,bs)
+		def result = cls.invokeMethod("run",null)
+		println " " + result
+	
 	}
 	
 }

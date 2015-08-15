@@ -17,6 +17,7 @@ import org.objectweb.asm.MethodVisitor;
 
 
 
+
 import static org.objectweb.asm.Opcodes.*;
 
 import org.objectweb.asm.Opcodes as Ops;
@@ -33,6 +34,7 @@ public class Register2Stack implements OpVisitor {
 	//private HashMap<Long,Label> labels = new HashMap();
 	
 	private curClsPre = "";
+	private VarObject aoffset;
 	private HashMap<Integer,Label> labs = new HashMap();
 	private HashMap<VarObject,String> varTypePre = new HashMap();
 	
@@ -100,6 +102,11 @@ public class Register2Stack implements OpVisitor {
 		md = cw.visitMethod(ACC_PUBLIC + ACC_STATIC /*+ ACC_ABSTRACT*/, "run", "()I", null, null);
 		md.visitCode();
 		transform()
+	}
+	
+	private Integer getArrayType(String type){
+		String t = type.toUpperCase()
+		return Ops."T_${t}";
 	}
 	
 	@Override
@@ -197,6 +204,15 @@ public class Register2Stack implements OpVisitor {
 			this._2Type(curClsPre,t)
 		}
 		md.visitVarInsn(Ops."${t}STORE",getVarId(v))
+	}
+	
+	private void _astore(){
+		
+	}
+	
+	private void _ldc(Integer v){
+		md.visitLdcInsn(v)
+		curClsPre = "I"
 	}
 	
 	private void _ldc(Constant v){
@@ -383,5 +399,48 @@ public class Register2Stack implements OpVisitor {
 	public void visitLDC(VarObject result, Constant v1) {
 		_ldc(v1)
 		_store result//,getTypePre(v1.className),getTypePre(result.className)
+	}
+	
+	@Override
+	public void visitANEW(VarObject result, Constant v1, Integer v2) {
+		String atype = v1.getValue().toString().toUpperCase()
+		Integer typeIdx = getArrayType(atype)
+		_ldc(v2)
+		md.visitIntInsn(NEWARRAY,typeIdx)
+		this.curClsPre = "A"
+		_store result
+	}
+
+	@Override
+	public void visitAGET(VarObject result, VarObject v1) {
+		_load v1
+		_load aoffset
+		String aT = this.getArrayBaseTypePre(v1)
+		md.visitInsn(Ops."${aT}ALOAD")
+		curClsPre = aT
+		_store result
+	}
+
+	private String getArrayBaseTypePre(VarObject v){
+		return getTypePre(v.className - '[]')
+	}
+	
+	@Override
+	public void visitAPUT(VarObject v1, VarObject v2) {
+		_load v1
+		_load aoffset
+		_load v2
+		String aT = this.getArrayBaseTypePre(v1)
+		String vT = this.getVarTypePre(v2)
+		if(!aT.equals(vT)){
+			this._2Type(vT,aT)
+		}
+		md.visitInsn(Ops."${aT}ASTORE")
+	}
+
+	@Override
+	public void visitAOFFSET(VarObject v1) {
+		//TODO maybe not int?
+		aoffset = v1
 	}
 }

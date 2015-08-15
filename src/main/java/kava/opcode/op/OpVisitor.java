@@ -21,4 +21,8 @@ public interface OpVisitor{
         public void visitIINC(kava.opcode.VarObject v1,Integer v2);
         public void visitICONST(kava.opcode.VarObject result,Integer v1);
         public void visitLDC(kava.opcode.VarObject result,kava.opcode.Constant v1);
+        public void visitANEW(kava.opcode.VarObject result,kava.opcode.Constant v1,Integer v2);
+        public void visitAOFFSET(kava.opcode.VarObject v1);
+        public void visitAGET(kava.opcode.VarObject result,kava.opcode.VarObject v1);
+        public void visitAPUT(kava.opcode.VarObject v1,kava.opcode.VarObject v2);
 }

@@ -122,6 +122,13 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExprNotOp(KavaParser.ExprNotOpContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code arrayAssign}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayAssign(KavaParser.ArrayAssignContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code exprLogicCmp}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree
@@ -129,19 +136,19 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExprLogicCmp(KavaParser.ExprLogicCmpContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exprMidOp}
-	 * labeled alternative in {@link KavaParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprMidOp(KavaParser.ExprMidOpContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code exprAssign}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitExprAssign(KavaParser.ExprAssignContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprMidOp}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprMidOp(KavaParser.ExprMidOpContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprSelfOp}
 	 * labeled alternative in {@link KavaParser#expression}.
@@ -163,6 +170,19 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExprSelfOpPre(KavaParser.ExprSelfOpPreContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprGetArrayElement}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprGetArrayElement(KavaParser.ExprGetArrayElementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#offset}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOffset(KavaParser.OffsetContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code primayParen}
 	 * labeled alternative in {@link KavaParser#primary}.

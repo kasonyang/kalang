@@ -12,6 +12,7 @@ public class TheKavaExecutor implements OpVisitor {
 	private HashMap<String,Object> vars = new HashMap();
 	
 	private opOffset = 0;
+	private aoffset = 0;
 	
 	public Object getVar(String key){
 		return vars.get(key);
@@ -169,6 +170,34 @@ public class TheKavaExecutor implements OpVisitor {
 	public void visitLDC(VarObject result, Constant v1) {
 		// TODO Auto-generated method stub
 		set(result,v1.getValue())
+	}
+
+	@Override
+	public void visitANEW(VarObject result, Constant v1, Integer v2) {
+		//TODO set type
+		def arr = []
+		arr[0] = v2
+		set(result,arr)
+	}
+
+	@Override
+	public void visitAGET(VarObject result, VarObject v1) {
+		def arr = get(v1)
+		def val = arr.getAt(aoffset+1)
+		set(result,val)
+		aoffset = 0;
+	}
+
+	@Override
+	public void visitAPUT(VarObject v1, VarObject v2) {
+		def arr = get(v1)
+		arr[aoffset+1] = get(v2)
+		aoffset = 0;
+	}
+
+	@Override
+	public void visitAOFFSET(VarObject v1) {
+		aoffset = get(v1)
 	}
 
 }

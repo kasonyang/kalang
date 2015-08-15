@@ -22,3 +22,7 @@ IINC ,v,i
 ICONST v,i
 LDC v,c
 //,FCONST,LCONST,DCONST
+ANEW v,c,i
+AOFFSET ,v
+AGET v,v
+APUT ,v,v

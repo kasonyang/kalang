@@ -1,1 +1,1 @@
-antlr Kava.g4 -visitor -package com.kasonyang.kava.antlr
+antlr Kava.g4 -visitor -package kava.antlr
