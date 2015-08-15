@@ -14,7 +14,7 @@ public class VarTable {
 	private HashMap<Integer,VarObject> vars = new HashMap(); //id => var
 	private HashMap<String,Integer> ids = new HashMap();//name -> id
 	private int tmpIdx = 0;
-	private int varIdx = 1;
+	private int varIdx = 0;
 	
 	/*
 	public List<VarObject> getVarObjects(){

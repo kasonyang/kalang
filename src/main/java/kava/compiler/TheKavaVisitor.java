@@ -52,37 +52,44 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		int type = Constant.NULL;
 		Integer varType = 0;
 		Object value = null;
+		String cls = "";
         int typeInt = tn.getSymbol().getType();
 		switch(typeInt){
 		case KavaParser.IntegerLiteral:
 			value=Integer.parseInt(valText);
 			type = Constant.INT;
 			varType = VarObject.INT;
+			cls = "int";
 			break;
 		case KavaParser.FloatingPointLiteral:
 			type = Constant.FLOAT;
 			value = Float.parseFloat(valText);
 			varType = VarObject.FLOAT;
+			cls = "float";
 			break;
 		case KavaParser.CharacterLiteral:
 			type = Constant.CHAR;
 			value = valText.charAt(1);
 			varType = VarObject.CHAR;
+			cls="char";
 			break;
 		case KavaParser.StringLiteral:
 			type = Constant.STRING;
 			varType = VarObject.STRING;
 			//TODO decode needed
 			value = valText;
+			cls = "String";
 			break;
 		case KavaParser.NullLiteral:
 			type = Constant.NULL;
 			value = null;
 			varType = VarObject.NULL;
+			cls = "null";
 			break;
 		}
 		Constant cst = new Constant(type);
 		cst.setValue(value);
+		cst.setClassName(cls);
 		Constant cstId = constTb.create(cst);
 		VarObject result = varTb.createTmp(varType);
 		ops.add(new LDC(result,cstId));
@@ -542,6 +549,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		default:type=VarObject.REFERENCE;break;
 		}
 		VarObject var = varTb.create(name,type);
+		var.className = stype;
 		if(ctx.expression()!=null){
 			VarObject eRet = visit(ctx.expression());
 			ops.add(new ASSIGN(var, eRet));

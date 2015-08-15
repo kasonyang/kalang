@@ -75,78 +75,7 @@ public class TheKavaExecutor implements OpVisitor {
 		set(result,get(v1)%get(v2));
 	}
 
-	@Override
-	public void visitI2F(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitI2L(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitI2D(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitL2I(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitL2F(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitL2D(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitF2D(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitF2I(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitF2L(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitD2I(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitD2L(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void visitD2F(VarObject result, VarObject v1) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 	@Override
 	public void visitCMP(VarObject result, VarObject v1, VarObject v2) {
 		// TODO Auto-generated method stub
@@ -168,12 +97,6 @@ public class TheKavaExecutor implements OpVisitor {
 	public void visitPARAM(VarObject result) {
 		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public void visitLCONST(VarObject result, Constant v1) {
-		// TODO Auto-generated method stub
-		set(result,v1.getValue())
 	}
 
 	@Override
