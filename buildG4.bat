@@ -1,0 +1,1 @@
+cd src/main/java/kava/antlr && build.bat

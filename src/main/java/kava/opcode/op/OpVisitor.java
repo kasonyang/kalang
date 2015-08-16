@@ -8,7 +8,6 @@ public interface OpVisitor{
         public void visitMOD(kava.opcode.VarObject result,kava.opcode.VarObject v1,kava.opcode.VarObject v2);
         public void visitCMP(kava.opcode.VarObject result,kava.opcode.VarObject v1,kava.opcode.VarObject v2);
         public void visitASSIGN(kava.opcode.VarObject result,kava.opcode.VarObject v1);
-        public void visitPARAM(kava.opcode.VarObject result);
         public void visitIFFALSE(kava.opcode.VarObject v1,Integer v2);
         public void visitIFTRUE(kava.opcode.VarObject v1,Integer v2);
         public void visitIFEQ(kava.opcode.VarObject v1,Integer v2);
@@ -17,6 +16,9 @@ public interface OpVisitor{
         public void visitIFGT(kava.opcode.VarObject v1,Integer v2);
         public void visitIFLE(kava.opcode.VarObject v1,Integer v2);
         public void visitIFGE(kava.opcode.VarObject v1,Integer v2);
+        public void visitLOGIC_NOT(kava.opcode.VarObject result,kava.opcode.VarObject v1);
+        public void visitLOGIC_AND(kava.opcode.VarObject result,kava.opcode.VarObject v1,kava.opcode.VarObject v2);
+        public void visitLOGIC_OR(kava.opcode.VarObject result,kava.opcode.VarObject v1,kava.opcode.VarObject v2);
         public void visitGOTO(Integer v1);
         public void visitIINC(kava.opcode.VarObject v1,Integer v2);
         public void visitICONST(kava.opcode.VarObject result,Integer v1);

@@ -95,12 +95,6 @@ public class TheKavaExecutor implements OpVisitor {
 	}
 
 	@Override
-	public void visitPARAM(VarObject result) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void visitIFFALSE(VarObject v1, Integer v2) {
 		// TODO Auto-generated method stub
 		if(!get(v1)) GOTO(v2)
@@ -198,6 +192,22 @@ public class TheKavaExecutor implements OpVisitor {
 	@Override
 	public void visitAOFFSET(VarObject v1) {
 		aoffset = get(v1)
+	}
+
+	@Override
+	public void visitLOGIC_NOT(VarObject result, VarObject v1) {
+		Object val = get(v1)
+		set(result,val?0:1)
+	}
+
+	@Override
+	public void visitLOGIC_AND(VarObject result, VarObject v1, VarObject v2) {
+		set(result,get(v1)&&get(v2))
+	}
+
+	@Override
+	public void visitLOGIC_OR(VarObject result, VarObject v1, VarObject v2) {
+		set(result,get(v1)||get(v2))
 	}
 
 }

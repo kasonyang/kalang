@@ -26,12 +26,7 @@ import org.objectweb.asm.Opcodes as Ops;
 public class Register2Stack implements OpVisitor {
 	
 	private List<Op> ops;
-	//private ConstTable ctb;
-	//private VarTable vtb;
-	//Integer v1,v2,r
-	//Op op;
 	private varIdx = []
-	//private HashMap<Long,Label> labels = new HashMap();
 	
 	private curClsPre = "";
 	private VarObject aoffset;
@@ -47,31 +42,6 @@ public class Register2Stack implements OpVisitor {
 		md.visitEnd();
 		cw.visitEnd();
 		return cw.toByteArray();
-	}
-	
-	private getLabel(Long position){
-		return labels.get(position)
-	}
-	
-	private initVarIdx(){
-		def vars = vtb.getVars()
-		def offset=0
-		for(v in vars){
-			//new VarObject();
-			varIdx[v.getId()] = offset
-			switch(v.getType()){
-				case VarObject.INT:
-				case VarObject.FLOAT:
-					offset++
-					break;
-				case VarObject.LONG:
-				case VarObject.DOUBLE:
-					offset+=2;
-					break;
-				default:
-					offset++;
-			}
-		}
 	}
 	
 	private void transform(){
@@ -111,8 +81,7 @@ public class Register2Stack implements OpVisitor {
 	
 	@Override
 	public void visitNOOP() {
-		// TODO Auto-generated method stub
-		
+		//nothing to do
 	}
 
 	private String getGreaterTypePre(VarObject v1,VarObject v2){
@@ -129,8 +98,6 @@ public class Register2Stack implements OpVisitor {
 	}
 	
 	private String getResultTypePre(String op,VarObject v1,VarObject v2){
-		//String v1 = var1.className
-		//String v2 = var2.className
 		switch(op){
 			case '+':
 			case '-':
@@ -317,7 +284,7 @@ public class Register2Stack implements OpVisitor {
 
 	@Override
 	public void visitPARAM(VarObject result) {
-		// TODO Auto-generated method stub
+		// TODO param insn umplemented
 		
 	}
 
@@ -442,5 +409,23 @@ public class Register2Stack implements OpVisitor {
 	public void visitAOFFSET(VarObject v1) {
 		//TODO maybe not int?
 		aoffset = v1
+	}
+
+	@Override
+	public void visitLOGIC_NOT(VarObject result, VarObject v1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitLOGIC_AND(VarObject result, VarObject v1, VarObject v2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitLOGIC_OR(VarObject result, VarObject v1, VarObject v2) {
+		// TODO Auto-generated method stub
+		
 	}
 }
