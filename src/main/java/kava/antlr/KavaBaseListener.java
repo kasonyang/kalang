@@ -305,6 +305,18 @@ public class KavaBaseListener implements KavaListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExprLogic(KavaParser.ExprLogicContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprLogic(KavaParser.ExprLogicContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprSelfOpPre(KavaParser.ExprSelfOpPreContext ctx) { }
 	/**
 	 * {@inheritDoc}

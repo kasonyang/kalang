@@ -186,6 +186,13 @@ public class KavaBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements K
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitExprLogic(KavaParser.ExprLogicContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitExprSelfOpPre(KavaParser.ExprSelfOpPreContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

@@ -265,6 +265,18 @@ public interface KavaListener extends ParseTreeListener {
 	 */
 	void exitExprInvocation(KavaParser.ExprInvocationContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code exprLogic}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprLogic(KavaParser.ExprLogicContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code exprLogic}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprLogic(KavaParser.ExprLogicContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code exprSelfOpPre}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree

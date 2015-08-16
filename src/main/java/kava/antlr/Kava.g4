@@ -81,7 +81,8 @@ expression
     //|   LPAREN type RPAREN expression
     |   expression (INC | DEC) #exprSelfOp
     |   (ADD|SUB|INC|DEC) expression #exprSelfOpPre
-    |   ('~'|'!') expression  #exprNotOp
+    //|   ('~'|'!') expression  #exprNotOp
+    |   '!' expression  #exprNotOp
     |   expression (MUL|DIV|MOD) expression #exprMidOp
     |   expression (ADD|SUB) expression #exprMidOp
    // |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression
@@ -92,10 +93,11 @@ expression
     |   expression BITAND expression #exprMidLogic3
     |   expression CARET expression
     |   expression BITOR expression
-    |   expression AND expression
-    |   expression OR expression
-    |   expression QUESTION expression ':' expression
-    */
+   */
+    |   expression (AND|OR) expression #exprLogic
+    //|   expression OR expression
+    //|   expression QUESTION expression ':' expression
+    
     |  expression offset #exprGetArrayElement
     |   <assoc=right> Identifier
          (  ASSIGN

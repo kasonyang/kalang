@@ -164,6 +164,13 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExprInvocation(KavaParser.ExprInvocationContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code exprLogic}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprLogic(KavaParser.ExprLogicContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code exprSelfOpPre}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree

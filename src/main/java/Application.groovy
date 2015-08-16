@@ -26,7 +26,10 @@ int a=0;do {a=a+1;}while(a<9);
 int a=0;for(int i=0;i<9;i++){a++;}
 int a=0;int i;for(i=0;i<9.0;i=i+1){a++;}
 int a=0;int i;for(i=0;i<90;i++){a++;if(a==9){break;}}
-int a=0;int[2] b;b[1]=9;a=b[1];''';
+int a=0;int[2] b;b[1]=9;a=b[1];
+int a=0;if(!a){a=9;}
+int a=0;if(5&&4){a=9;}
+int a=0;if(0||4){a=9;}''';
 		def lnIdx = 0;
 		def opsList = [];
 		def ip = new StringReader(input);
@@ -57,41 +60,8 @@ int a=0;int[2] b;b[1]=9;a=b[1];''';
 			print " "
 			this.executeOnVm(opc)
 			print " "
-			this.executeOnJvm(name,visitor)
+			//this.executeOnJvm(name,visitor)
 			println ''
-			return
-			//return
-			def opcOut = "";
-			def opIdx = 0;
-			//opcOut += "${visitor.getVarTable()}"
-			def getOpStr = { Op o->
-				def str = "";
-				def r = o.getParameter("result")
-				def v1 = o.getParameter("v1")
-				def v2 = o.getParameter("v2")
-				str = o.class.getSimpleName() + " ${r} ${v1} ${v2}"
-				return str 
-			}
-			for(o in opc){
-				opcOut += "${opIdx++} : ${getOpStr(o)}\n"
-			}
-			
-			opsList.add(opcOut)
-			
-			/*
-			 def lnIdx=0;
-			 for(o in opc){
-			 println "${lnIdx++} : ${o}"
-			 }
-			 */
-			
-			//return
-						//TheKavaRunner.execute(opc,tb)
-			//println tb
-			//println ret.expr
-		}
-		for(ops in opsList){
-			println ops
 		}
 	}
 	static String opc2String(opc){
