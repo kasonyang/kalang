@@ -25,7 +25,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  */
 public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implements KavaVisitor<VarObject> {
 
-	static final String INT = "int",LONG="long",FLOAT="float",DOUBLE="double",BOOLEAN="boolean",BYTE="byte",CHAR="char";
+	//static final String INT = "int",LONG="long",FLOAT="float",DOUBLE="double",BOOLEAN="boolean",BYTE="byte",CHAR="char";
 	
 	private ConstTable constTb = new ConstTable();
 	private VarTable varTb = new VarTable();
@@ -37,66 +37,41 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		return constTb;
 	}
 	
-	/*
-	private void assign(VarObject target,VarObject src){
-		VarObject tmp;
-		if(src.getType()!=target.getType()){
-			tmp = this.castVar(src, target.getType());
-		}else{
-			tmp = src;
-		}
-		ops.add(new ASSIGN(target,tmp));
-	}
-	*/
-
 	@Override
 	public VarObject visitLiteral(LiteralContext ctx) {
 		String valText = ctx.getText();
 		TerminalNode tn = (TerminalNode) ctx.children.get(0);
-		//int type = Constant.NULL;
-		Integer varType = 0;
 		Object value = null;
 		String cls = "";
         int typeInt = tn.getSymbol().getType();
 		switch(typeInt){
 		case KavaParser.IntegerLiteral:
 			value=Integer.parseInt(valText);
-			//type = Constant.INT;
-			//varType = VarObject.INT;
 			cls = "int";
 			break;
 		case KavaParser.FloatingPointLiteral:
-			//type = Constant.FLOAT;
 			value = Float.parseFloat(valText);
-			//varType = VarObject.FLOAT;
 			cls = "float";
 			break;
 		case KavaParser.CharacterLiteral:
-			//type = Constant.CHAR;
 			value = valText.charAt(1);
-			//varType = VarObject.CHAR;
 			cls="char";
 			break;
 		case KavaParser.StringLiteral:
-			//type = Constant.STRING;
-			//varType = VarObject.STRING;
-			//TODO decode needed
+			//TODO escape needed
 			value = valText;
 			cls = "String";
 			break;
 		case KavaParser.NullLiteral:
-			//type = Constant.NULL;
 			value = null;
-			//varType = VarObject.NULL;
 			cls = "null";
 			break;
 		}
-		Constant cst = new Constant();
+		Constant cst = constTb.createConst();
 		cst.setValue(value);
 		cst.setClassName(cls);
-		Constant cstId = constTb.create(cst);
 		VarObject result = varTb.createTmp();
-		ops.add(new LDC(result,cstId));
+		ops.add(new LDC(result,cst));
 		return result;
 	}
 	
@@ -112,44 +87,15 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	@Override
 	public VarObject visitExprPrimay(ExprPrimayContext ctx) {
 		return visit(ctx.primary());
-	}
-	/*
-	private String getTypePrefix(Integer type){
-		switch(type){
-		case VarObject.INT:return "I";
-		case VarObject.FLOAT:return "F";
-		case VarObject.LONG:return "L";
-		case VarObject.DOUBLE:return "D";
-		default:return null;
-		}
-	}
-	*/
-	/*
-	private OpType getCastOp(Integer type1,Integer type2){		
-		String name=getTypePrefix(type1) + "2" + getTypePrefix(type2);
-		return (OpType.valueOf(name.toUpperCase()));
-	}
-	*/
-	/*
-	private VarObject castVar(VarObject src,Integer destType){
-		VarObject o1 = varTb.createTmp(destType);
-		ops.add(new Op(this.getCastOp(src.getType(),destType),o1,src,null));
-		return o1;
-	}
-	*/
-	
+	}	
 	
 	private VarObject getCmpResult(VarObject v1,VarObject v2){
-		Integer retType;
-		//if(v2.getType()!=retType) v2 = this.castVar(v2, retType);
 		VarObject result = varTb.createTmp();
 		ops.add(new CMP(result,v1,v2));
 		return result;
 	}
 	
 	private VarObject getCalculateResult(String opStr,VarObject v1,VarObject v2){
-		//String vType= "";
-		Integer vType;
 		Op op;
 		VarObject ret = varTb.createTmp();
 		switch(opStr){
@@ -172,7 +118,6 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 				throw new CompilerException("无法识别的运算符！");
 		}
 		ops.add(op);
-		//ops.add(new Op(ot,ret,v1,v2));
 		return ret;
 	}
 	
@@ -183,8 +128,6 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		VarObject attr2 = this.visit(ctx.expression(1));
 		String opStr = ctx.getChild(1).getText();
 		VarObject ret = this.getCalculateResult(opStr, attr1,attr2);
-		//op(opStr,vo1,vo2,ret);
-		//at.setValue(ret);
 		return ret;
 	}
 	
@@ -206,79 +149,33 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	}
 	@Override
 	public VarObject visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
-		//arObject attr = new Attr();
 		String name = ctx.Identifier().getText();
-    	//int idInt;
     	VarObject vo;
     	if(varTb.contains(name)){
     		vo = varTb.get(name);
     	}else{
     		throw new CompilerException(name + " is undefined");
-    		//vo = varTb.create(name);
     	} 
-    	//attr.setValue(idInt);
     	return vo;
 	}
-
-	/*
-	@Override
-	public VarObject visitExpressions(ExpressionsContext ctx) {
-		if(ctx.expression() != null){
-			for(ExpressionContext e:ctx.expression()){
-				visit(e);
-			}
-		}
-		return new Attr();
-	}
-	*/
 
 	@Override
 	public VarObject visitGenericInvocation(GenericInvocationContext ctx) {
 		String invName = ctx.Identifier().getText();
 		VarObject at = visit(ctx.arguments());
-		//TODO repair
-		/*
-		int size = at.getValue();
-		Constant cst = new Constant(Constant.STRING);
-		cst.setValue(invName);
-		int cstId = this.constTb.create(cst);
-		int ret = varTb.create();
-		ops.add(new INVOKE,ret,cstId,size));
-		return new Attr(ret);
-		*/
+		//TODO invoke unimplemented
 		return null;
 	}
 
 	@Override
 	public VarObject visitArguments(ArgumentsContext ctx) {
-		//TODO
-		/*
-		VarObject attr = new Attr();
-		if(ctx.argumentList() != null){
-			VarObject at = visit(ctx.argumentList());
-			attr.setValue(at.getValue());
-		}else{
-			attr.setValue(0);
-		}
-		return attr;
-		*/
+		//TODO visitArguments implemented
 		return null;
 	}
 
 	@Override
 	public VarObject visitArgumentList(ArgumentListContext ctx) {
-		//TODO
-		/*
-		int paramCount = 0;
-		for(ExpressionContext e:ctx.expression()){
-			VarObject at = visit(e);
-			paramCount++;
-			ops.add(new PARAM,at.getValue(),null,null));
-		}
-		VarObject attr= new Attr();
-		attr.setValue(paramCount);
-		return attr;
-		*/
+		//TODO visitArgList umplemented
 		return null;
 	}
 
@@ -293,7 +190,6 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 			visit(ctx.statList());
 		}
 		ops.add(new NOOP());
-		//ops.add(new NOOP,null,null,null));
 		return null;
 	}
 
@@ -311,7 +207,6 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	public VarObject visitIfStat(IfStatContext ctx) {
 		VarObject at = visit(ctx.expression());
 		IFFALSE op = new IFFALSE(at,null);
-		//Op op = new IFFALSE,null,at,null);
 		ops.add(op);
 		visit(ctx.statList());
 		Integer goVal = (int) ops.size();
@@ -352,7 +247,6 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		Integer begin = (int) ops.size();
 		VarObject at = visit(ctx.expression());
 		IFFALSE opIfF = new IFFALSE(at,0);
-		//Op opIfF = new IFFALSE,null,at,null);
 		ops.add(opIfF);
 		visit(ctx.statList());
 		GOTO opGoto = new GOTO(begin);
@@ -377,7 +271,6 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		visit(ctx.statList());
 		VarObject at = visit(ctx.expression());
 		ops.add(new IFTRUE(at,begin));
-		//ops.add(new IFTRUE,null,at,begin));
 		Integer end = ops.size();
 		
 		setGoto(clist,begin);
@@ -438,7 +331,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	}
 	@Override
 	public VarObject visitExprNotOp(ExprNotOpContext ctx) {
-		// TODO Auto-generated method stub
+		// TODO visitExprNotOp umplemented
 		return null;
 	}
 	@Override
@@ -459,7 +352,6 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		case "-":
 			ops.add(new ICONST(tmpVar,0));
 			ops.add(new SUB(result,tmpVar,at));
-			//ops.add(new a)
 			break;
 		case "--":
 			ops.add(new IINC(at,-1));
@@ -493,21 +385,12 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		default:throw new RuntimeException("Wrong op");
 		}
 		VarObject result = varTb.createTmp();
-		//VarObject tmpVar = this.getCalculateResult("-", at,at2);
 		VarObject tmpVar;
-		//if(at.getType()==at2.getType() && at.getType()==VarObject.INT){
-		//	tmpVar = this.getCalculateResult("-", at, at2);
-		//}else{
-			tmpVar = this.getCmpResult(at, at2);
-		//}
-		//int tmpVar = varTb.createTmp();
-		//ops.add(new SUB",tmpVar,at,at2));
+		tmpVar = this.getCmpResult(at, at2);
 		IF opIFGoto = op;
-				//new Op(type,null,tmpVar,null);
 		op.v1 = tmpVar;
 		ops.add(opIFGoto);
 		ops.add(new ICONST(result,0));
-		//ops.add(new ICONST,result,0,null));
 		GOTO opGoto = new GOTO(null);
 		
 		ops.add(opGoto);
@@ -542,21 +425,8 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		Integer asize = 0;
 		boolean isArray = ctx.IntegerLiteral()!=null;
 		if(isArray){
-			//type = VarObject.REFERENCE;
+			
 			asize = Integer.parseInt(ctx.IntegerLiteral().getText());
-		}else{
-			/*
-			switch(stype){
-			case INT:type = VarObject.INT;break;
-			case FLOAT:type=VarObject.FLOAT;break;
-			case LONG:type=VarObject.LONG;break;
-			case DOUBLE:type=VarObject.DOUBLE;break;
-			case BOOLEAN:type=VarObject.BOOLEAN;break;
-			case BYTE:type = VarObject.BYTE;break;
-			case CHAR:type=VarObject.CHAR;break;
-			default:type=VarObject.REFERENCE;break;
-			}
-			*/
 		}
 		VarObject var = varTb.create(name);
 		var.className = stype;
