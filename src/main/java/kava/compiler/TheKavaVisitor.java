@@ -6,6 +6,7 @@ import java.util.List;
 import kava.antlr.*;
 import kava.antlr.KavaParser.ArrayAssignContext;
 import kava.antlr.KavaParser.ExprGetArrayElementContext;
+import kava.antlr.KavaParser.ExprLogicContext;
 import kava.antlr.KavaParser.OffsetContext;
 import kava.antlr.KavaParser.*;
 import kava.opcode.Constant;
@@ -21,7 +22,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  *
- * @author KasonYang
+ * @author KasonYang<im@kasonyang.com>
  */
 public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implements KavaVisitor<VarObject> {
 
@@ -331,8 +332,10 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	}
 	@Override
 	public VarObject visitExprNotOp(ExprNotOpContext ctx) {
-		// TODO visitExprNotOp umplemented
-		return null;
+		VarObject ve = visit(ctx.expression());
+		VarObject ret = varTb.createTmp();
+		ops.add(new LOGIC_NOT(ret,ve));
+		return ret;
 	}
 	@Override
 	public VarObject visitExprSelfOp(ExprSelfOpContext ctx) {
@@ -469,6 +472,19 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		VarObject arrVar = varTb.get(id);
 		visit(ctx.offset());
 		ops.add(new APUT(arrVar,e));
+		return ret;
+	}
+
+	@Override
+	public VarObject visitExprLogic(ExprLogicContext ctx) {
+		VarObject ve = visit(ctx.expression(0));
+		VarObject ve2 = visit(ctx.expression(1));
+		VarObject ret = varTb.createTmp();
+		if(ctx.AND()!=null){
+			ops.add(new LOGIC_AND(ret,ve,ve2));
+		}else if(ctx.OR()!=null){
+			ops.add(new LOGIC_OR(ret,ve,ve2));
+		}
 		return ret;
 	}
 }
