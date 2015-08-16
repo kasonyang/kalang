@@ -19,14 +19,9 @@ public class Optimizer {
 		this.list = list;
 	}
 	
-	void incRef(VarObject o,Op position){
-		
-	}
-	
 	void checkAndUpdateRef(Object o,Op pos,HashMap<VarObject,List<Op>> refs){
 		if(o==null) return;
 		if (o.getClass() == VarObject.class){
-			//this.incRef((VarObject) o,pos);
 			List<Op> list;
 			VarObject key = (VarObject) o;
 			if(refs.containsKey(key)){

@@ -10,10 +10,16 @@ public class ConstTable {
 	public Constant get(Integer key){
 		return tb.get(key);
 	}
-	public Constant create(Constant value){
-		Integer key = idx++;
-		tb.put(key, value);
-		//TODO 此处好像有点问题
-		return value;
+	public Constant createConst(Object value){
+		Constant cst = createConst();
+		cst.setValue(value);
+		return cst;
 	}
+	public Constant createConst(){
+		Integer key = idx++;
+		Constant cst = new Constant();
+		cst.setId(key);
+		return cst;
+	}
+	
 }

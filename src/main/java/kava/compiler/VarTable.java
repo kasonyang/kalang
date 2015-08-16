@@ -10,21 +10,10 @@ import kava.opcode.VarObject;
 
 public class VarTable {
 	
-	//private varNames = []
 	private HashMap<Integer,VarObject> vars = new HashMap(); //id => var
 	private HashMap<String,Integer> ids = new HashMap();//name -> id
 	private int tmpIdx = 0;
 	private int varIdx = 0;
-	
-	/*
-	public List<VarObject> getVarObjects(){
-		List list = new ArrayList()
-		for(en in vars.entrySet()){
-			list.add(en.value)
-		}
-		return list
-	}
-	*/
 	
 	public Collection<VarObject> getVars(){
 		return this.vars.values();
@@ -41,21 +30,15 @@ public class VarTable {
 		return ids.containsKey(name);
 	}
 	
-	/*
-	public VarObject create(String type){
-		return create(name,"");
-	}
-	*/
 	
-	public VarObject createTmp(/*Integer type*/){
-		return create("@"+(tmpIdx++)/*,type*/);
+	public VarObject createTmp(){
+		return create("@"+(tmpIdx++));
 	}
-	public VarObject create(String name/*,Integer type*/){
+	public VarObject create(String name){
 		VarObject vo = new VarObject();
 		Integer id = varIdx++;
 		vo.setId(id);
 		vo.setName(name);
-		//vo.setType(type);
 		vars.put(id,vo);
 		ids.put(name,id);
 		return vo;
