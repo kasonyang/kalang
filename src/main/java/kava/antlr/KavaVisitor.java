@@ -64,6 +64,30 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStart(KavaParser.StartContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KavaParser#compiliantUnit}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCompiliantUnit(KavaParser.CompiliantUnitContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#classBody}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassBody(KavaParser.ClassBodyContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#methodDeclList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMethodDeclList(KavaParser.MethodDeclListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#methodDecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMethodDecl(KavaParser.MethodDeclContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KavaParser#statList}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

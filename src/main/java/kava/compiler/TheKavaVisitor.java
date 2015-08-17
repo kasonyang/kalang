@@ -7,6 +7,8 @@ import java.util.List;
 import jdk.nashorn.internal.codegen.types.Type;
 import kava.antlr.*;
 import kava.antlr.KavaParser.ArrayAssignContext;
+import kava.antlr.KavaParser.ClassBodyContext;
+import kava.antlr.KavaParser.CompiliantUnitContext;
 import kava.antlr.KavaParser.DslChainStatContext;
 import kava.antlr.KavaParser.DslExpressionContext;
 //import kava.antlr.KavaParser.DslExpressionContext;
@@ -19,8 +21,11 @@ import kava.antlr.KavaParser.ExprGetArrayElementContext;
 import kava.antlr.KavaParser.ExprGetFieldContext;
 import kava.antlr.KavaParser.ExprLogicContext;
 import kava.antlr.KavaParser.ExpressionContext;
+import kava.antlr.KavaParser.MethodDeclContext;
+import kava.antlr.KavaParser.MethodDeclListContext;
 import kava.antlr.KavaParser.OffsetContext;
 import kava.antlr.KavaParser.*;
+import kava.opcode.Class;
 import kava.opcode.Constant;
 import kava.opcode.Op;
 import kava.opcode.VarObject;
@@ -47,6 +52,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	private ArrayList<Op> breakList = new ArrayList<Op>();
 	private HashMap<String,String> importedClassNames = new HashMap();
 	private int paramCount = 0;
+	private Class cls = new Class();
 	
 	public TheKavaVisitor(){
 		super();
@@ -249,10 +255,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 
 	@Override
 	public VarObject visitStart(StartContext ctx) {
-		if(ctx.dslStatList() != null){
-			visit(ctx.dslStatList());
-		}
-		ops.add(new NOOP());
+		visit(ctx.getChild(0));
 		return null;
 	}
 
@@ -658,5 +661,55 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		visit(ctx.expression());
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public VarObject visitCompiliantUnit(CompiliantUnitContext ctx) {
+		String clsName = ctx.Identifier(0).getText();
+		cls.setName(clsName);
+		cls.setMethods(new ArrayList());
+		cls.setFields(new ArrayList());
+		if(ctx.Identifier().size()>1){
+			cls.setParentType(ctx.Identifier(1).getText());
+		}
+		visit(ctx.classBody());
+		return null;
+	}
+
+	@Override
+	public VarObject visitClassBody(ClassBodyContext ctx) {
+		visit(ctx.methodDeclList());
+		return null;
+	}
+
+	@Override
+	public VarObject visitMethodDeclList(MethodDeclListContext ctx) {
+		if(ctx.methodDecl()!=null){
+			for(MethodDeclContext m:ctx.methodDecl()){
+				visit(m);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public VarObject visitMethodDecl(MethodDeclContext ctx) {
+		String retType = ctx.Identifier(0).getText();
+		String mName = ctx.Identifier(1).getText();
+		Method md = new Method();
+		md.setName(mName);
+		md.setReturnType(retType);
+		ops = new ArrayList();
+		//TODO visit arguments needed
+		paramCount = 0;
+		visit(ctx.statList());
+		ops.add(new NOOP());
+		md.setOpcodes(ops);
+		cls.getMethods().add(md);
+		return null;
+	}
+	
+	public Class getCompiledClass(){
+		return cls;
 	}
 }

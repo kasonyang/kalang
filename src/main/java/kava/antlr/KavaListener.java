@@ -97,6 +97,46 @@ public interface KavaListener extends ParseTreeListener {
 	 */
 	void exitStart(KavaParser.StartContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KavaParser#compiliantUnit}.
+	 * @param ctx the parse tree
+	 */
+	void enterCompiliantUnit(KavaParser.CompiliantUnitContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KavaParser#compiliantUnit}.
+	 * @param ctx the parse tree
+	 */
+	void exitCompiliantUnit(KavaParser.CompiliantUnitContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KavaParser#classBody}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassBody(KavaParser.ClassBodyContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KavaParser#classBody}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassBody(KavaParser.ClassBodyContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KavaParser#methodDeclList}.
+	 * @param ctx the parse tree
+	 */
+	void enterMethodDeclList(KavaParser.MethodDeclListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KavaParser#methodDeclList}.
+	 * @param ctx the parse tree
+	 */
+	void exitMethodDeclList(KavaParser.MethodDeclListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KavaParser#methodDecl}.
+	 * @param ctx the parse tree
+	 */
+	void enterMethodDecl(KavaParser.MethodDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KavaParser#methodDecl}.
+	 * @param ctx the parse tree
+	 */
+	void exitMethodDecl(KavaParser.MethodDeclContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KavaParser#statList}.
 	 * @param ctx the parse tree
 	 */

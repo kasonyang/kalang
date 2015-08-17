@@ -4,6 +4,7 @@ import kava.compiler.TheKavaVisitor;
 import kava.compiler4j.Register2Stack
 
 import kava.opcode.Op
+import kava.opcode.Class
 import kava.vm.TheKavaExecutor
 
 import org.antlr.v4.runtime.ANTLRInputStream
@@ -11,7 +12,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 
 class Application {
 	static void main(args) {
-		def input = '''m:System.out.println("hehe");''';
+		def input = '''class kava { T run(){int a=0;System.out.println(1);}}''';
 		def lnIdx = 0;
 		def opsList = [];
 		def ip = new StringReader(input);
@@ -28,25 +29,40 @@ class Application {
 			def visitor = new TheKavaVisitor();
 			def ret = visitor.visit(tree);
 			def tb = visitor.getVarTable();
-			for(t in tb){
-			}
-			//println tb
-			def opc = visitor.getOpcodes();
-			def opcStrBeforeOptim = opc2String(opc);
-			def optimizer = new Optimizer(opc);
-			opc = optimizer.optimize();
-			new File("output/${name}.kc").withWriter{w->
-				w.write(opc2String(opc) + "\n${opcStrBeforeOptim}")
-			}
+			def cmpClass = visitor.getCompiledClass();
+			//def opc = visitor.getOpcodes();
+			String ccode =  class2String(cmpClass)
+			print ccode
+			//return
+			//def opcStrBeforeOptim = opc2String(opc);
+			//def optimizer = new Optimizer(opc);
+			//opc = optimizer.optimize();
+			//new File("output/${name}.kc").withWriter{w->
+			//	w.write(opc2String(opc) + "\n${opcStrBeforeOptim}")
+			//}
 			print name
 			print " "
-			this.executeOnVm(opc)
+			//this.executeOnVm(opc)
 			print " "
-			//this.executeOnJvm(name,visitor)
+			this.executeOnJvm(name,visitor)
 			println ''
 			
-			printOpc(opc)
+			//printOpc(opc)
 		}
+	}
+	static String class2String(Class cls){
+		def str = "${cls.getName()}:";
+		def align = "  "
+		for(m in cls.methods){
+			def rT = m.returnType
+			def name = m.name
+			str += "${align}${rT} ${name}:"
+			for(o in m.opcodes){
+				def opStr = opc2String(o)
+				str += opStr
+			}
+		}
+		return str
 	}
 	static String opc2String(opc){
 		def str = "";

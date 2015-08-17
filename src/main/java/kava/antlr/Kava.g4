@@ -16,8 +16,24 @@ dslParam:
 ;
 
 start:
-    dslStatList
+    compiliantUnit
 ;
+
+compiliantUnit:
+'class' Identifier ('extends' Identifier)? '{' classBody '}'
+;
+
+classBody:
+//    fieldDeclList?
+    methodDeclList
+;
+methodDeclList:
+methodDecl*
+;
+methodDecl:
+    Identifier Identifier  arguments '{' statList '}'
+;
+
 statList:
     stat*
 ;
