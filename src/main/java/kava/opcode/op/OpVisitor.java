@@ -27,4 +27,12 @@ public interface OpVisitor{
         public void visitAOFFSET(kava.opcode.VarObject v1);
         public void visitAGET(kava.opcode.VarObject result,kava.opcode.VarObject v1);
         public void visitAPUT(kava.opcode.VarObject v1,kava.opcode.VarObject v2);
+        public void visitNEW(kava.opcode.VarObject result,kava.opcode.Constant v1);
+        public void visitINVOKE_VIRTUAL(kava.opcode.VarObject result,kava.opcode.Constant v1,Integer v2);
+        public void visitINVOKE_SPECIAL(kava.opcode.VarObject result,kava.opcode.Constant v1,Integer v2);
+        public void visitINVOKE_STATIC(kava.opcode.VarObject result,kava.opcode.Constant v1,Integer v2);
+        public void visitINVOKE_DYNAMIC(kava.opcode.VarObject result,kava.opcode.Constant v1,Integer v2);
+        public void visitPARAM(kava.opcode.VarObject v1);
+        public void visitGET_STATIC(kava.opcode.VarObject result,kava.opcode.Constant v1);
+        public void visitGET_FIELD(kava.opcode.VarObject result,kava.opcode.VarObject v1,kava.opcode.Constant v2);
 }

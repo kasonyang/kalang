@@ -1,12 +1,24 @@
 package kava.compiler;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
+import jdk.nashorn.internal.codegen.types.Type;
 import kava.antlr.*;
 import kava.antlr.KavaParser.ArrayAssignContext;
+import kava.antlr.KavaParser.DslChainStatContext;
+import kava.antlr.KavaParser.DslExpressionContext;
+//import kava.antlr.KavaParser.DslExpressionContext;
+import kava.antlr.KavaParser.DslParamContext;
+import kava.antlr.KavaParser.DslStatContext;
+import kava.antlr.KavaParser.DslStatListContext;
+import kava.antlr.KavaParser.DslVarDeclContext;
+import kava.antlr.KavaParser.DslVarNewContext;
 import kava.antlr.KavaParser.ExprGetArrayElementContext;
+import kava.antlr.KavaParser.ExprGetFieldContext;
 import kava.antlr.KavaParser.ExprLogicContext;
+import kava.antlr.KavaParser.ExpressionContext;
 import kava.antlr.KavaParser.OffsetContext;
 import kava.antlr.KavaParser.*;
 import kava.opcode.Constant;
@@ -33,6 +45,26 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	private ArrayList<Op> ops = new ArrayList();
 	private ArrayList<Op> continueList = new ArrayList<Op>();
 	private ArrayList<Op> breakList = new ArrayList<Op>();
+	private HashMap<String,String> importedClassNames = new HashMap();
+	private int paramCount = 0;
+	
+	public TheKavaVisitor(){
+		super();
+		//TODO init imported classes
+		this.importedClassNames.put("System", "java/lang/System");
+	}
+	
+	private boolean isClass(String name){
+		return this.importedClassNames.containsKey(name);
+	}
+	
+	private boolean isVar(String name){
+		return varTb.contains(name);
+	}
+
+	private String getFullClassName(String id){
+		return this.importedClassNames.get(id);
+	}
 	
 	public ConstTable getConstTable(){
 		return constTb;
@@ -151,11 +183,11 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	@Override
 	public VarObject visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
 		String name = ctx.Identifier().getText();
-    	VarObject vo;
+    	VarObject vo = null;
     	if(varTb.contains(name)){
     		vo = varTb.get(name);
     	}else{
-    		throw new CompilerException(name + " is undefined");
+    		//throw new CompilerException(name + " is undefined");
     	} 
     	return vo;
 	}
@@ -170,25 +202,55 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 
 	@Override
 	public VarObject visitArguments(ArgumentsContext ctx) {
-		//TODO visitArguments implemented
+		if(ctx.argumentList()!=null){
+			this.visitArgumentList(ctx.argumentList());
+		}
 		return null;
 	}
 
 	@Override
 	public VarObject visitArgumentList(ArgumentListContext ctx) {
-		//TODO visitArgList umplemented
+		ArrayList<VarObject> list = new ArrayList();
+		for(ExpressionContext e:ctx.expression()){
+			VarObject v = visit(e);
+			list.add(v);
+		}
+		for(VarObject i:list){
+			addParam(i);
+		}
 		return null;
 	}
 
+	
 	@Override
 	public VarObject visitExprInvocation(ExprInvocationContext ctx) {
-		return visit(ctx.genericInvocation());
+		int preParamCount = paramCount;
+		paramCount = 0;
+		String eText = ctx.expression().getText();
+		String invName = ctx.Identifier().getText();
+		VarObject ret = varTb.createTmp();
+		if(this.isClass(eText)){
+			String className = this.getFullClassName(eText);
+			String methodName = this.getClassAttribute(className, invName);
+			visit(ctx.arguments());
+			Constant m = constTb.createConst(methodName);
+			ops.add(new INVOKE_STATIC(ret,m,paramCount));
+		}else{
+			VarObject var = visit(ctx.expression());
+			//String methodName = this.getClassAttribute(invName);
+			addParam(var);
+			Constant m = constTb.createConst(invName);
+			visit(ctx.arguments());
+			ops.add(new INVOKE_DYNAMIC(ret,m,paramCount));
+		}
+		paramCount = preParamCount;
+		return ret;
 	}
 
 	@Override
 	public VarObject visitStart(StartContext ctx) {
-		if(ctx.statList() != null){
-			visit(ctx.statList());
+		if(ctx.dslStatList() != null){
+			visit(ctx.dslStatList());
 		}
 		ops.add(new NOOP());
 		return null;
@@ -486,5 +548,115 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 			ops.add(new LOGIC_OR(ret,ve,ve2));
 		}
 		return ret;
+	}
+
+	@Override
+	public VarObject visitDslStatList(DslStatListContext ctx) {
+		if(ctx.dslStat()!=null){
+			for(DslStatContext s:ctx.dslStat()){
+				visit(s);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public VarObject visitDslStat(DslStatContext ctx) {
+		VarObject v = visit(ctx.dslExpr());
+		//TODO create object
+		//VarObject id = visit(ctx.Identifier())
+		return null;
+	}
+
+	@Override
+	public VarObject visitDslVarDecl(DslVarDeclContext ctx) {
+		VarObject ret = new VarObject();
+		//TODO ret.className = ctx.getText();
+		return ret;
+	}
+
+	@Override
+	public VarObject visitDslVarNew(DslVarNewContext ctx) {
+		VarObject ret = new VarObject();
+		//TODO create var
+		return null;
+	}
+
+
+	private void addParam(VarObject v){
+		ops.add(new PARAM(v));
+		paramCount++;
+	}
+	
+	@Override
+	public VarObject visitDslChainStat(DslChainStatContext ctx) {
+		List<TerminalNode> ids = ctx.Identifier();
+		Iterator<TerminalNode> iter = ids.iterator();
+		Iterator<DslParamContext> piter = ctx.dslParam().iterator();
+		VarObject obj = null;
+		while(iter.hasNext()){
+			int preParamCount = paramCount;
+			paramCount = 0;
+			Constant methodCst = constTb.createConst(iter.next().toString());
+			DslParamContext param = piter.next();
+			if(obj==null){
+				obj = varTb.createTmp();
+				ops.add(new NEW(obj,methodCst));
+				addParam(obj);
+				visit(param);
+				//Constant init = constTb.createConst("<init>");
+				//ops.add(new INVOKE_SPECIAL(varTb.createTmp(),init,paramCount));
+			}else{
+				addParam(obj);
+				visit(param);
+				ops.add(new INVOKE_VIRTUAL(varTb.createTmp(),methodCst,paramCount));
+			}
+			paramCount = preParamCount;
+		}
+		int prePCount = paramCount;
+		VarObject ret = varTb.createTmp();
+		addParam(obj);
+		//TODO repare end method
+		ops.add(new INVOKE_VIRTUAL(ret,constTb.createConst("end"),paramCount));
+		paramCount = prePCount;
+		return ret;
+	}
+
+	@Override
+	public VarObject visitDslParam(DslParamContext ctx) {
+		for(ExpressionContext e:ctx.expression()){
+			VarObject ev = visit(e);
+			addParam(ev);
+		}
+		return null;
+	}
+	
+	private String getClassAttribute(String fullClsName,String attrName){
+		return fullClsName + "." + attrName;
+	}
+	
+	@Override
+	public VarObject visitExprGetField(ExprGetFieldContext ctx) {
+		String eText = ctx.expression().getText();
+		String fieldName = ctx.Identifier().getText();
+		VarObject ret = varTb.createTmp();
+		if(isClass(eText)){
+			String cName = this.getFullClassName(eText);
+			Constant m = constTb.createConst(this.getClassAttribute(cName, fieldName));
+			ops.add(new GET_STATIC(ret,m));
+		}else if(isVar(eText)){
+			VarObject instance = varTb.get(eText);
+			String fName = this.getClassAttribute(instance.className,fieldName);
+			Constant f = constTb.createConst(fName);
+			ops.add(new GET_FIELD(ret,instance,f));
+		}
+		return ret;
+	}
+
+	@Override
+	public VarObject visitDslExpression(DslExpressionContext ctx) {
+		visit(ctx.expression());
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

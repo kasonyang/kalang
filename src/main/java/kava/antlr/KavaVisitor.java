@@ -12,6 +12,52 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	/**
+	 * Visit a parse tree produced by {@link KavaParser#dslStatList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDslStatList(KavaParser.DslStatListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#dslStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDslStat(KavaParser.DslStatContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code dslVarDecl}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDslVarDecl(KavaParser.DslVarDeclContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code dslVarNew}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDslVarNew(KavaParser.DslVarNewContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code dslExpression}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDslExpression(KavaParser.DslExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code dslChainStat}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDslChainStat(KavaParser.DslChainStatContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#dslParam}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDslParam(KavaParser.DslParamContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KavaParser#start}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -121,6 +167,13 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExprNotOp(KavaParser.ExprNotOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprGetField}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprGetField(KavaParser.ExprGetFieldContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code arrayAssign}
 	 * labeled alternative in {@link KavaParser#expression}.

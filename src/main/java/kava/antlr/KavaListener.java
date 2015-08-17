@@ -9,6 +9,84 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface KavaListener extends ParseTreeListener {
 	/**
+	 * Enter a parse tree produced by {@link KavaParser#dslStatList}.
+	 * @param ctx the parse tree
+	 */
+	void enterDslStatList(KavaParser.DslStatListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KavaParser#dslStatList}.
+	 * @param ctx the parse tree
+	 */
+	void exitDslStatList(KavaParser.DslStatListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KavaParser#dslStat}.
+	 * @param ctx the parse tree
+	 */
+	void enterDslStat(KavaParser.DslStatContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KavaParser#dslStat}.
+	 * @param ctx the parse tree
+	 */
+	void exitDslStat(KavaParser.DslStatContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code dslVarDecl}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 */
+	void enterDslVarDecl(KavaParser.DslVarDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code dslVarDecl}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 */
+	void exitDslVarDecl(KavaParser.DslVarDeclContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code dslVarNew}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 */
+	void enterDslVarNew(KavaParser.DslVarNewContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code dslVarNew}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 */
+	void exitDslVarNew(KavaParser.DslVarNewContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code dslExpression}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 */
+	void enterDslExpression(KavaParser.DslExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code dslExpression}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 */
+	void exitDslExpression(KavaParser.DslExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code dslChainStat}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 */
+	void enterDslChainStat(KavaParser.DslChainStatContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code dslChainStat}
+	 * labeled alternative in {@link KavaParser#dslExpr}.
+	 * @param ctx the parse tree
+	 */
+	void exitDslChainStat(KavaParser.DslChainStatContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KavaParser#dslParam}.
+	 * @param ctx the parse tree
+	 */
+	void enterDslParam(KavaParser.DslParamContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KavaParser#dslParam}.
+	 * @param ctx the parse tree
+	 */
+	void exitDslParam(KavaParser.DslParamContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KavaParser#start}.
 	 * @param ctx the parse tree
 	 */
@@ -192,6 +270,18 @@ public interface KavaListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExprNotOp(KavaParser.ExprNotOpContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code exprGetField}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprGetField(KavaParser.ExprGetFieldContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code exprGetField}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprGetField(KavaParser.ExprGetFieldContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code arrayAssign}
 	 * labeled alternative in {@link KavaParser#expression}.

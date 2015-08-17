@@ -14,6 +14,8 @@ public class TheKavaExecutor implements OpVisitor {
 	private opOffset = 0;
 	private aoffset = 0;
 	
+	private Stack<Object> params = new Stack();
+	
 	public Object getVar(String key){
 		return vars.get(key);
 	}
@@ -208,6 +210,71 @@ public class TheKavaExecutor implements OpVisitor {
 	@Override
 	public void visitLOGIC_OR(VarObject result, VarObject v1, VarObject v2) {
 		set(result,get(v1)||get(v2))
+	}
+
+	@Override
+	public void visitNEW(VarObject result, Constant v1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitINVOKE_VIRTUAL(VarObject result, Constant v1, Integer v2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitINVOKE_SPECIAL(VarObject result, Constant v1, Integer v2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitINVOKE_STATIC(VarObject result, Constant v1, Integer v2) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void visitINVOKE_DYNAMIC(VarObject result, Constant v1, Integer v2) {
+		Integer pc = v2
+		String methodName = v1.getValue()
+		def ps = new Stack()
+		for(int i=0;i<pc;i++){
+			ps.push(params.pop());
+		}
+		def instance = ps.pop();
+		def psize = ps.size();
+		def psArr = []
+		for(Integer j=0;j<psize;j++){
+			psArr.add(ps.pop())
+		}
+		def md = instance.&"${methodName}"
+		md.call(psArr.toArray())
+	}
+
+	@Override
+	public void visitPARAM(VarObject v1) {
+		params.push(get(v1))
+	}
+
+	private String getClassName(String interalName){
+		return interalName.replace("/",".")
+	}
+	
+	@Override
+	public void visitGET_STATIC(VarObject result, Constant v1) {
+		def fields = v1.getValue().toString().split("\\.")
+		String cls = getClassName(fields[0])
+		String f = fields[1]
+		set(result,Class.forName(cls)."${f}")
+	}
+
+	@Override
+	public void visitGET_FIELD(VarObject result, VarObject v1, Constant v2) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

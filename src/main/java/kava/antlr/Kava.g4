@@ -1,7 +1,22 @@
 grammar Kava;
 
+dslStatList:dslStat*;
+
+dslStat:
+    Identifier ':' dslExpr ';'
+;
+dslExpr:
+ 'as' Identifier    #dslVarDecl
+ |'new' Identifier  #dslVarNew
+ | expression      #dslExpression
+ |(Identifier dslParam)+ #dslChainStat
+;
+dslParam:
+    expression (',' expression)*
+;
+
 start:
-    statList
+    dslStatList
 ;
 statList:
     stat*
@@ -69,12 +84,12 @@ expression ';'
 
 expression
     :   primary #exprPrimay
-    //|   expression DOT Identifier #exprInvoke
+    |   expression DOT Identifier #exprGetField
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
     //|   expression DOT explicitGenericInvocation
-    |genericInvocation  #exprInvocation
+    |     expression '.' Identifier arguments  #exprInvocation
     //|   expression LBRACK expression RBRACK
     //|   expression '(' expressionList? ')'
     //|   NEW creator

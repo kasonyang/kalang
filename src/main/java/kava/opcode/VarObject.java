@@ -5,6 +5,7 @@ public class VarObject {
 	Integer id;
 	public String className;
 	String name;
+	public boolean callable = false;
 	public void setName(String name){
 		this.name = name;
 	}
