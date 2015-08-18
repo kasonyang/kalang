@@ -1,6 +1,6 @@
 package kava.opcode
 
-class Method {
+class MethodObject {
 	String name
 	List<Op> opcodes
 	String returnType

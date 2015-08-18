@@ -11,8 +11,7 @@ import kava.opcode.Constant;
 import kava.opcode.Op
 import kava.opcode.VarObject;
 import kava.opcode.op.OpVisitor
-import kava.opcode.Class as KC
-
+import kava.opcode.ClassObject
 
 
 import org.objectweb.asm.ClassWriter;
@@ -34,28 +33,17 @@ public class Register2Stack implements OpVisitor {
 	
 	private List<Op> ops;
 	private varIdx = []
-	private Stack<VarObject> types = new Stack();
-	
-	private curClsPre = "";
-	private curCls = "";
 	private VarObject aoffset;
 	private HashMap<Integer,Label> labs = new HashMap();
-	private HashMap<VarObject,String> varTypePre = new HashMap();
 	private ArrayList<VarObject> params = new ArrayList();
 	private HashMap<VarObject,String> varType = new HashMap();
 	
+	ClassObject cls;
+	
 	MethodVisitor md;
 	ClassWriter cw;
-	public byte[] toByteArray(){
-		md.visitIntInsn(ILOAD,0);
-		md.visitInsn(IRETURN);
-		md.visitMaxs(0,0);
-		md.visitEnd();
-		cw.visitEnd();
-		return cw.toByteArray();
-	}
 	
-	private void transform(){
+	private void transform(List<Op> ops){
 		int size = ops.size();
 		for(Integer i=0;i<size;i++){
 			labs.put i,new Label()
@@ -76,6 +64,28 @@ public class Register2Stack implements OpVisitor {
 		}
 	}
 	
+	public Register2Stack(ClassObject cls){
+		this.cls = cls
+	}
+	
+	public byte[] compile(){
+		String name = cls.getName();
+		def cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		cw.visit(V1_5, ACC_PUBLIC, name, null, "java/lang/Object", (String[])[].toArray());
+		def mds = cls.getMethods()
+		for(m in mds){
+			def mdesc = JavaType.getMethodDescriptor(m.getReturnType(),m.getParamTypes())
+			md = cw.visitMethod(ACC_PUBLIC + ACC_STATIC ,m.getName(), mdesc, null, null);
+			md.visitCode();
+			transform(m.getOpcodes())
+			md.visitMaxs(0,0)
+			md.visitEnd();
+			md = null;
+		}
+		cw.visitEnd();
+		return cw.toByteArray();
+	}
+	
 	public Register2Stack(String name,TheKavaVisitor kv){
 		this.ops = kv.getCompiledClass().getMethods()[0].getOpcodes();
 		cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -88,22 +98,6 @@ public class Register2Stack implements OpVisitor {
 	private Integer getArrayType(String type){
 		String t = type.toUpperCase()
 		return Ops."T_${t}";
-	}
-	
-	private pushType(String t){
-		this.curCls = t
-		this.curClsPre = this.getTypePre(t)
-		types.push(t)
-	}
-	
-	private popType(){
-		def v = types.pop()
-		this.curCls = types.size()>0?types.peek():null
-	}
-	private popType(int count){
-		for(int i=0;i<count;i++){
-			popType()
-		}
 	}
 	
 	@Override
@@ -158,13 +152,14 @@ public class Register2Stack implements OpVisitor {
 	}
 	
 	private Integer getVarId(VarObject v){
+		//TODO 待优化
 		return v.getId()*2;
 	}
 	
 	private void _load(VarObject v){
 		String t = getVarTypePre(v)
 		md.visitVarInsn(Ops."${t}LOAD",getVarId(v))
-		this.pushType(getVarType(v))
+
 	}
 	
 	private void _load(VarObject v,String targetTypePre){
@@ -178,11 +173,10 @@ public class Register2Stack implements OpVisitor {
 	/**
 	 * 
 	 */
-	private void _cmp(){
+	private void _cmp(String typePre){
 		//TODO int的cmp有点瑕疵
-		String t = this.curClsPre;
 		String op = "";
-		switch(t){
+		switch(typePre){
 			case 'F':op = "FCMPL";break;
 			case 'D':op = "DCMPL";break;
 			case 'I':op = "ISUB";break;
@@ -190,40 +184,39 @@ public class Register2Stack implements OpVisitor {
 			default:throw new CompilerException("Unable to cmp");
 		}
 		md.visitInsn(Ops."${op}")
-		popType(2)
-		pushType("int")
+
+
 	}
+	
 	private void _store(VarObject v){
-		this.setVarTypeIfNoType(v,this.curCls)
+		String cls = getVarType(v)
+		_store v,cls
+	}
+	
+	private void _store(VarObject v,String fromCls){
+		this.setVarTypeIfNoType(v,fromCls)
+		String fromClsPre = this.getTypePre(fromCls)
 		String t = getVarTypePre(v)
-		if(!t.equals(this.curClsPre)){
-			this._2Type(curClsPre,t)
+		if(!t.equals(fromClsPre)){
+			this._2Type(fromClsPre,t)
 		}
 		md.visitVarInsn(Ops."${t}STORE",getVarId(v))
-		this.popType();
+
 	}
 	
 	private void _ldc(Integer v){
 		md.visitLdcInsn(v)
-		this.pushType("int")
+
 	}
 	
 	private void _ldc(Constant v){
 		md.visitLdcInsn(v.getValue())
-		pushType(v.className)
+
 	}
 	
 	private String getVarTypePre(VarObject v){
-		String t = this.varTypePre[v]
-		if(t==null){
-			if(v.className==null){
-				t = this.curClsPre;
-			}else{
-				t = getTypePre(v.className)
-			}
-			varTypePre.put(v,t)
-		}
-		return t
+		String type =this.getVarType(v)
+		return this.getTypePre(type)
 	}
 	
 	private String getTypeByPre(String pre){
@@ -233,8 +226,8 @@ public class Register2Stack implements OpVisitor {
 	
 	private void _2Type(String fromTypePre,String toTypePre){
 		md.visitInsn(Ops."${fromTypePre}2${toTypePre}")
-		popType()
-		this.pushType(getTypeByPre(toTypePre))
+
+
 	}
 	
 	
@@ -249,8 +242,8 @@ public class Register2Stack implements OpVisitor {
 		Map opMap = ['+':'ADD','-':'SUB','*':'MUL','/':'DIV','%':'REM']
 		String opStr = opMap[op]
 		md.visitInsn(Ops."${t}${opStr}")
-		popType(2)
-		pushType(getTypeByPre(typePre))
+
+
 	}
 	
 	private void calculate(String op,VarObject result,VarObject v1,VarObject v2){
@@ -266,7 +259,7 @@ public class Register2Stack implements OpVisitor {
 			_2Type(t2,typePre)
 		}
 		_math(op,typePre)
-		_store(result)
+		_store(result,this.getTypeByPre(typePre))
 	}
 	
 	@Override
@@ -300,8 +293,8 @@ public class Register2Stack implements OpVisitor {
 		String gt = this.getGreaterTypePre(v1,v2)
 		this._load(v1,gt)
 		this._load(v2,gt)
-		this._cmp()
-		_store result
+		this._cmp(gt)
+		_store result,this.getTypeByPre(gt)
 	}
 
 	private boolean isNumber(String className){
@@ -320,7 +313,7 @@ public class Register2Stack implements OpVisitor {
 	public void visitASSIGN(VarObject result, VarObject v1) {
 		_load v1
 		this.assignTypeIfNoType(result,v1)
-		_store(result)
+		_store(result,getVarType(v1))
 	}
 
 	@Override
@@ -333,28 +326,28 @@ public class Register2Stack implements OpVisitor {
 		//TODO maybe not int
 		_load v1
 		md.visitJumpInsn(Ops.IFEQ,labs[v2])
-		popType()
+
 	}
 
 	@Override
 	public void visitIFTRUE(VarObject v1, Integer v2) {
 		_load v1
 		md.visitJumpInsn(Ops.IFNE,labs[v2])
-		popType()
+
 	}
 
 	@Override
 	public void visitIFEQ(VarObject v1, Integer v2) {
 		_load v1
 		md.visitJumpInsn(Ops.IFEQ,labs[v2])
-		popType()
+
 	}
 
 	@Override
 	public void visitIFNE(VarObject v1, Integer v2) {
 		_load v1
 		md.visitJumpInsn(Ops.IFNE,labs[v2])
-		popType()
+
 	}
 
 	@Override
@@ -362,28 +355,28 @@ public class Register2Stack implements OpVisitor {
 		// TODO Auto-generated method stub
 		_load v1
 		md.visitJumpInsn(Ops.IFLT,labs[v2])
-		popType()
+
 	}
 
 	@Override
 	public void visitIFGT(VarObject v1, Integer v2) {
 		_load v1
 		md.visitJumpInsn(Ops.IFGT,labs[v2])
-		popType()
+
 	}
 
 	@Override
 	public void visitIFLE(VarObject v1, Integer v2) {
 		_load v1
 		md.visitJumpInsn(Ops.IFLE,labs[v2])
-		popType()
+
 	}
 
 	@Override
 	public void visitIFGE(VarObject v1, Integer v2) {
 		_load v1
 		md.visitJumpInsn(Ops.IFGE,labs[v2])
-		popType()
+
 	}
 
 	@Override
@@ -399,14 +392,14 @@ public class Register2Stack implements OpVisitor {
 	@Override
 	public void visitICONST(VarObject result, Integer v1) {
 		md.visitInsn(Ops."ICONST_${v1}");
-		pushType('int')
-		_store(result)
+
+		_store(result,'int')
 	}
 
 	@Override
 	public void visitLDC(VarObject result, Constant v1) {
 		_ldc(v1)
-		_store result//,getTypePre(v1.className),getTypePre(result.className)
+		_store result,v1.className//,getTypePre(v1.className),getTypePre(result.className)
 	}
 	
 	@Override
@@ -415,9 +408,7 @@ public class Register2Stack implements OpVisitor {
 		Integer typeIdx = getArrayType(atype)
 		_ldc(v2)
 		md.visitIntInsn(NEWARRAY,typeIdx)
-		popType()
-		pushType('Object[]')
-		_store result
+		_store result,'Array'
 	}
 
 	@Override
@@ -427,9 +418,9 @@ public class Register2Stack implements OpVisitor {
 		String aType = this.getArrayBaseType(v1)
 		String aT= this.getTypePre(aType)
 		md.visitInsn(Ops."${aT}ALOAD")
-		popType(2)
-		pushType(aType)
-		_store result
+
+
+		_store result,aType
 	}
 
 	private String getArrayBaseType(VarObject v){
@@ -451,12 +442,11 @@ public class Register2Stack implements OpVisitor {
 			this._2Type(vT,aT)
 		}
 		md.visitInsn(Ops."${aT}ASTORE")
-		popType(3)
+
 	}
 
 	@Override
 	public void visitAOFFSET(VarObject v1) {
-		//TODO maybe not int?
 		aoffset = v1
 	}
 
@@ -501,21 +491,19 @@ public class Register2Stack implements OpVisitor {
 		// TODO Auto-generated method stub
 		
 	}
-
-	private String getInteralName(String dotName){
-		return dotName.replace('.','/')
-	}
 	
 	private String getVarType(VarObject v){
-		return this.varType.get(v)
+		if(varType.containsKey(v)){
+			return this.varType.get(v)
+		}else if(v.className){
+			setVarType(v,v.className)
+			return v.className
+		}else{
+			return v.className
+		}
 	}
 	private void setVarType(VarObject v,String type){
 		this.varType.put(v,type)
-	}
-	
-	private String getFullMethodName(VarObject v,String methodName){
-		String iName = this.getInteralName(getVarType(v))
-		return "${iName}:${methodName}"
 	}
 	
 	private ArrayList<VarObject> popParam(Integer count){
@@ -527,28 +515,9 @@ public class Register2Stack implements OpVisitor {
 		}
 		return arr
 	}
-	
-	private String getTypeDesc(String type){
-		//TODO 
-	}
-	
-	private String getParamDesc(List<VarObject> ps){
-		String str = ""
-		for(p in ps){
-			def clsname = this.getVarType(p)
-			str += getTypeDesc(clsname)
-		}
-		return str
-	}
-	
-	static boolean isPrimaryType(String type){
-		//TODO 完善
-		def pType = ['int','float','long','double']
-		return pType.contains(type)
-	}
-	
+		
 	static isInstanceOf(String type,Class cls){
-		if(isPrimaryType(type)){
+		if(JavaType.isPrimitive((type))){
 			return type.equals(cls.toString())
 		}else{
 			return cls.toString().equals("class "+type)
@@ -599,16 +568,18 @@ public class Register2Stack implements OpVisitor {
 		}
 		md.visitMethodInsn(INVOKEVIRTUAL,clsName,mName,desc,false)
 		this.setVarTypeIfNoType(result,method.getReturnType().getName())
-		//TODO _store result
-		popType(v2)
-	}
-
-	private String getInteralClassName(String qName){
-		return "L${qName};"
+		String type = getReturnType(method)
+		if(type!='void'){
+			_store result,type
+		}
 	}
 	
-	private String getPathName(String dotName){
-		return dotName.replace('.','/')
+	private static getReturnType(Method method){
+		String type = method.getReturnType().toString()
+		if(type.startsWith("class ")){
+			type = type.substring(6).replace('.','/')
+		}
+		return type
 	}
 	
 	private String getStaticFieldDescriptor(String dotOwner,String fName){
@@ -635,16 +606,35 @@ public class Register2Stack implements OpVisitor {
 		String dotOwner = owner.replace('/','.')
 		Field f = getField(dotOwner,fName)
 		def cCls = Type.getInternalName(f.getType());
-		pushType(cCls)
+
 		this.setVarTypeIfNoType(result,cCls)
 		String fDesc = Type.getDescriptor(f.getType())
 		md.visitFieldInsn(GETSTATIC,owner,fName,fDesc)
-		_store result
+		_store result,cCls
 	}
 
 	@Override
 	public void visitGET_FIELD(VarObject result, VarObject v1, Constant v2) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	private _return(VarObject v){
+		String rt = getVarTypePre(v)
+		_load v
+		md.visitInsn(Ops."${rt}RETURN")
+	}
+	
+	private _return(){
+		md.visitInsn(RETURN)
+	}
+	
+	@Override
+	public void visitRETURN(VarObject v1) {
+		if(v1){
+			_return(v1)
+		}else{
+			_return()
+		}
 	}
 }

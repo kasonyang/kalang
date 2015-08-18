@@ -35,4 +35,5 @@ public interface OpVisitor{
         public void visitPARAM(kava.opcode.VarObject v1);
         public void visitGET_STATIC(kava.opcode.VarObject result,kava.opcode.Constant v1);
         public void visitGET_FIELD(kava.opcode.VarObject result,kava.opcode.VarObject v1,kava.opcode.Constant v2);
+        public void visitRETURN(kava.opcode.VarObject v1);
 }

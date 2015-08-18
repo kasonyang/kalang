@@ -1,11 +1,14 @@
 package kava.compiler;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import jdk.nashorn.internal.codegen.types.Type;
 import kava.antlr.*;
+import kava.antlr.KavaParser.ArgumentDeclContext;
+import kava.antlr.KavaParser.ArgumentDeclListContext;
 import kava.antlr.KavaParser.ArrayAssignContext;
 import kava.antlr.KavaParser.ClassBodyContext;
 import kava.antlr.KavaParser.CompiliantUnitContext;
@@ -24,8 +27,10 @@ import kava.antlr.KavaParser.ExpressionContext;
 import kava.antlr.KavaParser.MethodDeclContext;
 import kava.antlr.KavaParser.MethodDeclListContext;
 import kava.antlr.KavaParser.OffsetContext;
+import kava.antlr.KavaParser.ReturnStatContext;
+import kava.antlr.KavaParser.TypeContext;
 import kava.antlr.KavaParser.*;
-import kava.opcode.Class;
+import kava.opcode.ClassObject;
 import kava.opcode.Constant;
 import kava.opcode.Op;
 import kava.opcode.VarObject;
@@ -52,7 +57,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	private ArrayList<Op> breakList = new ArrayList<Op>();
 	private HashMap<String,String> importedClassNames = new HashMap();
 	private int paramCount = 0;
-	private Class cls = new Class();
+	private ClassObject cls = new ClassObject();
 	
 	public TheKavaVisitor(){
 		super();
@@ -489,11 +494,16 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	public VarObject visitVarDecl(VarDeclContext ctx) {
 		String name = ctx.Identifier().getText();
 		String stype = ctx.getChild(0).getText();
-		Integer type;
+		if(isClass(name)){
+			CompilerException.wrongVarName(name);
+		}
+		if(isVar(name)){
+			CompilerException.repeatVar(name);
+		}
+		
 		Integer asize = 0;
 		boolean isArray = ctx.IntegerLiteral()!=null;
 		if(isArray){
-			
 			asize = Integer.parseInt(ctx.IntegerLiteral().getText());
 		}
 		VarObject var = varTb.create(name);
@@ -659,7 +669,6 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 	@Override
 	public VarObject visitDslExpression(DslExpressionContext ctx) {
 		visit(ctx.expression());
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -694,22 +703,67 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 
 	@Override
 	public VarObject visitMethodDecl(MethodDeclContext ctx) {
-		String retType = ctx.Identifier(0).getText();
-		String mName = ctx.Identifier(1).getText();
-		Method md = new Method();
+		String retType = ctx.type().getText();
+		String mName = ctx.Identifier().getText();
+		MethodObject md = new MethodObject();
 		md.setName(mName);
 		md.setReturnType(retType);
+		md.setParamTypes(new ArrayList());
 		ops = new ArrayList();
-		//TODO visit arguments needed
 		paramCount = 0;
+		this.varTb = new VarTable();
+		if(ctx.argumentDeclList()!=null){
+			visit(ctx.argumentDeclList());
+		}
+		Collection<VarObject> methodParams = varTb.getVars();
+		for(VarObject v:methodParams){
+			md.getParamTypes().add(v.className);
+		}
 		visit(ctx.statList());
+		Op op = ops.get(ops.size()-1);
+		if(!(op instanceof RETURN)){
+			ops.add(new RETURN(null));
+		}
 		ops.add(new NOOP());
 		md.setOpcodes(ops);
 		cls.getMethods().add(md);
 		return null;
 	}
 	
-	public Class getCompiledClass(){
+	public ClassObject getCompiledClass(){
 		return cls;
+	}
+
+	@Override
+	public VarObject visitReturnStat(ReturnStatContext ctx) {
+		VarObject v = null;
+		if(ctx.expression()!=null){
+			v = visit(ctx.expression());
+		}
+		ops.add(new RETURN(v));
+		return null;
+	}
+
+	@Override
+	public VarObject visitArgumentDeclList(ArgumentDeclListContext ctx) {
+		for(ArgumentDeclContext a:ctx.argumentDecl()){
+			visit(a);
+		}
+		return null;
+	}
+
+	@Override
+	public VarObject visitArgumentDecl(ArgumentDeclContext ctx) {
+		String type = ctx.type().getText();
+		String name = ctx.Identifier().getText();
+		VarObject v = varTb.create(name);
+		v.className = type;
+		return null;
+	}
+
+	@Override
+	public VarObject visitType(TypeContext ctx) {
+		//do nothing
+		return null;
 	}
 }

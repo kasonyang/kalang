@@ -1,6 +1,6 @@
 package kava.opcode
 
-class Field {
+class FieldObject {
 	String name
 	String type
 }

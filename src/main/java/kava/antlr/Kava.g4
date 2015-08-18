@@ -118,7 +118,8 @@ expression
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
     //|   expression DOT explicitGenericInvocation
-    |     expression '.' (Identifier arguments)  #exprInvocation
+    |     expression '.' Identifier arguments  #exprInvocation
+    |     Identifier arguments  #exprMemberInvocation
     //|   expression LBRACK expression RBRACK
     //|   expression '(' expressionList? ')'
     //|   NEW creator

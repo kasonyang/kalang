@@ -88,6 +88,24 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitMethodDecl(KavaParser.MethodDeclContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KavaParser#type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitType(KavaParser.TypeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#argumentDeclList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArgumentDeclList(KavaParser.ArgumentDeclListContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#argumentDecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArgumentDecl(KavaParser.ArgumentDeclContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KavaParser#statList}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -111,6 +129,12 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStat(KavaParser.StatContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KavaParser#returnStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReturnStat(KavaParser.ReturnStatContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link KavaParser#varDeclStat}.
 	 * @param ctx the parse tree
@@ -185,20 +209,6 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExprPrimay(KavaParser.ExprPrimayContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exprNotOp}
-	 * labeled alternative in {@link KavaParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprNotOp(KavaParser.ExprNotOpContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code exprGetField}
-	 * labeled alternative in {@link KavaParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprGetField(KavaParser.ExprGetFieldContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code arrayAssign}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree
@@ -206,12 +216,12 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArrayAssign(KavaParser.ArrayAssignContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exprLogicCmp}
+	 * Visit a parse tree produced by the {@code exprMemberInvocation}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprLogicCmp(KavaParser.ExprLogicCmpContext ctx);
+	T visitExprMemberInvocation(KavaParser.ExprMemberInvocationContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprAssign}
 	 * labeled alternative in {@link KavaParser#expression}.
@@ -227,19 +237,40 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExprMidOp(KavaParser.ExprMidOpContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exprSelfOp}
-	 * labeled alternative in {@link KavaParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprSelfOp(KavaParser.ExprSelfOpContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code exprInvocation}
 	 * labeled alternative in {@link KavaParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitExprInvocation(KavaParser.ExprInvocationContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprNotOp}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprNotOp(KavaParser.ExprNotOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprGetField}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprGetField(KavaParser.ExprGetFieldContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprLogicCmp}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprLogicCmp(KavaParser.ExprLogicCmpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprSelfOp}
+	 * labeled alternative in {@link KavaParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprSelfOp(KavaParser.ExprSelfOpContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprLogic}
 	 * labeled alternative in {@link KavaParser#expression}.
@@ -294,12 +325,6 @@ public interface KavaVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLiteral(KavaParser.LiteralContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link KavaParser#genericInvocation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGenericInvocation(KavaParser.GenericInvocationContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link KavaParser#arguments}.
 	 * @param ctx the parse tree

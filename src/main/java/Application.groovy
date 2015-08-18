@@ -4,7 +4,7 @@ import kava.compiler.TheKavaVisitor;
 import kava.compiler4j.Register2Stack
 
 import kava.opcode.Op
-import kava.opcode.Class
+import kava.opcode.ClassObject
 import kava.vm.TheKavaExecutor
 
 import org.antlr.v4.runtime.ANTLRInputStream
@@ -12,7 +12,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 
 class Application {
 	static void main(args) {
-		def input = '''class kava { T run(){int a=0;System.out.println(1);}}''';
+		def input = '''class  kava { int run(){int a=0;System.out.println(1);return a;} int test(int a,int b){return a;}}''';
 		def lnIdx = 0;
 		def opsList = [];
 		def ip = new StringReader(input);
@@ -44,13 +44,13 @@ class Application {
 			print " "
 			//this.executeOnVm(opc)
 			print " "
-			this.executeOnJvm(name,visitor)
+			this.executeOnJvm(visitor.getCompiledClass())
 			println ''
 			
 			//printOpc(opc)
 		}
 	}
-	static String class2String(Class cls){
+	static String class2String(ClassObject cls){
 		def str = "${cls.getName()}:";
 		def align = "  "
 		for(m in cls.methods){
@@ -91,17 +91,17 @@ class Application {
 		}
 	}
 	
-	static void executeOnJvm(name,visitor){
-		def former = new Register2Stack(name,visitor)
-
-		byte[] bs = former.toByteArray();
+	static void executeOnJvm(ClassObject cls){
+		def former = new Register2Stack(cls)
+		def name = cls.getName()
+		byte[] bs = former.compile();
 
 		new File("output/${name}.class").withOutputStream {os->
 			os.write(bs)
 		}
 		def classLoader = new KavaClassLoader()
-		def cls = classLoader.defineClass(name,bs)
-		def result = cls.invokeMethod("run",null)
+		def jcls = classLoader.defineClass(name,bs)
+		def result = jcls.invokeMethod("run",null)
 		println " " + result
 	
 	}
