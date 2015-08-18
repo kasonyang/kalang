@@ -31,7 +31,16 @@ methodDeclList:
 methodDecl*
 ;
 methodDecl:
-    Identifier Identifier  arguments '{' statList '}'
+    type Identifier '(' argumentDeclList? ')' '{' statList '}'
+;
+type:
+    (Identifier|DOUBLE|LONG|FLOAT|INT)
+;
+argumentDeclList:
+   argumentDecl (',' argumentDecl)*
+;
+argumentDecl:   
+    type Identifier
 ;
 
 statList:
@@ -54,6 +63,10 @@ stat:
     |breakStat
     |continueStat
     |varDeclStat
+    |returnStat
+;
+returnStat:
+    'return' expression? ';'
 ;
 
 varDeclStat:
@@ -105,7 +118,7 @@ expression
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
     //|   expression DOT explicitGenericInvocation
-    |     expression '.' Identifier arguments  #exprInvocation
+    |     expression '.' (Identifier arguments)  #exprInvocation
     //|   expression LBRACK expression RBRACK
     //|   expression '(' expressionList? ')'
     //|   NEW creator
@@ -170,10 +183,6 @@ literal
     |   StringLiteral 
     |   BooleanLiteral 
     |   'null' 
-    ;
-
-genericInvocation:
-    Identifier arguments
     ;
 
 arguments
