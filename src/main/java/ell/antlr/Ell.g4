@@ -1,4 +1,4 @@
-grammar Kava;
+grammar Ell;
 
 dslStatList:dslStat*;
 
@@ -9,10 +9,14 @@ dslExpr:
  'as' Identifier    #dslVarDecl
  |'new' Identifier  #dslVarNew
  | expression      #dslExpression
- |(Identifier dslParam)+ #dslChainStat
+ |(Identifier dslParamList)+ #dslChainStat
+;
+dslParamList:
+    Identifier '=' expression (',' Identifier '=' expression)* #paramNamed
+    |expression ( ',' expression)*  #paramOrdered
 ;
 dslParam:
-    expression (',' expression)*
+    Identifier '=' expression
 ;
 
 start:
