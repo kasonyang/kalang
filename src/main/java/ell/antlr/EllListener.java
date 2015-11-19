@@ -9,127 +9,175 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface EllListener extends ParseTreeListener {
 	/**
-	 * Enter a parse tree produced by {@link EllParser#dslStatList}.
+	 * Enter a parse tree produced by {@link EllParser#compilationUnit}.
 	 * @param ctx the parse tree
 	 */
-	void enterDslStatList(EllParser.DslStatListContext ctx);
+	void enterCompilationUnit(EllParser.CompilationUnitContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#dslStatList}.
+	 * Exit a parse tree produced by {@link EllParser#compilationUnit}.
 	 * @param ctx the parse tree
 	 */
-	void exitDslStatList(EllParser.DslStatListContext ctx);
+	void exitCompilationUnit(EllParser.CompilationUnitContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#dslStat}.
+	 * Enter a parse tree produced by {@link EllParser#packageDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void enterDslStat(EllParser.DslStatContext ctx);
+	void enterPackageDeclaration(EllParser.PackageDeclarationContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#dslStat}.
+	 * Exit a parse tree produced by {@link EllParser#packageDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void exitDslStat(EllParser.DslStatContext ctx);
+	void exitPackageDeclaration(EllParser.PackageDeclarationContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code dslVarDecl}
-	 * labeled alternative in {@link EllParser#dslExpr}.
+	 * Enter a parse tree produced by {@link EllParser#importDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void enterDslVarDecl(EllParser.DslVarDeclContext ctx);
+	void enterImportDeclaration(EllParser.ImportDeclarationContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code dslVarDecl}
-	 * labeled alternative in {@link EllParser#dslExpr}.
+	 * Exit a parse tree produced by {@link EllParser#importDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void exitDslVarDecl(EllParser.DslVarDeclContext ctx);
+	void exitImportDeclaration(EllParser.ImportDeclarationContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code dslVarNew}
-	 * labeled alternative in {@link EllParser#dslExpr}.
+	 * Enter a parse tree produced by {@link EllParser#typeDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void enterDslVarNew(EllParser.DslVarNewContext ctx);
+	void enterTypeDeclaration(EllParser.TypeDeclarationContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code dslVarNew}
-	 * labeled alternative in {@link EllParser#dslExpr}.
+	 * Exit a parse tree produced by {@link EllParser#typeDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void exitDslVarNew(EllParser.DslVarNewContext ctx);
+	void exitTypeDeclaration(EllParser.TypeDeclarationContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code dslExpression}
-	 * labeled alternative in {@link EllParser#dslExpr}.
+	 * Enter a parse tree produced by {@link EllParser#modifier}.
 	 * @param ctx the parse tree
 	 */
-	void enterDslExpression(EllParser.DslExpressionContext ctx);
+	void enterModifier(EllParser.ModifierContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code dslExpression}
-	 * labeled alternative in {@link EllParser#dslExpr}.
+	 * Exit a parse tree produced by {@link EllParser#modifier}.
 	 * @param ctx the parse tree
 	 */
-	void exitDslExpression(EllParser.DslExpressionContext ctx);
+	void exitModifier(EllParser.ModifierContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code dslChainStat}
-	 * labeled alternative in {@link EllParser#dslExpr}.
+	 * Enter a parse tree produced by {@link EllParser#classOrInterfaceModifier}.
 	 * @param ctx the parse tree
 	 */
-	void enterDslChainStat(EllParser.DslChainStatContext ctx);
+	void enterClassOrInterfaceModifier(EllParser.ClassOrInterfaceModifierContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code dslChainStat}
-	 * labeled alternative in {@link EllParser#dslExpr}.
+	 * Exit a parse tree produced by {@link EllParser#classOrInterfaceModifier}.
 	 * @param ctx the parse tree
 	 */
-	void exitDslChainStat(EllParser.DslChainStatContext ctx);
+	void exitClassOrInterfaceModifier(EllParser.ClassOrInterfaceModifierContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code paramNamed}
-	 * labeled alternative in {@link EllParser#dslParamList}.
+	 * Enter a parse tree produced by {@link EllParser#variableModifier}.
 	 * @param ctx the parse tree
 	 */
-	void enterParamNamed(EllParser.ParamNamedContext ctx);
+	void enterVariableModifier(EllParser.VariableModifierContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code paramNamed}
-	 * labeled alternative in {@link EllParser#dslParamList}.
+	 * Exit a parse tree produced by {@link EllParser#variableModifier}.
 	 * @param ctx the parse tree
 	 */
-	void exitParamNamed(EllParser.ParamNamedContext ctx);
+	void exitVariableModifier(EllParser.VariableModifierContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code paramOrdered}
-	 * labeled alternative in {@link EllParser#dslParamList}.
+	 * Enter a parse tree produced by {@link EllParser#classDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void enterParamOrdered(EllParser.ParamOrderedContext ctx);
+	void enterClassDeclaration(EllParser.ClassDeclarationContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code paramOrdered}
-	 * labeled alternative in {@link EllParser#dslParamList}.
+	 * Exit a parse tree produced by {@link EllParser#classDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void exitParamOrdered(EllParser.ParamOrderedContext ctx);
+	void exitClassDeclaration(EllParser.ClassDeclarationContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#dslParam}.
+	 * Enter a parse tree produced by {@link EllParser#typeParameters}.
 	 * @param ctx the parse tree
 	 */
-	void enterDslParam(EllParser.DslParamContext ctx);
+	void enterTypeParameters(EllParser.TypeParametersContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#dslParam}.
+	 * Exit a parse tree produced by {@link EllParser#typeParameters}.
 	 * @param ctx the parse tree
 	 */
-	void exitDslParam(EllParser.DslParamContext ctx);
+	void exitTypeParameters(EllParser.TypeParametersContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#start}.
+	 * Enter a parse tree produced by {@link EllParser#typeParameter}.
 	 * @param ctx the parse tree
 	 */
-	void enterStart(EllParser.StartContext ctx);
+	void enterTypeParameter(EllParser.TypeParameterContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#start}.
+	 * Exit a parse tree produced by {@link EllParser#typeParameter}.
 	 * @param ctx the parse tree
 	 */
-	void exitStart(EllParser.StartContext ctx);
+	void exitTypeParameter(EllParser.TypeParameterContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#compiliantUnit}.
+	 * Enter a parse tree produced by {@link EllParser#typeBound}.
 	 * @param ctx the parse tree
 	 */
-	void enterCompiliantUnit(EllParser.CompiliantUnitContext ctx);
+	void enterTypeBound(EllParser.TypeBoundContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#compiliantUnit}.
+	 * Exit a parse tree produced by {@link EllParser#typeBound}.
 	 * @param ctx the parse tree
 	 */
-	void exitCompiliantUnit(EllParser.CompiliantUnitContext ctx);
+	void exitTypeBound(EllParser.TypeBoundContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#enumDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterEnumDeclaration(EllParser.EnumDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#enumDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitEnumDeclaration(EllParser.EnumDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#enumConstants}.
+	 * @param ctx the parse tree
+	 */
+	void enterEnumConstants(EllParser.EnumConstantsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#enumConstants}.
+	 * @param ctx the parse tree
+	 */
+	void exitEnumConstants(EllParser.EnumConstantsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#enumConstant}.
+	 * @param ctx the parse tree
+	 */
+	void enterEnumConstant(EllParser.EnumConstantContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#enumConstant}.
+	 * @param ctx the parse tree
+	 */
+	void exitEnumConstant(EllParser.EnumConstantContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#enumBodyDeclarations}.
+	 * @param ctx the parse tree
+	 */
+	void enterEnumBodyDeclarations(EllParser.EnumBodyDeclarationsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#enumBodyDeclarations}.
+	 * @param ctx the parse tree
+	 */
+	void exitEnumBodyDeclarations(EllParser.EnumBodyDeclarationsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#interfaceDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterInterfaceDeclaration(EllParser.InterfaceDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#interfaceDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitInterfaceDeclaration(EllParser.InterfaceDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#typeList}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeList(EllParser.TypeListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#typeList}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeList(EllParser.TypeListContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link EllParser#classBody}.
 	 * @param ctx the parse tree
@@ -141,25 +189,205 @@ public interface EllListener extends ParseTreeListener {
 	 */
 	void exitClassBody(EllParser.ClassBodyContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#methodDeclList}.
+	 * Enter a parse tree produced by {@link EllParser#interfaceBody}.
 	 * @param ctx the parse tree
 	 */
-	void enterMethodDeclList(EllParser.MethodDeclListContext ctx);
+	void enterInterfaceBody(EllParser.InterfaceBodyContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#methodDeclList}.
+	 * Exit a parse tree produced by {@link EllParser#interfaceBody}.
 	 * @param ctx the parse tree
 	 */
-	void exitMethodDeclList(EllParser.MethodDeclListContext ctx);
+	void exitInterfaceBody(EllParser.InterfaceBodyContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#methodDecl}.
+	 * Enter a parse tree produced by {@link EllParser#classBodyDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void enterMethodDecl(EllParser.MethodDeclContext ctx);
+	void enterClassBodyDeclaration(EllParser.ClassBodyDeclarationContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#methodDecl}.
+	 * Exit a parse tree produced by {@link EllParser#classBodyDeclaration}.
 	 * @param ctx the parse tree
 	 */
-	void exitMethodDecl(EllParser.MethodDeclContext ctx);
+	void exitClassBodyDeclaration(EllParser.ClassBodyDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#memberDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterMemberDeclaration(EllParser.MemberDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#memberDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitMemberDeclaration(EllParser.MemberDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#methodDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterMethodDeclaration(EllParser.MethodDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#methodDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitMethodDeclaration(EllParser.MethodDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#genericMethodDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterGenericMethodDeclaration(EllParser.GenericMethodDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#genericMethodDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitGenericMethodDeclaration(EllParser.GenericMethodDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#constructorDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterConstructorDeclaration(EllParser.ConstructorDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#constructorDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitConstructorDeclaration(EllParser.ConstructorDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#genericConstructorDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterGenericConstructorDeclaration(EllParser.GenericConstructorDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#genericConstructorDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitGenericConstructorDeclaration(EllParser.GenericConstructorDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#fieldDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterFieldDeclaration(EllParser.FieldDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#fieldDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitFieldDeclaration(EllParser.FieldDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#interfaceBodyDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterInterfaceBodyDeclaration(EllParser.InterfaceBodyDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#interfaceBodyDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitInterfaceBodyDeclaration(EllParser.InterfaceBodyDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#interfaceMemberDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterInterfaceMemberDeclaration(EllParser.InterfaceMemberDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#interfaceMemberDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitInterfaceMemberDeclaration(EllParser.InterfaceMemberDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#constDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterConstDeclaration(EllParser.ConstDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#constDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitConstDeclaration(EllParser.ConstDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#constantDeclarator}.
+	 * @param ctx the parse tree
+	 */
+	void enterConstantDeclarator(EllParser.ConstantDeclaratorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#constantDeclarator}.
+	 * @param ctx the parse tree
+	 */
+	void exitConstantDeclarator(EllParser.ConstantDeclaratorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#interfaceMethodDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterInterfaceMethodDeclaration(EllParser.InterfaceMethodDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#interfaceMethodDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitInterfaceMethodDeclaration(EllParser.InterfaceMethodDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#genericInterfaceMethodDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterGenericInterfaceMethodDeclaration(EllParser.GenericInterfaceMethodDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#genericInterfaceMethodDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitGenericInterfaceMethodDeclaration(EllParser.GenericInterfaceMethodDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#variableDeclarators}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariableDeclarators(EllParser.VariableDeclaratorsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#variableDeclarators}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariableDeclarators(EllParser.VariableDeclaratorsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#variableDeclarator}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariableDeclarator(EllParser.VariableDeclaratorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#variableDeclarator}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariableDeclarator(EllParser.VariableDeclaratorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#variableDeclaratorId}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariableDeclaratorId(EllParser.VariableDeclaratorIdContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#variableDeclaratorId}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariableDeclaratorId(EllParser.VariableDeclaratorIdContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#variableInitializer}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariableInitializer(EllParser.VariableInitializerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#variableInitializer}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariableInitializer(EllParser.VariableInitializerContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#arrayInitializer}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayInitializer(EllParser.ArrayInitializerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#arrayInitializer}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayInitializer(EllParser.ArrayInitializerContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#enumConstantName}.
+	 * @param ctx the parse tree
+	 */
+	void enterEnumConstantName(EllParser.EnumConstantNameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#enumConstantName}.
+	 * @param ctx the parse tree
+	 */
+	void exitEnumConstantName(EllParser.EnumConstantNameContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link EllParser#type}.
 	 * @param ctx the parse tree
@@ -171,387 +399,125 @@ public interface EllListener extends ParseTreeListener {
 	 */
 	void exitType(EllParser.TypeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#argumentDeclList}.
+	 * Enter a parse tree produced by {@link EllParser#classOrInterfaceType}.
 	 * @param ctx the parse tree
 	 */
-	void enterArgumentDeclList(EllParser.ArgumentDeclListContext ctx);
+	void enterClassOrInterfaceType(EllParser.ClassOrInterfaceTypeContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#argumentDeclList}.
+	 * Exit a parse tree produced by {@link EllParser#classOrInterfaceType}.
 	 * @param ctx the parse tree
 	 */
-	void exitArgumentDeclList(EllParser.ArgumentDeclListContext ctx);
+	void exitClassOrInterfaceType(EllParser.ClassOrInterfaceTypeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#argumentDecl}.
+	 * Enter a parse tree produced by {@link EllParser#primitiveType}.
 	 * @param ctx the parse tree
 	 */
-	void enterArgumentDecl(EllParser.ArgumentDeclContext ctx);
+	void enterPrimitiveType(EllParser.PrimitiveTypeContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#argumentDecl}.
+	 * Exit a parse tree produced by {@link EllParser#primitiveType}.
 	 * @param ctx the parse tree
 	 */
-	void exitArgumentDecl(EllParser.ArgumentDeclContext ctx);
+	void exitPrimitiveType(EllParser.PrimitiveTypeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#statList}.
+	 * Enter a parse tree produced by {@link EllParser#typeArguments}.
 	 * @param ctx the parse tree
 	 */
-	void enterStatList(EllParser.StatListContext ctx);
+	void enterTypeArguments(EllParser.TypeArgumentsContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#statList}.
+	 * Exit a parse tree produced by {@link EllParser#typeArguments}.
 	 * @param ctx the parse tree
 	 */
-	void exitStatList(EllParser.StatListContext ctx);
+	void exitTypeArguments(EllParser.TypeArgumentsContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#ifStat}.
+	 * Enter a parse tree produced by {@link EllParser#typeArgument}.
 	 * @param ctx the parse tree
 	 */
-	void enterIfStat(EllParser.IfStatContext ctx);
+	void enterTypeArgument(EllParser.TypeArgumentContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#ifStat}.
+	 * Exit a parse tree produced by {@link EllParser#typeArgument}.
 	 * @param ctx the parse tree
 	 */
-	void exitIfStat(EllParser.IfStatContext ctx);
+	void exitTypeArgument(EllParser.TypeArgumentContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#ifStatSuffix}.
+	 * Enter a parse tree produced by {@link EllParser#qualifiedNameList}.
 	 * @param ctx the parse tree
 	 */
-	void enterIfStatSuffix(EllParser.IfStatSuffixContext ctx);
+	void enterQualifiedNameList(EllParser.QualifiedNameListContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#ifStatSuffix}.
+	 * Exit a parse tree produced by {@link EllParser#qualifiedNameList}.
 	 * @param ctx the parse tree
 	 */
-	void exitIfStatSuffix(EllParser.IfStatSuffixContext ctx);
+	void exitQualifiedNameList(EllParser.QualifiedNameListContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#stat}.
+	 * Enter a parse tree produced by {@link EllParser#formalParameters}.
 	 * @param ctx the parse tree
 	 */
-	void enterStat(EllParser.StatContext ctx);
+	void enterFormalParameters(EllParser.FormalParametersContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#stat}.
+	 * Exit a parse tree produced by {@link EllParser#formalParameters}.
 	 * @param ctx the parse tree
 	 */
-	void exitStat(EllParser.StatContext ctx);
+	void exitFormalParameters(EllParser.FormalParametersContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#returnStat}.
+	 * Enter a parse tree produced by {@link EllParser#formalParameterList}.
 	 * @param ctx the parse tree
 	 */
-	void enterReturnStat(EllParser.ReturnStatContext ctx);
+	void enterFormalParameterList(EllParser.FormalParameterListContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#returnStat}.
+	 * Exit a parse tree produced by {@link EllParser#formalParameterList}.
 	 * @param ctx the parse tree
 	 */
-	void exitReturnStat(EllParser.ReturnStatContext ctx);
+	void exitFormalParameterList(EllParser.FormalParameterListContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#varDeclStat}.
+	 * Enter a parse tree produced by {@link EllParser#formalParameter}.
 	 * @param ctx the parse tree
 	 */
-	void enterVarDeclStat(EllParser.VarDeclStatContext ctx);
+	void enterFormalParameter(EllParser.FormalParameterContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#varDeclStat}.
+	 * Exit a parse tree produced by {@link EllParser#formalParameter}.
 	 * @param ctx the parse tree
 	 */
-	void exitVarDeclStat(EllParser.VarDeclStatContext ctx);
+	void exitFormalParameter(EllParser.FormalParameterContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#varDecl}.
+	 * Enter a parse tree produced by {@link EllParser#lastFormalParameter}.
 	 * @param ctx the parse tree
 	 */
-	void enterVarDecl(EllParser.VarDeclContext ctx);
+	void enterLastFormalParameter(EllParser.LastFormalParameterContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#varDecl}.
+	 * Exit a parse tree produced by {@link EllParser#lastFormalParameter}.
 	 * @param ctx the parse tree
 	 */
-	void exitVarDecl(EllParser.VarDeclContext ctx);
+	void exitLastFormalParameter(EllParser.LastFormalParameterContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#breakStat}.
+	 * Enter a parse tree produced by {@link EllParser#methodBody}.
 	 * @param ctx the parse tree
 	 */
-	void enterBreakStat(EllParser.BreakStatContext ctx);
+	void enterMethodBody(EllParser.MethodBodyContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#breakStat}.
+	 * Exit a parse tree produced by {@link EllParser#methodBody}.
 	 * @param ctx the parse tree
 	 */
-	void exitBreakStat(EllParser.BreakStatContext ctx);
+	void exitMethodBody(EllParser.MethodBodyContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#continueStat}.
+	 * Enter a parse tree produced by {@link EllParser#constructorBody}.
 	 * @param ctx the parse tree
 	 */
-	void enterContinueStat(EllParser.ContinueStatContext ctx);
+	void enterConstructorBody(EllParser.ConstructorBodyContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#continueStat}.
+	 * Exit a parse tree produced by {@link EllParser#constructorBody}.
 	 * @param ctx the parse tree
 	 */
-	void exitContinueStat(EllParser.ContinueStatContext ctx);
+	void exitConstructorBody(EllParser.ConstructorBodyContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link EllParser#whileStat}.
+	 * Enter a parse tree produced by {@link EllParser#qualifiedName}.
 	 * @param ctx the parse tree
 	 */
-	void enterWhileStat(EllParser.WhileStatContext ctx);
+	void enterQualifiedName(EllParser.QualifiedNameContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link EllParser#whileStat}.
+	 * Exit a parse tree produced by {@link EllParser#qualifiedName}.
 	 * @param ctx the parse tree
 	 */
-	void exitWhileStat(EllParser.WhileStatContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EllParser#doWhileStat}.
-	 * @param ctx the parse tree
-	 */
-	void enterDoWhileStat(EllParser.DoWhileStatContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EllParser#doWhileStat}.
-	 * @param ctx the parse tree
-	 */
-	void exitDoWhileStat(EllParser.DoWhileStatContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EllParser#forStat}.
-	 * @param ctx the parse tree
-	 */
-	void enterForStat(EllParser.ForStatContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EllParser#forStat}.
-	 * @param ctx the parse tree
-	 */
-	void exitForStat(EllParser.ForStatContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EllParser#forInit}.
-	 * @param ctx the parse tree
-	 */
-	void enterForInit(EllParser.ForInitContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EllParser#forInit}.
-	 * @param ctx the parse tree
-	 */
-	void exitForInit(EllParser.ForInitContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EllParser#forUpdate}.
-	 * @param ctx the parse tree
-	 */
-	void enterForUpdate(EllParser.ForUpdateContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EllParser#forUpdate}.
-	 * @param ctx the parse tree
-	 */
-	void exitForUpdate(EllParser.ForUpdateContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EllParser#expressionList}.
-	 * @param ctx the parse tree
-	 */
-	void enterExpressionList(EllParser.ExpressionListContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EllParser#expressionList}.
-	 * @param ctx the parse tree
-	 */
-	void exitExpressionList(EllParser.ExpressionListContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EllParser#exprStat}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprStat(EllParser.ExprStatContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EllParser#exprStat}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprStat(EllParser.ExprStatContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprPrimay}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprPrimay(EllParser.ExprPrimayContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprPrimay}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprPrimay(EllParser.ExprPrimayContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code arrayAssign}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterArrayAssign(EllParser.ArrayAssignContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code arrayAssign}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitArrayAssign(EllParser.ArrayAssignContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprMemberInvocation}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprMemberInvocation(EllParser.ExprMemberInvocationContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprMemberInvocation}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprMemberInvocation(EllParser.ExprMemberInvocationContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprAssign}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprAssign(EllParser.ExprAssignContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprAssign}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprAssign(EllParser.ExprAssignContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprMidOp}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprMidOp(EllParser.ExprMidOpContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprMidOp}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprMidOp(EllParser.ExprMidOpContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprInvocation}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprInvocation(EllParser.ExprInvocationContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprInvocation}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprInvocation(EllParser.ExprInvocationContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprNotOp}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprNotOp(EllParser.ExprNotOpContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprNotOp}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprNotOp(EllParser.ExprNotOpContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprGetField}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprGetField(EllParser.ExprGetFieldContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprGetField}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprGetField(EllParser.ExprGetFieldContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprLogicCmp}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprLogicCmp(EllParser.ExprLogicCmpContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprLogicCmp}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprLogicCmp(EllParser.ExprLogicCmpContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprSelfOp}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprSelfOp(EllParser.ExprSelfOpContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprSelfOp}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprSelfOp(EllParser.ExprSelfOpContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprLogic}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprLogic(EllParser.ExprLogicContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprLogic}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprLogic(EllParser.ExprLogicContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprSelfOpPre}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprSelfOpPre(EllParser.ExprSelfOpPreContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprSelfOpPre}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprSelfOpPre(EllParser.ExprSelfOpPreContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprGetArrayElement}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprGetArrayElement(EllParser.ExprGetArrayElementContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprGetArrayElement}
-	 * labeled alternative in {@link EllParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprGetArrayElement(EllParser.ExprGetArrayElementContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EllParser#offset}.
-	 * @param ctx the parse tree
-	 */
-	void enterOffset(EllParser.OffsetContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EllParser#offset}.
-	 * @param ctx the parse tree
-	 */
-	void exitOffset(EllParser.OffsetContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code primayParen}
-	 * labeled alternative in {@link EllParser#primary}.
-	 * @param ctx the parse tree
-	 */
-	void enterPrimayParen(EllParser.PrimayParenContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code primayParen}
-	 * labeled alternative in {@link EllParser#primary}.
-	 * @param ctx the parse tree
-	 */
-	void exitPrimayParen(EllParser.PrimayParenContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code primaryLiteral}
-	 * labeled alternative in {@link EllParser#primary}.
-	 * @param ctx the parse tree
-	 */
-	void enterPrimaryLiteral(EllParser.PrimaryLiteralContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code primaryLiteral}
-	 * labeled alternative in {@link EllParser#primary}.
-	 * @param ctx the parse tree
-	 */
-	void exitPrimaryLiteral(EllParser.PrimaryLiteralContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code primaryIdentifier}
-	 * labeled alternative in {@link EllParser#primary}.
-	 * @param ctx the parse tree
-	 */
-	void enterPrimaryIdentifier(EllParser.PrimaryIdentifierContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code primaryIdentifier}
-	 * labeled alternative in {@link EllParser#primary}.
-	 * @param ctx the parse tree
-	 */
-	void exitPrimaryIdentifier(EllParser.PrimaryIdentifierContext ctx);
+	void exitQualifiedName(EllParser.QualifiedNameContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link EllParser#literal}.
 	 * @param ctx the parse tree
@@ -563,6 +529,486 @@ public interface EllListener extends ParseTreeListener {
 	 */
 	void exitLiteral(EllParser.LiteralContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link EllParser#annotation}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotation(EllParser.AnnotationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotation}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotation(EllParser.AnnotationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#annotationName}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotationName(EllParser.AnnotationNameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotationName}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotationName(EllParser.AnnotationNameContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#elementValuePairs}.
+	 * @param ctx the parse tree
+	 */
+	void enterElementValuePairs(EllParser.ElementValuePairsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#elementValuePairs}.
+	 * @param ctx the parse tree
+	 */
+	void exitElementValuePairs(EllParser.ElementValuePairsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#elementValuePair}.
+	 * @param ctx the parse tree
+	 */
+	void enterElementValuePair(EllParser.ElementValuePairContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#elementValuePair}.
+	 * @param ctx the parse tree
+	 */
+	void exitElementValuePair(EllParser.ElementValuePairContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#elementValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterElementValue(EllParser.ElementValueContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#elementValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitElementValue(EllParser.ElementValueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#elementValueArrayInitializer}.
+	 * @param ctx the parse tree
+	 */
+	void enterElementValueArrayInitializer(EllParser.ElementValueArrayInitializerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#elementValueArrayInitializer}.
+	 * @param ctx the parse tree
+	 */
+	void exitElementValueArrayInitializer(EllParser.ElementValueArrayInitializerContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#annotationTypeDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotationTypeDeclaration(EllParser.AnnotationTypeDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotationTypeDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotationTypeDeclaration(EllParser.AnnotationTypeDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#annotationTypeBody}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotationTypeBody(EllParser.AnnotationTypeBodyContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotationTypeBody}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotationTypeBody(EllParser.AnnotationTypeBodyContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#annotationTypeElementDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotationTypeElementDeclaration(EllParser.AnnotationTypeElementDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotationTypeElementDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotationTypeElementDeclaration(EllParser.AnnotationTypeElementDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#annotationTypeElementRest}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotationTypeElementRest(EllParser.AnnotationTypeElementRestContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotationTypeElementRest}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotationTypeElementRest(EllParser.AnnotationTypeElementRestContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#annotationMethodOrConstantRest}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotationMethodOrConstantRest(EllParser.AnnotationMethodOrConstantRestContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotationMethodOrConstantRest}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotationMethodOrConstantRest(EllParser.AnnotationMethodOrConstantRestContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#annotationMethodRest}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotationMethodRest(EllParser.AnnotationMethodRestContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotationMethodRest}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotationMethodRest(EllParser.AnnotationMethodRestContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#annotationConstantRest}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotationConstantRest(EllParser.AnnotationConstantRestContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#annotationConstantRest}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotationConstantRest(EllParser.AnnotationConstantRestContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#defaultValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefaultValue(EllParser.DefaultValueContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#defaultValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefaultValue(EllParser.DefaultValueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#block}.
+	 * @param ctx the parse tree
+	 */
+	void enterBlock(EllParser.BlockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#block}.
+	 * @param ctx the parse tree
+	 */
+	void exitBlock(EllParser.BlockContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#blockStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterBlockStatement(EllParser.BlockStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#blockStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitBlockStatement(EllParser.BlockStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#localVariableDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+	void enterLocalVariableDeclarationStatement(EllParser.LocalVariableDeclarationStatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#localVariableDeclarationStatement}.
+	 * @param ctx the parse tree
+	 */
+	void exitLocalVariableDeclarationStatement(EllParser.LocalVariableDeclarationStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#localVariableDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterLocalVariableDeclaration(EllParser.LocalVariableDeclarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#localVariableDeclaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitLocalVariableDeclaration(EllParser.LocalVariableDeclarationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void enterStatement(EllParser.StatementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#statement}.
+	 * @param ctx the parse tree
+	 */
+	void exitStatement(EllParser.StatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#catchClause}.
+	 * @param ctx the parse tree
+	 */
+	void enterCatchClause(EllParser.CatchClauseContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#catchClause}.
+	 * @param ctx the parse tree
+	 */
+	void exitCatchClause(EllParser.CatchClauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#catchType}.
+	 * @param ctx the parse tree
+	 */
+	void enterCatchType(EllParser.CatchTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#catchType}.
+	 * @param ctx the parse tree
+	 */
+	void exitCatchType(EllParser.CatchTypeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#finallyBlock}.
+	 * @param ctx the parse tree
+	 */
+	void enterFinallyBlock(EllParser.FinallyBlockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#finallyBlock}.
+	 * @param ctx the parse tree
+	 */
+	void exitFinallyBlock(EllParser.FinallyBlockContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#resourceSpecification}.
+	 * @param ctx the parse tree
+	 */
+	void enterResourceSpecification(EllParser.ResourceSpecificationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#resourceSpecification}.
+	 * @param ctx the parse tree
+	 */
+	void exitResourceSpecification(EllParser.ResourceSpecificationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#resources}.
+	 * @param ctx the parse tree
+	 */
+	void enterResources(EllParser.ResourcesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#resources}.
+	 * @param ctx the parse tree
+	 */
+	void exitResources(EllParser.ResourcesContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#resource}.
+	 * @param ctx the parse tree
+	 */
+	void enterResource(EllParser.ResourceContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#resource}.
+	 * @param ctx the parse tree
+	 */
+	void exitResource(EllParser.ResourceContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#switchBlockStatementGroup}.
+	 * @param ctx the parse tree
+	 */
+	void enterSwitchBlockStatementGroup(EllParser.SwitchBlockStatementGroupContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#switchBlockStatementGroup}.
+	 * @param ctx the parse tree
+	 */
+	void exitSwitchBlockStatementGroup(EllParser.SwitchBlockStatementGroupContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#switchLabel}.
+	 * @param ctx the parse tree
+	 */
+	void enterSwitchLabel(EllParser.SwitchLabelContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#switchLabel}.
+	 * @param ctx the parse tree
+	 */
+	void exitSwitchLabel(EllParser.SwitchLabelContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#forControl}.
+	 * @param ctx the parse tree
+	 */
+	void enterForControl(EllParser.ForControlContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#forControl}.
+	 * @param ctx the parse tree
+	 */
+	void exitForControl(EllParser.ForControlContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#forInit}.
+	 * @param ctx the parse tree
+	 */
+	void enterForInit(EllParser.ForInitContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#forInit}.
+	 * @param ctx the parse tree
+	 */
+	void exitForInit(EllParser.ForInitContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#enhancedForControl}.
+	 * @param ctx the parse tree
+	 */
+	void enterEnhancedForControl(EllParser.EnhancedForControlContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#enhancedForControl}.
+	 * @param ctx the parse tree
+	 */
+	void exitEnhancedForControl(EllParser.EnhancedForControlContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#forUpdate}.
+	 * @param ctx the parse tree
+	 */
+	void enterForUpdate(EllParser.ForUpdateContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#forUpdate}.
+	 * @param ctx the parse tree
+	 */
+	void exitForUpdate(EllParser.ForUpdateContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#parExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterParExpression(EllParser.ParExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#parExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitParExpression(EllParser.ParExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#expressionList}.
+	 * @param ctx the parse tree
+	 */
+	void enterExpressionList(EllParser.ExpressionListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#expressionList}.
+	 * @param ctx the parse tree
+	 */
+	void exitExpressionList(EllParser.ExpressionListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#statementExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterStatementExpression(EllParser.StatementExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#statementExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitStatementExpression(EllParser.StatementExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#constantExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterConstantExpression(EllParser.ConstantExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#constantExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitConstantExpression(EllParser.ConstantExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExpression(EllParser.ExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExpression(EllParser.ExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#primary}.
+	 * @param ctx the parse tree
+	 */
+	void enterPrimary(EllParser.PrimaryContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#primary}.
+	 * @param ctx the parse tree
+	 */
+	void exitPrimary(EllParser.PrimaryContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#creator}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreator(EllParser.CreatorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#creator}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreator(EllParser.CreatorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#createdName}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreatedName(EllParser.CreatedNameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#createdName}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreatedName(EllParser.CreatedNameContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#innerCreator}.
+	 * @param ctx the parse tree
+	 */
+	void enterInnerCreator(EllParser.InnerCreatorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#innerCreator}.
+	 * @param ctx the parse tree
+	 */
+	void exitInnerCreator(EllParser.InnerCreatorContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#arrayCreatorRest}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayCreatorRest(EllParser.ArrayCreatorRestContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#arrayCreatorRest}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayCreatorRest(EllParser.ArrayCreatorRestContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#classCreatorRest}.
+	 * @param ctx the parse tree
+	 */
+	void enterClassCreatorRest(EllParser.ClassCreatorRestContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#classCreatorRest}.
+	 * @param ctx the parse tree
+	 */
+	void exitClassCreatorRest(EllParser.ClassCreatorRestContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#explicitGenericInvocation}.
+	 * @param ctx the parse tree
+	 */
+	void enterExplicitGenericInvocation(EllParser.ExplicitGenericInvocationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#explicitGenericInvocation}.
+	 * @param ctx the parse tree
+	 */
+	void exitExplicitGenericInvocation(EllParser.ExplicitGenericInvocationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#nonWildcardTypeArguments}.
+	 * @param ctx the parse tree
+	 */
+	void enterNonWildcardTypeArguments(EllParser.NonWildcardTypeArgumentsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#nonWildcardTypeArguments}.
+	 * @param ctx the parse tree
+	 */
+	void exitNonWildcardTypeArguments(EllParser.NonWildcardTypeArgumentsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#typeArgumentsOrDiamond}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeArgumentsOrDiamond(EllParser.TypeArgumentsOrDiamondContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#typeArgumentsOrDiamond}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeArgumentsOrDiamond(EllParser.TypeArgumentsOrDiamondContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#nonWildcardTypeArgumentsOrDiamond}.
+	 * @param ctx the parse tree
+	 */
+	void enterNonWildcardTypeArgumentsOrDiamond(EllParser.NonWildcardTypeArgumentsOrDiamondContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#nonWildcardTypeArgumentsOrDiamond}.
+	 * @param ctx the parse tree
+	 */
+	void exitNonWildcardTypeArgumentsOrDiamond(EllParser.NonWildcardTypeArgumentsOrDiamondContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#superSuffix}.
+	 * @param ctx the parse tree
+	 */
+	void enterSuperSuffix(EllParser.SuperSuffixContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#superSuffix}.
+	 * @param ctx the parse tree
+	 */
+	void exitSuperSuffix(EllParser.SuperSuffixContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link EllParser#explicitGenericInvocationSuffix}.
+	 * @param ctx the parse tree
+	 */
+	void enterExplicitGenericInvocationSuffix(EllParser.ExplicitGenericInvocationSuffixContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link EllParser#explicitGenericInvocationSuffix}.
+	 * @param ctx the parse tree
+	 */
+	void exitExplicitGenericInvocationSuffix(EllParser.ExplicitGenericInvocationSuffixContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link EllParser#arguments}.
 	 * @param ctx the parse tree
 	 */
@@ -572,14 +1018,4 @@ public interface EllListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArguments(EllParser.ArgumentsContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link EllParser#argumentList}.
-	 * @param ctx the parse tree
-	 */
-	void enterArgumentList(EllParser.ArgumentListContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link EllParser#argumentList}.
-	 * @param ctx the parse tree
-	 */
-	void exitArgumentList(EllParser.ArgumentListContext ctx);
 }
