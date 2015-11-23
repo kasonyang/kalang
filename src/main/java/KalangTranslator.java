@@ -56,9 +56,9 @@ import kalang.core.ClassNode;
 import kalang.core.FieldNode;
 import kalang.core.MethodNode;
 */
-import kalang.core.Modifier;
-import kalang.core.VarObject;
-import kalang.core.VarTable;
+//import kalang.core.Modifier;
+//import kalang.core.VarObject;
+//import kalang.core.VarTable;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
@@ -68,8 +68,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implements KalangVisitor<AstNode> {
 
 	List<Statement> codes = new LinkedList();
-	
-	VarTable vtb = new VarTable();
 	
 	ClassNode cls = null;
 	
@@ -294,11 +292,9 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 			type = ctx.type().getText();
 		}
 		boolean isReadOnly = ctx.getChild(0).getText() == "val";
-		VarObject vo = new VarObject(name,type,isReadOnly);
-		vtb.put(name, vo);
-		
+		//TODO readonly
 		NameExpr ve = new NameExpr();
-		ve.name = vo.getName();
+		ve.name = name;
 		VarDeclStmt vds = new VarDeclStmt();
 		vds.varName = name;
 		vds.type = type;
@@ -534,19 +530,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	public AstNode visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
 		NameExpr ve = new NameExpr();
 		String name = ctx.Identifier().getText();
-		ensureVar(name);
-		VarObject vo = vtb.get(name);
 		ve.name = name;
-		//ve.type = vo.getType();
 		return ve;
-	}
-
-	private VarObject ensureVar(String varName) {
-		VarObject vo = this.vtb.get(varName);
-		if(vo==null){
-			throw new RuntimeException("Undefined var:" + varName);
-		}
-		return vo;
 	}
 
 	@Override
