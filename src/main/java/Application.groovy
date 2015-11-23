@@ -18,7 +18,8 @@ class Application {
 	static void main(args) {
 		def input = '''\
 class  kava {
-  var f:Int;
+  var f:Int = 123;
+  var f2;
   def func:Int(){ 
     var a:Int=3;
     var b;
@@ -28,7 +29,7 @@ class  kava {
   }
   def func2(p,a:Int){
     for(var i=0;i<10;i++){
-      func();
+      func(i,2);
     }
   }
 }

@@ -33,10 +33,22 @@ class Ast2Java extends AstVisitor<String>{
 	
 	private String stmtDelim = ";"
 	
+	private String indent = "";
+	
+	private void incIndent(){
+		indent += "  "
+	}
+	
+	private void decIndent(){
+		indent = indent.substring(0,indent.length()-2)
+	}
+	
 	@Override
 	public String visitClassNode(ClassNode node) {
+		incIndent()
 		String fs = visit(node.fields).join("\r\n");
 		String mds = visit(node.methods).join("\r\n");
+		decIndent()
 		String mdf = node.modifier
 		String name = node.name
 		String parentStr = node.parentName ? " extends ${node.parentName}" :""
@@ -45,14 +57,16 @@ class Ast2Java extends AstVisitor<String>{
 
 	@Override
 	public String visitFieldNode(FieldNode node) {
-		"${node.modifier} ${node.type} ${node.name};"
+		indent + "${node.modifier} ${node.type} ${node.name}" +(node.initExpr?"=${visit(node.initExpr)}":"") +";"
 	}
 
 	@Override
 	public String visitMethodNode(MethodNode node) {
 		String ps = visit(node.parameters).join(",")
+		incIndent()
 		String body = visit(node.body)
-		"${node.modifier} ${node.type} ${node.name}(${ps}) ${body}"
+		decIndent()
+		indent + "${node.modifier} ${node.type} ${node.name}(${ps}) ${body}"
 	}
 
 	@Override
@@ -63,28 +77,30 @@ class Ast2Java extends AstVisitor<String>{
 
 	@Override
 	public String visitBlockStmt(BlockStmt node) {
+		incIndent()
 		String body = visit(node.statements).join("\r\n")
-		"{\n${body}\n}";
+		decIndent()
+		"{\n${body}\n" + indent + "}"
 	}
 
 	@Override
 	public String visitBreakStmt(BreakStmt node) {
-		"break;"
+		indent + "break;"
 	}
 
 	@Override
 	public String visitContinueStmt(ContinueStmt node) {
-		"continue;"
+		indent + "continue;"
 	}
 
 	@Override
 	public String visitExprStmt(ExprStmt node) {
-		return visit(node.expr) +';';
+		return indent + visit(node.expr) +';';
 	}
 
 	@Override
 	public String visitFieldDeclStmt(FieldDeclStmt node) {
-		"${node.fieldType} ${node.fieldName}"+(node.initExpr?"=${node.initExpr}":"") + ";"
+		indent + "${node.fieldType} ${node.fieldName}"+(node.initExpr?"=${visit(node.initExpr)}":"") + ";"
 	}
 
 	@Override
@@ -104,19 +120,22 @@ class Ast2Java extends AstVisitor<String>{
 		def pre = node.preConditionExpr;
 		def post = node.postConditionExpr;
 		def body = visit(node.loopBody)
+		def oldIndent = this.indent
+		this.indent = ""
 		this.stmtDelim = ""
 		def init = visit(node.initStmts).join(",");
+		this.indent = oldIndent
 		this.stmtDelim = ";"
 		if(pre){
-			return "for(${init};${visit(pre)};)${body}"
+			return indent + "for(${init};${visit(pre)};)${body}"
 		}else{
-			return "do{${body}}while(${visit(post)});"
+			return indent + "do{${body}}while(${visit(post)});"
 		}
 	}
 
 	@Override
 	public String visitReturnStmt(ReturnStmt node) {
-		"return ${visit(node.expr)};"
+		indent + "return ${visit(node.expr)};"
 	}
 
 	@Override
@@ -125,7 +144,7 @@ class Ast2Java extends AstVisitor<String>{
 		if(node.initExpr){
 			code+= "=${visit(node.initExpr)}"
 		}
-		code + this.stmtDelim;
+		indent + code + this.stmtDelim;
 	}
 
 	@Override

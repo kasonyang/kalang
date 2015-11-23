@@ -113,7 +113,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		fo.name=(ctx.Identifier().getText());
 		fo.type=(type);
 		if(ctx.varInit()!=null){
-			fo.initExpr = (ExprNode) (visit(ctx.varInit()));
+			fo.initExpr =  (visitVarInit(ctx.varInit()));
 		}
 		String modifier = "public";
 		if(ctx.Modifier()!=null){
@@ -272,8 +272,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	}
 
 	@Override
-	public AstNode visitVarInit(VarInitContext ctx) {
-		AstNode vo = visitExpression(ctx.expression());
+	public ExprNode visitVarInit(VarInitContext ctx) {
+		ExprNode vo = visitExpression(ctx.expression());
 		return vo;
 	}
 
