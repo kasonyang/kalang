@@ -50,54 +50,33 @@ import kalang.antlr.KalangParser.VarInitContext;
 import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import jast.ast.*;
-/*
-import kalang.core.ParameterNode;
-import kalang.core.ClassNode;
-import kalang.core.FieldNode;
-import kalang.core.MethodNode;
-*/
-//import kalang.core.Modifier;
-//import kalang.core.VarObject;
-//import kalang.core.VarTable;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 
-public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implements KalangVisitor<AstNode> {
+public class KalangTranslator extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
 
-	List<Statement> codes = new LinkedList();
 	
-	ClassNode cls = null;
-	
-	MethodNode method = null;
-	
-	InvocationExpr invocating;
-	
-	public ClassNode getClassObject(){
-		return cls;
-	}
-	
-	private void doVisitVarDeclAndInit(VarDeclContext vd,VarInitContext vi){
+	private VarDeclStmt doVisitVarDeclAndInit(VarDeclContext vd,VarInitContext vi){
 		VarDeclStmt vds = this.visitVarDecl(vd);
 		if(vi!=null){
-			AstNode val = visit(vi);
+			AstNode val = visitVarInit(vi);
 			vds.initExpr = (ExprNode) (val);
 		}
+		return vds;
 	}
 	
 	@Override
-	public AstNode visitStart(StartContext ctx) {
-		visit(ctx.compiliantUnit());
-		return null;
+	public ClassNode visitStart(StartContext ctx) {
+		return visitCompiliantUnit(ctx.compiliantUnit());
 	}
 
 	@Override
-	public AstNode visitCompiliantUnit(CompiliantUnitContext ctx) {
-		cls = new ClassNode();
-		cls.fields = new LinkedList();
-		cls.methods = new LinkedList();
+	public ClassNode visitCompiliantUnit(CompiliantUnitContext ctx) {
+		ClassNode cls = visitClassBody(ctx.classBody());
+		
 		cls.name=(ctx.Identifier(0).getText());
 		String modifier = "public";
 		if(ctx.Modifier()!=null){
@@ -107,27 +86,28 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 		if(ctx.Identifier().size()>1){
 			cls.parentName=(ctx.Identifier(1).getText());
 		}
-		visitClassBody(ctx.classBody());
-		return null;
+		return cls;
 	}
 
 	@Override
-	public AstNode visitClassBody(ClassBodyContext ctx) {
-		this.visitFieldDeclList(ctx.fieldDeclList());
-		this.visitMethodDeclList(ctx.methodDeclList());
-		return null;
+	public ClassNode visitClassBody(ClassBodyContext ctx) {
+		ClassNode cls = new ClassNode();
+		cls.fields = this.visitFieldDeclList(ctx.fieldDeclList());
+		cls.methods = this.visitMethodDeclList(ctx.methodDeclList());
+		return cls;
 	}
 
 	@Override
-	public AstNode visitFieldDeclList(FieldDeclListContext ctx) {
+	public List visitFieldDeclList(FieldDeclListContext ctx) {
+		List list = new LinkedList();
 		for(FieldDeclContext fd:ctx.fieldDecl()){
-			this.visitFieldDecl(fd);
+			list.add(this.visitFieldDecl(fd));
 		}
-		return null;
+		return list;
 	}
 
 	@Override
-	public AstNode visitFieldDecl(FieldDeclContext ctx) {
+	public FieldNode visitFieldDecl(FieldDeclContext ctx) {
 		String type = ctx.type()==null?"Object":ctx.type().getText();
 		FieldNode fo = new FieldNode();
 		fo.name=(ctx.Identifier().getText());
@@ -140,9 +120,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 			modifier = (ctx.Modifier().getText());
 		}
 		fo.modifier =(modifier);
-		cls.fields.add(fo);
 		//TODO visit setter and getter
-		return null;
+		return fo;
 	}
 
 	@Override
@@ -158,15 +137,16 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	}
 
 	@Override
-	public AstNode visitMethodDeclList(MethodDeclListContext ctx) {
+	public List visitMethodDeclList(MethodDeclListContext ctx) {
+		LinkedList list = new LinkedList();
 		for(MethodDeclContext md:ctx.methodDecl()){
-			visit(md);
+			list.add(visitMethodDecl(md));
 		}
-		return null;
+		return list;
 	}
 
 	@Override
-	public AstNode visitMethodDecl(MethodDeclContext ctx) {
+	public MethodNode visitMethodDecl(MethodDeclContext ctx) {
 		String name = ctx.Identifier().getText();
 		String type = ctx.type()==null ? "Object" :ctx.type().getText();
 		String mdf = "public";
@@ -177,19 +157,14 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 		if(ctx.STATIC()!=null){
 			isStatic = true;
 		}
-		this.method = new MethodNode(mdf,type,name,isStatic);
+		MethodNode method = new MethodNode(mdf,type,name,isStatic);
 		BlockStmt body = new BlockStmt();
 		method.body = body;
-		method.parameters = new LinkedList();
-		this.codes = body.statements;
 		if(ctx.argumentDeclList()!=null){
-			visit(ctx.argumentDeclList());
+			method.parameters = visitArgumentDeclList(ctx.argumentDeclList());
 		}
-		visit(ctx.statList());
-		this.cls.methods.add(method);
-		method = null;
-		codes=null;
-		return null;
+		body.statements = visitStatList(ctx.statList());
+		return method;
 	}
 
 	@Override
@@ -199,15 +174,16 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	}
 
 	@Override
-	public AstNode visitArgumentDeclList(ArgumentDeclListContext ctx) {
+	public List visitArgumentDeclList(ArgumentDeclListContext ctx) {
+		List list = new LinkedList();
 		for(ArgumentDeclContext ad:ctx.argumentDecl()){
-			visit(ad);
+			list.add(visitArgumentDecl(ad));
 		}
-		return null;
+		return list;
 	}
 
 	@Override
-	public AstNode visitArgumentDecl(ArgumentDeclContext ctx) {
+	public ParameterNode visitArgumentDecl(ArgumentDeclContext ctx) {
 		String name = ctx.Identifier().getText();
 		String type = "Object";
 		if(ctx.type()!=null){
@@ -216,16 +192,16 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 		ParameterNode ao = new ParameterNode();
 		ao.type = type;
 		ao.name = name;
-		this.method.parameters.add(ao);
-		return null;
+		return ao;
 	}
 
 	@Override
-	public AstNode visitStatList(StatListContext ctx) {
+	public List visitStatList(StatListContext ctx) {
+		List list = new LinkedList();
 		for(StatContext s:ctx.stat()){
-			visit(s);
+			list.add(visitStat(s));
 		}
-		return null;
+		return list;
 	}
 
 	
@@ -238,13 +214,9 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 		ifStmt.falseBody = falseBody;
 		ExprNode expr = visitExpression(ctx.expression());
 		ifStmt.conditionExpr = expr;
-		List<Statement> oldCodes = codes;
-		codes = trueBody.statements;
-		visit(ctx.statList());
-		codes = falseBody.statements;
-		visit(ctx.ifStatSuffix());
-		codes = oldCodes;
-		return null;
+		trueBody.statements = visitStatList(ctx.statList());
+		falseBody.statements = visitIfStatSuffix(ctx.ifStatSuffix());
+		return ifStmt;
 	}
 
 	private ExprNode visitExpression(ExpressionContext expression) {
@@ -252,15 +224,15 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	}
 
 	@Override
-	public AstNode visitIfStatSuffix(IfStatSuffixContext ctx) {
-		visit(ctx.statList());
-		return null;
+	public List visitIfStatSuffix(IfStatSuffixContext ctx) {
+		LinkedList list = new LinkedList();
+		list.add(visitStatList(ctx.statList()));
+		return list;
 	}
 
 	@Override
-	public AstNode visitStat(StatContext ctx) {
-		visitAll(ctx);
-		return null;
+	public Statement visitStat(StatContext ctx) {
+		return (Statement) visit(ctx.getChild(0));
 	}
 
 	private void visitAll(ParserRuleContext ctx) {
@@ -270,18 +242,16 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	}
 
 	@Override
-	public AstNode visitReturnStat(ReturnStatContext ctx) {
+	public ReturnStmt visitReturnStat(ReturnStatContext ctx) {
 		ExprNode expr = visitExpression(ctx.expression());
 		ReturnStmt rs = new ReturnStmt();
 		rs.expr = expr;
-		codes.add(rs);
-		return null;
+		return rs;
 	}
 
 	@Override
 	public AstNode visitVarDeclStat(VarDeclStatContext ctx) {
-		this.doVisitVarDeclAndInit(ctx.varDecl(), ctx.varInit());		
-		return null;
+		return this.doVisitVarDeclAndInit(ctx.varDecl(), ctx.varInit());		
 	}
 
 	@Override
@@ -298,28 +268,25 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 		VarDeclStmt vds = new VarDeclStmt();
 		vds.varName = name;
 		vds.type = type;
-		codes.add(vds);
 		return vds;
 	}
 
 	@Override
 	public AstNode visitVarInit(VarInitContext ctx) {
-		AstNode vo = visit(ctx.expression());
+		AstNode vo = visitExpression(ctx.expression());
 		return vo;
 	}
 
 	@Override
 	public AstNode visitBreakStat(BreakStatContext ctx) {
 		BreakStmt bs = new BreakStmt();
-		codes.add(bs);
-		return null;
+		return bs;
 	}
 
 	@Override
 	public AstNode visitContinueStat(ContinueStatContext ctx) {
 		ContinueStmt cs = new ContinueStmt();
-		codes.add(cs);
-		return null;
+		return cs;
 	}
 
 	@Override
@@ -327,10 +294,9 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 		WhileStmt ws = new WhileStmt();
 		BlockStmt body = new BlockStmt();
 		ws.body = body;
-		AstNode expr = visit(ctx.expression());
+		AstNode expr = visitExpression(ctx.expression());
 		ws.conditionExpr = (ExprNode) expr;
-		this.codes = body.statements;
-		visit(ctx.statList());
+		body.statements = visitStatList(ctx.statList());
 		return null;
 	}
 
@@ -342,62 +308,52 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	}
 
 	@Override
-	public AstNode visitForStat(ForStatContext ctx) {
+	public LoopStmt visitForStat(ForStatContext ctx) {
 		LoopStmt ls = new LoopStmt();
 		BlockStmt body = new BlockStmt();
 		ls.loopBody = body;
-		//VarTable oVtb = this.vtb;
-		//VarTable forVtb = new VarTable(oVtb);
-		//vtb = ls.varTable;
-		List<Statement> oCodes = codes;
-		codes = ls.initStmts;
-		visitForInit(ctx.forInit());
-		AstNode texpr = visit(ctx.expression());
+		ls.initStmts = visitForInit(ctx.forInit());
+		AstNode texpr = visitExpression(ctx.expression());
 		ls.preConditionExpr = (ExprNode) texpr;
-		//List<Statement> oCodes = this.codes;
-		codes = body.statements;
-		visit(ctx.statList());
-		visit(ctx.forUpdate());
-		codes = oCodes;
-		//vtb = oVtb;
-		codes.add(ls);
-		return null;
+		body.statements = visitStatList(ctx.statList());
+		body.statements.addAll(visitForUpdate(ctx.forUpdate()));
+		return ls;
 	}
 
 	@Override
-	public AstNode visitForInit(ForInitContext ctx) {
-		this.doVisitVarDeclAndInit(ctx.varDecl(), ctx.varInit());
-		//visitAll(ctx);
-		return null;
+	public List visitForInit(ForInitContext ctx) {
+		List list = new LinkedList();
+		VarDeclStmt vs = this.doVisitVarDeclAndInit(ctx.varDecl(), ctx.varInit());
+		list.add(vs);
+		return list;
 	}
 
 	@Override
-	public AstNode visitForUpdate(ForUpdateContext ctx) {
-		visitAll(ctx);
-		return null;
+	public List visitForUpdate(ForUpdateContext ctx) {
+		return visitExpressions(ctx.expressions());
 	}
 
 	@Override
-	public AstNode visitExpressions(ExpressionsContext ctx) {
+	public List visitExpressions(ExpressionsContext ctx) {
+		List list = new LinkedList();
 		for(ExpressionContext e:ctx.expression()){
-			AstNode expr = visit(e);
-			codes.add(new ExprStmt((ExprNode) expr));
+			AstNode expr = visitExpression(e);
+			list.add(new ExprStmt((ExprNode) expr));
 		}
-		return null;
+		return list;
 	}
 
 	@Override
-	public AstNode visitExprStat(ExprStatContext ctx) {
-		AstNode expr = visit(ctx.expression());
+	public ExprStmt visitExprStat(ExprStatContext ctx) {
+		AstNode expr = visitExpression(ctx.expression());
 		ExprStmt es = new ExprStmt();
 		es.expr = (ExprNode) expr;
-		codes.add(es);
-		return null;
+		return es;
 	}
 
 	@Override
 	public AstNode visitExprPrimay(ExprPrimayContext ctx) {
-		return visit(ctx.primary());
+		return (AstNode) visit(ctx.primary());
 	}
 
 	@Override
@@ -412,13 +368,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 
 	@Override
 	public AstNode visitExprAssign(ExprAssignContext ctx) {
-		//String varName = ctx.Identifier().getText();
-		//VarObject vo = this.ensureVar(varName);
-		AstNode to = visit(ctx.expression(0));
-		AstNode from = visit(ctx.expression(1));
-		//NameExpr ve = new NameExpr();
-		//ve.type = vo.getType();
-		//ve.varName = vo.getName();
+		AstNode to = visitExpression(ctx.expression(0));
+		AstNode from = visitExpression(ctx.expression(1));
 		AssignExpr aexpr = new AssignExpr();
 		aexpr.from = (ExprNode) from;
 		aexpr.to = (ExprNode) to;
@@ -429,28 +380,24 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	public AstNode visitExprMidOp(ExprMidOpContext ctx) {
 		String op = ctx.getChild(1).getText();
 		BinaryExpr be = new BinaryExpr();
-		be.expr1 = (ExprNode) visit(ctx.expression(0));
-		be.expr2 = (ExprNode) visit(ctx.expression(1));
+		be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
+		be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
 		be.operation = op;
 		return be;
 	}
 	
 	private AstNode getInvocationExpr(AstNode expr,String methodName,ArgumentsContext arguments){
 		InvocationExpr is = new InvocationExpr();
-		is.arguments = new LinkedList();
-		InvocationExpr oldInv = this.invocating;
 		is.methodName =methodName;
 		is.target = (ExprNode) expr;
-		this.invocating = is;
-		visit(arguments);
-		this.invocating = oldInv;
+		is.arguments = visitArguments(arguments);
 		return is;
 	}
 
 	@Override
 	public AstNode visitExprInvocation(ExprInvocationContext ctx) {
 		return this.getInvocationExpr(
-				visit(ctx.expression())
+				visitExpression(ctx.expression())
 				, ctx.Identifier().getText()
 				, ctx.arguments());
 	}
@@ -458,14 +405,14 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	@Override
 	public AstNode visitExprNotOp(ExprNotOpContext ctx) {
 		UnaryExpr ue = new UnaryExpr();
-		ue.expr = (ExprNode) visit(ctx.expression());
+		ue.expr = (ExprNode) visitExpression(ctx.expression());
 		ue.preOperation = ctx.getChild(0).getText();
 		return ue;
 	}
 
 	@Override
 	public AstNode visitExprGetField(ExprGetFieldContext ctx) {
-		AstNode expr = visit(ctx.expression());
+		AstNode expr = visitExpression(ctx.expression());
 		String name = ctx.Identifier().getText();
 		FieldExpr fe = new FieldExpr();
 		fe.target = (ExprNode) expr;
@@ -476,8 +423,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	@Override
 	public AstNode visitExprLogicCmp(ExprLogicCmpContext ctx) {
 		BinaryExpr be = new BinaryExpr();
-		be.expr1 = (ExprNode) visit(ctx.expression(0));
-		be.expr2 = (ExprNode) visit(ctx.expression(1));
+		be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
+		be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
 		be.operation = ctx.getChild(1).getText();
 		return be;
 	}
@@ -486,43 +433,43 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	public AstNode visitExprSelfOp(ExprSelfOpContext ctx) {
 		UnaryExpr ue = new UnaryExpr();
 		ue.postOperation = ctx.getChild(1).getText();
-		ue.expr = (ExprNode) visit(ctx.expression());
+		ue.expr = (ExprNode) visitExpression(ctx.expression());
 		return ue;
 	}
 
 	@Override
 	public AstNode visitExprLogic(ExprLogicContext ctx) {
 		BinaryExpr be = new BinaryExpr();
-		be.expr1 = (ExprNode) visit(ctx.expression(0));
-		be.expr2 = (ExprNode) visit(ctx.expression(1));
+		be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
+		be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
 		be.operation = ctx.getChild(1).getText();
 		return be;
 	}
 
 	@Override
-	public AstNode visitExprSelfOpPre(ExprSelfOpPreContext ctx) {
+	public UnaryExpr visitExprSelfOpPre(ExprSelfOpPreContext ctx) {
 		String op = ctx.getChild(0).getText();
 		UnaryExpr ue = new UnaryExpr();
-		ue.expr = (ExprNode) visit(ctx.expression());
+		ue.expr = (ExprNode) visitExpression(ctx.expression());
 		ue.preOperation = op;
 		return ue;
 	}
 
 	@Override
-	public AstNode visitExprGetArrayElement(ExprGetArrayElementContext ctx) {
+	public ElementExpr visitExprGetArrayElement(ExprGetArrayElementContext ctx) {
 		ElementExpr ee = new ElementExpr();
-		ee.target = (ExprNode) visit(ctx.expression(0));
-		ee.key = (ExprNode) visit(ctx.expression(1));
+		ee.target = (ExprNode) visitExpression(ctx.expression(0));
+		ee.key = (ExprNode) visitExpression(ctx.expression(1));
 		return ee;
 	}
 
 	@Override
-	public AstNode visitPrimayParen(PrimayParenContext ctx) {
-		return visit(ctx.expression());
+	public ExprNode visitPrimayParen(PrimayParenContext ctx) {
+		return visitExpression(ctx.expression());
 	}
 
 	@Override
-	public AstNode visitPrimaryLiteral(PrimaryLiteralContext ctx) {
+	public ConstExpr visitPrimaryLiteral(PrimaryLiteralContext ctx) {
 		return new ConstExpr(ctx.literal().getText());
 	}
 
@@ -541,12 +488,13 @@ public class KalangTranslator extends AbstractParseTreeVisitor<AstNode> implemen
 	}
 
 	@Override
-	public AstNode visitArguments(ArgumentsContext ctx) {
+	public List<ExprNode> visitArguments(ArgumentsContext ctx) {
+		LinkedList<ExprNode> list = new LinkedList();
 		for(ExpressionContext e:ctx.expression()){
-			AstNode expr = visit(e);
-			this.invocating.arguments.add((ExprNode) expr);
+			ExprNode expr = visitExpression(e);
+			list.add(expr);
 		}
-		return null;
+		return list;
 	}
 
 }

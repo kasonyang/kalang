@@ -39,8 +39,8 @@ class  kava {
 		def parser = new KalangParser(tokens);
 		def tree = parser.start()
 		def visitor = new KalangTranslator();
-		def ret = visitor.visit(tree);
-		def cls = visitor.getClassObject();
+		def cls = visitor.visit(tree);
+		//def cls = visitor.getClassObject();
 		def typeChecker = new TypeChecker();
 		def vtb = typeChecker.check(cls)
 		println vtb
