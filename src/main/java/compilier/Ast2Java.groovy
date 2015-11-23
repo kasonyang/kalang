@@ -1,4 +1,5 @@
 package compilier
+import jast.ast.AbstractAstVisitor
 import jast.ast.AssignExpr;
 import jast.ast.BinaryExpr;
 import jast.ast.BlockStmt;
@@ -16,6 +17,7 @@ import jast.ast.ForStmt;
 import jast.ast.IAstVisitor
 import jast.ast.AstVisitor
 import jast.ast.IfStmt;
+import jast.ast.ImportNode;
 import jast.ast.InvocationExpr;
 import jast.ast.LoopStmt;
 import jast.ast.MethodNode;
@@ -27,7 +29,7 @@ import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.WhileStmt;
 //@groovy.transform.TypeChecked
-class Ast2Java extends AstVisitor<String>{
+class Ast2Java extends AbstractAstVisitor<String>{
 
 	protected String code = "";
 	
@@ -45,6 +47,7 @@ class Ast2Java extends AstVisitor<String>{
 	
 	@Override
 	public String visitClassNode(ClassNode node) {
+		String imports = visit(node.imports).join("\r\n")
 		incIndent()
 		String fs = visit(node.fields).join("\r\n");
 		String mds = visit(node.methods).join("\r\n");
@@ -52,7 +55,7 @@ class Ast2Java extends AstVisitor<String>{
 		String mdf = node.modifier
 		String name = node.name
 		String parentStr = node.parentName ? " extends ${node.parentName}" :""
-		return "${mdf} class ${name} ${parentStr} {\r\n${fs}\r\n${mds}\r\n}"
+		return "${imports}\r\n${mdf} class ${name} ${parentStr} {\r\n${fs}\r\n${mds}\r\n}"
 	}
 
 	@Override
@@ -99,20 +102,14 @@ class Ast2Java extends AstVisitor<String>{
 	}
 
 	@Override
-	public String visitFieldDeclStmt(FieldDeclStmt node) {
-		indent + "${node.fieldType} ${node.fieldName}"+(node.initExpr?"=${visit(node.initExpr)}":"") + ";"
-	}
-
-	@Override
-	public String visitForStmt(ForStmt node) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public String visitIfStmt(IfStmt node) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String visitImportNode(ImportNode node) {
+		"import ${node.name};"
 	}
 
 	@Override
@@ -145,12 +142,6 @@ class Ast2Java extends AstVisitor<String>{
 			code+= "=${visit(node.initExpr)}"
 		}
 		indent + code + this.stmtDelim;
-	}
-
-	@Override
-	public String visitWhileStmt(WhileStmt node) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

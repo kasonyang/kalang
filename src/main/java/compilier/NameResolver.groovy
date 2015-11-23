@@ -30,12 +30,22 @@ import kalang.core.VarTable
 
 class NameResolver extends AstVisitor {
 
-	private VarTable varTable ;
+	private VarTable<String> parentVarTable
+	
+	private VarTable<String> varTable ;
 	
 	private Map<NameExpr,VarObject> vars
+	
+	public NameResolver(){
+		this.parentVarTable = new VarTable();
+	}
+	
+	public void setDefault(String name,VarObject var){
+		this.parentVarTable.put(name,var)
+	}
 
 	public Map<NameExpr,VarObject> resolve(AstNode node){
-		varTable = new VarTable()
+		varTable = new VarTable(this.parentVarTable)
 		vars = new HashMap();
 		visit(node);
 		def ret = vars;

@@ -29,6 +29,46 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitCompiliantUnit(KalangParser.CompiliantUnitContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#importDeclList}.
+	 * @param ctx the parse tree
+	 */
+	void enterImportDeclList(KalangParser.ImportDeclListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#importDeclList}.
+	 * @param ctx the parse tree
+	 */
+	void exitImportDeclList(KalangParser.ImportDeclListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KalangParser#importDecl}.
+	 * @param ctx the parse tree
+	 */
+	void enterImportDecl(KalangParser.ImportDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#importDecl}.
+	 * @param ctx the parse tree
+	 */
+	void exitImportDecl(KalangParser.ImportDeclContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KalangParser#importPath}.
+	 * @param ctx the parse tree
+	 */
+	void enterImportPath(KalangParser.ImportPathContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#importPath}.
+	 * @param ctx the parse tree
+	 */
+	void exitImportPath(KalangParser.ImportPathContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KalangParser#qualifiedName}.
+	 * @param ctx the parse tree
+	 */
+	void enterQualifiedName(KalangParser.QualifiedNameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#qualifiedName}.
+	 * @param ctx the parse tree
+	 */
+	void exitQualifiedName(KalangParser.QualifiedNameContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#classBody}.
 	 * @param ctx the parse tree
 	 */

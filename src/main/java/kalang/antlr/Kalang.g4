@@ -5,7 +5,20 @@ start:
 ;
 
 compiliantUnit:
+  importDeclList
   Modifier? 'class' Identifier (':' Identifier)? '{' classBody '}'
+;
+importDeclList:
+  importDecl*
+;
+importDecl:
+   'import' STATIC? importPath ';'
+;
+importPath:
+  qualifiedName ('.' '*')?
+;
+qualifiedName:
+   Identifier ('.' Identifier)*
 ;
 classBody:
   fieldDeclList
@@ -15,7 +28,7 @@ fieldDeclList:
   fieldDecl*
 ;
 fieldDecl:
-  Modifier? STATIC? ('val'|'var') Identifier (':' type)? varInit? setter? getter? ';'
+  Modifier? STATIC? ('val'|'var') Identifier ('as' type)? varInit? setter? getter? ';'
 ;
 setter:
   'set' '(' argumentDeclList ')' '{' statList '}'
@@ -27,7 +40,7 @@ methodDeclList:
   methodDecl*
 ;
 methodDecl:
-   Modifier? STATIC? 'def' Identifier (':' type)? '(' argumentDeclList? ')' '{' statList '}'
+   Modifier? STATIC? 'var' Identifier  '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
 ;
 type:
     (Identifier|DOUBLE|LONG|FLOAT|INT)
@@ -36,7 +49,7 @@ argumentDeclList:
    argumentDecl (',' argumentDecl)*
 ;
 argumentDecl:   
-  Identifier (':' type)?
+  Identifier ('as' type)?
 ;
 
 statList:
@@ -69,7 +82,7 @@ varDeclStat:
   varDecl varInit? ';'
 ;
 varDecl:
-  ('var'|'val') Identifier (':' type)?
+  ('var'|'val') Identifier ('as' type)?
 ;
 varInit:
  '=' expression

@@ -4,6 +4,7 @@ import jast.ast.NameExpr
 import kalang.antlr.KalangLexer
 import kalang.antlr.KalangParser
 import kalang.core.VarObject
+import kalang.core.VarTable
 import kava.antlr.*
 import kava.compiler.Optimizer;
 import kava.compiler.TheKavaVisitor;
@@ -18,17 +19,19 @@ import org.antlr.v4.runtime.CommonTokenStream
 class Application {
 	static void main(args) {
 		def input = '''\
+import java.util.*;
 class  kava {
-  var f:Int = 123;
+  var f as Int = 123;
   var f2;
-  def func:Int(){ 
-    var a:Int=3;
+  
+  var func() as Int{
+    var a as Int=3;
     var b;
     a=b + 1;
     b.func(a);
     return a;
   }
-  def func2(p,a:Int){
+  var func2(p,a as Int){
     for(var i=0;i<10;i++){
       func(i,2);
     }
@@ -45,6 +48,7 @@ class  kava {
 		def cls = visitor.visit(tree);
 		//def cls = visitor.getClassObject();
 		def typeChecker = new NameResolver();
+		typeChecker.setDefault("this",new VarObject("this","this"))
 		def names = typeChecker.resolve(cls)
 		nameCheck(names)
 		println names

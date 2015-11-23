@@ -32,12 +32,16 @@ import kalang.antlr.KalangParser.ForUpdateContext;
 import kalang.antlr.KalangParser.GetterContext;
 import kalang.antlr.KalangParser.IfStatContext;
 import kalang.antlr.KalangParser.IfStatSuffixContext;
+import kalang.antlr.KalangParser.ImportDeclContext;
+import kalang.antlr.KalangParser.ImportDeclListContext;
+import kalang.antlr.KalangParser.ImportPathContext;
 import kalang.antlr.KalangParser.LiteralContext;
 import kalang.antlr.KalangParser.MethodDeclContext;
 import kalang.antlr.KalangParser.MethodDeclListContext;
 import kalang.antlr.KalangParser.PrimaryIdentifierContext;
 import kalang.antlr.KalangParser.PrimaryLiteralContext;
 import kalang.antlr.KalangParser.PrimayParenContext;
+import kalang.antlr.KalangParser.QualifiedNameContext;
 import kalang.antlr.KalangParser.ReturnStatContext;
 import kalang.antlr.KalangParser.SetterContext;
 import kalang.antlr.KalangParser.StartContext;
@@ -75,8 +79,10 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public ClassNode visitCompiliantUnit(CompiliantUnitContext ctx) {
-		ClassNode cls = visitClassBody(ctx.classBody());
+		List<ImportNode> imports = this.visitImportDeclList(ctx.importDeclList());
 		
+		ClassNode cls = visitClassBody(ctx.classBody());
+		cls.imports = imports;
 		cls.name=(ctx.Identifier(0).getText());
 		String modifier = "public";
 		if(ctx.Modifier()!=null){
@@ -235,11 +241,11 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		return (Statement) visit(ctx.getChild(0));
 	}
 
-	private void visitAll(ParserRuleContext ctx) {
+	/*private void visitAll(ParserRuleContext ctx) {
 		for(ParseTree c:ctx.children){
 			visit(c);
 		}
-	}
+	}*/
 
 	@Override
 	public ReturnStmt visitReturnStat(ReturnStatContext ctx) {
@@ -495,6 +501,38 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 			list.add(expr);
 		}
 		return list;
+	}
+	
+	private List doVisitAll(List list){
+		List retList = new LinkedList();
+		for(Object i:list){
+			retList.add(visit((ParseTree) i));
+		}
+		return retList;
+	}
+
+	@Override
+	public List<ImportNode> visitImportDeclList(ImportDeclListContext ctx) {
+		return (List<ImportNode>) doVisitAll(ctx.importDecl());
+	}
+
+	@Override
+	public ImportNode visitImportDecl(ImportDeclContext ctx) {
+		String name = ctx.importPath().getText();
+		ImportNode in = new ImportNode(name);
+		return in;
+	}
+
+	@Override
+	public Object visitQualifiedName(QualifiedNameContext ctx) {
+		//do nothing
+		return null;
+	}
+
+	@Override
+	public Object visitImportPath(ImportPathContext ctx) {
+		//do nothing
+		return null;
 	}
 
 }
