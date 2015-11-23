@@ -28,25 +28,37 @@ import jast.ast.WhileStmt;
 import kalang.core.VarObject
 import kalang.core.VarTable
 
-class TypeChecker extends AstVisitor {
+class NameResolver extends AstVisitor {
 
 	private VarTable varTable ;
+	
+	private Map<NameExpr,VarObject> vars
 
-	public VarTable check(AstNode node){
+	public Map<NameExpr,VarObject> resolve(AstNode node){
 		varTable = new VarTable()
+		vars = new HashMap();
 		visit(node);
-		def vt = varTable;
+		def ret = vars;
+		//def vt = varTable;
 		varTable = null;
-		return vt;
+		vars = null;
+		return ret
+		//return vt;
+	}
+
+	@Override
+	public Object visitLoopStmt(LoopStmt node) {
+		def oldVtb = varTable;
+		varTable = new VarTable(oldVtb);
+		this.visitChildren(node)
+		varTable = oldVtb
 	}
 
 	@Override
 	public Object visitNameExpr(NameExpr node) {
 		String name = node.name;
-		if(!varTable.get(name)){
-			System.err.println "undefined var:${name}"
-		}
-		// TODO Auto-generated method stub
+		def var = varTable.get(name);
+		vars.put(node,var)
 		return null;
 	}
 

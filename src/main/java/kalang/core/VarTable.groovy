@@ -1,10 +1,10 @@
 package kalang.core
 
-class VarTable {
+class VarTable<T> {
 	
-	private HashMap<Object,VarObject> vars = [:]
+	private HashMap<T,VarObject> vars = [:]
 	
-	private VarTable parent
+	VarTable parent
 	
 	VarTable(){
 		
@@ -14,14 +14,18 @@ class VarTable {
 		this.parent = parent
 	}
 	
-	boolean put(Object key,VarObject var){
+	boolean put(T key,VarObject var){
 		vars.put(key,var)
 	}
 	
-	VarObject get(Object key){
+	boolean exist(T key,boolean includeParent=true){
+		return get(key,includeParent) !=null
+	}
+	
+	VarObject get(T key,boolean includeParent = true){
 		VarObject est = vars.get(key)
-		if(est==null && parent){
-			est = parent.get(key)
+		if(est==null && includeParent && parent){
+			est = parent.get(key,includeParent)
 		}
 		return est;
 	}
