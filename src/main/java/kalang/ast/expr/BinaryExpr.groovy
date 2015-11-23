@@ -1,7 +1,7 @@
 package kalang.ast.expr
 
-class BinaryExpr extends Expression {
-	public Expression expr1,expr2
+class BinaryExpr extends AstNode {
+	public AstNode expr1,expr2
 	public String operation
 	
 	public BinaryExpr(){

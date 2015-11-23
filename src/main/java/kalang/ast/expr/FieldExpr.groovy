@@ -1,7 +1,7 @@
 package kalang.ast.expr
 
-class FieldExpr extends Expression {
-	public Expression target
+class FieldExpr extends AstNode {
+	public AstNode target
 	public String fieldName
 	
 	String toString(){

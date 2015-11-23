@@ -1,12 +1,12 @@
 package kalang.core
 
-import kalang.ast.expr.Expression
+import kalang.ast.expr.AstNode
 
 class FieldObject {
 	String modifier
 	String name
 	String type
-	Expression initExpr
+	AstNode initExpr
 	
 	String toString(){
 		"${modifier} ${type} ${name};"

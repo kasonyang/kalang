@@ -1,6 +1,6 @@
 package kalang.ast.expr
 
-class ConstExpr extends Expression {
+class ConstExpr extends AstNode {
 	public String value
 	
 	ConstExpr(String value){

@@ -1,8 +1,8 @@
 package kalang.ast.expr
 
-class ElementExpr extends Expression {
+class ElementExpr extends AstNode {
 	
-	public Expression key
+	public AstNode key
 
-	public Expression target	
+	public AstNode target	
 }

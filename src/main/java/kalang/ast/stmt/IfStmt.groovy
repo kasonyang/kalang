@@ -1,10 +1,10 @@
 package kalang.ast.stmt
 
-import kalang.ast.expr.Expression
+import kalang.ast.expr.AstNode
 
 class IfStmt {
 	
-	public Expression testExpr
+	public AstNode testExpr
 	
 	public BlockStmt trueStmt
 	

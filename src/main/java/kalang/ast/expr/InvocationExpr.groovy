@@ -1,9 +1,9 @@
 package kalang.ast.expr
 
-class InvocationExpr extends Expression {
-	public Expression invocationTarget
+class InvocationExpr extends AstNode {
+	public AstNode invocationTarget
 	public String invocationMethod
-	public List<Expression> invocationArguments = []
+	public List<AstNode> invocationArguments = []
 	
 	String toString(){
 		def args = this.invocationArguments.join(",")

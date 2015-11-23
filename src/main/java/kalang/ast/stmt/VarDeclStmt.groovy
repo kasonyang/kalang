@@ -1,11 +1,11 @@
 package kalang.ast.stmt
 
-import kalang.ast.expr.Expression
+import kalang.ast.expr.AstNode
 import kalang.ast.expr.VarExpr
 
 class VarDeclStmt extends Statement {
 	public VarExpr var
-	public Expression initExpr
+	public AstNode initExpr
 	
 	String toString(){
 		String type = var.type

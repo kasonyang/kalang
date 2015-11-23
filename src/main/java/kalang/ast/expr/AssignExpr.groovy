@@ -1,8 +1,8 @@
 package kalang.ast.expr
 
-class AssignExpr  extends Expression{
-	public Expression from
-	public Expression to
+class AssignExpr  extends AstNode{
+	public AstNode from
+	public AstNode to
 	
 	String toString(){
 		return "${to}=${from}"

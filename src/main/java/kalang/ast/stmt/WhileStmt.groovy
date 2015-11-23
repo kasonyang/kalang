@@ -1,9 +1,9 @@
 package kalang.ast.stmt
 
-import kalang.ast.expr.Expression
+import kalang.ast.expr.AstNode
 
 class WhileStmt extends Statement {
-	public Expression testExpr
+	public AstNode testExpr
 	public BlockStmt body
 	
 	String toString(){

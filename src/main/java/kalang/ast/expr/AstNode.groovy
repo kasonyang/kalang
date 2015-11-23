@@ -1,5 +1,5 @@
 package kalang.ast.expr
 
-class Expression {
+class AstNode {
 	public String type
 }

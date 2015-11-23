@@ -1,6 +1,6 @@
 package kalang.ast.expr
 
-class VarExpr extends Expression {
+class VarExpr extends AstNode {
 	
 	public String varName
 	

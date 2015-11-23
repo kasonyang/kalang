@@ -1,12 +1,12 @@
 package kalang.ast.stmt
 
-import kalang.ast.expr.Expression;
+import kalang.ast.expr.AstNode;
 import kalang.core.VarTable
 
 class LoopStmt extends Statement {
 	public BlockStmt loopBlock = new BlockStmt();
-	public Expression prefixTestExpr
-	public Expression suffixTestExpr
+	public AstNode prefixTestExpr
+	public AstNode suffixTestExpr
 	public VarTable varTable = new VarTable();
 	
 	String toString(){

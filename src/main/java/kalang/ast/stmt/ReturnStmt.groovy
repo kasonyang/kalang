@@ -1,9 +1,9 @@
 package kalang.ast.stmt
 
-import kalang.ast.expr.Expression
+import kalang.ast.expr.AstNode
 
 class ReturnStmt extends Statement {
-	public Expression expr
+	public AstNode expr
 	
 	String toString(){
 		if(expr){

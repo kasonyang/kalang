@@ -30,4 +30,9 @@ class VarTable {
 		return vars.values().toArray()
 	}
 	
+	String toString(){
+		def vos = toArray()
+		return vos.toString()
+	}
+	
 }

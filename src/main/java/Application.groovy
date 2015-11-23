@@ -1,3 +1,5 @@
+import compilier.Ast2Java
+import compilier.TypeChecker
 import kalang.antlr.KalangLexer
 import kalang.antlr.KalangParser
 import kava.antlr.*
@@ -18,7 +20,7 @@ class Application {
 class  kava {
   var f:Int;
   def func:Int(){ 
-    var a:Int;
+    var a:Int=3;
     var b;
     a=b + 1;
     b.func(a);
@@ -39,7 +41,11 @@ class  kava {
 		def visitor = new KalangTranslator();
 		def ret = visitor.visit(tree);
 		def cls = visitor.getClassObject();
-		println cls
+		def typeChecker = new TypeChecker();
+		def vtb = typeChecker.check(cls)
+		println vtb
+		def a2j = new Ast2Java();
+		println a2j.visit(cls);
 		//def tb = visitor.getVarTable();
 		//def cmpClass = visitor.getCompiledClass();
 		//def opc = visitor.getOpcodes();

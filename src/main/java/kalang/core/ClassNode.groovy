@@ -1,6 +1,6 @@
 package kalang.core
 @groovy.transform.CompileStatic
-class ClassObject {
+class ClassNode {
 	String name
 	String modifier
 	public final List<MethodObject> methods = []

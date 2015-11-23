@@ -4,6 +4,9 @@ class VarObject {
 	boolean isReadOnly
 	String name
 	String type
+	VarObject(){
+		
+	}
 	VarObject(String name,String type,boolean readOnly = false){
 		this.name = name
 		this.type = type

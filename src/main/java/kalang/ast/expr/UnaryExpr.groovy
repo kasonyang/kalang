@@ -1,7 +1,7 @@
 package kalang.ast.expr
 
-class UnaryExpr extends Expression {
-	public Expression target
+class UnaryExpr extends AstNode {
+	public AstNode target
 	public String operation
 	public boolean leftOperate = false
 	

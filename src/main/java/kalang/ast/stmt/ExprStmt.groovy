@@ -1,9 +1,9 @@
 package kalang.ast.stmt
 
-import kalang.ast.expr.Expression
+import kalang.ast.expr.AstNode
 
 class ExprStmt extends Statement {
-	public Expression expr
+	public AstNode expr
 	
 	public ExprStmt(){}
 	
