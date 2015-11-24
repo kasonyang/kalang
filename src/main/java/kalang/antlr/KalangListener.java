@@ -538,4 +538,14 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArguments(KalangParser.ArgumentsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KalangParser#modifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterModifier(KalangParser.ModifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#modifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitModifier(KalangParser.ModifierContext ctx);
 }

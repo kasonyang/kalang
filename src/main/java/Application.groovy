@@ -1,6 +1,5 @@
-import compilier.Ast2Java
-import compilier.NameResolver
-import jast.ast.NameExpr
+import compilier.*
+import jast.ast.*
 import kalang.antlr.KalangLexer
 import kalang.antlr.KalangParser
 import kalang.core.VarObject
@@ -54,6 +53,9 @@ class  kava {
 		println names
 		def a2j = new Ast2Java();
 		println a2j.visit(cls);
+		
+		def ast = AstBuilder.build(String.class);
+		println a2j.visit(ast)
 		//def tb = visitor.getVarTable();
 		//def cmpClass = visitor.getCompiledClass();
 		//def opc = visitor.getOpcodes();

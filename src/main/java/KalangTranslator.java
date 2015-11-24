@@ -1,3 +1,4 @@
+import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import kalang.antlr.KalangParser.ImportPathContext;
 import kalang.antlr.KalangParser.LiteralContext;
 import kalang.antlr.KalangParser.MethodDeclContext;
 import kalang.antlr.KalangParser.MethodDeclListContext;
+import kalang.antlr.KalangParser.ModifierContext;
 import kalang.antlr.KalangParser.PrimaryIdentifierContext;
 import kalang.antlr.KalangParser.PrimaryLiteralContext;
 import kalang.antlr.KalangParser.PrimayParenContext;
@@ -84,11 +86,10 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		ClassNode cls = visitClassBody(ctx.classBody());
 		cls.imports = imports;
 		cls.name=(ctx.Identifier(0).getText());
-		String modifier = "public";
-		if(ctx.Modifier()!=null){
-			modifier = ctx.Modifier().getText();
+		if(ctx.modifier()!=null){
+			cls.modifier=visitModifier(ctx.modifier());
 		}
-		cls.modifier=(modifier);
+		
 		if(ctx.Identifier().size()>1){
 			cls.parentName=(ctx.Identifier(1).getText());
 		}
@@ -121,11 +122,9 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		if(ctx.varInit()!=null){
 			fo.initExpr =  (visitVarInit(ctx.varInit()));
 		}
-		String modifier = "public";
-		if(ctx.Modifier()!=null){
-			modifier = (ctx.Modifier().getText());
+		if(ctx.modifier()!=null){
+			fo.modifier = visitModifier(ctx.modifier());
 		}
-		fo.modifier =(modifier);
 		//TODO visit setter and getter
 		return fo;
 	}
@@ -155,9 +154,9 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	public MethodNode visitMethodDecl(MethodDeclContext ctx) {
 		String name = ctx.Identifier().getText();
 		String type = ctx.type()==null ? "Object" :ctx.type().getText();
-		String mdf = "public";
-		if(ctx.Modifier()!=null){
-			mdf = ctx.Modifier().getText();
+		int mdf = 0;
+		if(ctx.modifier()!=null){
+			mdf = visitModifier(ctx.modifier());
 		}
 		boolean isStatic = false;
 		if(ctx.STATIC()!=null){
@@ -533,6 +532,25 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	public Object visitImportPath(ImportPathContext ctx) {
 		//do nothing
 		return null;
+	}
+
+	@Override
+	public Integer visitModifier(ModifierContext ctx) {
+		int m = 0;
+		for(ParseTree n:ctx.children){
+			String text = n.getText();
+			switch(text){
+			case "public":
+				m += Modifier.PUBLIC;break;
+			case "private":
+				m += Modifier.PRIVATE;break;
+			case "protected":
+				m += Modifier.PROTECTED;break;
+				default:
+					System.err.println("Unknown modifier" + text);
+			}
+		}
+		return m;
 	}
 
 }

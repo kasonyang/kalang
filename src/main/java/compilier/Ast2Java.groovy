@@ -28,7 +28,8 @@ import jast.ast.Statement;
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.WhileStmt;
-//@groovy.transform.TypeChecked
+import java.lang.reflect.Modifier
+@groovy.transform.TypeChecked
 class Ast2Java extends AbstractAstVisitor<String>{
 
 	protected String code = "";
@@ -45,6 +46,11 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		indent = indent.substring(0,indent.length()-2)
 	}
 	
+	public String visitModifier(Integer modifier){
+		int m = modifier?:0
+		return Modifier.toString(m)
+	}
+	
 	@Override
 	public String visitClassNode(ClassNode node) {
 		String imports = visit(node.imports).join("\r\n")
@@ -52,7 +58,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		String fs = visit(node.fields).join("\r\n");
 		String mds = visit(node.methods).join("\r\n");
 		decIndent()
-		String mdf = node.modifier
+		String mdf = visitModifier( node.modifier )
 		String name = node.name
 		String parentStr = node.parentName ? " extends ${node.parentName}" :""
 		return "${imports}\r\n${mdf} class ${name} ${parentStr} {\r\n${fs}\r\n${mds}\r\n}"
@@ -60,16 +66,19 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
 	@Override
 	public String visitFieldNode(FieldNode node) {
-		indent + "${node.modifier} ${node.type} ${node.name}" +(node.initExpr?"=${visit(node.initExpr)}":"") +";"
+		indent + "${visitModifier(node.modifier)} ${node.type} ${node.name}" +(node.initExpr?"=${visit(node.initExpr)}":"") +";"
 	}
 
 	@Override
 	public String visitMethodNode(MethodNode node) {
 		String ps = visit(node.parameters).join(",")
 		incIndent()
-		String body = visit(node.body)
+		String body = ";";
+		if(node.body){
+			body = visit(node.body)
+		}
 		decIndent()
-		indent + "${node.modifier} ${node.type} ${node.name}(${ps}) ${body}"
+		indent + "${visitModifier(node.modifier)} ${node.type} ${node.name}(${ps}) ${body}"
 	}
 
 	@Override

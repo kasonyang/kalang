@@ -6,7 +6,7 @@ start:
 
 compiliantUnit:
   importDeclList
-  Modifier? 'class' Identifier (':' Identifier)? '{' classBody '}'
+  modifier? 'class' Identifier (':' Identifier)? '{' classBody '}'
 ;
 importDeclList:
   importDecl*
@@ -28,7 +28,7 @@ fieldDeclList:
   fieldDecl*
 ;
 fieldDecl:
-  Modifier? STATIC? ('val'|'var') Identifier ('as' type)? varInit? setter? getter? ';'
+  modifier? STATIC? ('val'|'var') Identifier ('as' type)? varInit? setter? getter? ';'
 ;
 setter:
   'set' '(' argumentDeclList ')' '{' statList '}'
@@ -40,7 +40,7 @@ methodDeclList:
   methodDecl*
 ;
 methodDecl:
-   Modifier? STATIC? 'var' Identifier  '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
+   modifier? STATIC? 'var' Identifier  '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
 ;
 type:
     (Identifier|DOUBLE|LONG|FLOAT|INT)
@@ -194,7 +194,7 @@ arguments
     ;
 // LEXER
 
-Modifier:('public'|'private'|'protected');
+modifier:('public'|'private'|'protected');
 //STATIC:'static';
 // §3.9 Keywords
 
