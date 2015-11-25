@@ -11,8 +11,8 @@ class AstBuilder {
 			def methodNode = MethodNode.create();
 			methodNode.name = m.name
 			for(def p in m.parameters){
-				def param = new VarDeclStmt();
-				param.varName = p.name
+				def param = new ParameterNode();
+				param.name = p.name
 				param.type = p.type.name
 				methodNode.parameters.add(param)
 			}

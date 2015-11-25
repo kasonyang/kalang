@@ -217,19 +217,12 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExprPrimay(KalangParser.ExprPrimayContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exprNotOp}
+	 * Visit a parse tree produced by the {@code newExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprNotOp(KalangParser.ExprNotOpContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code exprGetField}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprGetField(KalangParser.ExprGetFieldContext ctx);
+	T visitNewExpr(KalangParser.NewExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprMemberInvocation}
 	 * labeled alternative in {@link KalangParser#expression}.
@@ -237,13 +230,6 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExprMemberInvocation(KalangParser.ExprMemberInvocationContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code exprLogicCmp}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprLogicCmp(KalangParser.ExprLogicCmpContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprMidOp}
 	 * labeled alternative in {@link KalangParser#expression}.
@@ -259,19 +245,40 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExprAssign(KalangParser.ExprAssignContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exprSelfOp}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprSelfOp(KalangParser.ExprSelfOpContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code exprInvocation}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitExprInvocation(KalangParser.ExprInvocationContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprNotOp}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprNotOp(KalangParser.ExprNotOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprGetField}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprGetField(KalangParser.ExprGetFieldContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprLogicCmp}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprLogicCmp(KalangParser.ExprLogicCmpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprSelfOp}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprSelfOp(KalangParser.ExprSelfOpContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprLogic}
 	 * labeled alternative in {@link KalangParser#expression}.

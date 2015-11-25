@@ -1,4 +1,3 @@
-import groovy.xml.Namespace;
 import compilier.*
 import jast.ast.*
 import kalang.antlr.KalangLexer
@@ -21,22 +20,24 @@ class Application {
 		def input = '''\
 import java.util.*;
 class  kava {
-  var f as Int = 123;
+  var f as int = 123;
   var f2;
   
-  var func() as Int{
-    var a as Int=3;var aa;
+  var func() as int{
+    var a as int=3;
+	//var aa = new String(3);
     var b;
-    a=b + 1;
-    b.func(a);
+    //a=b + 1;
+    //b.func(a);
+    func2(a);
     return a;
   }
-  var func2(p,a as Int){
+  var func2(p as int){
     f = 123;
-    for(var i=0;i<10;i++){
-      func(i,2);
+    for(var i as int=0;i<10;i++){
+      p++;
     }
-	func(p);
+	//func2(p);
   }
 }
 ''';
@@ -61,16 +62,23 @@ class  kava {
 		//def names = typeChecker.resolve(cls)
 		//nameCheck(names)
 		//println names
-		println cls;
+		//println cls;
 		def a2j = new Ast2Java();
 		println a2j.visit(cls);
+		def astLoader = new AstLoader()
+		astLoader.add(cls)
+		def varParser = new VariableParser()
+		println varParser.parse(cls)
 		
-		def ast = AstBuilder.build(String.class);
-		println a2j.visit(ast)
-		//def tb = visitor.getVarTable();
-		//def cmpClass = visitor.getCompiledClass();
-		//def opc = visitor.getOpcodes();
-
+		def typeChecker = new TypeChecker(astLoader)
+		try{
+			typeChecker.check(cls)
+		}catch(TypeChecker.TypeError e){
+			def node = e.getNode()
+			println "error on ${node}"
+		}
+		//def ast = AstBuilder.build(String.class);
+		//println a2j.visit(ast)
 	}
 	
 	def static void nameCheck(NameResolver.ResolveResult ret){

@@ -19,6 +19,8 @@ import jast.ast.IfStmt;
 import jast.ast.InvocationExpr;
 import jast.ast.LoopStmt;
 import jast.ast.MethodNode;
+import jast.ast.NewExpr;
+import jast.ast.ParameterExpr;
 import jast.ast.ParameterNode;
 import jast.ast.ReturnStmt;
 import jast.ast.Statement;
@@ -30,25 +32,33 @@ import java.lang.reflect.Modifier
 @groovy.transform.TypeChecked
 class Ast2Java extends AbstractAstVisitor<String>{
 
+	@Override
+	public String visitParameterNode(ParameterNode node) {
+		return "${node.type} ${node.name}"
+	}
+
+	@Override
+	public String visitParameterExpr(ParameterExpr node) {
+		"${node.name}"
+	}
+
+	@Override
+	public String visitNewExpr(NewExpr node) {
+		def args = visit(node.arguments).join(",")
+		"new ${node.type}(${args})"
+	}
+
 	HashMap<Integer,String> varNames = [:]
 	
 	@Override
 	public String visitVarExpr(VarExpr node) {
-		if(node.id==null){
-			//throw new Exception("null id:" + node)
-		}
-		def var = varNames.get(node.id)
-		if(var==null){
-			return null
-			//throw new Exception("null:" + node)
-		}
+		def var = node.declStmt.varName
 		return var
 	}
 
 	@Override
 	public String visitClassExpr(ClassExpr node) {
-		// TODO Auto-generated method stub
-		return null;
+		return node.name
 	}
 
 	protected String code = "";

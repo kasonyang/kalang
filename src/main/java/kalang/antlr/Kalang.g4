@@ -128,7 +128,7 @@ expression
     |     Identifier arguments  #exprMemberInvocation
     //|   expression LBRACK expression RBRACK
     //|   expression '(' expressionList? ')'
-    //|   NEW creator
+    |   NEW Identifier  arguments     #newExpr
     //|   LPAREN type RPAREN expression
     |   expression (INC | DEC) #exprSelfOp
     |   (ADD|SUB|INC|DEC) expression #exprSelfOpPre
