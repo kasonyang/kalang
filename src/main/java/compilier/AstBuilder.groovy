@@ -1,7 +1,7 @@
 package compilier
 
 import jast.ast.*
-
+@groovy.transform.TypeChecked
 class AstBuilder {
 	static ClassNode build(Class clz){
 		def cn = ClassNode.create();
@@ -11,8 +11,8 @@ class AstBuilder {
 			def methodNode = MethodNode.create();
 			methodNode.name = m.name
 			for(def p in m.parameters){
-				def param = new ParameterNode();
-				param.name = p.name
+				def param = new VarDeclStmt();
+				param.varName = p.name
 				param.type = p.type.name
 				methodNode.parameters.add(param)
 			}

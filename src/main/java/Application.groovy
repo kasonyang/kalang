@@ -25,7 +25,7 @@ class  kava {
   var f2;
   
   var func() as Int{
-    var a as Int=3;
+    var a as Int=3;var aa;
     var b;
     a=b + 1;
     b.func(a);
@@ -36,7 +36,7 @@ class  kava {
     for(var i=0;i<10;i++){
       func(i,2);
     }
-	func(f);
+	func(p);
   }
 }
 ''';
@@ -46,7 +46,15 @@ class  kava {
 		def parser = new KalangParser(tokens);
 		def tree = parser.start()
 		def visitor = new KalangTranslator();
-		def cls = visitor.visit(tree);
+		def cls
+		try{
+			cls = visitor.visit(tree);
+		}catch(ParseError e){
+			def itv = e.getTree().getSourceInterval()
+			def t = tokens.get(itv.a)
+			def col = t.charPositionInLine
+			println "@${t.line}:${col} => ${e.message}"
+		}
 		//def cls = visitor.getClassObject();
 		//def typeChecker = new NameResolver();
 		//typeChecker.setDefault("this",new VarObject("this","this"))
@@ -57,8 +65,8 @@ class  kava {
 		def a2j = new Ast2Java();
 		println a2j.visit(cls);
 		
-		//def ast = AstBuilder.build(String.class);
-		//println a2j.visit(ast)
+		def ast = AstBuilder.build(String.class);
+		println a2j.visit(ast)
 		//def tb = visitor.getVarTable();
 		//def cmpClass = visitor.getCompiledClass();
 		//def opc = visitor.getOpcodes();

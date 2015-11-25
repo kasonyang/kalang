@@ -65,6 +65,7 @@ import jast.ast.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 
 public class KalangTranslator extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
@@ -185,6 +186,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public MethodNode visitMethodDecl(MethodDeclContext ctx) {
+		this.pushVarTable();
 		String name = ctx.Identifier().getText();
 		String type = ctx.type()==null ? "Object" :ctx.type().getText();
 		int mdf = 0;
@@ -202,6 +204,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 			method.parameters = visitArgumentDeclList(ctx.argumentDeclList());
 		}
 		body.statements = visitStatList(ctx.statList());
+		this.popVarTable();
 		return method;
 	}
 
@@ -221,16 +224,23 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	}
 
 	@Override
-	public ParameterNode visitArgumentDecl(ArgumentDeclContext ctx) {
+	public VarDeclStmt visitArgumentDecl(ArgumentDeclContext ctx) {
 		String name = ctx.Identifier().getText();
 		String type = "Object";
 		if(ctx.type()!=null){
 			type = ctx.type().getText();
 		}
-		ParameterNode ao = new ParameterNode();
-		ao.type = type;
-		ao.name = name;
-		return ao;
+		VarObject vo = new VarObject();
+		this.getVarTable().put(name, vo);
+		this.vars.add(vo);
+		vo.setName(name);
+		vo.setType(type);
+		vo.setId(vars.indexOf(vo));
+		VarDeclStmt vds = new VarDeclStmt();
+		vds.type = type;
+		vds.varName = name;
+		vds.varId = vo.getId();
+		return vds;
 	}
 
 	@Override
@@ -302,8 +312,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		boolean isReadOnly = ctx.getChild(0).getText() == "val";
 		//TODO readonly
 		VarTable vtb = this.getVarTable();
-		if(vtb.exist(name)){
-			//TODO dup var
+		if(this.getNodeByName(name)!=null){
+			reportError("defined duplicatedly:" + name,ctx.Identifier());
 		}
 		VarObject vo = new VarObject();
 		vo.setName(name);
@@ -319,6 +329,10 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		vds.type = type;
 		vds.varId = vid;
 		return vds;
+	}
+
+	private void reportError(String string, ParseTree tree) {
+		throw new ParseError(string,tree);
 	}
 
 	@Override

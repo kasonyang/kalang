@@ -97,7 +97,9 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
 	@Override
 	public String visitMethodNode(MethodNode node) {
+		this.stmtDelim = ""
 		String ps = visit(node.parameters).join(",")
+		this.stmtDelim = ";"
 		incIndent()
 		String body = ";";
 		if(node.body){
@@ -106,12 +108,6 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		decIndent()
 		indent + "${visitModifier(node.modifier)} ${node.type} ${node.name}(${ps}) ${body}"
 	}
-
-	@Override
-	public String visitParameterNode(ParameterNode node) {
-		"${node.type} ${node.name}"
-	}
-
 
 	@Override
 	public String visitBlockStmt(BlockStmt node) {
