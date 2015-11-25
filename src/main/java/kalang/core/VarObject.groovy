@@ -4,6 +4,7 @@ class VarObject {
 	boolean isReadOnly
 	String name
 	String type
+	Integer id
 	VarObject(){
 		
 	}

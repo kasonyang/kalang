@@ -4,33 +4,52 @@ import jast.ast.AssignExpr;
 import jast.ast.BinaryExpr;
 import jast.ast.BlockStmt;
 import jast.ast.BreakStmt;
+import jast.ast.ClassExpr;
 import jast.ast.ClassNode;
 import jast.ast.ConstExpr;
 import jast.ast.ContinueStmt;
 import jast.ast.ElementExpr;
 import jast.ast.ExprNode;
 import jast.ast.ExprStmt;
-import jast.ast.FieldDeclStmt;
 import jast.ast.FieldExpr;
 import jast.ast.FieldNode;
-import jast.ast.ForStmt;
 import jast.ast.IAstVisitor
 import jast.ast.AstVisitor
 import jast.ast.IfStmt;
-import jast.ast.ImportNode;
 import jast.ast.InvocationExpr;
 import jast.ast.LoopStmt;
 import jast.ast.MethodNode;
-import jast.ast.NameExpr;
 import jast.ast.ParameterNode;
 import jast.ast.ReturnStmt;
 import jast.ast.Statement;
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
-import jast.ast.WhileStmt;
+import jast.ast.VarExpr;
+
 import java.lang.reflect.Modifier
 @groovy.transform.TypeChecked
 class Ast2Java extends AbstractAstVisitor<String>{
+
+	HashMap<Integer,String> varNames = [:]
+	
+	@Override
+	public String visitVarExpr(VarExpr node) {
+		if(node.id==null){
+			//throw new Exception("null id:" + node)
+		}
+		def var = varNames.get(node.id)
+		if(var==null){
+			return null
+			//throw new Exception("null:" + node)
+		}
+		return var
+	}
+
+	@Override
+	public String visitClassExpr(ClassExpr node) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	protected String code = "";
 	
@@ -53,15 +72,22 @@ class Ast2Java extends AbstractAstVisitor<String>{
 	
 	@Override
 	public String visitClassNode(ClassNode node) {
-		String imports = visit(node.imports).join("\r\n")
+		String imports = ""// visit(node.imports).join("\r\n")
 		incIndent()
 		String fs = visit(node.fields).join("\r\n");
 		String mds = visit(node.methods).join("\r\n");
 		decIndent()
 		String mdf = visitModifier( node.modifier )
-		String name = node.name
+		def pkg = ""
+		def name = node.name
+		def dotIdx = name.lastIndexOf('.');
+		if(dotIdx>0){
+			pkg = name.substring(0,dotIdx)
+			name = name.substring(dotIdx+1)
+		}
+		String pkgStr = pkg?"package ${pkg};":""
 		String parentStr = node.parentName ? " extends ${node.parentName}" :""
-		return "${imports}\r\n${mdf} class ${name} ${parentStr} {\r\n${fs}\r\n${mds}\r\n}"
+		return "${pkgStr}\r\n${imports}\r\n${mdf} class ${name} ${parentStr} {\r\n${fs}\r\n${mds}\r\n}"
 	}
 
 	@Override
@@ -116,21 +142,21 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		return null;
 	}
 
-	@Override
+	/*@Override
 	public String visitImportNode(ImportNode node) {
 		"import ${node.name};"
-	}
+	}*/
 
 	@Override
 	public String visitLoopStmt(LoopStmt node) {
-		def pre = node.preConditionExpr;
-		def post = node.postConditionExpr;
-		def body = visit(node.loopBody)
 		def oldIndent = this.indent
 		this.indent = ""
-		this.stmtDelim = ""
+		def pre = node.preConditionExpr;
+		def post = node.postConditionExpr;
 		def init = visit(node.initStmts).join(",");
 		this.indent = oldIndent
+		def body = visit(node.loopBody)
+		this.stmtDelim = ""
 		this.stmtDelim = ";"
 		if(pre){
 			return indent + "for(${init};${visit(pre)};)${body}"
@@ -146,6 +172,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
 	@Override
 	public String visitVarDeclStmt(VarDeclStmt node) {
+		varNames.put(node.varId,node.varName)
 		String code = "${node.type} ${node.varName}"
 		if(node.initExpr){
 			code+= "=${visit(node.initExpr)}"
@@ -175,7 +202,11 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
 	@Override
 	public String visitFieldExpr(FieldExpr node) {
-		"visit(${node.target}).${node.fieldName}"
+		def target = "" 
+		if(node.target){
+			target = visit(node.target) + "."
+		}
+		"${target}${node.fieldName}"
 	}
 
 	@Override
@@ -187,11 +218,6 @@ class Ast2Java extends AbstractAstVisitor<String>{
 	@Override
 	public String visitUnaryExpr(UnaryExpr node) {
 		"${node.preOperation?:''}${visit(node.expr)}${node.postOperation?:''}"
-	}
-
-	@Override
-	public String visitNameExpr(NameExpr node) {
-		"${node.name}"
 	}
 
 }

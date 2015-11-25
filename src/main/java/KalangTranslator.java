@@ -1,6 +1,9 @@
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 import kalang.antlr.KalangParser.ArgumentDeclContext;
 import kalang.antlr.KalangParser.ArgumentDeclListContext;
@@ -55,6 +58,8 @@ import kalang.antlr.KalangParser.VarDeclStatContext;
 import kalang.antlr.KalangParser.VarInitContext;
 import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
+import kalang.core.VarObject;
+import kalang.core.VarTable;
 import jast.ast.*;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -64,6 +69,32 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 public class KalangTranslator extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
 
+	//short name to full name
+	private Map<String,String> fullNames = new HashMap();
+	private List<String> importPaths = new LinkedList();
+	//VarTable vtb = new VarTable();
+	Stack<VarTable> vtbs = new Stack();
+	List<VarObject> vars = new LinkedList();
+	List<String> fields = new LinkedList();
+	
+	private VarTable getVarTable(){
+		return vtbs.peek();
+	}
+	
+	private void pushVarTable(){
+		VarTable vtb;
+		if(vtbs.size()>0){
+			vtb = new VarTable(getVarTable());
+		}else{
+			vtb = new VarTable();
+		}
+		
+		vtbs.push(vtb);
+	}
+	
+	private void popVarTable(){
+		vtbs.pop();
+	}
 	
 	private VarDeclStmt doVisitVarDeclAndInit(VarDeclContext vd,VarInitContext vi){
 		VarDeclStmt vds = this.visitVarDecl(vd);
@@ -81,10 +112,10 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public ClassNode visitCompiliantUnit(CompiliantUnitContext ctx) {
-		List<ImportNode> imports = this.visitImportDeclList(ctx.importDeclList());
+		//List<ImportNode> imports = this.visitImportDeclList(ctx.importDeclList());
 		
 		ClassNode cls = visitClassBody(ctx.classBody());
-		cls.imports = imports;
+		//cls.imports = imports;
 		cls.name=(ctx.Identifier(0).getText());
 		if(ctx.modifier()!=null){
 			cls.modifier=visitModifier(ctx.modifier());
@@ -98,6 +129,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public ClassNode visitClassBody(ClassBodyContext ctx) {
+		this.pushVarTable();
 		ClassNode cls = new ClassNode();
 		cls.fields = this.visitFieldDeclList(ctx.fieldDeclList());
 		cls.methods = this.visitMethodDeclList(ctx.methodDeclList());
@@ -125,6 +157,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		if(ctx.modifier()!=null){
 			fo.modifier = visitModifier(ctx.modifier());
 		}
+		fields.add(fo.name);
 		//TODO visit setter and getter
 		return fo;
 	}
@@ -268,11 +301,23 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		}
 		boolean isReadOnly = ctx.getChild(0).getText() == "val";
 		//TODO readonly
+		VarTable vtb = this.getVarTable();
+		if(vtb.exist(name)){
+			//TODO dup var
+		}
+		VarObject vo = new VarObject();
+		vo.setName(name);
+		vo.setType(type);
+		vars.add(vo);
+		vtb.put(name, vo);
+		Integer vid = vars.indexOf(vo);
+		/*
 		NameExpr ve = new NameExpr();
-		ve.name = name;
+		ve.name = name;*/
 		VarDeclStmt vds = new VarDeclStmt();
 		vds.varName = name;
 		vds.type = type;
+		vds.varId = vid;
 		return vds;
 	}
 
@@ -296,11 +341,12 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public AstNode visitWhileStat(WhileStatContext ctx) {
-		WhileStmt ws = new WhileStmt();
+		//WhileStmt ws = new WhileStmt();
+		LoopStmt ws = new LoopStmt();
 		BlockStmt body = new BlockStmt();
-		ws.body = body;
+		ws.loopBody = body;
 		AstNode expr = visitExpression(ctx.expression());
-		ws.conditionExpr = (ExprNode) expr;
+		ws.preConditionExpr = (ExprNode) expr;
 		body.statements = visitStatList(ctx.statList());
 		return null;
 	}
@@ -314,6 +360,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public LoopStmt visitForStat(ForStatContext ctx) {
+		this.pushVarTable();
 		LoopStmt ls = new LoopStmt();
 		BlockStmt body = new BlockStmt();
 		ls.loopBody = body;
@@ -322,6 +369,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		ls.preConditionExpr = (ExprNode) texpr;
 		body.statements = visitStatList(ctx.statList());
 		body.statements.addAll(visitForUpdate(ctx.forUpdate()));
+		this.popVarTable();
 		return ls;
 	}
 
@@ -363,10 +411,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public AstNode visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
-		NameExpr expr = new NameExpr();
-		expr.name = "this";
 		return this.getInvocationExpr(
-				expr
+				null
 				, ctx.Identifier().getText()
 				,ctx.arguments());
 	}
@@ -480,10 +526,31 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public AstNode visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
-		NameExpr ve = new NameExpr();
 		String name = ctx.Identifier().getText();
-		ve.name = name;
-		return ve;
+		return getNodeByName(name);
+	}
+
+	private AstNode getNodeByName(String name) {
+		VarTable vtb = this.getVarTable();
+		if(vtb.exist(name)){
+			VarExpr ve = new VarExpr();
+			VarObject vo = vtb.get(name);
+			Integer vid = vars.indexOf(vo);
+			if(vid==null||vo==null){
+				throw new RuntimeException("bug");
+			}
+			ve.id = vid;
+			return ve;
+		}else if(fields.contains(name)){
+			FieldExpr fe = new FieldExpr();
+			fe.fieldName = name;
+			return fe;
+		}else if(fullNames.containsKey(name)){
+			return new ClassExpr(fullNames.get(name));
+		}else{
+			//TODO find path class
+		}
+		return null;
 	}
 
 	@Override
@@ -511,15 +578,21 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	}
 
 	@Override
-	public List<ImportNode> visitImportDeclList(ImportDeclListContext ctx) {
-		return (List<ImportNode>) doVisitAll(ctx.importDecl());
+	public Object visitImportDeclList(ImportDeclListContext ctx) {
+		doVisitAll(ctx.importDecl());
+		return null;
 	}
 
 	@Override
-	public ImportNode visitImportDecl(ImportDeclContext ctx) {
+	public Object visitImportDecl(ImportDeclContext ctx) {
 		String name = ctx.importPath().getText();
-		ImportNode in = new ImportNode(name);
-		return in;
+		if(name.endsWith("*")){
+			this.importPaths.add(name);
+		}else{
+			String[] namePs = name.split("\\.");
+			this.fullNames.put(namePs[namePs.length-1], name);
+		}
+		return null;
 	}
 
 	@Override

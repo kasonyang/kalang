@@ -29,12 +29,24 @@ import kalang.core.VarObject
 import kalang.core.VarTable
 
 class NameResolver extends AstVisitor {
+	
+	static class ResolveResult{
+		List<NameExpr> fieldNames
+		List<NameExpr> unresolvedNames
+		Map<NameExpr,VarObject> vars
+	}
 
 	private VarTable<String> parentVarTable
 	
 	private VarTable<String> varTable ;
 	
 	private Map<NameExpr,VarObject> vars
+	
+	private List<String> fields = []
+	
+	private List<NameExpr> fieldNames;
+	
+	private List<NameExpr> unresolvedNames;
 	
 	public NameResolver(){
 		this.parentVarTable = new VarTable();
@@ -44,14 +56,21 @@ class NameResolver extends AstVisitor {
 		this.parentVarTable.put(name,var)
 	}
 
-	public Map<NameExpr,VarObject> resolve(AstNode node){
+	public ResolveResult resolve(AstNode node){
 		varTable = new VarTable(this.parentVarTable)
 		vars = new HashMap();
+		this.fieldNames = []
+		this.unresolvedNames = []
 		visit(node);
-		def ret = vars;
+		def ret = new ResolveResult();
+		ret.vars = vars
+		ret.fieldNames = fieldNames
+		ret.unresolvedNames = this.unresolvedNames
 		//def vt = varTable;
 		varTable = null;
 		vars = null;
+		this.fieldNames = null;
+		this.unresolvedNames = null;
 		return ret
 		//return vt;
 	}
@@ -68,16 +87,32 @@ class NameResolver extends AstVisitor {
 	public Object visitNameExpr(NameExpr node) {
 		String name = node.name;
 		def var = varTable.get(name);
-		vars.put(node,var)
+		if(var){
+			vars.put(node,var)
+		}else if(fields.contains(name)){
+			fieldNames.add(node)
+		}else{//unresolved name
+			this.unresolvedNames.add(node)
+		}
 		return null;
 	}
 
 	@Override
 	public Object visitVarDeclStmt(VarDeclStmt node) {
 		def var = new VarObject();
-		var.name = node.varName;
+		String name = var.name = node.varName;
 		var.type = node.type;
+		if(varTable.exist(node.varName)){
+			println "duplicated var:${var.name}"
+			return
+		}
 		varTable.put(node.varName,var)
 		return null;
 	}
+
+	@Override
+	public Object visitFieldNode(FieldNode node) {
+		fields.add(node.name)
+	}
+	
 }
