@@ -107,6 +107,13 @@ class TypeChecker extends AstVisitor<String> {
 		return type =="Boolean"
 	}
 	
+	static String getHigherType(String type1,String type2){
+		if(type1=="Double" || type2=="Double") return "Double"
+		if(type1=="Float" || type2 =="Float") return "Float"
+		if(type1=="Long" || type2=="Long") return "Long"
+		return "Integer"
+	}
+	
 	
 	@Override
 	public String visitBinaryExpr(BinaryExpr node) {
@@ -142,10 +149,17 @@ class TypeChecker extends AstVisitor<String> {
 				}
 				t = "Boolean"
 				break;
+			case "&":
+			case "|":
+			case "^":
+				if(!isNumber(t1)||!isNumber(t2)){
+					fail("number required!",node)
+				}
+				t = getHigherType(t1,t2)
+				break;
 			default:
 				throw new TypeError("unsupport operation:${op}",node);
 		}
-		// TODO imp bit op
 		return t;
 	}
 
@@ -156,8 +170,11 @@ class TypeChecker extends AstVisitor<String> {
 
 	@Override
 	public String visitElementExpr(ElementExpr node) {
-		// TODO Auto-generated method stub
-		return null;
+		String type = visit(node.target)
+		if(!type.endsWith("[]")){
+			fail("Array type required",node)
+		}
+		return type.substring(0,type.length()-2)
 	}
 
 	@Override
@@ -233,8 +250,14 @@ class TypeChecker extends AstVisitor<String> {
 
 	@Override
 	public String visitUnaryExpr(UnaryExpr node) {
-		// TODO Auto-generated method stub
-		return null;
+		def preOp = node.preOperation
+		String et = visit(node.expr)
+		if(preOp=="!"){
+			if(!isBoolean(et)){
+				fail("boolean required!",node)
+			}
+		}
+		return et;
 	}
 
 	@Override
