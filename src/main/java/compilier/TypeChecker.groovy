@@ -63,7 +63,7 @@ class TypeChecker extends AstVisitor<String> {
 	
 	private void checkCastable(String from,String to,AstNode node){
 		if(!castable(from,to)){
-			fail("unmatched type:${from} => ${to}",node)
+			fail("can not cast type:${from} => ${to}",node)
 		}
 	}
 	
@@ -74,15 +74,44 @@ class TypeChecker extends AstVisitor<String> {
 		checkCastable(ft,tt,node);
 		return tt
 	}
+	
+	static private String getClassType(String from){
+		if(from=="int") from="Integer"
+		if(from=="long") from = "Long"
+		if(from=="float") from = "Float"
+		if(from=="double") from = "Double"
+		return from
+	}
+	
+	static private String getPrimaryType(String type){
+		if(type=="Integer") return "int"
+		if(type=="Long") return "long"
+		if(type=="Float") return "float"
+		if(type=="Double") return "double"
+		return type
+	}
 
 	private String getMathType(String t1,String t2,String op){
-		
+		def pt1 = getPrimaryType(t1)
+		def pt2 = getPrimaryType(t2)
+		def ret = MathType.getType(pt1,pt2,op)
+		return getClassType(ret)
 	}
+	
+	static private boolean isNumber(String type){
+		def numTypes = ["Integer","Long","Float","Double"]
+		return numTypes.contains(type)
+	}
+	
+	static private boolean isBoolean(String type){
+		return type =="Boolean"
+	}
+	
 	
 	@Override
 	public String visitBinaryExpr(BinaryExpr node) {
-		String t1 = visit(node.expr1)
-		String t2 = visit(node.expr2)
+		String t1 = getClassType(visit(node.expr1).toString())
+		String t2 = getClassType(visit(node.expr2).toString())
 		String op = node.operation
 		String t;
 		switch(op){
@@ -90,18 +119,39 @@ class TypeChecker extends AstVisitor<String> {
 			case '-':
 			case '*':
 			case '/':
+			case '%':
+				if(!isNumber(t1)||!isNumber(t2)){
+					fail("number required!",node);
+				}
 				t = getMathType(t1,t2,op);
+				break;
+			case ">=":
+			case "<=":
+			case "==":
+			case ">":
+			case "<":
+				if(!isNumber(t1)||!isNumber(t2)){
+					fail("number required!",node)
+				}
+				t = "Boolean"
+				break;
+			case "&&":
+			case "||":
+				if(!isBoolean(t1)||!isBoolean(t2)){
+					fail("Boolean type required!",node)
+				}
+				t = "Boolean"
 				break;
 			default:
 				throw new TypeError("unsupport operation:${op}",node);
 		}
-		// TODO Auto-generated method stub
+		// TODO imp bit op
 		return t;
 	}
 
 	@Override
 	public String visitConstExpr(ConstExpr node) {
-		return node.type
+		return getClassType(node.type)
 	}
 
 	@Override
@@ -128,13 +178,7 @@ class TypeChecker extends AstVisitor<String> {
 		return method.type
 	}
 	
-	private String getClassType(String from){
-		if(from=="int") from="Integer"
-		if(from=="long") from = "Long"
-		if(from=="float") from = "Float"
-		if(from=="double") from = "Double"
-		return from
-	}
+	
 	
 	private boolean castable(String from,String to){
 		to = getClassType(to)

@@ -29,7 +29,8 @@ class  kava {
     var l as long = 3;
 	//var aa = new String(3);
     var b;
-    //a=b + 1;
+    a= a + 1;
+    l = l + 1;
     //b.func(a);
     func2(a);
     func2(l);
@@ -84,6 +85,7 @@ class  kava {
 		def itv = tree.getSourceInterval()
 			def t = tokens.get(itv.a)
 			def col = t.charPositionInLine
-			println "@${t.line}:${col} => ${msg}"
+			def text = tree.getText();
+			System.err.println "@${t.line}:${col} ${text} => ${msg}"
 	}
 }
