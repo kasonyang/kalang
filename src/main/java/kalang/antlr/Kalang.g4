@@ -131,7 +131,6 @@ expression
     |   expression ('++' | '--') #exprSelfOp
     |   ('+'|'-'|'++'|'--') expression #exprSelfOpPre
     |   ('~'|'!') expression  #exprSelfOpPre
-    |   '!' expression  #exprSelfOpPre
     |   expression ('*'|'/'|'%') expression #exprMidOp
     |   expression ('+'|'-') expression #exprMidOp
     |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression #exprMidOp

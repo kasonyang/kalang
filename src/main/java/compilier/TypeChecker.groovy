@@ -75,10 +75,28 @@ class TypeChecker extends AstVisitor<String> {
 		return tt
 	}
 
+	private String getMathType(String t1,String t2,String op){
+		
+	}
+	
 	@Override
 	public String visitBinaryExpr(BinaryExpr node) {
+		String t1 = visit(node.expr1)
+		String t2 = visit(node.expr2)
+		String op = node.operation
+		String t;
+		switch(op){
+			case '+':
+			case '-':
+			case '*':
+			case '/':
+				t = getMathType(t1,t2,op);
+				break;
+			default:
+				throw new TypeError("unsupport operation:${op}",node);
+		}
 		// TODO Auto-generated method stub
-		return null;
+		return t;
 	}
 
 	@Override
@@ -131,7 +149,13 @@ class TypeChecker extends AstVisitor<String> {
 		if(baseMap.containsKey(from)){
 			return baseMap.get(from).contains(to)
 		}
-		//TODO instanceof
+		def fromAst = astLoader.load(from)
+		while(fromAst){
+			def parent = fromAst.parentName
+			if(!parent) return false;
+			if(parent==to) return true;
+			fromAst = astLoader.load(parent)
+		}
 		return false;
 	}
 	

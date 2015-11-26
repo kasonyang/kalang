@@ -13,8 +13,12 @@ class AstLoader {
 	public ClassNode load(String className){
 		def ast = asts.get(className)
 		if(!ast){
-			Class clz = Class.forName(className)
-			ast = AstBuilder.build(clz)
+			try{
+				Class clz = Class.forName(className)
+				ast = AstBuilder.build(clz)
+			}catch(ClassNotFoundException e){
+				ast = null;
+			}
 		}
 		return ast
 	}
