@@ -119,37 +119,32 @@ expression ';'
 
 expression
     :   primary #exprPrimay
-    |   expression DOT Identifier #exprGetField
+    |   expression '.' Identifier #exprGetField
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
-    //|   expression DOT explicitGenericInvocation
     |     expression '.' Identifier arguments  #exprInvocation
     |     Identifier arguments  #exprMemberInvocation
-    //|   expression LBRACK expression RBRACK
-    //|   expression '(' expressionList? ')'
+    |  expression '[' expression ']' #exprGetArrayElement    
     |   NEW Identifier  arguments     #newExpr
-    //|   LPAREN type RPAREN expression
-    |   expression (INC | DEC) #exprSelfOp
-    |   (ADD|SUB|INC|DEC) expression #exprSelfOpPre
-    //|   ('~'|'!') expression  #exprNotOp
-    |   '!' expression  #exprNotOp
-    |   expression (MUL|DIV|MOD) expression #exprMidOp
-    |   expression (ADD|SUB) expression #exprMidOp
-   // |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression
-    |   expression (LE | GE | GT | LT) expression #exprLogicCmp
+    |   '(' type ')' expression #castExpr
+    |   expression ('++' | '--') #exprSelfOp
+    |   ('+'|'-'|'++'|'--') expression #exprSelfOpPre
+    |   ('~'|'!') expression  #exprSelfOpPre
+    |   '!' expression  #exprSelfOpPre
+    |   expression ('*'|'/'|'%') expression #exprMidOp
+    |   expression ('+'|'-') expression #exprMidOp
+    |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression #exprMidOp
+    |   expression ('<=' | '>=' | '>' | '<') expression #exprMidOp
     //|   expression INSTANCEOF type
-    |   expression (EQUAL|NOTEQUAL) expression #exprLogicCmp
-    /*
-    |   expression BITAND expression #exprMidLogic3
-    |   expression CARET expression
-    |   expression BITOR expression
-   */
-    |   expression (AND|OR) expression #exprLogic
+    |   expression ('=='|'!=') expression #exprMidOp
+    |   expression '&' expression #exprMidOp
+    |   expression '^' expression #exprMidOp
+    |   expression '|' expression #exprMidOp
+    |   expression ('&&'|'||') expression #exprMidOp
     //|   expression OR expression
     //|   expression QUESTION expression ':' expression
     
-    |  expression '[' expression ']' #exprGetArrayElement
     |   <assoc=right> expression
          (  ASSIGN
                 /*

@@ -9,6 +9,7 @@ import kalang.antlr.KalangParser.ArgumentDeclContext;
 import kalang.antlr.KalangParser.ArgumentDeclListContext;
 import kalang.antlr.KalangParser.ArgumentsContext;
 import kalang.antlr.KalangParser.BreakStatContext;
+import kalang.antlr.KalangParser.CastExprContext;
 import kalang.antlr.KalangParser.ClassBodyContext;
 import kalang.antlr.KalangParser.CompiliantUnitContext;
 import kalang.antlr.KalangParser.ContinueStatContext;
@@ -17,11 +18,8 @@ import kalang.antlr.KalangParser.ExprAssignContext;
 import kalang.antlr.KalangParser.ExprGetArrayElementContext;
 import kalang.antlr.KalangParser.ExprGetFieldContext;
 import kalang.antlr.KalangParser.ExprInvocationContext;
-import kalang.antlr.KalangParser.ExprLogicCmpContext;
-import kalang.antlr.KalangParser.ExprLogicContext;
 import kalang.antlr.KalangParser.ExprMemberInvocationContext;
 import kalang.antlr.KalangParser.ExprMidOpContext;
-import kalang.antlr.KalangParser.ExprNotOpContext;
 import kalang.antlr.KalangParser.ExprPrimayContext;
 import kalang.antlr.KalangParser.ExprSelfOpContext;
 import kalang.antlr.KalangParser.ExprSelfOpPreContext;
@@ -500,15 +498,6 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	}
 
 	@Override
-	public AstNode visitExprNotOp(ExprNotOpContext ctx) {
-		UnaryExpr ue = new UnaryExpr();
-		ue.expr = (ExprNode) visitExpression(ctx.expression());
-		ue.preOperation = ctx.getChild(0).getText();
-		a2p.put(ue, ctx);
-		return ue;
-	}
-
-	@Override
 	public AstNode visitExprGetField(ExprGetFieldContext ctx) {
 		AstNode expr = visitExpression(ctx.expression());
 		String name = ctx.Identifier().getText();
@@ -520,32 +509,12 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	}
 
 	@Override
-	public AstNode visitExprLogicCmp(ExprLogicCmpContext ctx) {
-		BinaryExpr be = new BinaryExpr();
-		be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
-		be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
-		be.operation = ctx.getChild(1).getText();
-		a2p.put(be, ctx);
-		return be;
-	}
-
-	@Override
 	public AstNode visitExprSelfOp(ExprSelfOpContext ctx) {
 		UnaryExpr ue = new UnaryExpr();
 		ue.postOperation = ctx.getChild(1).getText();
 		ue.expr = (ExprNode) visitExpression(ctx.expression());
 		a2p.put(ue, ctx);
 		return ue;
-	}
-
-	@Override
-	public AstNode visitExprLogic(ExprLogicContext ctx) {
-		BinaryExpr be = new BinaryExpr();
-		be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
-		be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
-		be.operation = ctx.getChild(1).getText();
-		a2p.put(be, ctx);
-		return be;
 	}
 
 	@Override
@@ -703,6 +672,15 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		newExpr.arguments = this.visitArguments(ctx.arguments());
 		a2p.put(newExpr, ctx);
 		return newExpr;
+	}
+
+	@Override
+	public Object visitCastExpr(CastExprContext ctx) {
+		CastExpr ce = new CastExpr();
+		ce.expr = visitExpression(ctx.expression());
+		ce.type = ctx.type().getText();
+		a2p.put(ce, ctx);
+		return ce;
 	}
 
 }

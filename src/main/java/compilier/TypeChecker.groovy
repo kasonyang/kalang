@@ -5,6 +5,7 @@ import jast.ast.AssignExpr;
 import jast.ast.AstNode
 import jast.ast.AstVisitor
 import jast.ast.BinaryExpr;
+import jast.ast.CastExpr;
 import jast.ast.ClassExpr;
 import jast.ast.ClassNode
 import jast.ast.ConstExpr;
@@ -19,8 +20,13 @@ import jast.ast.VarExpr;
 import kalang.core.FieldObject
 import kalang.core.VarObject
 @groovy.transform.TypeChecked
-class TypeChecker extends AstVisitor {
+class TypeChecker extends AstVisitor<String> {
 	
+	@Override
+	public String visitCastExpr(CastExpr node) {
+		node.type
+	}
+
 	static class TypeError extends Exception{
 		AstNode node
 		

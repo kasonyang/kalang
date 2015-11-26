@@ -4,6 +4,7 @@ import jast.ast.AssignExpr;
 import jast.ast.BinaryExpr;
 import jast.ast.BlockStmt;
 import jast.ast.BreakStmt;
+import jast.ast.CastExpr;
 import jast.ast.ClassExpr;
 import jast.ast.ClassNode;
 import jast.ast.ConstExpr;
@@ -31,6 +32,11 @@ import jast.ast.VarExpr;
 import java.lang.reflect.Modifier
 @groovy.transform.TypeChecked
 class Ast2Java extends AbstractAstVisitor<String>{
+
+	@Override
+	public String visitCastExpr(CastExpr node) {
+		"(${node.type}) ${visit(node.expr)}"
+	}
 
 	@Override
 	public String visitParameterNode(ParameterNode node) {

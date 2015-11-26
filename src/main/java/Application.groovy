@@ -33,7 +33,7 @@ class  kava {
     //b.func(a);
     func2(a);
     func2(l);
-    return a;
+    return (int)a;
   }
   var func2(p as long){
     f = 123;
@@ -85,19 +85,5 @@ class  kava {
 			def t = tokens.get(itv.a)
 			def col = t.charPositionInLine
 			println "@${t.line}:${col} => ${msg}"
-	}
-	
-	def static void nameCheck(NameResolver.ResolveResult ret){
-		def names = ret.vars
-		/*for(def en in names.entrySet()){
-			VarObject v = en.getValue()
-			NameExpr ne = en.getKey();
-			if(v==null){
-				System.err.println "Undefinded var:" +  ne.name
-			}
-		}*/
-		println names
-		println ret.fieldNames
-		println ret.unresolvedNames
 	}
 }
