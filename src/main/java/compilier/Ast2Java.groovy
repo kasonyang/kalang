@@ -45,7 +45,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
 	@Override
 	public String visitParameterExpr(ParameterExpr node) {
-		"${node.name}"
+		"${node.parameter.name}"
 	}
 
 	@Override

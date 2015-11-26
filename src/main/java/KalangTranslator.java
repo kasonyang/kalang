@@ -76,7 +76,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	Stack<VarTable> vtbs = new Stack();
 	HashMap<VarObject,VarDeclStmt> varDeclStmts = new HashMap();
 	List<String> fields = new LinkedList();
-	List<String> parameters;
+	HashMap<String,ParameterNode> parameters;
 	
 	private Map<AstNode,ParseTree> a2p = new HashMap();
 	
@@ -195,7 +195,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	@Override
 	public MethodNode visitMethodDecl(MethodDeclContext ctx) {
 		this.pushVarTable();
-		this.parameters = new LinkedList();
+		this.parameters = new HashMap();
 		String name = ctx.Identifier().getText();
 		String type = ctx.type()==null ? "Object" :ctx.type().getText();
 		int mdf = 0;
@@ -251,7 +251,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		ParameterNode pn = new ParameterNode();
 		pn.name = name;
 		pn.type = type;
-		this.parameters.add(name);
+		this.parameters.put(name,pn);
 		a2p.put(pn,ctx);
 		return pn;
 	}
@@ -567,8 +567,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 			return fe;
 		}else if(fullNames.containsKey(name)){
 			return new ClassExpr(fullNames.get(name));
-		}else if(parameters.contains(name)){
-			return new ParameterExpr(name);
+		}else if(parameters.containsKey(name)){
+			return new ParameterExpr(parameters.get(name));
 		}else{
 			//TODO find path class
 		}

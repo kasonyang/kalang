@@ -27,7 +27,7 @@ class  kava {
   var func() as int{
     var a as int=3;
     var l as long = 3;
-	//var aa = new String(3);
+	var str = new String(3);
     var b;
     a= a + 1;
     l = l + 1;
@@ -41,7 +41,7 @@ class  kava {
     for(var i as int=0;i<10;i++){
       p++;
     }
-	//func2(p);
+	func2(p);
   }
 }
 ''';

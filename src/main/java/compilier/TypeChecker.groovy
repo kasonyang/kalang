@@ -14,6 +14,7 @@ import jast.ast.FieldExpr;
 import jast.ast.InvocationExpr;
 import jast.ast.MethodNode
 import jast.ast.NewExpr;
+import jast.ast.ParameterExpr;
 import jast.ast.ParameterNode;
 import jast.ast.UnaryExpr;
 import jast.ast.VarExpr;
@@ -246,6 +247,11 @@ class TypeChecker extends AstVisitor<String> {
 			}
 		}
 		return null
+	}
+
+	@Override
+	public String visitParameterExpr(ParameterExpr node) {
+		node.parameter.type
 	}
 
 	@Override
