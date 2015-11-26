@@ -25,14 +25,16 @@ class  kava {
   
   var func() as int{
     var a as int=3;
+    var l as long = 3;
 	//var aa = new String(3);
     var b;
     //a=b + 1;
     //b.func(a);
     func2(a);
+    func2(l);
     return a;
   }
-  var func2(p as int){
+  var func2(p as long){
     f = 123;
     for(var i as int=0;i<10;i++){
       p++;
@@ -73,9 +75,10 @@ class  kava {
 		def typeChecker = new TypeChecker(astLoader)
 		try{
 			typeChecker.check(cls)
+			println "type checked!"
 		}catch(TypeChecker.TypeError e){
 			def node = e.getNode()
-			println "error on ${node}"
+			println e.message + ":error on ${node}"
 		}
 		//def ast = AstBuilder.build(String.class);
 		//println a2j.visit(ast)

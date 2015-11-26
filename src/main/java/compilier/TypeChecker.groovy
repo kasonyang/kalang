@@ -104,8 +104,27 @@ class TypeChecker extends AstVisitor {
 		return method.type
 	}
 	
+	private String getClassType(String from){
+		if(from=="int") from="Integer"
+		if(from=="long") from = "Long"
+		if(from=="float") from = "Float"
+		if(from=="double") from = "Double"
+		return from
+	}
+	
 	private boolean castable(String from,String to){
+		to = getClassType(to)
+		from = getClassType(from)
 		if(from==to) return true
+		def baseMap = [
+			"Integer" : ["Long","Float","Double"],
+			"Long"    : ["Float","Double"],
+			"Float"   : ["Double"],
+			"Double"  : []
+		]
+		if(baseMap.containsKey(from)){
+			return baseMap.get(from).contains(to)
+		}
 		//TODO instanceof
 		return false;
 	}
