@@ -14,6 +14,7 @@ import kava.vm.TheKavaExecutor
 
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.tree.ParseTree
 
 class Application {
 	static void main(args) {
@@ -53,16 +54,8 @@ class  kava {
 		try{
 			cls = visitor.visit(tree);
 		}catch(ParseError e){
-			def itv = e.getTree().getSourceInterval()
-			def t = tokens.get(itv.a)
-			def col = t.charPositionInLine
-			println "@${t.line}:${col} => ${e.message}"
+			errorOn(e.getMessage(),e.getTree(),tokens)
 		}
-		//def cls = visitor.getClassObject();
-		//def typeChecker = new NameResolver();
-		//typeChecker.setDefault("this",new VarObject("this","this"))
-		//def names = typeChecker.resolve(cls)
-		//nameCheck(names)
 		//println names
 		//println cls;
 		def a2j = new Ast2Java();
@@ -72,16 +65,26 @@ class  kava {
 		def varParser = new VariableParser()
 		println varParser.parse(cls)
 		
+		def parseTrees = visitor.getParseTreeMap();
 		def typeChecker = new TypeChecker(astLoader)
 		try{
 			typeChecker.check(cls)
 			println "type checked!"
 		}catch(TypeChecker.TypeError e){
 			def node = e.getNode()
-			println e.message + ":error on ${node}"
+			def t = parseTrees.get(node)
+			errorOn(e.message,t,tokens)
+			//println e.message + ":error on ${node}"
 		}
 		//def ast = AstBuilder.build(String.class);
 		//println a2j.visit(ast)
+	}
+	
+	def static errorOn(String msg,ParseTree tree,CommonTokenStream tokens){
+		def itv = tree.getSourceInterval()
+			def t = tokens.get(itv.a)
+			def col = t.charPositionInLine
+			println "@${t.line}:${col} => ${msg}"
 	}
 	
 	def static void nameCheck(NameResolver.ResolveResult ret){
