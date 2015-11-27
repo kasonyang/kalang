@@ -29,7 +29,7 @@ class  kava {
     var l as long = 3;
 	var str = "hehe";
     var map = new HashMap();
-    map.put(a,str);
+    map.put("a",str);
     var b;
     a= a + 1;
     l = l + 1;
@@ -73,6 +73,7 @@ class  kava {
 		try{
 			typeChecker.check(cls)
 			println "type checked!"
+			System.err.println a2j.visit(cls);
 		}catch(TypeChecker.TypeError e){
 			def node = e.getNode()
 			def t = parseTrees.get(node)

@@ -71,6 +71,18 @@ import compilier.AstLoader;
 
 public class KalangTranslator extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
 
+	private static final String FLOAT_CLASS = "java.lang.Float";
+
+	private static final String INT_CLASS = "java.lang.Integer";
+
+	private static final String BOOLEAN_CLASS = "java.lang.Boolean";
+
+	private static final String CHAR_CLASS = "java.lang.Character";
+
+	private static final String STRING_CLASS = "java.lang.String";
+
+	private static final String NULL_CLASS = "java.lang.NullObject";
+	
 	//short name to full name
 	private Map<String,String> fullNames = new HashMap();
 	private List<String> importPaths = new LinkedList();
@@ -80,7 +92,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	List<String> fields = new LinkedList();
 	HashMap<String,ParameterNode> parameters;
 	
-	String defaultType = "java.lang.Object";
+	String defaultType;// = "java.lang.Object";
 	
 	private Map<AstNode,ParseTree> a2p = new HashMap();
 	
@@ -621,17 +633,17 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		//TODO parse value
 		ce.value = t;
 		if(ctx.IntegerLiteral()!=null){
-			ce.type = "int";
+			ce.type = INT_CLASS;
 		}else if(ctx.FloatingPointLiteral()!=null){
-			ce.type = "float";
+			ce.type = FLOAT_CLASS;
 		}else if(ctx.BooleanLiteral()!=null){
-			ce.type = "boolean";
+			ce.type = BOOLEAN_CLASS;
 		}else if(ctx.CharacterLiteral()!=null){
-			ce.type = "char";
+			ce.type = CHAR_CLASS;
 		}else if(ctx.StringLiteral()!=null){
-			ce.type = "String";
+			ce.type = STRING_CLASS;
 		}else{
-			ce.type = "null";
+			ce.type = NULL_CLASS;
 		}
 		a2p.put(ce, ctx);
 		return ce;

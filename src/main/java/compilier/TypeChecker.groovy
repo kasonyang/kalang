@@ -17,12 +17,30 @@ import jast.ast.NewExpr;
 import jast.ast.ParameterExpr;
 import jast.ast.ParameterNode;
 import jast.ast.UnaryExpr;
+import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
 import kalang.core.FieldObject
 import kalang.core.VarObject
 @groovy.transform.TypeChecked
 class TypeChecker extends AstVisitor<String> {
-	
+
+	private static final String FLOAT_CLASS = "java.lang.Float";
+	private static final String DOUBLE_CLASS = "java.lang.Double";
+
+	private static final String INT_CLASS = "java.lang.Integer";
+	private static final String LONG_CLASS = "java.lang.Long";
+
+	private static final String BOOLEAN_CLASS = "java.lang.Boolean";
+
+	private static final String CHAR_CLASS = "java.lang.Character";
+
+	private static final String STRING_CLASS = "java.lang.String";
+
+	private static final String NULL_CLASS = "java.lang.NullObject";
+
+	private static final String DEFAULT_CLASS = "java.lang.Object";
+
+
 	@Override
 	public String visitCastExpr(CastExpr node) {
 		node.type
@@ -30,29 +48,29 @@ class TypeChecker extends AstVisitor<String> {
 
 	static class TypeError extends Exception{
 		AstNode node
-		
+
 		public TypeError(String msg,AstNode node){
 			super(msg)
 			this.node = node
 		}
 	}
- 
+
 	HashMap<AstNode,String> types = [:]
 	//HashMap<AstNode,VarObject> vars
 	HashMap<String,String> fieldTypes
-	
-	AstLoader astLoader 
-	
+
+	AstLoader astLoader
+
 	ClassNode clazz
-	
+
 	TypeChecker(AstLoader astLoader){
 		this.astLoader = astLoader
 	}
-	
+
 	private void fail(String str,AstNode node){
 		throw new TypeError(str,node);
 	}
-	
+
 	public void check(ClassNode clz){
 		this.fieldTypes = [:]
 		for(def f in clz.fields){
@@ -61,13 +79,13 @@ class TypeChecker extends AstVisitor<String> {
 		this.clazz = clz
 		visit(clazz)
 	}
-	
+
 	private void checkCastable(String from,String to,AstNode node){
 		if(!castable(from,to)){
 			fail("can not cast type:${from} => ${to}",node)
 		}
 	}
-	
+
 	@Override
 	public String visitAssignExpr(AssignExpr node) {
 		String ft = visit(node.from);
@@ -75,20 +93,20 @@ class TypeChecker extends AstVisitor<String> {
 		checkCastable(ft,tt,node);
 		return tt
 	}
-	
+
 	static private String getClassType(String from){
-		if(from=="int") from="Integer"
-		if(from=="long") from = "Long"
-		if(from=="float") from = "Float"
-		if(from=="double") from = "Double"
+		if(from=="int") from=INT_CLASS
+		if(from=="long") from = LONG_CLASS
+		if(from=="float") from = FLOAT_CLASS
+		if(from=="double") from = DOUBLE_CLASS
 		return from
 	}
-	
+
 	static private String getPrimaryType(String type){
-		if(type=="Integer") return "int"
-		if(type=="Long") return "long"
-		if(type=="Float") return "float"
-		if(type=="Double") return "double"
+		if(type==INT_CLASS) return "int"
+		if(type==LONG_CLASS) return "long"
+		if(type==FLOAT_CLASS) return "float"
+		if(type==DOUBLE_CLASS) return "double"
 		return type
 	}
 
@@ -98,24 +116,24 @@ class TypeChecker extends AstVisitor<String> {
 		def ret = MathType.getType(pt1,pt2,op)
 		return getClassType(ret)
 	}
-	
+
 	static private boolean isNumber(String type){
-		def numTypes = ["Integer","Long","Float","Double"]
+		def numTypes = [INT_CLASS, LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS]
 		return numTypes.contains(type)
 	}
-	
+
 	static private boolean isBoolean(String type){
-		return type =="Boolean"
+		return type ==BOOLEAN_CLASS
 	}
-	
+
 	static String getHigherType(String type1,String type2){
-		if(type1=="Double" || type2=="Double") return "Double"
-		if(type1=="Float" || type2 =="Float") return "Float"
-		if(type1=="Long" || type2=="Long") return "Long"
-		return "Integer"
+		if(type1==DOUBLE_CLASS || type2==DOUBLE_CLASS) return DOUBLE_CLASS
+		if(type1==FLOAT_CLASS || type2 ==FLOAT_CLASS) return FLOAT_CLASS
+		if(type1==LONG_CLASS || type2==LONG_CLASS) return LONG_CLASS
+		return INT_CLASS
 	}
-	
-	
+
+
 	@Override
 	public String visitBinaryExpr(BinaryExpr node) {
 		String t1 = getClassType(visit(node.expr1).toString())
@@ -141,14 +159,14 @@ class TypeChecker extends AstVisitor<String> {
 				if(!isNumber(t1)||!isNumber(t2)){
 					fail("number required!",node)
 				}
-				t = "Boolean"
+				t = BOOLEAN_CLASS
 				break;
 			case "&&":
 			case "||":
 				if(!isBoolean(t1)||!isBoolean(t2)){
 					fail("Boolean type required!",node)
 				}
-				t = "Boolean"
+				t = BOOLEAN_CLASS
 				break;
 			case "&":
 			case "|":
@@ -191,23 +209,24 @@ class TypeChecker extends AstVisitor<String> {
 		ClassNode ast = astLoader.load(target);
 		MethodNode method = ensureHasMethod(ast,methodName,types)
 		if(method==null){
-			fail("no method",node);
+			def ps = types.join(",")
+			String mdesc = "${ast.name}.${methodName}(${ps})"
+			fail("no method:${mdesc}",node);
 		}
 		return method.type
 	}
-	
-	
-	
+
+
+
 	private boolean castable(String from,String to){
 		to = getClassType(to)
 		from = getClassType(from)
 		if(from==to) return true
-		def baseMap = [
-			"Integer" : ["Long","Float","Double"],
-			"Long"    : ["Float","Double"],
-			"Float"   : ["Double"],
-			"Double"  : []
-		]
+		HashMap<String,List> baseMap = [:]
+		baseMap.put(INT_CLASS , [LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS])
+		baseMap.put(LONG_CLASS  , [FLOAT_CLASS, DOUBLE_CLASS])
+		baseMap.put(FLOAT_CLASS  , [DOUBLE_CLASS])
+		baseMap.put(DOUBLE_CLASS  , [])
 		if(baseMap.containsKey(from)){
 			return baseMap.get(from).contains(to)
 		}
@@ -220,7 +239,7 @@ class TypeChecker extends AstVisitor<String> {
 		}
 		return false;
 	}
-	
+
 	private boolean castable(List<String> from,List<String> to){
 		if(from.size()!=to.size())  return false
 		for(int i=0;i<from.size();i++){
@@ -232,12 +251,12 @@ class TypeChecker extends AstVisitor<String> {
 		}
 		return true
 	}
-	
+
 	private MethodNode ensureHasMethod(ClassNode ast,String name,List types){
 		def methods = ast.methods
 		for(def m in methods){
 			if(m.name!=name) continue
-			def ps = m.parameters
+				def ps = m.parameters
 			def mtypes = []
 			for(def p in ps){
 				mtypes.add(p.type)
@@ -279,6 +298,18 @@ class TypeChecker extends AstVisitor<String> {
 	@Override
 	public String visitNewExpr(NewExpr node) {
 		return node.type
+	}
+
+	@Override
+	public String visitVarDeclStmt(VarDeclStmt node) {
+		//Type infer
+		if(node.type==null){
+			if(node.initExpr){
+				node.type = visit(node.initExpr)
+			}else{
+				node.type = DEFAULT_CLASS
+			}
+		}
 	}
 
 }
