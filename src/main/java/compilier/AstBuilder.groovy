@@ -6,7 +6,7 @@ class AstBuilder {
 	static ClassNode build(Class clz){
 		def cn = ClassNode.create();
 		cn.name = clz.name
-		cn.parentName = clz.superclass.name
+		cn.parentName = clz.superclass?.name
 		for(def m in clz.methods){
 			def methodNode = MethodNode.create();
 			methodNode.name = m.name

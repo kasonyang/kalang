@@ -223,8 +223,9 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
 	@Override
 	public String visitInvocationExpr(InvocationExpr node) {
+		def target = node.target ? "${visit(node.target)}." : ""
 		def args = visit(node.arguments).join(",");
-		"${node.methodName}($args)"
+		"${target}${node.methodName}($args)"
 	}
 
 	@Override

@@ -10,21 +10,25 @@ class AstLoader {
 		asts.put(clazz.name,clazz)
 	}
 	
-	public ClassNode load(String className){
+	public ClassNode load(String className) throws AstNotFoundException{
 		def ast = asts.get(className)
 		if(!ast){
 			try{
 				Class clz = Class.forName(className)
 				ast = AstBuilder.build(clz)
 			}catch(ClassNotFoundException e){
-				ast = null;
+				throw new AstNotFoundException(className)
 			}
 		}
 		return ast
 	}
 	
 	public ClassNode getAst(String clsName){
-		return load(clsName)
+		try{
+			return load(clsName)
+		}catch(AstNotFoundException e){
+			return null;
+		}
 	}
 
 }

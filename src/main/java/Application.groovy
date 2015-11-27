@@ -29,6 +29,7 @@ class  kava {
     var l as long = 3;
 	var str = "hehe";
     var map = new HashMap();
+    map.put(a,str);
     var b;
     a= a + 1;
     l = l + 1;
@@ -53,6 +54,7 @@ class  kava {
 		def tree = parser.start()
 		def astLoader = new AstLoader()
 		def visitor = new KalangTranslator(astLoader);
+		visitor.importPackage("java.lang")
 		def cls
 		try{
 			cls = visitor.visit(tree);

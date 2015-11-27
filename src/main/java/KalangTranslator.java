@@ -80,12 +80,18 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	List<String> fields = new LinkedList();
 	HashMap<String,ParameterNode> parameters;
 	
+	String defaultType = "java.lang.Object";
+	
 	private Map<AstNode,ParseTree> a2p = new HashMap();
 	
 	private AstLoader astLoader;
 	
 	public KalangTranslator(AstLoader astLoader){
 		this.astLoader = astLoader;
+	}
+	
+	public void importPackage(String packageName){
+		this.importPaths.add(packageName);
 	}
 	
 	private VarTable getVarTable(){
@@ -165,7 +171,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public FieldNode visitFieldDecl(FieldDeclContext ctx) {
-		String type = ctx.type()==null?"Object":ctx.type().getText();
+		String type = ctx.type()==null?defaultType:ctx.type().getText();
 		FieldNode fo = new FieldNode();
 		fo.name=(ctx.Identifier().getText());
 		fo.type=(type);
@@ -206,7 +212,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		this.pushVarTable();
 		this.parameters = new HashMap();
 		String name = ctx.Identifier().getText();
-		String type = ctx.type()==null ? "Object" :ctx.type().getText();
+		String type = ctx.type()==null ? defaultType :ctx.type().getText();
 		int mdf = 0;
 		if(ctx.modifier()!=null){
 			mdf = visitModifier(ctx.modifier());
@@ -246,7 +252,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	@Override
 	public ParameterNode visitArgumentDecl(ArgumentDeclContext ctx) {
 		String name = ctx.Identifier().getText();
-		String type = "Object";
+		String type = defaultType;
 		if(ctx.type()!=null){
 			type = ctx.type().getText();
 		}
@@ -329,7 +335,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	@Override
 	public VarDeclStmt visitVarDecl(VarDeclContext ctx) {
 		String name = ctx.Identifier().getText();
-		String type = "Object";
+		String type = defaultType;
 		if(ctx.type()!=null){
 			type = ctx.type().getText();
 		}
