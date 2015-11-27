@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.tree.ParseTree
 class Application {
 	static void main(args) {
 		def input = '''\
+import java.util.*;
 class  kava {
   var f as int = 123;
   var f2;
@@ -46,48 +47,21 @@ class  kava {
   }
 }
 ''';
-		def astLoader = new JavaAstLoader()
-		def visitor = new KalangTranslator(astLoader);
-		visitor.addSource("kava",input)
-		def classes
-		try{
-			visitor.compile();
-			classes = visitor.getCompiledClasses();
-		}catch(ParseError e){
-			println e
-			//errorOn(e.getMessage(),e.getTree(),tokens)
-			return
-		}
+
+		def astLoader = new JavaAstLoader();
+		def cpl = new KalangCompiler(astLoader);
+		cpl.addSource("kava",input)
+		cpl.compile();
+		def classes = cpl.getCompiledClasses();
+		def cls = classes[0]
+		
 		//println names
 		//println cls;
-		def cls = classes[0]
-		def a2j = new Ast2Java();
-		println a2j.visit(cls);
+		//def a2j = new Ast2Java();
+		//println a2j.visit(cls);
+		//def parseTrees = visitor.getParseTreeMap();
 		
-		astLoader.add(cls)
-		
-		def parseTrees = visitor.getParseTreeMap();
-		def typeChecker = new TypeChecker(astLoader)
-		try{
-			typeChecker.check(cls)
-			println "type checked!"
-			System.err.println a2j.visit(cls);
-		}catch(TypeChecker.TypeError e){
-			def node = e.getNode()
-			def t = parseTrees.get(node)
-			
-			//errorOn(e.message,t,tokens)
-			//println e.message + ":error on ${node}"
-		}
 		//def ast = AstBuilder.build(String.class);
 		//println a2j.visit(ast)
-	}
-	
-	def static errorOn(String msg,ParseTree tree,CommonTokenStream tokens){
-		def itv = tree.getSourceInterval()
-			def t = tokens.get(itv.a)
-			def col = t.charPositionInLine
-			def text = tree.getText();
-			System.err.println "@${t.line}:${col} ${text} => ${msg}"
 	}
 }
