@@ -677,7 +677,7 @@ public class TheKavaVisitor extends AbstractParseTreeVisitor<VarObject> implemen
 		String clsName = ctx.Identifier(0).getText();
 		cls.setName(clsName);
 		cls.setMethods(new ArrayList());
-		cls.setFields(new ArrayList());
+		cls.setCFields(new ArrayList());
 		if(ctx.Identifier().size()>1){
 			cls.setParentType(ctx.Identifier(1).getText());
 		}

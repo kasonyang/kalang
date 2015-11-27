@@ -206,7 +206,10 @@ class TypeChecker extends AstVisitor<String> {
 		List types = visit(node.arguments);
 		String target = node.target?visit(node.target):this.clazz.name;
 		String methodName = node.methodName;
-		ClassNode ast = astLoader.load(target);
+		ClassNode ast = astLoader.getAst(target);
+		if(ast==null){
+			fail("no class:"+target ,node)
+		}
 		MethodNode method = ensureHasMethod(ast,methodName,types)
 		if(method==null){
 			def ps = types.join(",")
@@ -230,12 +233,12 @@ class TypeChecker extends AstVisitor<String> {
 		if(baseMap.containsKey(from)){
 			return baseMap.get(from).contains(to)
 		}
-		def fromAst = astLoader.load(from)
+		def fromAst = astLoader.loadAst(from)
 		while(fromAst){
 			def parent = fromAst.parentName
 			if(!parent) return false;
 			if(parent==to) return true;
-			fromAst = astLoader.load(parent)
+			fromAst = astLoader.loadAst(parent)
 		}
 		return false;
 	}

@@ -6,26 +6,35 @@ class AstLoader {
 	
 	HashMap<String,ClassNode> asts = [:]
 	
+	private AstLoader parent
+	
+	AstLoader(AstLoader astLoader = null){
+		parent = astLoader
+	}
+	
 	public void add(ClassNode clazz){
 		asts.put(clazz.name,clazz)
 	}
 	
-	public ClassNode load(String className) throws AstNotFoundException{
+	protected ClassNode findAst(String className) throws AstNotFoundException{
 		def ast = asts.get(className)
 		if(!ast){
-			try{
-				Class clz = Class.forName(className)
-				ast = AstBuilder.build(clz)
-			}catch(ClassNotFoundException e){
+			if(parent){
+				return parent.findAst(className)
+			}else{
 				throw new AstNotFoundException(className)
 			}
 		}
 		return ast
 	}
 	
-	public ClassNode getAst(String clsName){
+	public ClassNode loadAst(String className){
+		return findAst(className)
+	}
+	
+	public ClassNode getAst(String className){
 		try{
-			return load(clsName)
+			return findAst(className)
 		}catch(AstNotFoundException e){
 			return null;
 		}

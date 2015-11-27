@@ -1,10 +1,14 @@
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
+import kalang.antlr.KalangLexer;
+import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.ArgumentDeclContext;
 import kalang.antlr.KalangParser.ArgumentDeclListContext;
 import kalang.antlr.KalangParser.ArgumentsContext;
@@ -61,7 +65,11 @@ import kalang.core.VarObject;
 import kalang.core.VarTable;
 import jast.ast.*;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -84,49 +92,102 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	private static final String NULL_CLASS = "java.lang.NullObject";
 	
 	//short name to full name
-	private Map<String,String> fullNames = new HashMap();
-	private List<String> importPaths = new LinkedList();
+	private Map<String,String> cFullNames = new HashMap();
+	private List<String> cImportPaths = new LinkedList();
 	//VarTable vtb = new VarTable();
-	Stack<VarTable> vtbs = new Stack();
-	HashMap<VarObject,VarDeclStmt> varDeclStmts = new HashMap();
-	List<String> fields = new LinkedList();
-	HashMap<String,ParameterNode> parameters;
+	Stack<VarTable> cVtbs = new Stack();
+	HashMap<VarObject,VarDeclStmt> cVarDeclStmts = new HashMap();
+	List<String> cFields = new LinkedList();
+	HashMap<String,ParameterNode> cParameters;
 	
 	String defaultType;// = "java.lang.Object";
 	
-	private Map<AstNode,ParseTree> a2p = new HashMap();
+	private Map<AstNode,ParseTree> cA2p = new HashMap();
 	
 	private AstLoader astLoader;
+	
+	private Map<String,ClassNode> classes = new HashMap();
+	
+	private Map<String,String> sources = new HashMap();
+
+	private CommonTokenStream cTokens;
 	
 	public KalangTranslator(AstLoader astLoader){
 		this.astLoader = astLoader;
 	}
 	
+	public void addSource(String clsName,String content){
+		sources.put(clsName, content);
+	}
+	
+	public Collection<ClassNode> getCompiledClasses(){
+		return classes.values();
+	}
+	
+	private void initCompile(){
+		this.cA2p = new HashMap();
+		this.cFields = new LinkedList();
+		this.cFullNames = new HashMap();
+		this.cImportPaths = new LinkedList();
+		this.cImportPaths.add("java.lang");
+		this.cImportPaths.add("java.util");
+		this.cParameters = new HashMap();
+		this.cVarDeclStmts = new HashMap();
+		this.cVtbs = new Stack();
+	}
+	
+	private void finishCompile(){
+		
+	}
+	
+	public void compile(){
+		Set<String> keys = sources.keySet();
+		for(String k:keys){
+			this.initCompile();
+			String input = sources.get(k); 
+			KalangLexer lexer = new KalangLexer(new ANTLRInputStream(input));
+			cTokens = new CommonTokenStream(lexer);
+			KalangParser parser = new KalangParser(cTokens);
+			StartContext tree = parser.start();
+			ClassNode cls = visitStart(tree);
+			classes.put(k, cls);
+			this.finishCompile();
+		}
+	}
+	
+	private boolean existClass(String clsName){
+		boolean exist = sources.containsKey(clsName);
+		if(!exist && astLoader!=null){
+			exist = astLoader.getAst(clsName) != null;
+		}
+		return exist;
+	}
+	
 	public void importPackage(String packageName){
-		this.importPaths.add(packageName);
+		this.cImportPaths.add(packageName);
 	}
 	
 	private VarTable getVarTable(){
-		return vtbs.peek();
+		return cVtbs.peek();
 	}
 	
 	public Map<AstNode,ParseTree> getParseTreeMap(){
-		return this.a2p;
+		return this.cA2p;
 	}
 	
 	private void pushVarTable(){
 		VarTable vtb;
-		if(vtbs.size()>0){
+		if(cVtbs.size()>0){
 			vtb = new VarTable(getVarTable());
 		}else{
 			vtb = new VarTable();
 		}
 		
-		vtbs.push(vtb);
+		cVtbs.push(vtb);
 	}
 	
 	private void popVarTable(){
-		vtbs.pop();
+		cVtbs.pop();
 	}
 	
 	private VarDeclStmt doVisitVarDeclAndInit(VarDeclContext vd,VarInitContext vi){
@@ -135,7 +196,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 			AstNode val = visitVarInit(vi);
 			vds.initExpr = (ExprNode) (val);
 		}
-		a2p.put(vds, vd);
+		cA2p.put(vds, vd);
 		return vds;
 	}
 	
@@ -168,7 +229,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		ClassNode cls = new ClassNode();
 		cls.fields = this.visitFieldDeclList(ctx.fieldDeclList());
 		cls.methods = this.visitMethodDeclList(ctx.methodDeclList());
-		a2p.put(cls,ctx);
+		cA2p.put(cls,ctx);
 		return cls;
 	}
 
@@ -193,7 +254,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		if(ctx.modifier()!=null){
 			fo.modifier = visitModifier(ctx.modifier());
 		}
-		fields.add(fo.name);
+		cFields.add(fo.name);
 		//TODO visit setter and getter
 		return fo;
 	}
@@ -222,7 +283,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	@Override
 	public MethodNode visitMethodDecl(MethodDeclContext ctx) {
 		this.pushVarTable();
-		this.parameters = new HashMap();
+		this.cParameters = new HashMap();
 		String name = ctx.Identifier().getText();
 		String type = ctx.type()==null ? defaultType :ctx.type().getText();
 		int mdf = 0;
@@ -241,8 +302,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		}
 		body.statements = visitStatList(ctx.statList());
 		this.popVarTable();
-		this.parameters = null;
-		a2p.put(method,ctx);
+		this.cParameters = null;
+		cA2p.put(method,ctx);
 		return method;
 	}
 
@@ -278,8 +339,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		ParameterNode pn = new ParameterNode();
 		pn.name = name;
 		pn.type = type;
-		this.parameters.put(name,pn);
-		a2p.put(pn,ctx);
+		this.cParameters.put(name,pn);
+		cA2p.put(pn,ctx);
 		return pn;
 	}
 
@@ -304,7 +365,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		ifStmt.conditionExpr = expr;
 		trueBody.statements = visitStatList(ctx.statList());
 		falseBody.statements = visitIfStatSuffix(ctx.ifStatSuffix());
-		a2p.put(ifStmt,ctx);
+		cA2p.put(ifStmt,ctx);
 		return ifStmt;
 	}
 
@@ -335,7 +396,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		ExprNode expr = visitExpression(ctx.expression());
 		ReturnStmt rs = new ReturnStmt();
 		rs.expr = expr;
-		a2p.put(rs,ctx);
+		cA2p.put(rs,ctx);
 		return rs;
 	}
 
@@ -362,7 +423,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		vo.setName(name);
 		vo.setType(type);
 		//vars.add(vo);
-		this.varDeclStmts.put(vo, vds);
+		this.cVarDeclStmts.put(vo, vds);
 		vtb.put(name, vo);
 		//Integer vid = vars.indexOf(vo);
 		/*
@@ -373,12 +434,14 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		vds.type = type;
 		//vds
 		//vds.varId = vid;
-		a2p.put(vds,ctx);
+		cA2p.put(vds,ctx);
 		return vds;
 	}
 
-	private void reportError(String string, ParseTree tree) {
-		throw new ParseError(string,tree);
+	public void reportError(String string, ParseTree tree) {
+		 Interval itv = tree.getSourceInterval();
+		 Token t = cTokens.get(itv.a);
+		 throw new ParseError(string,t.getStartIndex(),t.getStopIndex());
 	}
 
 	@Override
@@ -390,14 +453,14 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	@Override
 	public AstNode visitBreakStat(BreakStatContext ctx) {
 		BreakStmt bs = new BreakStmt();
-		a2p.put(bs,ctx);
+		cA2p.put(bs,ctx);
 		return bs;
 	}
 
 	@Override
 	public AstNode visitContinueStat(ContinueStatContext ctx) {
 		ContinueStmt cs = new ContinueStmt();
-		a2p.put(cs,ctx);
+		cA2p.put(cs,ctx);
 		return cs;
 	}
 
@@ -410,7 +473,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		AstNode expr = visitExpression(ctx.expression());
 		ws.preConditionExpr = (ExprNode) expr;
 		body.statements = visitStatList(ctx.statList());
-		a2p.put(ws,ctx);
+		cA2p.put(ws,ctx);
 		return ws;
 	}
 
@@ -433,7 +496,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		body.statements = visitStatList(ctx.statList());
 		body.statements.addAll(visitForUpdate(ctx.forUpdate()));
 		this.popVarTable();
-		a2p.put(ls,ctx);
+		cA2p.put(ls,ctx);
 		return ls;
 	}
 
@@ -465,7 +528,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		AstNode expr = visitExpression(ctx.expression());
 		ExprStmt es = new ExprStmt();
 		es.expr = (ExprNode) expr;
-		a2p.put(es,ctx);
+		cA2p.put(es,ctx);
 		return es;
 	}
 
@@ -480,7 +543,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 				null
 				, ctx.Identifier().getText()
 				,ctx.arguments());
-		a2p.put(ie,ctx);
+		cA2p.put(ie,ctx);
 		return ie;
 	}
 
@@ -491,7 +554,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		AssignExpr aexpr = new AssignExpr();
 		aexpr.from = (ExprNode) from;
 		aexpr.to = (ExprNode) to;
-		a2p.put(aexpr, ctx);
+		cA2p.put(aexpr, ctx);
 		return aexpr;
 	}
 
@@ -502,7 +565,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
 		be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
 		be.operation = op;
-		a2p.put(be, ctx);
+		cA2p.put(be, ctx);
 		return be;
 	}
 	
@@ -520,7 +583,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 				visitExpression(ctx.expression())
 				, ctx.Identifier().getText()
 				, ctx.arguments());
-		a2p.put(ei, ctx);
+		cA2p.put(ei, ctx);
 		return ei;
 	}
 
@@ -531,7 +594,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		FieldExpr fe = new FieldExpr();
 		fe.target = (ExprNode) expr;
 		fe.fieldName = name;
-		a2p.put(fe, ctx);
+		cA2p.put(fe, ctx);
 		return fe;
 	}
 
@@ -540,7 +603,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		UnaryExpr ue = new UnaryExpr();
 		ue.postOperation = ctx.getChild(1).getText();
 		ue.expr = (ExprNode) visitExpression(ctx.expression());
-		a2p.put(ue, ctx);
+		cA2p.put(ue, ctx);
 		return ue;
 	}
 
@@ -550,7 +613,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		UnaryExpr ue = new UnaryExpr();
 		ue.expr = (ExprNode) visitExpression(ctx.expression());
 		ue.preOperation = op;
-		a2p.put(ue, ctx);
+		cA2p.put(ue, ctx);
 		return ue;
 	}
 
@@ -559,7 +622,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		ElementExpr ee = new ElementExpr();
 		ee.target = (ExprNode) visitExpression(ctx.expression(0));
 		ee.key = (ExprNode) visitExpression(ctx.expression(1));
-		a2p.put(ee, ctx);
+		cA2p.put(ee, ctx);
 		return ee;
 	}
 
@@ -588,13 +651,12 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	}
 	
 	private String getFullClassName(String name){
-		if(fullNames.containsKey(name)){
-			return fullNames.get(name);
+		if(cFullNames.containsKey(name)){
+			return cFullNames.get(name);
 		}else{
-			for(String p:this.importPaths){
+			for(String p:this.cImportPaths){
 				String clsName = p + "." + name;
-				ClassNode cls = astLoader.getAst(clsName);
-				if(cls!=null){
+				if(this.existClass(clsName)){
 					return clsName;
 				}
 			}
@@ -609,14 +671,14 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 			VarObject vo = vtb.get(name);
 			//Integer vid = vars.indexOf(vo);
 			//ve.id = vid;
-			ve.declStmt = this.varDeclStmts.get(vo);
+			ve.declStmt = this.cVarDeclStmts.get(vo);
 			return ve;
-		}else if(fields.contains(name)){
+		}else if(cFields.contains(name)){
 			FieldExpr fe = new FieldExpr();
 			fe.fieldName = name;
 			return fe;
-		}else if(parameters.containsKey(name)){
-			return new ParameterExpr(parameters.get(name));
+		}else if(cParameters.containsKey(name)){
+			return new ParameterExpr(cParameters.get(name));
 		}else{
 			String clsName = this.getFullClassName(name);
 			if(clsName!=null){
@@ -645,7 +707,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		}else{
 			ce.type = NULL_CLASS;
 		}
-		a2p.put(ce, ctx);
+		cA2p.put(ce, ctx);
 		return ce;
 	}
 
@@ -677,10 +739,10 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	public Object visitImportDecl(ImportDeclContext ctx) {
 		String name = ctx.importPath().getText();
 		if(name.endsWith(".*")){
-			this.importPaths.add(name.substring(0, name.length()-2));
+			this.cImportPaths.add(name.substring(0, name.length()-2));
 		}else{
 			String[] namePs = name.split("\\.");
-			this.fullNames.put(namePs[namePs.length-1], name);
+			this.cFullNames.put(namePs[namePs.length-1], name);
 		}
 		return null;
 	}
@@ -722,7 +784,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		NewExpr newExpr = new NewExpr();
 		newExpr.type = checkFullClassName(type,ctx);
 		newExpr.arguments = this.visitArguments(ctx.arguments());
-		a2p.put(newExpr, ctx);
+		cA2p.put(newExpr, ctx);
 		return newExpr;
 	}
 
@@ -731,7 +793,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		CastExpr ce = new CastExpr();
 		ce.expr = visitExpression(ctx.expression());
 		ce.type = ctx.type().getText();
-		a2p.put(ce, ctx);
+		cA2p.put(ce, ctx);
 		return ce;
 	}
 

@@ -19,7 +19,6 @@ import org.antlr.v4.runtime.tree.ParseTree
 class Application {
 	static void main(args) {
 		def input = '''\
-import java.util.*;
 class  kava {
   var f as int = 123;
   var f2;
@@ -47,22 +46,21 @@ class  kava {
   }
 }
 ''';
-		def opsList = [];
-		def lexer = new KalangLexer(new ANTLRInputStream(input));
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		def parser = new KalangParser(tokens);
-		def tree = parser.start()
-		def astLoader = new AstLoader()
+		def astLoader = new JavaAstLoader()
 		def visitor = new KalangTranslator(astLoader);
-		visitor.importPackage("java.lang")
-		def cls
+		visitor.addSource("kava",input)
+		def classes
 		try{
-			cls = visitor.visit(tree);
+			visitor.compile();
+			classes = visitor.getCompiledClasses();
 		}catch(ParseError e){
-			errorOn(e.getMessage(),e.getTree(),tokens)
+			println e
+			//errorOn(e.getMessage(),e.getTree(),tokens)
+			return
 		}
 		//println names
 		//println cls;
+		def cls = classes[0]
 		def a2j = new Ast2Java();
 		println a2j.visit(cls);
 		
@@ -77,7 +75,8 @@ class  kava {
 		}catch(TypeChecker.TypeError e){
 			def node = e.getNode()
 			def t = parseTrees.get(node)
-			errorOn(e.message,t,tokens)
+			
+			//errorOn(e.message,t,tokens)
 			//println e.message + ":error on ${node}"
 		}
 		//def ast = AstBuilder.build(String.class);

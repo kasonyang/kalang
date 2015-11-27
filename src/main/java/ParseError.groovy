@@ -2,9 +2,11 @@ import org.antlr.v4.runtime.tree.ParseTree
 
 
 class ParseError extends RuntimeException {
-	ParseTree tree;
-	public ParseError(String msg,ParseTree tree){
+	int start;
+	int end;
+	public ParseError(String msg,int start,int end){
 		super(msg)
-		this.tree = tree
+		this.start = start
+		this.end = end
 	}
 }
