@@ -22,5 +22,9 @@ class AstLoader {
 		}
 		return ast
 	}
+	
+	public ClassNode getAst(String clsName){
+		return load(clsName)
+	}
 
 }

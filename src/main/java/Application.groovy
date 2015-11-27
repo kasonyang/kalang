@@ -27,7 +27,8 @@ class  kava {
   var func() as int{
     var a as int=3;
     var l as long = 3;
-	var str = new String(3);
+	var str = "hehe";
+    var map = new HashMap();
     var b;
     a= a + 1;
     l = l + 1;
@@ -50,7 +51,8 @@ class  kava {
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		def parser = new KalangParser(tokens);
 		def tree = parser.start()
-		def visitor = new KalangTranslator();
+		def astLoader = new AstLoader()
+		def visitor = new KalangTranslator(astLoader);
 		def cls
 		try{
 			cls = visitor.visit(tree);
@@ -61,10 +63,8 @@ class  kava {
 		//println cls;
 		def a2j = new Ast2Java();
 		println a2j.visit(cls);
-		def astLoader = new AstLoader()
+		
 		astLoader.add(cls)
-		def varParser = new VariableParser()
-		println varParser.parse(cls)
 		
 		def parseTrees = visitor.getParseTreeMap();
 		def typeChecker = new TypeChecker(astLoader)

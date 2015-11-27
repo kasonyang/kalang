@@ -66,6 +66,8 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import compilier.AstLoader;
+
 
 public class KalangTranslator extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
 
@@ -79,6 +81,12 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	HashMap<String,ParameterNode> parameters;
 	
 	private Map<AstNode,ParseTree> a2p = new HashMap();
+	
+	private AstLoader astLoader;
+	
+	public KalangTranslator(AstLoader astLoader){
+		this.astLoader = astLoader;
+	}
 	
 	private VarTable getVarTable(){
 		return vtbs.peek();
@@ -120,7 +128,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public ClassNode visitCompiliantUnit(CompiliantUnitContext ctx) {
-		//List<ImportNode> imports = this.visitImportDeclList(ctx.importDeclList());
+		//List<ImportNode> imports = 
+		this.visitImportDeclList(ctx.importDeclList());
 		
 		ClassNode cls = visitClassBody(ctx.classBody());
 		//cls.imports = imports;
@@ -551,6 +560,29 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		String name = ctx.Identifier().getText();
 		return getNodeByName(name);
 	}
+	
+	private String checkFullClassName(String name,ParseTree tree){
+		String fn = getFullClassName(name);
+		if(fn==null){
+			this.reportError("Unknown class:"+name,tree);
+		}
+		return fn;
+	}
+	
+	private String getFullClassName(String name){
+		if(fullNames.containsKey(name)){
+			return fullNames.get(name);
+		}else{
+			for(String p:this.importPaths){
+				String clsName = p + "." + name;
+				ClassNode cls = astLoader.getAst(clsName);
+				if(cls!=null){
+					return clsName;
+				}
+			}
+		}
+		return null;
+	}
 
 	private AstNode getNodeByName(String name) {
 		VarTable vtb = this.getVarTable();
@@ -565,12 +597,13 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 			FieldExpr fe = new FieldExpr();
 			fe.fieldName = name;
 			return fe;
-		}else if(fullNames.containsKey(name)){
-			return new ClassExpr(fullNames.get(name));
 		}else if(parameters.containsKey(name)){
 			return new ParameterExpr(parameters.get(name));
 		}else{
-			//TODO find path class
+			String clsName = this.getFullClassName(name);
+			if(clsName!=null){
+				return new ClassExpr(clsName);
+			}
 		}
 		return null;
 	}
@@ -625,8 +658,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	@Override
 	public Object visitImportDecl(ImportDeclContext ctx) {
 		String name = ctx.importPath().getText();
-		if(name.endsWith("*")){
-			this.importPaths.add(name);
+		if(name.endsWith(".*")){
+			this.importPaths.add(name.substring(0, name.length()-2));
 		}else{
 			String[] namePs = name.split("\\.");
 			this.fullNames.put(namePs[namePs.length-1], name);
@@ -667,8 +700,9 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	@Override
 	public NewExpr visitNewExpr(NewExprContext ctx) {
+		String type =  ctx.Identifier().getText();
 		NewExpr newExpr = new NewExpr();
-		newExpr.type = ctx.Identifier().getText();
+		newExpr.type = checkFullClassName(type,ctx);
 		newExpr.arguments = this.visitArguments(ctx.arguments());
 		a2p.put(newExpr, ctx);
 		return newExpr;
