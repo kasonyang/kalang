@@ -77,9 +77,20 @@ import compilier.AstLoader;
 
 public class KalangTranslator extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
 
-	static class Position{
+	public static class Position{
 		int offset;
 		int length;
+	}
+	
+	public static class ParseError extends RuntimeException{
+		Position position;
+		public ParseError(String msg,Position position){
+			super(msg);
+			this.position = position;
+		}
+		public Position getPosition() {
+			return position;
+		}
 	}
 	
 	private static final String FLOAT_CLASS = "java.lang.Float";
@@ -136,14 +147,18 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		this.importPaths.add(packageName);
 	}
 	
-	public Position getLocation(AstNode node){
+	public Position getLocation(ParseTree tree){
 		Position loc = new Position();
-		ParseTree tree = this.a2p.get(node);
 		Interval itv = tree.getSourceInterval();
 		Token t = tokens.get(itv.a);
 		loc.offset = t.getStartIndex();
 		loc.length = t.getStopIndex() - loc.offset;
 		return loc;
+	}
+	
+	public Position getLocation(AstNode node){
+		ParseTree tree = this.a2p.get(node);
+		return getLocation(tree);
 	}
 	
 	private VarTable getVarTable(){
@@ -421,7 +436,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 	}
 
 	private void reportError(String string, ParseTree tree) {
-		throw new ParseError(string,tree);
+		throw new ParseError(string,this.getLocation(tree));
 	}
 
 	@Override

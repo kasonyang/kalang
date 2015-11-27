@@ -51,17 +51,11 @@ class  kava {
 		def astLoader = new JavaAstLoader();
 		def cpl = new KalangCompiler(astLoader);
 		cpl.addSource("kava",input)
+		cpl.addSource("Test","class Test {var k as kava;}");
 		cpl.compile();
-		def classes = cpl.getCompiledClasses();
-		def cls = classes[0]
+		
 		
 		//println names
 		//println cls;
-		//def a2j = new Ast2Java();
-		//println a2j.visit(cls);
-		//def parseTrees = visitor.getParseTreeMap();
-		
-		//def ast = AstBuilder.build(String.class);
-		//println a2j.visit(ast)
 	}
 }

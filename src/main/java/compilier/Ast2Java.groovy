@@ -33,6 +33,10 @@ import java.lang.reflect.Modifier
 @groovy.transform.TypeChecked
 class Ast2Java extends AbstractAstVisitor<String>{
 
+	public String generate(ClassNode cls){
+		return visit(cls)
+	}
+	
 	@Override
 	public String visitCastExpr(CastExpr node) {
 		"(${node.type}) ${visit(node.expr)}"
