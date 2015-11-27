@@ -1,3 +1,4 @@
+package compilier
 
 class CompileError {
 	

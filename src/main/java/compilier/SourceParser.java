@@ -1,3 +1,4 @@
+package compilier;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -72,10 +73,8 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import compilier.AstLoader;
 
-
-public class KalangTranslator extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
+public class SourceParser extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
 
 	public static class Position{
 		int offset;
@@ -125,8 +124,8 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 
 	private CommonTokenStream tokens;
 	
-	static KalangTranslator create(String src){
-		KalangTranslator visitor = new KalangTranslator(src);
+	static SourceParser create(String src){
+		SourceParser visitor = new SourceParser(src);
 		return visitor;
 	}
 	
@@ -135,7 +134,7 @@ public class KalangTranslator extends AbstractParseTreeVisitor<Object> implement
 		visit(context);
 	}
 	
-	public KalangTranslator(String src){
+	public SourceParser(String src){
 		KalangLexer lexer = new KalangLexer(new ANTLRInputStream(src));
 		tokens = new CommonTokenStream(lexer);
 		KalangParser parser = new KalangParser(tokens);

@@ -1,14 +1,13 @@
+package compilier
 import jast.ast.AstNode
 import jast.ast.ClassNode;
 import kalang.antlr.KalangLexer
 import kalang.antlr.KalangParser
+
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
-import KalangTranslator.Position
-import compilier.Ast2Java
-import compilier.AstLoader
-import compilier.AstNotFoundException;
-import compilier.TypeChecker
+
+import SourceParser.Position
 
 @groovy.transform.TypeChecked
 class KalangCompiler extends AstLoader {
@@ -17,7 +16,7 @@ class KalangCompiler extends AstLoader {
 
 	HashMap<String,ClassNode> asts = [:]
 	
-	HashMap<String,KalangTranslator> units = [:]
+	HashMap<String,SourceParser> units = [:]
 	
 	AstLoader astLoader
 	
@@ -37,7 +36,7 @@ class KalangCompiler extends AstLoader {
 		def ks = sources.keySet()
 		for(k in ks){
 			def src = sources.get(k);
-			def cunit = KalangTranslator.create(src);
+			def cunit = SourceParser.create(src);
 			cunit.importPackage("java.lang")
 			cunit.importPackage("java.util")
 			def cls = cunit.getAst();
@@ -52,7 +51,7 @@ class KalangCompiler extends AstLoader {
 			def cunit = units.get(k)
 			try{
 				cunit.compile(this)
-			}catch(KalangTranslator.ParseError e){
+			}catch(SourceParser.ParseError e){
 				def loc = e.getPosition();
 				this.reportError(e.message,k,loc)
 			}
