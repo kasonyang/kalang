@@ -12,12 +12,6 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by {@link KalangParser#start}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStart(KalangParser.StartContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link KalangParser#compiliantUnit}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

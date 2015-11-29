@@ -1,12 +1,8 @@
 grammar Kalang;
 
-start:
-    compiliantUnit
-;
-
 compiliantUnit:
   importDeclList
-  modifier? 'class' Identifier (':' Identifier)? '{' classBody '}'
+  modifier? 'class' ('extends' Identifier)? '{' classBody '}'
 ;
 importDeclList:
   importDecl*

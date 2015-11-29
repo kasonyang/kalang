@@ -14,7 +14,7 @@ class Application {
     static void main(args) {
         def input = '''\
 import java.util.*;
-class  kava {
+class {
   var f as int = 123;
   var f2;
   
@@ -45,7 +45,7 @@ class  kava {
         def astLoader = new JavaAstLoader();
         def cpl = new KalangCompiler(astLoader);
         cpl.addSource("kava",input)
-        cpl.addSource("Test","class Test {var k as kava;}");
+        cpl.addSource("Test","class {var k as kava;}");
         cpl.compile();
 		
 		
