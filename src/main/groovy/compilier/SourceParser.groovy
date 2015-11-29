@@ -193,6 +193,11 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     public ClassNode getAst(){
         return this.cls;
     }
+    
+    private int getModifier(ModifierContext mc){
+        if(mc == null) return Modifier.PUBLIC;
+        return visitModifier(mc);
+    }
 
     @Override
     public ClassNode visitCompiliantUnit(CompiliantUnitContext ctx) {
@@ -202,9 +207,7 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         ClassNode cls = visitClassBody(ctx.classBody());
         //cls.imports = imports;
         cls.name= this.className;
-        if(ctx.modifier()!=null){
-            cls.modifier=visitModifier(ctx.modifier());
-        }
+        cls.modifier=getModifier(ctx.modifier());
 		
         if(ctx.Identifier()!=null){
             cls.parentName=(ctx.Identifier().getText());
@@ -239,9 +242,7 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         if(ctx.varInit()!=null){
             fo.initExpr =  (visitVarInit(ctx.varInit()));
         }
-        if(ctx.modifier()!=null){
-            fo.modifier = visitModifier(ctx.modifier());
-        }
+            fo.modifier = getModifier(ctx.modifier());
         fields.add(fo.name);
         //TODO visit setter and getter
         return fo;
@@ -275,9 +276,7 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         String name = ctx.Identifier().getText();
         String type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
         int mdf = 0;
-        if(ctx.modifier()!=null){
-            mdf = visitModifier(ctx.modifier());
-        }
+            mdf = getModifier(ctx.modifier());
         boolean isStatic = false;
         if(ctx.STATIC()!=null){
             isStatic = true;
@@ -752,11 +751,9 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         for(ParseTree n:ctx.children){
             String text = n.getText();
             switch(text){
-            case "public":
-                m += Modifier.PUBLIC;break;
-            case "private":
+            case "!":
                 m += Modifier.PRIVATE;break;
-            case "protected":
+            case "?":
                 m += Modifier.PROTECTED;break;
             default:
                 System.err.println("Unknown modifier" + text);

@@ -15,7 +15,7 @@ class Application {
         def input = '''\
 import java.util.*;
 class {
-  var f as int = 123;
+  var f! as int = 123;
   var f2;
   
   var func() as int{
@@ -32,12 +32,12 @@ class {
     func2(l);
     return (int)a;
   }
-  var func2(p as long){
+  var func2?(p as long){
     f = 123;
     for(var i as int=0;i<10;i++){
       p++;
     }
-	func2(p);
+    func2(p);
   }
 }
 ''';
