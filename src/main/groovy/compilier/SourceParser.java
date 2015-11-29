@@ -43,7 +43,6 @@ import kalang.antlr.KalangParser.ImportPathContext;
 import kalang.antlr.KalangParser.LiteralContext;
 import kalang.antlr.KalangParser.MethodDeclContext;
 import kalang.antlr.KalangParser.MethodDeclListContext;
-import kalang.antlr.KalangParser.ModifierContext;
 import kalang.antlr.KalangParser.NewExprContext;
 import kalang.antlr.KalangParser.PrimaryIdentifierContext;
 import kalang.antlr.KalangParser.PrimaryLiteralContext;
@@ -73,7 +72,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 
-public class SourceParser extends AbstractParseTreeVisitor<Object> implements KalangVisitor<Object> {
+public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements KalangVisitor<ExprNode> {
 
     public static class Position{
         int offset;
@@ -108,13 +107,18 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     private List<String> importPaths = new LinkedList();
     //VarTable vtb = new VarTable();
     Stack<VarTable> vtbs = new Stack();
+    List<VarObject> vars = new LinkedList();
     HashMap<VarObject,VarDeclStmt> varDeclStmts = new HashMap();
     List<String> fields = new LinkedList();
     HashMap<String,ParameterNode> parameters;
     ClassNode cls = new ClassNode();
+    List<Statement> codes;
+    List<ExprNode> arguments;
+    //ClassNode classNode;
+    MethodNode method;
 	
     String defaultType;// = "java.lang.Object";
-    static String DEFAULT_METHOD_TYPE = "java.lang.Object"
+    static String DEFAULT_METHOD_TYPE = "java.lang.Object";
 	
     private Map<AstNode,ParseTree> a2p = new HashMap();
 	
@@ -137,6 +141,7 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         KalangParser parser = new KalangParser(tokens);
         this.context = parser.compiliantUnit();
         this.className = className;
+        cls = new ClassNode();
     }
 	
     public void importPackage(String packageName){
@@ -180,61 +185,45 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         vtbs.pop();
     }
 	
-    private VarDeclStmt doVisitVarDeclAndInit(VarDeclContext vd,VarInitContext vi){
-        VarDeclStmt vds = this.visitVarDecl(vd);
-        if(vi!=null){
-            AstNode val = visitVarInit(vi);
-            vds.initExpr = (ExprNode) (val);
-        }
-        a2p.put(vds, vd);
-        return vds;
-    }
-	
     public ClassNode getAst(){
         return this.cls;
     }
-    
-    private int getModifier(ModifierContext mc){
-        if(mc == null) return Modifier.PUBLIC;
-        return visitModifier(mc);
-    }
 
     @Override
-    public ClassNode visitCompiliantUnit(CompiliantUnitContext ctx) {
+    public ExprNode visitCompiliantUnit(CompiliantUnitContext ctx) {
         //List<ImportNode> imports = 
         this.visitImportDeclList(ctx.importDeclList());
-		
-        ClassNode cls = visitClassBody(ctx.classBody());
+        visitClassBody(ctx.classBody());
         //cls.imports = imports;
         cls.name= this.className;
-        cls.modifier=getModifier(ctx.modifier());
+        cls.modifier=getModifier(ctx.Modifier());
 		
         if(ctx.Identifier()!=null){
             cls.parentName=(ctx.Identifier().getText());
         }
-        return cls;
+        return null;
     }
 
     @Override
-    public ClassNode visitClassBody(ClassBodyContext ctx) {
+    public ExprNode visitClassBody(ClassBodyContext ctx) {
         this.pushVarTable();
-        cls.fields = this.visitFieldDeclList(ctx.fieldDeclList());
-        cls.methods = this.visitMethodDeclList(ctx.methodDeclList());
+        this.visitFieldDeclList(ctx.fieldDeclList());
+        this.visitMethodDeclList(ctx.methodDeclList());
         a2p.put(cls,ctx);
-        return cls;
+        return null;
     }
 
     @Override
-    public List visitFieldDeclList(FieldDeclListContext ctx) {
-        List list = new LinkedList();
+    public ExprNode visitFieldDeclList(FieldDeclListContext ctx) {
+        cls.fields = new LinkedList();
         for(FieldDeclContext fd:ctx.fieldDecl()){
-            list.add(this.visitFieldDecl(fd));
+            this.visitFieldDecl(fd);
         }
-        return list;
+        return null;
     }
 
     @Override
-    public FieldNode visitFieldDecl(FieldDeclContext ctx) {
+    public ExprNode visitFieldDecl(FieldDeclContext ctx) {
         String type = ctx.type()==null?defaultType:ctx.type().getText();
         FieldNode fo = new FieldNode();
         fo.name=(ctx.Identifier().getText());
@@ -242,75 +231,78 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         if(ctx.varInit()!=null){
             fo.initExpr =  (visitVarInit(ctx.varInit()));
         }
-            fo.modifier = getModifier(ctx.modifier());
+            fo.modifier = getModifier(ctx.Modifier());
         fields.add(fo.name);
+        cls.fields.add(fo);
         //TODO visit setter and getter
-        return fo;
+        return null;
     }
 
     @Override
-    public AstNode visitSetter(SetterContext ctx) {
+    public ExprNode visitSetter(SetterContext ctx) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AstNode visitGetter(GetterContext ctx) {
+    public ExprNode visitGetter(GetterContext ctx) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public List visitMethodDeclList(MethodDeclListContext ctx) {
-        LinkedList list = new LinkedList();
+    public ExprNode visitMethodDeclList(MethodDeclListContext ctx) {
+        cls.methods = new LinkedList();
         for(MethodDeclContext md:ctx.methodDecl()){
-            list.add(visitMethodDecl(md));
+            visitMethodDecl(md);
         }
-        return list;
+        return null;
     }
 
     @Override
-    public MethodNode visitMethodDecl(MethodDeclContext ctx) {
+    public ExprNode visitMethodDecl(MethodDeclContext ctx) {
         this.pushVarTable();
         this.parameters = new HashMap();
         String name = ctx.Identifier().getText();
         String type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
         int mdf = 0;
-            mdf = getModifier(ctx.modifier());
+            mdf = getModifier(ctx.Modifier());
         boolean isStatic = false;
         if(ctx.STATIC()!=null){
             isStatic = true;
         }
-        MethodNode method = new MethodNode(mdf,type,name,isStatic);
+        method = new MethodNode(mdf,type,name,isStatic);
         BlockStmt body = new BlockStmt();
         method.body = body;
         if(ctx.argumentDeclList()!=null){
-            method.parameters = visitArgumentDeclList(ctx.argumentDeclList());
+            visitArgumentDeclList(ctx.argumentDeclList());
         }
-        body.statements = visitStatList(ctx.statList());
+        codes = body.statements = new LinkedList();
+        visitStatList(ctx.statList());
         this.popVarTable();
         this.parameters = null;
         a2p.put(method,ctx);
-        return method;
+        cls.methods.add(method);
+        return null;
     }
 
     @Override
-    public AstNode visitType(TypeContext ctx) {
+    public ExprNode visitType(TypeContext ctx) {
         //do nothing
         return null;
     }
 
     @Override
-    public List visitArgumentDeclList(ArgumentDeclListContext ctx) {
-        List list = new LinkedList();
+    public ExprNode visitArgumentDeclList(ArgumentDeclListContext ctx) {
+        method.parameters = new LinkedList();
         for(ArgumentDeclContext ad:ctx.argumentDecl()){
-            list.add(visitArgumentDecl(ad));
+            visitArgumentDecl(ad);
         }
-        return list;
+        return null;
     }
 
     @Override
-    public ParameterNode visitArgumentDecl(ArgumentDeclContext ctx) {
+    public ExprNode visitArgumentDecl(ArgumentDeclContext ctx) {
         String name = ctx.Identifier().getText();
         String type = defaultType;
         if(ctx.type()!=null){
@@ -328,21 +320,22 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         pn.type = type;
         this.parameters.put(name,pn);
         a2p.put(pn,ctx);
-        return pn;
+        method.parameters.add(pn);
+        return null;
     }
 
     @Override
-    public List visitStatList(StatListContext ctx) {
-        List list = new LinkedList();
+    public ExprNode visitStatList(StatListContext ctx) {
         for(StatContext s:ctx.stat()){
-            list.add(visitStat(s));
+            visitStat(s);
         }
-        return list;
+        return null;
     }
 
 	
     @Override
-    public AstNode visitIfStat(IfStatContext ctx) {
+    public ExprNode visitIfStat(IfStatContext ctx) {
+        List oCodes = codes;
         IfStmt ifStmt = new IfStmt();
         BlockStmt trueBody = new BlockStmt();
         BlockStmt falseBody = new BlockStmt();
@@ -350,10 +343,14 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         ifStmt.falseBody = falseBody;
         ExprNode expr = visitExpression(ctx.expression());
         ifStmt.conditionExpr = expr;
-        trueBody.statements = visitStatList(ctx.statList());
-        falseBody.statements = visitIfStatSuffix(ctx.ifStatSuffix());
+        codes = trueBody.statements = new LinkedList();
+        visitStatList(ctx.statList());
+        codes = falseBody.statements = new LinkedList();
+        visitIfStatSuffix(ctx.ifStatSuffix());
         a2p.put(ifStmt,ctx);
-        return ifStmt;
+        codes = oCodes;
+        codes.add(ifStmt);
+        return null;
     }
 
     private ExprNode visitExpression(ExpressionContext expression) {
@@ -361,15 +358,15 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public List visitIfStatSuffix(IfStatSuffixContext ctx) {
-        LinkedList list = new LinkedList();
-        list.add(visitStatList(ctx.statList()));
-        return list;
+    public ExprNode visitIfStatSuffix(IfStatSuffixContext ctx) {
+        visitStatList(ctx.statList());
+        return null;
     }
 
     @Override
-    public Statement visitStat(StatContext ctx) {
-        return (Statement) visit(ctx.getChild(0));
+    public ExprNode visitStat(StatContext ctx) {
+        visit(ctx.getChild(0));
+        return null;
     }
 
     /*private void visitAll(ParserRuleContext ctx) {
@@ -379,21 +376,23 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }*/
 
     @Override
-    public ReturnStmt visitReturnStat(ReturnStatContext ctx) {
+    public ExprNode visitReturnStat(ReturnStatContext ctx) {
         ExprNode expr = visitExpression(ctx.expression());
         ReturnStmt rs = new ReturnStmt();
         rs.expr = expr;
         a2p.put(rs,ctx);
-        return rs;
+        codes.add(rs);
+        return null;
     }
 
     @Override
-    public AstNode visitVarDeclStat(VarDeclStatContext ctx) {
-        return this.doVisitVarDeclAndInit(ctx.varDecl(), ctx.varInit());		
+    public ExprNode visitVarDeclStat(VarDeclStatContext ctx) {
+        this.visitVarDecl(ctx.varDecl());
+        return null;
     }
 
     @Override
-    public VarDeclStmt visitVarDecl(VarDeclContext ctx) {
+    public ExprNode visitVarDecl(VarDeclContext ctx) {
         String name = ctx.Identifier().getText();
         String type = defaultType;
         if(ctx.type()!=null){
@@ -409,20 +408,23 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         VarObject vo = new VarObject();
         vo.setName(name);
         vo.setType(type);
-        //vars.add(vo);
+        vars.add(vo);
         this.varDeclStmts.put(vo, vds);
         vtb.put(name, vo);
-        //Integer vid = vars.indexOf(vo);
+        Integer vid = vars.indexOf(vo);
         /*
         NameExpr ve = new NameExpr();
         ve.name = name;*/
 		
         vds.varName = name;
         vds.type = type;
-        //vds
-        //vds.varId = vid;
+        vds.varId = vid;
+        if(ctx.varInit()!=null){
+            vds.initExpr = visit(ctx.varInit());
+        }
         a2p.put(vds,ctx);
-        return vds;
+        codes.add(vds);
+        return null;
     }
 
     private void reportError(String string, ParseTree tree) {
@@ -436,90 +438,99 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public AstNode visitBreakStat(BreakStatContext ctx) {
+    public ExprNode visitBreakStat(BreakStatContext ctx) {
         BreakStmt bs = new BreakStmt();
         a2p.put(bs,ctx);
-        return bs;
+        codes.add(bs);
+        return null;
     }
 
     @Override
-    public AstNode visitContinueStat(ContinueStatContext ctx) {
+    public ExprNode visitContinueStat(ContinueStatContext ctx) {
         ContinueStmt cs = new ContinueStmt();
         a2p.put(cs,ctx);
-        return cs;
+        codes.add(cs);
+        return null;
     }
 
     @Override
-    public AstNode visitWhileStat(WhileStatContext ctx) {
+    public ExprNode visitWhileStat(WhileStatContext ctx) {
         //WhileStmt ws = new WhileStmt();
+        List oCodes = codes;
         LoopStmt ws = new LoopStmt();
         BlockStmt body = new BlockStmt();
         ws.loopBody = body;
         AstNode expr = visitExpression(ctx.expression());
         ws.preConditionExpr = (ExprNode) expr;
-        body.statements = visitStatList(ctx.statList());
+        codes = body.statements = new LinkedList();
+        visitStatList(ctx.statList());
         a2p.put(ws,ctx);
-        return ws;
+        codes = oCodes;
+        codes.add(ws);
+        return null;
     }
 
     @Override
-    public AstNode visitDoWhileStat(DoWhileStatContext ctx) {
+    public ExprNode visitDoWhileStat(DoWhileStatContext ctx) {
 		
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public LoopStmt visitForStat(ForStatContext ctx) {
+    public ExprNode visitForStat(ForStatContext ctx) {
+        List oCodes = codes;
         this.pushVarTable();
         LoopStmt ls = new LoopStmt();
         BlockStmt body = new BlockStmt();
         ls.loopBody = body;
-        ls.initStmts = visitForInit(ctx.forInit());
+        codes = ls.initStmts =new LinkedList();
+        visitForInit(ctx.forInit());
         AstNode texpr = visitExpression(ctx.expression());
         ls.preConditionExpr = (ExprNode) texpr;
-        body.statements = visitStatList(ctx.statList());
-        body.statements.addAll(visitForUpdate(ctx.forUpdate()));
+        codes = body.statements = new LinkedList();
+        visitStatList(ctx.statList());
+        visitForUpdate(ctx.forUpdate());
         this.popVarTable();
         a2p.put(ls,ctx);
-        return ls;
+        codes = oCodes;
+        return null;
     }
 
     @Override
-    public List visitForInit(ForInitContext ctx) {
-        List list = new LinkedList();
-        VarDeclStmt vs = this.doVisitVarDeclAndInit(ctx.varDecl(), ctx.varInit());
-        list.add(vs);
-        return list;
+    public ExprNode visitForInit(ForInitContext ctx) {
+        visit(ctx.varDecl());
+        return null;
     }
 
     @Override
-    public List visitForUpdate(ForUpdateContext ctx) {
-        return visitExpressions(ctx.expressions());
+    public ExprNode visitForUpdate(ForUpdateContext ctx) {
+        visitExpressions(ctx.expressions());
+        return null;
     }
 
     @Override
-    public List visitExpressions(ExpressionsContext ctx) {
-        List list = new LinkedList();
+    public ExprNode visitExpressions(ExpressionsContext ctx) {
         for(ExpressionContext e:ctx.expression()){
-            AstNode expr = visitExpression(e);
-            list.add(new ExprStmt((ExprNode) expr));
+            ExprNode expr = visitExpression(e);
+            codes.add(new ExprStmt(expr));
         }
-        return list;
+        return null;
     }
 
     @Override
-    public ExprStmt visitExprStat(ExprStatContext ctx) {
+    public ExprNode visitExprStat(ExprStatContext ctx) {
         AstNode expr = visitExpression(ctx.expression());
         ExprStmt es = new ExprStmt();
         es.expr = (ExprNode) expr;
         a2p.put(es,ctx);
-        return es;
+        codes.add(es);
+        return null;
     }
 
     @Override
-    public AstNode visitExprPrimay(ExprPrimayContext ctx) {
-        return (AstNode) visit(ctx.primary());
+    public ExprNode visitExprPrimay(ExprPrimayContext ctx) {
+        return (ExprNode) visit(ctx.primary());
     }
 
     @Override
@@ -544,7 +555,7 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public AstNode visitExprMidOp(ExprMidOpContext ctx) {
+    public ExprNode visitExprMidOp(ExprMidOpContext ctx) {
         String op = ctx.getChild(1).getText();
         BinaryExpr be = new BinaryExpr();
         be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
@@ -554,16 +565,17 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         return be;
     }
 	
-    private InvocationExpr getInvocationExpr(AstNode expr,String methodName,ArgumentsContext arguments){
+    private InvocationExpr getInvocationExpr(AstNode expr,String methodName,ArgumentsContext argumentsCtx){
         InvocationExpr is = new InvocationExpr();
         is.methodName =methodName;
         is.target = (ExprNode) expr;
-        is.arguments = visitArguments(arguments);
+        arguments = is.arguments = new LinkedList();
+        visitArguments(argumentsCtx);
         return is;
     }
 
     @Override
-    public AstNode visitExprInvocation(ExprInvocationContext ctx) {
+    public ExprNode visitExprInvocation(ExprInvocationContext ctx) {
         InvocationExpr ei = this.getInvocationExpr(
             visitExpression(ctx.expression())
             , ctx.Identifier().getText()
@@ -573,7 +585,7 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public AstNode visitExprGetField(ExprGetFieldContext ctx) {
+    public ExprNode visitExprGetField(ExprGetFieldContext ctx) {
         AstNode expr = visitExpression(ctx.expression());
         String name = ctx.Identifier().getText();
         FieldExpr fe = new FieldExpr();
@@ -584,7 +596,7 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public AstNode visitExprSelfOp(ExprSelfOpContext ctx) {
+    public ExprNode visitExprSelfOp(ExprSelfOpContext ctx) {
         UnaryExpr ue = new UnaryExpr();
         ue.postOperation = ctx.getChild(1).getText();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
@@ -622,7 +634,7 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public AstNode visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
+    public ExprNode visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
         String name = ctx.Identifier().getText();
         return getNodeByName(name);
     }
@@ -650,13 +662,13 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         return null;
     }
 
-    private AstNode getNodeByName(String name) {
+    private ExprNode getNodeByName(String name) {
         VarTable vtb = this.getVarTable();
         if(vtb.exist(name)){
             VarExpr ve = new VarExpr();
             VarObject vo = vtb.get(name);
-            //Integer vid = vars.indexOf(vo);
-            //ve.id = vid;
+            Integer vid = vars.indexOf(vo);
+            ve.varId = vid;
             ve.declStmt = this.varDeclStmts.get(vo);
             return ve;
         }else if(fields.contains(name)){
@@ -698,13 +710,12 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public List<ExprNode> visitArguments(ArgumentsContext ctx) {
-        LinkedList<ExprNode> list = new LinkedList();
+    public ExprNode visitArguments(ArgumentsContext ctx) {
         for(ExpressionContext e:ctx.expression()){
             ExprNode expr = visitExpression(e);
-            list.add(expr);
+            arguments.add(expr);
         }
-        return list;
+        return null;
     }
 	
     private List doVisitAll(List list){
@@ -716,13 +727,13 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public Object visitImportDeclList(ImportDeclListContext ctx) {
+    public ExprNode visitImportDeclList(ImportDeclListContext ctx) {
         doVisitAll(ctx.importDecl());
         return null;
     }
 
     @Override
-    public Object visitImportDecl(ImportDeclContext ctx) {
+    public ExprNode visitImportDecl(ImportDeclContext ctx) {
         String name = ctx.importPath().getText();
         if(name.endsWith(".*")){
             this.importPaths.add(name.substring(0, name.length()-2));
@@ -734,22 +745,22 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
     }
 
     @Override
-    public Object visitQualifiedName(QualifiedNameContext ctx) {
+    public ExprNode visitQualifiedName(QualifiedNameContext ctx) {
         //do nothing
         return null;
     }
 
     @Override
-    public Object visitImportPath(ImportPathContext ctx) {
+    public ExprNode visitImportPath(ImportPathContext ctx) {
         //do nothing
         return null;
     }
 
-    @Override
-    public Integer visitModifier(ModifierContext ctx) {
+    public Integer getModifier(TerminalNode ctx) {
+        if(ctx==null) return Modifier.PUBLIC;
         int m = 0;
-        for(ParseTree n:ctx.children){
-            String text = n.getText();
+        String[] mdfs = ctx.getText().split(" ");
+        for(String text:mdfs){
             switch(text){
             case "!":
                 m += Modifier.PRIVATE;break;
@@ -767,13 +778,14 @@ public class SourceParser extends AbstractParseTreeVisitor<Object> implements Ka
         String type =  ctx.Identifier().getText();
         NewExpr newExpr = new NewExpr();
         newExpr.type = checkFullClassName(type,ctx);
-        newExpr.arguments = this.visitArguments(ctx.arguments());
+        arguments = newExpr.arguments = new LinkedList();
+        this.visitArguments(ctx.arguments());
         a2p.put(newExpr, ctx);
         return newExpr;
     }
 
     @Override
-    public Object visitCastExpr(CastExprContext ctx) {
+    public ExprNode visitCastExpr(CastExprContext ctx) {
         CastExpr ce = new CastExpr();
         ce.expr = visitExpression(ctx.expression());
         ce.type = ctx.type().getText();

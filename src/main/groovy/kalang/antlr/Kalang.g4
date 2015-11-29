@@ -2,7 +2,7 @@ grammar Kalang;
 
 compiliantUnit:
   importDeclList
-  'class' modifier? ('extends' Identifier)? '{' classBody '}'
+  'class' Modifier? ('extends' Identifier)? '{' classBody '}'
 ;
 importDeclList:
   importDecl*
@@ -24,7 +24,7 @@ fieldDeclList:
   fieldDecl*
 ;
 fieldDecl:
-   STATIC? ('val'|'var') Identifier modifier? ('as' type)? varInit? setter? getter? ';'
+   STATIC? ('val'|'var') Identifier Modifier? ('as' type)? varInit? setter? getter? ';'
 ;
 setter:
   'set' '(' argumentDeclList ')' '{' statList '}'
@@ -36,7 +36,7 @@ methodDeclList:
   methodDecl*
 ;
 methodDecl:
-   STATIC? 'var' Identifier modifier? '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
+   STATIC? 'var' Identifier Modifier? '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
 ;
 type:
     (Identifier|DOUBLE|LONG|FLOAT|INT) ( '[]' )?
@@ -75,10 +75,10 @@ returnStat:
 ;
 
 varDeclStat:
-  varDecl varInit? ';'
+  varDecl ';'
 ;
 varDecl:
-  ('var'|'val') Identifier ('as' type)?
+  ('var'|'val') Identifier ('as' type)? varInit?
 ;
 varInit:
  '=' expression
@@ -98,7 +98,7 @@ forStat:
 ;
 
 forInit:
-        varDecl varInit
+        varDecl
        |expressions
     ;
 forUpdate
@@ -184,7 +184,7 @@ arguments
     ;
 // LEXER
 
-modifier:( '!' | '?' );
+Modifier:( '!' | '?' );
 //STATIC:'static';
 // §3.9 Keywords
 
