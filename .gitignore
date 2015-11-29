@@ -6,3 +6,5 @@
 /.gradle/
 /.settings/
 /output/
+/build/
+/.nb-gradle/

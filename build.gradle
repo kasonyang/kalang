@@ -1,131 +1,153 @@
 apply plugin:'groovy'
 apply plugin:'eclipse'
+apply plugin:'application'
+mainClassName = "Application"
 
 repositories{
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies{
-	compile 'org.antlr:antlr4-runtime:4.5'
+    compile 'org.antlr:antlr4-runtime:4.5'
+    compile 'org.codehaus.groovy:groovy-all:2.3.10'
 }
 buildscript {
-	repositories {
-		      mavenCentral()  
-	}
-	dependencies {
-		classpath files(['libs/freemarker.jar'])  
-	} 
+    repositories {
+        mavenCentral()  
+    }
 }
-import freemarker.template.Template
-task op {
-	buildOp()
-}
-
-class OpCreator{
-	//def importRoot = "kava/opcode"
-	def packageDir = "kava/opcode/op"
-	def srcDir = "src/main/java"
-	def paramType = [
-		'v':'kava.opcode.VarObject',
-		'l':'Integer',
-		'c':'kava.opcode.Constant',
-		'i' : 'Integer'
-		]
-	def paramName = ['result','v1','v2']	
-	def ops = []
-	def packageName = packageDir.replace('/','.')
-	def dirName = "${srcDir}/${packageDir}"
-	private model = [
-		'packageName' : packageName
-	]
-	
-	public OpCreator(){
-		def dir =new File(dirName)
-		if(!dir.exists()){
-			dir.mkdirs()
-		}
-	}
-	
-	private def getOpModel(String name,String paramStr){
-		def params = paramStr.split(",")
-		def model = [:]
-		model.params = []
-		if(params){
-			def idx = 0;
-			def methodParam = []
-			for(p in params){
-				def type = paramType[p] ?: "Unknown"
-				def pname = paramName[idx++]
-				if(p.trim() == '') continue
-				def ntPair = [:]
-				ntPair.type = type
-				ntPair.name = pname
-				methodParam.add ntPair
-			}
-			model.params = methodParam
-		}
-		//model.packageName = packageName
-		model.name = name
-		return model
-	}
-	
-	def createOp(Map model,String extend){
-		def tplFile = 'script/tpl/Op.tpl'
-		def targetFile ="${dirName}/${model.name}.java"
-		//def targetWirter = new FileWriter(targetFile)
-		model.extend = extend
-		model.putAll(this.model)
-		renderFile(model.name,targetFile,tplFile,model)
-		//ops.add model
-	}
-	
-	def creatVisitor(List models){
-		def model = [:]
-		model.putAll(this.model);
-		model.ops = models
-		renderFile("OpVisitor","${dirName}/OpVisitor.java","script/tpl/OpVisitor.tpl",model)	
-	}
-	
-	def renderFile(String name,String dest,String src,Map model){
-		def destFile = new File(dest)
-		if(!destFile.exists()) destFile.createNewFile()
-		def targetWriter = new FileWriter(destFile)
-		def tpl = new Template(name,new FileReader(new File(src)))
-		tpl.process(model,targetWriter)
-	}
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.github.jknack:handlebars:4.0.1"
+    }
 }
 
-def buildOp(){
-	def creator = new OpCreator()
-	def opsFile = "script/opcodes"
-	//creator.createOp("Test","op",'v,v')
-	def ops = []
-	new File(opsFile).eachLine { ln ->
-		if(ln.startsWith("//")) return
-		def eles = ln.split(" ")
-		def paramStr = ""
-		if(eles.length>1) paramStr = eles[1]
-		def opsName,opsExtend,opsNameStr
-		def opsInfo = eles[0].split(":",2)
-		if(opsInfo.length>1){
-			opsExtend = opsInfo[0]
-			opsNameStr = opsInfo[1]
-		}else{
-			opsNameStr = opsInfo[0]
-			//opsExtend = "Op"
-		}
-		if(opsExtend){
-			def extendModel = creator.getOpModel(opsExtend,paramStr)
-			creator.createOp(extendModel,null)
-		}else{
-			//opsExtend = "Op"
-		}
-		opsName = opsNameStr.split(",")
-		for(o in opsName){
-			def model = creator.getOpModel(o,paramStr)
-			creator.createOp(model,opsExtend)
-			ops.add(model)
-		}
-	}
-	creator.creatVisitor(ops);
+
+import com.github.jknack.handlebars.Context
+import com.github.jknack.handlebars.Handlebars
+import com.github.jknack.handlebars.Template
+import com.github.jknack.handlebars.context.MapValueResolver
+import com.github.jknack.handlebars.io.ClassPathTemplateLoader
+import com.github.jknack.handlebars.io.TemplateLoader
+def fetchTemplate(String fileName,Map data){
+    Handlebars hb = new Handlebars();
+    def file = new File(fileName);
+    def cnt = file.readLines().join("\r\n");
+    def tpl = hb.compileInline(cnt);
+    Context context = Context
+    .newBuilder(data)
+    .resolver(MapValueResolver.INSTANCE)
+    .build();
+    return tpl.apply(context)
+}
+def templateFile(String simpleTplName,Map data,String outDir,String outName){
+    def dir = new File(outDir)
+    dir.mkdirs()
+    def tplFile = projectDir.getAbsolutePath() + "/script/tpl/${simpleTplName}"
+    new File(dir,outName).withWriter { w ->
+        def cnt = fetchTemplate(tplFile,data)
+        w.write(cnt)
+    }
+}
+def copyFile(String from,String to){
+    new File(from).withReader {is->
+        def cnt = is.readLines().join("\r\n")
+        def toFile = new File(to)
+        toFile.getParentFile().mkdirs()
+        toFile.withWriter { w->
+            w.write(cnt)
+        }
+    }
+}
+
+
+
+
+def saveNodeFile(String srcDir,Map cls){
+    def name = cls.name + ".groovy";
+    String packageName = cls."package";
+    def pkgPath =srcDir + "/" + packageName.replace(".","/")
+    templateFile("Node.tpl",cls,pkgPath,name)
+}
+task "genAst"{
+    def srcDir = projectDir.getAbsolutePath() + "/src/main/groovy/"
+    def packageName = "jast.ast"
+    def packagePath = srcDir+ "/" + packageName.replace(".","/")
+    copyFile(projectDir.getAbsolutePath() + "/script/AstNode.groovy",packagePath+"/AstNode.groovy")
+    List<String> nodes = []
+    new File(projectDir.getAbsolutePath() + "/script/nodes").withReader { r ->
+        def cls = [:]
+        String lastSubClass
+        def trySaveNode = {
+            if(cls){
+                saveNodeFile(srcDir,cls)
+            }
+        }
+        r.readLines().each {String ln->
+            if(ln.length()==0 || ln.startsWith("//")){
+                return
+            }
+            if(ln.startsWith("#")||ln.startsWith("@")){
+                trySaveNode()
+                boolean isSubClass = ln.startsWith("@");
+                cls = [:];
+                cls.fields = []
+                cls.listFields = []
+                cls.childFields = []
+                cls."package"=(packageName)
+                if(ln.startsWith("##")){
+                    cls.name = (ln.substring(2));
+                    cls."parent" = (lastSubClass)
+                }else{
+                    cls.name=ln.substring(1);
+                    cls.parent=("AstNode")
+                }
+                if(isSubClass){
+                    lastSubClass = cls.name
+                }else{
+                    nodes.add(cls.name)
+                }
+            }else if(ln.startsWith("+")||ln.startsWith("-")){
+                def ps = ln.substring(1).split(":")
+                def fo = [:];
+                String type = ps[1];
+                String name = ps[0];
+                if(type.endsWith("*")){
+                    type = type.substring(0,type.length()-1)
+                    type = "List<${type}>"
+                    cls.listFields.add(name)
+                }
+                fo.name=name
+                fo.type = (type)
+                cls.fields.add(fo)
+                if(ln.startsWith("+")){
+                    cls.childFields.add(ps[0])
+                }
+            }
+        }
+        trySaveNode();
+    }
+    createVisitor(nodes,packageName,srcDir)
+}
+
+def createVisitor(List<String> nodes,String packageName,String srcDir){
+    def path = srcDir + "/" + packageName.replace(".","/")
+    def data = [:]
+    data.name = "IAstVisitor"
+    data."package" = packageName
+    data.nodes = nodes
+    templateFile("IVisitor.tpl",data,path,data.name + ".groovy")
+	
+    def vd = [:]
+    vd.name = "AbstractAstVisitor"
+    vd."package" = packageName
+    vd.nodes = nodes
+    vd."interface" = data.name
+    templateFile("AVisitor.tpl",vd,path,vd.name+".groovy")
+    vd."parent" = vd.name
+    vd.name = "AstVisitor"
+    templateFile("Visitor.tpl",vd,path,vd.name+".groovy")
 }
