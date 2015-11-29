@@ -12,43 +12,15 @@ import org.antlr.v4.runtime.tree.ParseTree
 
 class Application {
     static void main(args) {
-        def input = '''\
-import java.util.*;
-class {
-  var f! as int = 123;
-  var f2;
-  
-  var func() as int{
-    var a as int=3;
-    var l as long = 3;
-	var str = "hehe";
-    var map = new HashMap();
-    map.put("a",str);
-    var b;
-    a= a + 1;
-    l = l + 1;
-    //b.func(a);
-    func2(a);
-    func2(l);
-    return (int)a;
-  }
-  var func2?(p as long){
-    f = 123;
-    for(var i as int=0;i<10;i++){
-      p++;
-    }
-    func2(p);
-  }
-}
-''';
-
         def astLoader = new JavaAstLoader();
         def cpl = new KalangCompiler(astLoader);
-        cpl.addSource("kava",input)
-        cpl.addSource("Test","class {var k as kava;}");
-        cpl.compile();
-		
-		
+        def srcs = new File("TestScript/src").listFiles();
+        for(File s in srcs){
+            def clsName = s.getName()
+            def txt = s.readLines().join("\r\n");
+            cpl.addSource(clsName,txt)
+        }
+        cpl.compile();	
         //println names
         //println cls;
     }

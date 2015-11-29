@@ -39,7 +39,7 @@ methodDecl:
    STATIC? 'var' Identifier modifier? '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
 ;
 type:
-    (Identifier|DOUBLE|LONG|FLOAT|INT)
+    (Identifier|DOUBLE|LONG|FLOAT|INT) ( '[]' )?
 ;
 argumentDeclList:
    argumentDecl (',' argumentDecl)*
