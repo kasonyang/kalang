@@ -85,8 +85,7 @@ class KalangCompiler extends AstLoader {
 	
     protected void reportError(String msg,String className,SourceParser.Position loc){
         def src = sources.get(className)
-        def ltext = src.substring(loc.offset,loc.offset + loc.length)
-        System.err.print("${msg}:${ltext}")
+        throw new CompileError(msg,className,src,loc.offset,loc.length)
     }
 	
     protected void reportError(String msg,String className,AstNode node){

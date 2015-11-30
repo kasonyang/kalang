@@ -20,8 +20,14 @@ class Application {
             def txt = s.readLines().join("\r\n");
             cpl.addSource(clsName,txt)
         }
-        cpl.compile();	
-        //println names
+        try{
+            cpl.compile();	
+        }catch(CompileError e){
+            def src = e.getSource();
+            def ltext = src.substring(e.offset,e.offset + e.length +1)
+            System.err.println e.message + " on ${ltext}"
+        }
+        ////println names
         //println cls;
     }
 }

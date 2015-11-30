@@ -1,13 +1,20 @@
 package compilier
 
-class CompileError {
+class CompileError  extends RuntimeException{
 	
-	int line = 0;
+    int offset = 0;
 	
-	int column = 0;
+    int length = 0;
+    
+    String className
+    
+    String source
 	
-	public CompileError(String msg,int line = 0,int column = 0){
-		this.line = line
-		this.column = column
-	}
+    public CompileError(String msg,String className,String src,int offset = 0,int length = 0){
+        super(msg)
+        this.offset = offset
+        this.length = length
+        this.className = className
+        this.source = src
+    }
 }
