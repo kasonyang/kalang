@@ -39,6 +39,8 @@ class TypeChecker extends AstVisitor<String> {
 	private static final String NULL_CLASS = "java.lang.NullObject";
 
 	private static final String DEFAULT_CLASS = "java.lang.Object";
+        
+    private HashMap<Integer,VarDeclStmt> varDeclStmts = [:]
 
 
 	@Override
@@ -290,7 +292,9 @@ class TypeChecker extends AstVisitor<String> {
 
 	@Override
 	public String visitVarExpr(VarExpr node) {
-		node.declStmt.type
+            Integer vid = node.varId;
+            def declStmt = this.varDeclStmts.get(vid);
+	declStmt.type
 	}
 
 	@Override
@@ -313,6 +317,7 @@ class TypeChecker extends AstVisitor<String> {
 				node.type = DEFAULT_CLASS
 			}
 		}
+                this.varDeclStmts.put(node.varId,node)
 	}
 
 }

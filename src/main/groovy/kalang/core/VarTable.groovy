@@ -1,42 +1,42 @@
 package kalang.core
 
-class VarTable<T> {
+class VarTable<T,V> {
 	
-	private HashMap<T,VarObject> vars = [:]
+    private HashMap<T,V> vars = [:]
 	
-	VarTable parent
+    VarTable parent
 	
-	VarTable(){
+    VarTable(){
 		
-	}
+    }
 	
-	VarTable(VarTable parent){
-		this.parent = parent
-	}
+    VarTable(VarTable parent){
+        this.parent = parent
+    }
 	
-	boolean put(T key,VarObject var){
-		vars.put(key,var)
-	}
+    boolean put(T key,V var){
+        vars.put(key,var)
+    }
 	
-	boolean exist(T key,boolean includeParent=true){
-		return get(key,includeParent) !=null
-	}
+    boolean exist(T key,boolean includeParent=true){
+        return get(key,includeParent) !=null
+    }
 	
-	VarObject get(T key,boolean includeParent = true){
-		VarObject est = vars.get(key)
-		if(est==null && includeParent && parent){
-			est = parent.get(key,includeParent)
-		}
-		return est;
-	}
+    V get(T key,boolean includeParent = true){
+        V est = vars.get(key)
+        if(est==null && includeParent && parent){
+            est = parent.get(key,includeParent)
+        }
+        return est;
+    }
 	
-	VarObject[] toArray(){
-		return vars.values().toArray()
-	}
+    V[] toArray(){
+        return vars.values().toArray()
+    }
 	
-	String toString(){
-		def vos = toArray()
-		return vos.toString()
-	}
+    String toString(){
+        def vos = toArray()
+        return vos.toString()
+    }
 	
 }

@@ -73,8 +73,48 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 
 public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements KalangVisitor<ExprNode> {
-    private String MAP_CLASS = "java.util.HashMap";
-    private String ROOT_CLASS = "java.lang.Object";
+    private static final String MAP_CLASS = "java.util.HashMap";
+    private static final String ROOT_CLASS = "java.lang.Object";
+    private static final String FLOAT_CLASS = "java.lang.Float";
+
+    private static final String INT_CLASS = "java.lang.Integer";
+
+    private static final String BOOLEAN_CLASS = "java.lang.Boolean";
+
+    private static final String CHAR_CLASS = "java.lang.Character";
+
+    private static final String STRING_CLASS = "java.lang.String";
+
+    private static final String NULL_CLASS = "java.lang.NullObject";
+	
+    static String DEFAULT_METHOD_TYPE = "java.lang.Object";
+    static String DEFAULT_LIST_CLASS = "java.util.LinkedList";
+    static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
+
+    //short name to full name
+    private final Map<String,String> fullNames = new HashMap();
+    private final List<String> importPaths = new LinkedList();
+    //VarTable vtb = new VarTable();
+    Stack<VarTable> vtbs = new Stack();
+    //List<VarObject> vars = new LinkedList();
+    int varCounter = 0;
+    //HashMap<VarObject,VarDeclStmt> varDeclStmts = new HashMap();
+    //List<String> fields = new LinkedList();
+    //HashMap<String,ParameterNode> parameters;
+    ClassNode cls = new ClassNode();
+    List<Statement> codes;
+    List<ExprNode> arguments;
+    //ClassNode classNode;
+    MethodNode method;	
+    private final Map<AstNode,ParseTree> a2p = new HashMap();
+	
+    private AstLoader astLoader;
+
+    private final ParseTree context;
+
+    private final CommonTokenStream tokens;
+    
+    private final String className;
 
     @Override
     public ExprNode visitMapExpr(KalangParser.MapExprContext ctx) {
@@ -89,8 +129,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitMap(KalangParser.MapContext ctx) {
         VarObject vo = new VarObject();
-        vars.add(vo);
-        int vid = vars.indexOf(vo);
+        int vid = this.varCounter++;
         VarDeclStmt vds = new VarDeclStmt();
         vds.varId = vid;
         vds.type = MAP_CLASS;
@@ -125,8 +164,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         }
         String clsName = DEFAULT_LIST_CLASS;
         VarObject vo = new VarObject();
-        vars.add(vo);
-        int vid = vars.indexOf(vo);
+        int vid = this.varCounter++;
         VarDeclStmt vds = new VarDeclStmt();
         vds.varId = vid;
         vds.type = clsName;
@@ -160,47 +198,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             return position;
         }
     }
-	
-    private static final String FLOAT_CLASS = "java.lang.Float";
-
-    private static final String INT_CLASS = "java.lang.Integer";
-
-    private static final String BOOLEAN_CLASS = "java.lang.Boolean";
-
-    private static final String CHAR_CLASS = "java.lang.Character";
-
-    private static final String STRING_CLASS = "java.lang.String";
-
-    private static final String NULL_CLASS = "java.lang.NullObject";
-	
-    //short name to full name
-    private Map<String,String> fullNames = new HashMap();
-    private List<String> importPaths = new LinkedList();
-    //VarTable vtb = new VarTable();
-    Stack<VarTable> vtbs = new Stack();
-    List<VarObject> vars = new LinkedList();
-    HashMap<VarObject,VarDeclStmt> varDeclStmts = new HashMap();
-    List<String> fields = new LinkedList();
-    HashMap<String,ParameterNode> parameters;
-    ClassNode cls = new ClassNode();
-    List<Statement> codes;
-    List<ExprNode> arguments;
-    //ClassNode classNode;
-    MethodNode method;
-	
-    String defaultType;// = "java.lang.Object";
-    static String DEFAULT_METHOD_TYPE = "java.lang.Object";
-    static String DEFAULT_LIST_CLASS = "java.util.LinkedList";
-	
-    private Map<AstNode,ParseTree> a2p = new HashMap();
-	
-    private AstLoader astLoader;
-
-    private ParseTree context;
-
-    private CommonTokenStream tokens;
-    
-    private String className;
 	
     public void compile(AstLoader astLoader){
         this.astLoader = astLoader;
@@ -296,7 +293,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitFieldDecl(FieldDeclContext ctx) {
-        String type = ctx.type()==null?defaultType:ctx.type().getText();
+        String type = ctx.type()==null?DEFAULT_VAR_TYPE:ctx.type().getText();
         FieldNode fo = new FieldNode();
         fo.name=(ctx.Identifier().getText());
         fo.type=(type);
@@ -304,7 +301,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             fo.initExpr =  (visitVarInit(ctx.varInit()));
         }
             fo.modifier = getModifier(ctx.Modifier());
-        fields.add(fo.name);
+        //fields.add(fo.name);
         cls.fields.add(fo);
         //TODO visit setter and getter
         return null;
@@ -334,7 +331,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitMethodDecl(MethodDeclContext ctx) {
         this.pushVarTable();
-        this.parameters = new HashMap();
+        //this.parameters = new HashMap();
         String name = ctx.Identifier().getText();
         String type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
         int mdf = 0;
@@ -352,7 +349,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         codes = body.statements = new LinkedList();
         visitStatList(ctx.statList());
         this.popVarTable();
-        this.parameters = null;
+        ///this.parameters = null;
         a2p.put(method,ctx);
         cls.methods.add(method);
         return null;
@@ -376,7 +373,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitArgumentDecl(ArgumentDeclContext ctx) {
         String name = ctx.Identifier().getText();
-        String type = defaultType;
+        String type = DEFAULT_VAR_TYPE;
         if(ctx.type()!=null){
             type = ctx.type().getText();
         }
@@ -390,7 +387,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ParameterNode pn = new ParameterNode();
         pn.name = name;
         pn.type = type;
-        this.parameters.put(name,pn);
+        //this.parameters.put(name,pn);
         a2p.put(pn,ctx);
         method.parameters.add(pn);
         return null;
@@ -466,7 +463,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitVarDecl(VarDeclContext ctx) {
         String name = ctx.Identifier().getText();
-        String type = defaultType;
+        String type = DEFAULT_VAR_TYPE;
         if(ctx.type()!=null){
             type = ctx.type().getText();
         }
@@ -477,13 +474,11 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             reportError("defined duplicatedly:" + name,ctx.Identifier());
         }
         VarDeclStmt vds = new VarDeclStmt();
-        VarObject vo = new VarObject();
-        vo.setName(name);
-        vo.setType(type);
-        vars.add(vo);
-        this.varDeclStmts.put(vo, vds);
-        vtb.put(name, vo);
-        Integer vid = vars.indexOf(vo);
+        //vars.add(vo);
+        //this.varDeclStmts.put(vo, vds);
+        Integer vid = varCounter++;
+        vtb.put(name, vds);
+        
         /*
         NameExpr ve = new NameExpr();
         ve.name = name;*/
@@ -738,18 +733,27 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         VarTable vtb = this.getVarTable();
         if(vtb.exist(name)){
             VarExpr ve = new VarExpr();
-            VarObject vo = vtb.get(name);
-            Integer vid = vars.indexOf(vo);
-            ve.varId = vid;
-            ve.declStmt = this.varDeclStmts.get(vo);
+            VarDeclStmt declStmt = (VarDeclStmt) vtb.get(name); //vars.indexOf(vo);
+            ve.varId = declStmt.varId;
+            ve.declStmt = declStmt;
             return ve;
-        }else if(fields.contains(name)){
-            FieldExpr fe = new FieldExpr();
-            fe.fieldName = name;
-            return fe;
-        }else if(parameters.containsKey(name)){
-            return new ParameterExpr(parameters.get(name));
         }else{
+            //TODO order bug
+            //find parameters
+            if(method!=null && method.parameters!=null){
+                for(ParameterNode p:method.parameters){
+                    if(p.name.equals(name)) return new ParameterExpr(p);
+                }
+            }
+            if(cls.fields!=null){
+                for(FieldNode f:cls.fields){
+                    if(f.name.equals(name)){
+                        FieldExpr fe = new FieldExpr();
+                        fe.fieldName = name;
+                        return fe;
+                    }
+                }
+            }
             String clsName = this.getFullClassName(name);
             if(clsName!=null){
                 return new ClassExpr(clsName);
