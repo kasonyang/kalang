@@ -159,9 +159,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitListOrArray(KalangParser.ListOrArrayContext ctx) {
         String type = ROOT_CLASS;
-        if(ctx.type()!=null){
-            type = ctx.type().getText();
-        }
         String clsName = DEFAULT_LIST_CLASS;
         VarObject vo = new VarObject();
         int vid = this.varCounter++;
@@ -181,6 +178,21 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         }
         //TODO set type
         return ve;
+    }
+
+    @Override
+    public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
+        NewArrayExpr nae = new NewArrayExpr();
+        nae.size = visit(ctx.expression());
+        //TODO bug type may be array
+        nae.type = ctx.type().getText();
+        return nae;
+    }
+
+    @Override
+    public ExprNode visitNoArrayType(KalangParser.NoArrayTypeContext ctx) {
+        //do nothing
+        return null;
     }
 
     public static class Position{

@@ -90,6 +90,12 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitType(KalangParser.TypeContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KalangParser#noArrayType}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNoArrayType(KalangParser.NoArrayTypeContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KalangParser#argumentDeclList}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -294,6 +300,13 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExprGetArrayElement(KalangParser.ExprGetArrayElementContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprNewArray}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprNewArray(KalangParser.ExprNewArrayContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code primayParen}
 	 * labeled alternative in {@link KalangParser#primary}.

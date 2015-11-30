@@ -1,4 +1,5 @@
 package compilier
+
 import jast.ast.AbstractAstVisitor
 import jast.ast.AssignExpr;
 import jast.ast.BinaryExpr;
@@ -20,6 +21,7 @@ import jast.ast.IfStmt;
 import jast.ast.InvocationExpr;
 import jast.ast.LoopStmt;
 import jast.ast.MethodNode;
+import jast.ast.NewArrayExpr
 import jast.ast.NewExpr;
 import jast.ast.ParameterExpr;
 import jast.ast.ParameterNode;
@@ -32,6 +34,14 @@ import jast.ast.VarExpr;
 import java.lang.reflect.Modifier
 @groovy.transform.TypeChecked
 class Ast2Java extends AbstractAstVisitor<String>{
+
+    HashMap<Integer,String> varNames = [:]
+    
+    protected String code = "";
+	
+    private String stmtDelim = ";"
+	
+    private String indent = "";
 
     public String generate(ClassNode cls){
         return visit(cls)
@@ -57,8 +67,6 @@ class Ast2Java extends AbstractAstVisitor<String>{
         def args = visit(node.arguments).join(",")
 		"new ${node.type}(${args})"
     }
-
-    HashMap<Integer,String> varNames = [:]
 	
     @Override
     public String visitVarExpr(VarExpr node) {
@@ -73,12 +81,6 @@ class Ast2Java extends AbstractAstVisitor<String>{
     public String visitClassExpr(ClassExpr node) {
         return node.name
     }
-
-    protected String code = "";
-	
-    private String stmtDelim = ";"
-	
-    private String indent = "";
 	
     private void incIndent(){
         indent += "  "
@@ -244,6 +246,12 @@ class Ast2Java extends AbstractAstVisitor<String>{
     @Override
     public String visitUnaryExpr(UnaryExpr node) {
 		"${node.preOperation?:''}${visit(node.expr)}${node.postOperation?:''}"
+    }
+    
+    @Override
+    public String visitNewArrayExpr(NewArrayExpr node){
+        String type = node.type
+        "new ${type}[${visit(node.size)}]"
     }
 
 }

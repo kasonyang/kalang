@@ -39,8 +39,12 @@ methodDecl:
    STATIC? 'var' Identifier Modifier? '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
 ;
 type:
-    (Identifier|DOUBLE|LONG|FLOAT|INT) ( '[]' )?
+  noArrayType  ( '[]' )?
 ;
+noArrayType:
+  (Identifier|DOUBLE|LONG|FLOAT|INT)
+;
+
 argumentDeclList:
    argumentDecl (',' argumentDecl)*
 ;
@@ -125,6 +129,7 @@ expression
     |     Identifier arguments  #exprMemberInvocation
     |  expression '[' expression ']' #exprGetArrayElement    
     |   NEW Identifier  arguments     #newExpr
+    |   NEW type '[' expression ']'     #exprNewArray
     |   '(' type ')' expression #castExpr
     |   expression ('++' | '--') #exprSelfOp
     |   ('+'|'-'|'++'|'--') expression #exprSelfOpPre
@@ -173,10 +178,11 @@ primary
     //|   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
     ;
 map:
-type? '{' ( Identifier ':' expression ( ',' Identifier ':' expression)*)? '}'
+noArrayType? '{' ( Identifier ':' expression ( ',' Identifier ':' expression)*)? '}'
 ;
 listOrArray:
-type? '[' ( expression ( ',' expression )* )? ']'
+'[]'
+| noArrayType? '[' ( expression ( ',' expression )* ) ']'
 ;
 
 literal

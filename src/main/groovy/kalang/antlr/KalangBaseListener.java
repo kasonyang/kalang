@@ -173,6 +173,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterNoArrayType(KalangParser.NoArrayTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNoArrayType(KalangParser.NoArrayTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterArgumentDeclList(KalangParser.ArgumentDeclListContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -552,6 +564,18 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprGetArrayElement(KalangParser.ExprGetArrayElementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprNewArray(KalangParser.ExprNewArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprNewArray(KalangParser.ExprNewArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -100,3 +100,6 @@
 ##CastExpr
 -type:String
 -expr:ExprNode
+##NewArrayExpr
+-type:String
+-size:ExprNode

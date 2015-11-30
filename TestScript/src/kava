@@ -3,10 +3,14 @@ class {
   var hw as HelloWorld;
   var f! as int = 123;
   var f2;
-  var func() as int{
-    var m = {name:"kava"};
+  var decl(){
+    var map = {name:"kava"};
     var emptyMap = {};
     var list = ["kava"];
+    var emptyList = [];
+    var array = new int[123];
+  }
+  var func() as int{
     var a as int=3;
     var l as long = 3;
     var arr as int[];
