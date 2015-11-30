@@ -425,18 +425,6 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExprGetField(KalangParser.ExprGetFieldContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExprGetField(KalangParser.ExprGetFieldContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterCastExpr(KalangParser.CastExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -456,6 +444,18 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprMemberInvocation(KalangParser.ExprMemberInvocationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMapExpr(KalangParser.MapExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMapExpr(KalangParser.MapExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -485,13 +485,13 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExprSelfOp(KalangParser.ExprSelfOpContext ctx) { }
+	@Override public void enterListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExprSelfOp(KalangParser.ExprSelfOpContext ctx) { }
+	@Override public void exitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -504,6 +504,30 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprInvocation(KalangParser.ExprInvocationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprGetField(KalangParser.ExprGetFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprGetField(KalangParser.ExprGetFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprSelfOp(KalangParser.ExprSelfOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprSelfOp(KalangParser.ExprSelfOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -564,6 +588,30 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitPrimaryIdentifier(KalangParser.PrimaryIdentifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMap(KalangParser.MapContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMap(KalangParser.MapContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterListOrArray(KalangParser.ListOrArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitListOrArray(KalangParser.ListOrArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

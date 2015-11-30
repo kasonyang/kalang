@@ -73,6 +73,77 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 
 public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements KalangVisitor<ExprNode> {
+    private String MAP_CLASS = "java.util.HashMap";
+    private String ROOT_CLASS = "java.lang.Object";
+
+    @Override
+    public ExprNode visitMapExpr(KalangParser.MapExprContext ctx) {
+        return visit(ctx.map());
+    }
+
+    @Override
+    public ExprNode visitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) {
+        return visit(ctx.listOrArray());
+    }
+
+    @Override
+    public ExprNode visitMap(KalangParser.MapContext ctx) {
+        VarObject vo = new VarObject();
+        vars.add(vo);
+        int vid = vars.indexOf(vo);
+        VarDeclStmt vds = new VarDeclStmt();
+        vds.varId = vid;
+        vds.type = MAP_CLASS;
+        vds.initExpr = new NewExpr(vds.type);
+        codes.add(vds);
+        VarExpr ve = new VarExpr();
+        ve.varId = vid;
+        ve.declStmt = vds;
+        List ids = ctx.Identifier();
+        for(int i=0;i<ids.size();i++){
+            ExpressionContext e = ctx.expression(i);
+            ExprNode v = visit(e);
+            List args = new LinkedList();
+            ConstExpr k = new ConstExpr();
+            k.type = STRING_CLASS;
+            k.value = ctx.Identifier(i).getText();
+            args.add(k);
+            args.add(v);
+            InvocationExpr iv = new InvocationExpr(ve,"put",args);
+            ExprStmt es = new ExprStmt(iv);
+            codes.add(es);
+        }
+        //TODO set type
+        return ve;
+    }
+
+    @Override
+    public ExprNode visitListOrArray(KalangParser.ListOrArrayContext ctx) {
+        String type = ROOT_CLASS;
+        if(ctx.type()!=null){
+            type = ctx.type().getText();
+        }
+        String clsName = DEFAULT_LIST_CLASS;
+        VarObject vo = new VarObject();
+        vars.add(vo);
+        int vid = vars.indexOf(vo);
+        VarDeclStmt vds = new VarDeclStmt();
+        vds.varId = vid;
+        vds.type = clsName;
+        vds.initExpr = new NewExpr(vds.type);
+        codes.add(vds);
+        VarExpr ve = new VarExpr();
+        ve.varId = vid;
+        ve.declStmt = vds;
+        for(ExpressionContext e:ctx.expression()){
+            List args = new LinkedList();
+            args.add(visit(e));
+            InvocationExpr iv = new InvocationExpr(ve,"add",args);
+            codes.add(new ExprStmt(iv));
+        }
+        //TODO set type
+        return ve;
+    }
 
     public static class Position{
         int offset;
@@ -119,6 +190,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	
     String defaultType;// = "java.lang.Object";
     static String DEFAULT_METHOD_TYPE = "java.lang.Object";
+    static String DEFAULT_LIST_CLASS = "java.util.LinkedList";
 	
     private Map<AstNode,ParseTree> a2p = new HashMap();
 	

@@ -63,6 +63,9 @@ class Ast2Java extends AbstractAstVisitor<String>{
     @Override
     public String visitVarExpr(VarExpr node) {
         def var = node.declStmt.varName
+        if(!var){
+            var = "tmp_" + node.varId
+        }
         return var
     }
 
@@ -191,7 +194,11 @@ class Ast2Java extends AbstractAstVisitor<String>{
     public String visitVarDeclStmt(VarDeclStmt node) {
         varNames.put(node.varId,node.varName)
         String type = node.type ?: "Object";
-        String code = "${type} ${node.varName}"
+        String name = node.varName
+        if(!name){
+            name = "tmp_" + node.varId
+        }
+        String code = "${type} ${name}"
         if(node.initExpr){
             code+= "=${visit(node.initExpr)}"
         }

@@ -115,6 +115,8 @@ expression ';'
 
 expression
     :   primary #exprPrimay
+    | map #mapExpr
+    | listOrArray # listOrArrayExpr
     |   expression '.' Identifier #exprGetField
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
@@ -170,6 +172,13 @@ primary
     //|   'void' '.' 'class'
     //|   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
     ;
+map:
+type? '{' Identifier ':' expression ( ',' Identifier ':' expression)* '}'
+;
+listOrArray:
+type? '{' expression ( ',' expression )* '}'
+;
+
 literal
     :   IntegerLiteral 
     |   FloatingPointLiteral 
