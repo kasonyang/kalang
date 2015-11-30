@@ -5,7 +5,8 @@ class {
   var f2;
   var func() as int{
     var m = {name:"kava"};
-    var list = {"kava"};
+    var emptyMap = {};
+    var list = ["kava"];
     var a as int=3;
     var l as long = 3;
     var arr as int[];

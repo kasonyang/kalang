@@ -173,10 +173,10 @@ primary
     //|   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
     ;
 map:
-type? '{' Identifier ':' expression ( ',' Identifier ':' expression)* '}'
+type? '{' ( Identifier ':' expression ( ',' Identifier ':' expression)*)? '}'
 ;
 listOrArray:
-type? '{' expression ( ',' expression )* '}'
+type? '[' ( expression ( ',' expression )* )? ']'
 ;
 
 literal
