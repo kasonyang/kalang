@@ -1,6 +1,5 @@
-// Generated from Kalang.g4 by ANTLR 4.5
+// Generated from Kalang.g4 by ANTLR 4.5.1
 package kalang.antlr;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -137,6 +136,12 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitReturnStat(KalangParser.ReturnStatContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KalangParser#postIfStmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPostIfStmt(KalangParser.PostIfStmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link KalangParser#varDeclStat}.
 	 * @param ctx the parse tree
@@ -286,6 +291,13 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExprSelfOp(KalangParser.ExprSelfOpContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code exprQuestion}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprQuestion(KalangParser.ExprQuestionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprSelfOpPre}
 	 * labeled alternative in {@link KalangParser#expression}.

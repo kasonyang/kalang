@@ -1,6 +1,5 @@
-// Generated from Kalang.g4 by ANTLR 4.5
+// Generated from Kalang.g4 by ANTLR 4.5.1
 package kalang.antlr;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -165,6 +164,13 @@ public class KalangBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitPostIfStmt(KalangParser.PostIfStmtContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitVarDeclStat(KalangParser.VarDeclStatContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -320,6 +326,13 @@ public class KalangBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitExprSelfOp(KalangParser.ExprSelfOpContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitExprQuestion(KalangParser.ExprQuestionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

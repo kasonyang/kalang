@@ -195,6 +195,51 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         return null;
     }
 
+    @Override
+    public ExprNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
+        int vid = this.varCounter++;
+        VarDeclStmt vds = new VarDeclStmt();
+        codes.add(vds);
+        vds.varId = vid;
+        VarExpr ve = new VarExpr();
+        ve.varId = vid;
+        ve.declStmt = vds;
+        IfStmt is = new IfStmt();
+        is.conditionExpr = visit(ctx.expression(0));
+        is.trueBody =new ExprStmt(new AssignExpr(ve,visit(ctx.expression(1))));
+        is.falseBody = new ExprStmt(new AssignExpr(ve,visit(ctx.expression(2))));
+        codes.add(is);
+        this.a2p.put(vds, ctx);
+        this.a2p.put(ve, ctx);
+        return ve;
+    }
+
+    @Override
+    public ExprNode visitPostIfStmt(KalangParser.PostIfStmtContext ctx) {
+        ExprNode leftExpr = visitExpression(ctx.expression(0));
+        if(!(leftExpr instanceof AssignExpr)){
+            this.reportError("AssignExpr required", ctx);
+        }
+        AssignExpr assignExpr = (AssignExpr) leftExpr;
+        ExprNode to = assignExpr.to;
+        ExprNode from = assignExpr.from;
+        ExprNode cond = visitExpression(ctx.expression(1));
+        Token op = ctx.op;
+        if(op!=null){
+            String opStr = op.getText();
+            BinaryExpr be = new BinaryExpr(to,cond,opStr);
+            cond = be;
+        }
+        AssignExpr as = new AssignExpr();
+        as.from = from;as.to = to;
+        IfStmt is = new IfStmt();
+        is.conditionExpr = cond;
+        is.trueBody = new ExprStmt(as);
+        codes.add(is);
+        a2p.put(is, ctx);
+        return null;
+    }
+
     public static class Position{
         int offset;
         int length;
@@ -240,6 +285,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	
     public Position getLocation(AstNode node){
         ParseTree tree = this.a2p.get(node);
+        if(tree==null) return new Position();
         return getLocation(tree);
     }
 	
@@ -277,8 +323,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         visitClassBody(ctx.classBody());
         //cls.imports = imports;
         cls.name= this.className;
-        cls.modifier=getModifier(ctx.Modifier());
-		
+        cls.modifier=getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
         if(ctx.Identifier()!=null){
             cls.parentName=(ctx.Identifier().getText());
         }
@@ -312,7 +357,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         if(ctx.varInit()!=null){
             fo.initExpr =  (visitVarInit(ctx.varInit()));
         }
-            fo.modifier = getModifier(ctx.Modifier());
+            fo.modifier = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
         //fields.add(fo.name);
         cls.fields.add(fo);
         //TODO visit setter and getter
@@ -321,13 +366,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitSetter(SetterContext ctx) {
-        // TODO Auto-generated method stub
+        // TODO setter imp
         return null;
     }
 
     @Override
     public ExprNode visitGetter(GetterContext ctx) {
-        // TODO Auto-generated method stub
+        // TODO getter imp
         return null;
     }
 
@@ -347,7 +392,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         String name = ctx.Identifier().getText();
         String type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
         int mdf = 0;
-            mdf = getModifier(ctx.Modifier());
+            mdf = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
         boolean isStatic = false;
         if(ctx.STATIC()!=null){
             isStatic = true;
@@ -552,7 +597,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitDoWhileStat(DoWhileStatContext ctx) {
 		
-        // TODO Auto-generated method stub
+        // TODO do while imp
         return null;
     }
 
@@ -624,8 +669,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public AssignExpr visitExprAssign(ExprAssignContext ctx) {
-        AstNode to = visitExpression(ctx.expression(0));
-        AstNode from = visitExpression(ctx.expression(1));
+        String assignOp = ctx.getChild(1).getText();
+        ExprNode to = visitExpression(ctx.expression(0));
+        ExprNode from  = visitExpression(ctx.expression(1));
+        if(assignOp.length()>1){
+            String op = assignOp.substring(0,assignOp.length()-1);
+            from = new BinaryExpr(to,from,op);
+        }       
         AssignExpr aexpr = new AssignExpr();
         aexpr.from = (ExprNode) from;
         aexpr.to = (ExprNode) to;
@@ -750,7 +800,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             ve.declStmt = declStmt;
             return ve;
         }else{
-            //TODO order bug
             //find parameters
             if(method!=null && method.parameters!=null){
                 for(ParameterNode p:method.parameters){
@@ -778,18 +827,23 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ConstExpr visitLiteral(LiteralContext ctx) {
         ConstExpr ce = new ConstExpr();
         String t = ctx.getText();
-        //TODO parse value
-        ce.value = t;
         if(ctx.IntegerLiteral()!=null){
             ce.type = INT_CLASS;
+            ce.value = Integer.parseInt(t);
         }else if(ctx.FloatingPointLiteral()!=null){
             ce.type = FLOAT_CLASS;
+            ce.value = Float.parseFloat(t);
         }else if(ctx.BooleanLiteral()!=null){
             ce.type = BOOLEAN_CLASS;
+            ce.value = Boolean.parseBoolean(t);
         }else if(ctx.CharacterLiteral()!=null){
             ce.type = CHAR_CLASS;
+            char[] chars = t.toCharArray();
+            ce.value = chars[1];
         }else if(ctx.StringLiteral()!=null){
             ce.type = STRING_CLASS;
+            //TODO parse string
+            ce.value = t.substring(1,t.length()-1);
         }else{
             ce.type = NULL_CLASS;
         }
@@ -844,21 +898,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         return null;
     }
 
-    public Integer getModifier(TerminalNode ctx) {
-        if(ctx==null) return Modifier.PUBLIC;
-        int m = 0;
-        String[] mdfs = ctx.getText().split(" ");
-        for(String text:mdfs){
-            switch(text){
-            case "!":
-                m += Modifier.PRIVATE;break;
-            case "?":
-                m += Modifier.PROTECTED;break;
-            default:
-                System.err.println("Unknown modifier" + text);
-            }
-        }
-        return m;
+    public Integer getModifier(boolean isPrivated,boolean isProtected) {
+        if(isPrivated) return Modifier.PRIVATE;
+        if(isProtected) return Modifier.PROTECTED;
+        return Modifier.PUBLIC;
     }
 
     @Override

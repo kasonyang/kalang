@@ -10,6 +10,12 @@ class {
     var emptyList = [];
     var array = new int[123];
   }
+  var test(){
+    var i as int;
+    i += 123;
+    var a;
+    a = a?a:a;
+  }
   var func() as int{
     var a as int=3;
     var l as long = 3;
@@ -32,5 +38,10 @@ class {
       p++;
     }
     func2(p);
+  }
+  var f3(){
+    var a as int;
+    a = f if 3;
+    a = f if > 3;
   }
 }

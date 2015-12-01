@@ -1,5 +1,5 @@
-// Generated from Kalang.g4 by ANTLR 4.5.1
-package kalang.antlr;
+// Generated from Kalang.g4 by ANTLR 4.4
+package main.groovy.kalang.antlr;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -11,13 +11,13 @@ import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class KalangLexer extends Lexer {
-	static { RuntimeMetaData.checkVersion("4.5.1", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.4", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, ABSTRACT=7, ASSERT=8, 
+		T__5=1, T__4=2, T__3=3, T__2=4, T__1=5, T__0=6, ABSTRACT=7, ASSERT=8, 
 		BOOLEAN=9, BREAK=10, BYTE=11, CASE=12, CATCH=13, CHAR=14, CLASS=15, CONST=16, 
 		CONTINUE=17, DEFAULT=18, DO=19, DOUBLE=20, ELSE=21, ENUM=22, EXTENDS=23, 
 		FINAL=24, FINALLY=25, FLOAT=26, FOR=27, IF=28, GOTO=29, IMPLEMENTS=30, 
@@ -38,8 +38,24 @@ public class KalangLexer extends Lexer {
 		"DEFAULT_MODE"
 	};
 
+	public static final String[] tokenNames = {
+		"'\\u0000'", "'\\u0001'", "'\\u0002'", "'\\u0003'", "'\\u0004'", "'\\u0005'", 
+		"'\\u0006'", "'\\u0007'", "'\b'", "'\t'", "'\n'", "'\\u000B'", "'\f'", 
+		"'\r'", "'\\u000E'", "'\\u000F'", "'\\u0010'", "'\\u0011'", "'\\u0012'", 
+		"'\\u0013'", "'\\u0014'", "'\\u0015'", "'\\u0016'", "'\\u0017'", "'\\u0018'", 
+		"'\\u0019'", "'\\u001A'", "'\\u001B'", "'\\u001C'", "'\\u001D'", "'\\u001E'", 
+		"'\\u001F'", "' '", "'!'", "'\"'", "'#'", "'$'", "'%'", "'&'", "'''", 
+		"'('", "')'", "'*'", "'+'", "','", "'-'", "'.'", "'/'", "'0'", "'1'", 
+		"'2'", "'3'", "'4'", "'5'", "'6'", "'7'", "'8'", "'9'", "':'", "';'", 
+		"'<'", "'='", "'>'", "'?'", "'@'", "'A'", "'B'", "'C'", "'D'", "'E'", 
+		"'F'", "'G'", "'H'", "'I'", "'J'", "'K'", "'L'", "'M'", "'N'", "'O'", 
+		"'P'", "'Q'", "'R'", "'S'", "'T'", "'U'", "'V'", "'W'", "'X'", "'Y'", 
+		"'Z'", "'['", "'\\'", "']'", "'^'", "'_'", "'`'", "'a'", "'b'", "'c'", 
+		"'d'", "'e'", "'f'", "'g'", "'h'", "'i'", "'j'", "'k'", "'l'", "'m'", 
+		"'n'", "'o'"
+	};
 	public static final String[] ruleNames = {
-		"T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "ABSTRACT", "ASSERT", 
+		"T__5", "T__4", "T__3", "T__2", "T__1", "T__0", "ABSTRACT", "ASSERT", 
 		"BOOLEAN", "BREAK", "BYTE", "CASE", "CATCH", "CHAR", "CLASS", "CONST", 
 		"CONTINUE", "DEFAULT", "DO", "DOUBLE", "ELSE", "ENUM", "EXTENDS", "FINAL", 
 		"FINALLY", "FLOAT", "FOR", "IF", "GOTO", "IMPLEMENTS", "IMPORT", "INSTANCEOF", 
@@ -66,73 +82,6 @@ public class KalangLexer extends Lexer {
 		"JavaLetterOrDigit", "AT", "ELLIPSIS", "WS", "COMMENT", "LINE_COMMENT"
 	};
 
-	private static final String[] _LITERAL_NAMES = {
-		null, "'val'", "'var'", "'as'", "'set'", "'get'", "'[]'", "'abstract'", 
-		"'assert'", "'boolean'", "'break'", "'byte'", "'case'", "'catch'", "'char'", 
-		"'class'", "'const'", "'continue'", "'default'", "'do'", "'double'", "'else'", 
-		"'enum'", "'extends'", "'final'", "'finally'", "'float'", "'for'", "'if'", 
-		"'goto'", "'implements'", "'import'", "'instanceof'", "'int'", "'interface'", 
-		"'long'", "'native'", "'new'", "'package'", "'private'", "'protected'", 
-		"'public'", "'return'", "'short'", "'static'", "'strictfp'", "'super'", 
-		"'switch'", "'synchronized'", "'this'", "'throw'", "'throws'", "'transient'", 
-		"'try'", "'void'", "'volatile'", "'while'", null, null, null, null, null, 
-		"'null'", "'('", "')'", "'{'", "'}'", "'['", "']'", "';'", "','", "'.'", 
-		"'='", "'>'", "'<'", "'!'", "'~'", "'?'", "':'", "'=='", "'<='", "'>='", 
-		"'!='", "'&&'", "'||'", "'++'", "'--'", "'+'", "'-'", "'*'", "'/'", "'&'", 
-		"'|'", "'^'", "'%'", "'+='", "'-='", "'*='", "'/='", "'&='", "'|='", "'^='", 
-		"'%='", "'<<='", "'>>='", "'>>>='", null, "'@'", "'...'"
-	};
-	private static final String[] _SYMBOLIC_NAMES = {
-		null, null, null, null, null, null, null, "ABSTRACT", "ASSERT", "BOOLEAN", 
-		"BREAK", "BYTE", "CASE", "CATCH", "CHAR", "CLASS", "CONST", "CONTINUE", 
-		"DEFAULT", "DO", "DOUBLE", "ELSE", "ENUM", "EXTENDS", "FINAL", "FINALLY", 
-		"FLOAT", "FOR", "IF", "GOTO", "IMPLEMENTS", "IMPORT", "INSTANCEOF", "INT", 
-		"INTERFACE", "LONG", "NATIVE", "NEW", "PACKAGE", "PRIVATE", "PROTECTED", 
-		"PUBLIC", "RETURN", "SHORT", "STATIC", "STRICTFP", "SUPER", "SWITCH", 
-		"SYNCHRONIZED", "THIS", "THROW", "THROWS", "TRANSIENT", "TRY", "VOID", 
-		"VOLATILE", "WHILE", "IntegerLiteral", "FloatingPointLiteral", "BooleanLiteral", 
-		"CharacterLiteral", "StringLiteral", "NullLiteral", "LPAREN", "RPAREN", 
-		"LBRACE", "RBRACE", "LBRACK", "RBRACK", "SEMI", "COMMA", "DOT", "ASSIGN", 
-		"GT", "LT", "BANG", "TILDE", "QUESTION", "COLON", "EQUAL", "LE", "GE", 
-		"NOTEQUAL", "AND", "OR", "INC", "DEC", "ADD", "SUB", "MUL", "DIV", "BITAND", 
-		"BITOR", "CARET", "MOD", "ADD_ASSIGN", "SUB_ASSIGN", "MUL_ASSIGN", "DIV_ASSIGN", 
-		"AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN", "MOD_ASSIGN", "LSHIFT_ASSIGN", 
-		"RSHIFT_ASSIGN", "URSHIFT_ASSIGN", "Identifier", "AT", "ELLIPSIS", "WS", 
-		"COMMENT", "LINE_COMMENT"
-	};
-	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
-
-	/**
-	 * @deprecated Use {@link #VOCABULARY} instead.
-	 */
-	@Deprecated
-	public static final String[] tokenNames;
-	static {
-		tokenNames = new String[_SYMBOLIC_NAMES.length];
-		for (int i = 0; i < tokenNames.length; i++) {
-			tokenNames[i] = VOCABULARY.getLiteralName(i);
-			if (tokenNames[i] == null) {
-				tokenNames[i] = VOCABULARY.getSymbolicName(i);
-			}
-
-			if (tokenNames[i] == null) {
-				tokenNames[i] = "<INVALID>";
-			}
-		}
-	}
-
-	@Override
-	@Deprecated
-	public String[] getTokenNames() {
-		return tokenNames;
-	}
-
-	@Override
-
-	public Vocabulary getVocabulary() {
-		return VOCABULARY;
-	}
-
 
 	public KalangLexer(CharStream input) {
 		super(input);
@@ -141,6 +90,9 @@ public class KalangLexer extends Lexer {
 
 	@Override
 	public String getGrammarFileName() { return "Kalang.g4"; }
+
+	@Override
+	public String[] getTokenNames() { return tokenNames; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
@@ -157,28 +109,22 @@ public class KalangLexer extends Lexer {
 	@Override
 	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
 		switch (ruleIndex) {
-		case 146:
-			return JavaLetter_sempred((RuleContext)_localctx, predIndex);
-		case 147:
-			return JavaLetterOrDigit_sempred((RuleContext)_localctx, predIndex);
-		}
-		return true;
-	}
-	private boolean JavaLetter_sempred(RuleContext _localctx, int predIndex) {
-		switch (predIndex) {
-		case 0:
-			return Character.isJavaIdentifierStart(_input.LA(-1));
-		case 1:
-			return Character.isJavaIdentifierStart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)));
+		case 146: return JavaLetter_sempred((RuleContext)_localctx, predIndex);
+		case 147: return JavaLetterOrDigit_sempred((RuleContext)_localctx, predIndex);
 		}
 		return true;
 	}
 	private boolean JavaLetterOrDigit_sempred(RuleContext _localctx, int predIndex) {
 		switch (predIndex) {
-		case 2:
-			return Character.isJavaIdentifierPart(_input.LA(-1));
-		case 3:
-			return Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)));
+		case 2: return Character.isJavaIdentifierPart(_input.LA(-1));
+		case 3: return Character.isJavaIdentifierPart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)));
+		}
+		return true;
+	}
+	private boolean JavaLetter_sempred(RuleContext _localctx, int predIndex) {
+		switch (predIndex) {
+		case 0: return Character.isJavaIdentifierStart(_input.LA(-1));
+		case 1: return Character.isJavaIdentifierStart(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)));
 		}
 		return true;
 	}
@@ -204,7 +150,7 @@ public class KalangLexer extends Lexer {
 		"\t\u008e\4\u008f\t\u008f\4\u0090\t\u0090\4\u0091\t\u0091\4\u0092\t\u0092"+
 		"\4\u0093\t\u0093\4\u0094\t\u0094\4\u0095\t\u0095\4\u0096\t\u0096\4\u0097"+
 		"\t\u0097\4\u0098\t\u0098\4\u0099\t\u0099\4\u009a\t\u009a\3\2\3\2\3\2\3"+
-		"\2\3\3\3\3\3\3\3\3\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3\7\3\7"+
+		"\2\3\3\3\3\3\3\3\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\7\3\7\3\7"+
 		"\3\7\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3"+
 		"\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\13\3\13\3\13\3\13\3\13\3\13\3\f\3\f\3"+
 		"\f\3\f\3\f\3\r\3\r\3\r\3\r\3\r\3\16\3\16\3\16\3\16\3\16\3\16\3\17\3\17"+
@@ -296,8 +242,8 @@ public class KalangLexer extends Lexer {
 		"\2\2\u0117\3\2\2\2\2\u0119\3\2\2\2\2\u011b\3\2\2\2\2\u011d\3\2\2\2\2\u011f"+
 		"\3\2\2\2\2\u0121\3\2\2\2\2\u0123\3\2\2\2\2\u0125\3\2\2\2\2\u012b\3\2\2"+
 		"\2\2\u012d\3\2\2\2\2\u012f\3\2\2\2\2\u0131\3\2\2\2\2\u0133\3\2\2\2\3\u0135"+
-		"\3\2\2\2\5\u0139\3\2\2\2\7\u013d\3\2\2\2\t\u0140\3\2\2\2\13\u0144\3\2"+
-		"\2\2\r\u0148\3\2\2\2\17\u014b\3\2\2\2\21\u0154\3\2\2\2\23\u015b\3\2\2"+
+		"\3\2\2\2\5\u0139\3\2\2\2\7\u013c\3\2\2\2\t\u0140\3\2\2\2\13\u0144\3\2"+
+		"\2\2\r\u0147\3\2\2\2\17\u014b\3\2\2\2\21\u0154\3\2\2\2\23\u015b\3\2\2"+
 		"\2\25\u0163\3\2\2\2\27\u0169\3\2\2\2\31\u016e\3\2\2\2\33\u0173\3\2\2\2"+
 		"\35\u0179\3\2\2\2\37\u017e\3\2\2\2!\u0184\3\2\2\2#\u018a\3\2\2\2%\u0193"+
 		"\3\2\2\2\'\u019b\3\2\2\2)\u019e\3\2\2\2+\u01a5\3\2\2\2-\u01aa\3\2\2\2"+
@@ -335,12 +281,12 @@ public class KalangLexer extends Lexer {
 		"\u0400\3\2\2\2\u011d\u0403\3\2\2\2\u011f\u0406\3\2\2\2\u0121\u040a\3\2"+
 		"\2\2\u0123\u040e\3\2\2\2\u0125\u0413\3\2\2\2\u0127\u0420\3\2\2\2\u0129"+
 		"\u0428\3\2\2\2\u012b\u042a\3\2\2\2\u012d\u042c\3\2\2\2\u012f\u0431\3\2"+
-		"\2\2\u0131\u0437\3\2\2\2\u0133\u0445\3\2\2\2\u0135\u0136\7x\2\2\u0136"+
-		"\u0137\7c\2\2\u0137\u0138\7n\2\2\u0138\4\3\2\2\2\u0139\u013a\7x\2\2\u013a"+
-		"\u013b\7c\2\2\u013b\u013c\7t\2\2\u013c\6\3\2\2\2\u013d\u013e\7c\2\2\u013e"+
-		"\u013f\7u\2\2\u013f\b\3\2\2\2\u0140\u0141\7u\2\2\u0141\u0142\7g\2\2\u0142"+
-		"\u0143\7v\2\2\u0143\n\3\2\2\2\u0144\u0145\7i\2\2\u0145\u0146\7g\2\2\u0146"+
-		"\u0147\7v\2\2\u0147\f\3\2\2\2\u0148\u0149\7]\2\2\u0149\u014a\7_\2\2\u014a"+
+		"\2\2\u0131\u0437\3\2\2\2\u0133\u0445\3\2\2\2\u0135\u0136\7u\2\2\u0136"+
+		"\u0137\7g\2\2\u0137\u0138\7v\2\2\u0138\4\3\2\2\2\u0139\u013a\7]\2\2\u013a"+
+		"\u013b\7_\2\2\u013b\6\3\2\2\2\u013c\u013d\7i\2\2\u013d\u013e\7g\2\2\u013e"+
+		"\u013f\7v\2\2\u013f\b\3\2\2\2\u0140\u0141\7x\2\2\u0141\u0142\7c\2\2\u0142"+
+		"\u0143\7t\2\2\u0143\n\3\2\2\2\u0144\u0145\7c\2\2\u0145\u0146\7u\2\2\u0146"+
+		"\f\3\2\2\2\u0147\u0148\7x\2\2\u0148\u0149\7c\2\2\u0149\u014a\7n\2\2\u014a"+
 		"\16\3\2\2\2\u014b\u014c\7c\2\2\u014c\u014d\7d\2\2\u014d\u014e\7u\2\2\u014e"+
 		"\u014f\7v\2\2\u014f\u0150\7t\2\2\u0150\u0151\7c\2\2\u0151\u0152\7e\2\2"+
 		"\u0152\u0153\7v\2\2\u0153\20\3\2\2\2\u0154\u0155\7c\2\2\u0155\u0156\7"+

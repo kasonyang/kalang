@@ -1,6 +1,5 @@
-// Generated from Kalang.g4 by ANTLR 4.5
+// Generated from Kalang.g4 by ANTLR 4.5.1
 package kalang.antlr;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -218,6 +217,16 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitReturnStat(KalangParser.ReturnStatContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KalangParser#postIfStmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterPostIfStmt(KalangParser.PostIfStmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#postIfStmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitPostIfStmt(KalangParser.PostIfStmtContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#varDeclStat}.
 	 * @param ctx the parse tree
@@ -470,6 +479,18 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExprSelfOp(KalangParser.ExprSelfOpContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code exprQuestion}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprQuestion(KalangParser.ExprQuestionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code exprQuestion}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprQuestion(KalangParser.ExprQuestionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code exprSelfOpPre}
 	 * labeled alternative in {@link KalangParser#expression}.

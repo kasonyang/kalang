@@ -42,6 +42,25 @@ class Ast2Java extends AbstractAstVisitor<String>{
     private String stmtDelim = ";"
 	
     private String indent = "";
+    
+    private String trimStmt(String stmt){
+        if(stmt.endsWith(";")){
+            stmt = stmt.substring(0,stmt.length()-1);
+        }
+        return stmt;
+    }
+    
+    
+    private String toJavaString(ConstExpr ce){
+        Object v = ce.value;
+        if(v instanceof String){
+            return "\"${v}\""
+        }else if(ce.type == 'char'){
+            return "'${v}'"
+        }else{
+            return v;
+        }
+    }
 
     public String generate(ClassNode cls){
         return visit(cls)
@@ -160,8 +179,13 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitIfStmt(IfStmt node) {
-        // TODO Auto-generated method stub
-        return null;
+        def cdt = visit(node.conditionExpr);
+        def trueStmt = visit(node.trueBody);
+        def falseStmt;
+        String res = "if(${cdt}) ${trimStmt(trueStmt)}"
+        if(node.falseBody) res += " else ${visit(node.falseBody)}"
+        else res += ";"
+        return indent + res;
     }
 
     /*@Override
@@ -219,7 +243,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitConstExpr(ConstExpr node) {
-		"${node.value}"
+        "${toJavaString(node)}"
     }
 
     @Override

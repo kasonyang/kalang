@@ -2,7 +2,7 @@ grammar Kalang;
 
 compiliantUnit:
   importDeclList
-  'class' Modifier? ('extends' Identifier)? '{' classBody '}'
+  'class' (QUESTION|BANG)? ('extends' Identifier)? '{' classBody '}'
 ;
 importDeclList:
   importDecl*
@@ -24,7 +24,7 @@ fieldDeclList:
   fieldDecl*
 ;
 fieldDecl:
-   STATIC? ('val'|'var') Identifier Modifier? ('as' type)? varInit? setter? getter? ';'
+   STATIC? ('val'|'var') Identifier (QUESTION|BANG)? ('as' type)? varInit? setter? getter? ';'
 ;
 setter:
   'set' '(' argumentDeclList ')' '{' statList '}'
@@ -36,7 +36,7 @@ methodDeclList:
   methodDecl*
 ;
 methodDecl:
-   STATIC? 'var' Identifier Modifier? '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
+   STATIC? 'var' Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
 ;
 type:
   noArrayType  ( '[]' )?
@@ -64,7 +64,8 @@ ifStatSuffix:
 ;
 
 stat:
-    exprStat
+    postIfStmt
+    |exprStat
     |ifStat
     |whileStat
     |doWhileStat
@@ -77,7 +78,17 @@ stat:
 returnStat:
     'return' expression? ';'
 ;
-
+postIfStmt:
+    expression //(ASSIGN|MULTI_ASSIGN) expression 
+     'if' (
+            op = '=='
+            |op ='<'
+            |op ='>'
+            |op ='!='
+            |op ='>='
+            |op ='<='
+     )? expression ';'
+;
 varDeclStat:
   varDecl ';'
 ;
@@ -144,26 +155,22 @@ expression
     |   expression '^' expression #exprMidOp
     |   expression '|' expression #exprMidOp
     |   expression ('&&'|'||') expression #exprMidOp
-    //|   expression OR expression
-    //|   expression QUESTION expression ':' expression
-    
+    |   expression '?' expression ':' expression #exprQuestion
     |   <assoc=right> expression
-         (  ASSIGN
-                /*
-        |    ADD_ASSIGN
-        |   SUB_ASSIGN
-        |   MUL_ASSIGN 
-        |   DIV_ASSIGN
-        |   AND_ASSIGN
-        |   OR_ASSIGN
-        |    XOR_ASSIGN
-        |  LSHIFT_ASSIGN
-        |  URSHIFT_ASSIGN
-        |   RSHIFT_ASSIGN
-        |     MOD_ASSIGN*/ )
+         ( '=' 
+        |   '+='
+        |   '-='
+        |   '*='
+        |   '/='
+        |   '&='
+        |   '|='
+        |   '^='
+        |   '>>='
+        |   '>>>='
+        |   '<<='
+        |   '%='
+        )
         expression #exprAssign
-  //  |<assoc=right>
-  //  (Identifier '[' expression ']') ASSIGN expression #arrayAssign
 ;
 primary
     :   LPAREN 
@@ -199,7 +206,7 @@ arguments
     ;
 // LEXER
 
-Modifier:( '!' | '?' );
+//Modifier:( '!' | '?' );
 //STATIC:'static';
 // §3.9 Keywords
 

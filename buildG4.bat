@@ -1,1 +1,2 @@
-cd src/main/java/kava/antlr && build.bat
+cd src/main/groovy/kalang/antlr && build.bat
+pause
