@@ -319,8 +319,15 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         //cls.imports = imports;
         cls.name= this.className;
         cls.modifier=getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
-        if(ctx.Identifier()!=null){
-            cls.parentName=(ctx.Identifier().getText());
+        String classType = ctx.classType.getText();
+        if(classType.equals("interface")) cls.isInterface = true;
+        if(ctx.parentClass!=null) 
+            cls.parentName=(ctx.parentClass.getText());
+        cls.interfaces = new LinkedList();
+        if(ctx.interfaces!=null && ctx.interfaces.size()>0){
+            for(Token itf:ctx.interfaces){
+                cls.interfaces.add(itf.getText());
+            }
         }
         return null;
     }

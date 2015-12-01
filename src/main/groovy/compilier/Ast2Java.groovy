@@ -131,7 +131,12 @@ class Ast2Java extends AbstractAstVisitor<String>{
         }
         String pkgStr = pkg?"package ${pkg};":""
         String parentStr = node.parentName ? " extends ${node.parentName}" :""
-        return "${pkgStr}\r\n${imports}\r\n${mdf} class ${name} ${parentStr} {\r\n${fs}\r\n${mds}\r\n}"
+        String impStr = ""
+        if(node.interfaces && node.interfaces.size()>0){
+            impStr = "implements ${node.interfaces.join(",")}"
+        }
+        String classType = node.isInterface ? "interface" : "class"
+        return "${pkgStr}\r\n${imports}\r\n${mdf} ${classType} ${name} ${parentStr} ${impStr} {\r\n${fs}\r\n${mds}\r\n}"
     }
 
     @Override

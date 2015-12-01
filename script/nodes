@@ -4,6 +4,8 @@
 -parentName:String
 +fields:FieldNode*
 +methods:MethodNode*
+-interfaces:String*
+-isInterface:Boolean
 //+imports:ImportNode*
 
 //#ImportNode

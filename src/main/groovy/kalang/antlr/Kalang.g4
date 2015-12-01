@@ -2,7 +2,13 @@ grammar Kalang;
 
 compiliantUnit:
   importDeclList
-  'class' (QUESTION|BANG)? ('extends' Identifier)? '{' classBody '}'
+    (
+        classType='class'
+        |classType='interface'
+    ) (QUESTION|BANG)? 
+    ('extends' parentClass = Identifier)? 
+    ( 'implements' interfaces+=Identifier ( ',' interfaces+=Identifier)* )?
+    '{' classBody '}'
 ;
 importDeclList:
   importDecl*

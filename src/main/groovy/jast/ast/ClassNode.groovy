@@ -15,9 +15,13 @@ public class ClassNode extends AstNode{
     
     public List<MethodNode> methods;
     
+    public List<String> interfaces;
+    
+    public Boolean isInterface;
     
     
-    public ClassNode(Integer modifier=null,String name=null,String parentName=null,List<FieldNode> fields=null,List<MethodNode> methods=null){
+    
+    public ClassNode(Integer modifier=null,String name=null,String parentName=null,List<FieldNode> fields=null,List<MethodNode> methods=null,List<String> interfaces=null,Boolean isInterface=null){
         
             this.modifier = modifier;
         
@@ -29,6 +33,10 @@ public class ClassNode extends AstNode{
         
             this.methods = methods;
         
+            this.interfaces = interfaces;
+        
+            this.isInterface = isInterface;
+        
     }
     
     
@@ -38,6 +46,8 @@ public class ClassNode extends AstNode{
         node.fields = new LinkedList();
         
         node.methods = new LinkedList();
+        
+        node.interfaces = new LinkedList();
         
         return node;
     }
@@ -72,6 +82,10 @@ public class ClassNode extends AstNode{
         str += "  fields:" + fields.toString()+"\r\n";
         
         str += "  methods:" + methods.toString()+"\r\n";
+        
+        str += "  interfaces:" + interfaces.toString()+"\r\n";
+        
+        str += "  isInterface:" + isInterface.toString()+"\r\n";
         
         return str+"}";
     }
