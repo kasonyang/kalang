@@ -140,7 +140,7 @@ expression
     |     Identifier arguments  #exprMemberInvocation
     |  expression '[' expression ']' #exprGetArrayElement    
     |   NEW Identifier  arguments     #newExpr
-    |   NEW type '[' expression ']'     #exprNewArray
+    |   NEW noArrayType '[' expression ']'     #exprNewArray
     |   '(' type ')' expression #castExpr
     |   expression ('++' | '--') #exprSelfOp
     |   ('+'|'-'|'++'|'--') expression #exprSelfOpPre
