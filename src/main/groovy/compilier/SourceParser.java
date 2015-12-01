@@ -152,7 +152,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             ExprStmt es = new ExprStmt(iv);
             codes.add(es);
         }
-        //TODO set type
+        //TODO set generic type
         return ve;
     }
 
@@ -176,7 +176,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             InvocationExpr iv = new InvocationExpr(ve,"add",args);
             codes.add(new ExprStmt(iv));
         }
-        //TODO set type
+        //TODO set generic type
         return ve;
     }
 
@@ -184,8 +184,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
         NewArrayExpr nae = new NewArrayExpr();
         nae.size = visit(ctx.expression());
-        //TODO bug type may be array
-        nae.type = ctx.type().getText();
+        nae.type = ctx.noArrayType().getText();
         return nae;
     }
 
@@ -596,8 +595,17 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitDoWhileStat(DoWhileStatContext ctx) {
-		
-        // TODO do while imp
+        BlockStmt bs = new BlockStmt();
+        List oCodes = codes;
+        codes = bs.statements;
+        visit(ctx.statList());
+        codes = oCodes;
+        ExprNode cond = visit(ctx.expression());
+        LoopStmt ls =new LoopStmt();
+        ls.loopBody  = bs;
+        ls.postConditionExpr = cond;
+        codes.add(ls);
+        a2p.put(ls, ctx);
         return null;
     }
 
