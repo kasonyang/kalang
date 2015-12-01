@@ -26,6 +26,16 @@ import kalang.core.FieldObject
 import kalang.core.VarObject
 @groovy.transform.TypeChecked
 class TypeChecker extends AstVisitor<String> {
+    
+    static class TypeError extends Exception{
+        
+        AstNode node
+
+        public TypeError(String msg,AstNode node){
+            super(msg)
+            this.node = node
+        }
+    }
 
     private static final String FLOAT_CLASS = "java.lang.Float";
     private static final String DOUBLE_CLASS = "java.lang.Double";
@@ -44,23 +54,8 @@ class TypeChecker extends AstVisitor<String> {
     private static final String DEFAULT_CLASS = "java.lang.Object";
         
     private HashMap<Integer,VarDeclStmt> varDeclStmts = [:]
-
-
-    @Override
-    public String visitCastExpr(CastExpr node) {
-        node.type
-    }
-
-    static class TypeError extends Exception{
-        AstNode node
-
-        public TypeError(String msg,AstNode node){
-            super(msg)
-            this.node = node
-        }
-    }
-
-    HashMap<AstNode,String> types = [:]
+    
+    //HashMap<AstNode,String> types = [:]
     //HashMap<AstNode,VarObject> vars
     HashMap<String,String> fieldTypes
 
@@ -71,9 +66,15 @@ class TypeChecker extends AstVisitor<String> {
     TypeChecker(AstLoader astLoader){
         this.astLoader = astLoader
     }
-
+    
     private void fail(String str,AstNode node){
         throw new TypeError(str,node);
+    }
+    
+    private void checkCastable(String from,String to,AstNode node){
+        if(!castable(from,to)){
+            fail("can not cast type:${from} => ${to}",node)
+        }
     }
 
     public void check(ClassNode clz){
@@ -85,11 +86,10 @@ class TypeChecker extends AstVisitor<String> {
         visit(clazz)
     }
 
-    private void checkCastable(String from,String to,AstNode node){
-        if(!castable(from,to)){
-            fail("can not cast type:${from} => ${to}",node)
-        }
-    }
+    @Override
+    public String visitCastExpr(CastExpr node) {
+        node.type
+    } 
 
     @Override
     public String visitAssignExpr(AssignExpr node) {
@@ -156,6 +156,56 @@ class TypeChecker extends AstVisitor<String> {
         }
         //TODO cast string to boolean
         return expr;
+    }
+    
+    private boolean castable(String from,String to){
+        to = getClassType(to)
+        from = getClassType(from)
+        if(from==to) return true
+        HashMap<String,List> baseMap = [:]
+        baseMap.put(INT_CLASS , [LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS])
+        baseMap.put(LONG_CLASS  , [FLOAT_CLASS, DOUBLE_CLASS])
+        baseMap.put(FLOAT_CLASS  , [DOUBLE_CLASS])
+        baseMap.put(DOUBLE_CLASS  , [])
+        if(baseMap.containsKey(from)){
+            return baseMap.get(from).contains(to)
+        }
+        def fromAst = astLoader.loadAst(from)
+        while(fromAst){
+            def parent = fromAst.parentName
+            if(!parent) return false;
+            if(parent==to) return true;
+            fromAst = astLoader.loadAst(parent)
+        }
+        return false;
+    }
+
+    private boolean castable(List<String> from,List<String> to){
+        if(from.size()!=to.size())  return false
+        for(int i=0;i<from.size();i++){
+            def f = from.get(i)
+            def t = to.get(i)
+            if(!castable(f,t)){
+                return false
+            }
+        }
+        return true
+    }
+
+    private MethodNode getMethod(ClassNode ast,String name,List types){
+        def methods = ast.methods
+        for(def m in methods){
+            if(m.name!=name) continue
+            def ps = m.parameters
+            def mtypes = []
+            for(def p in ps){
+                mtypes.add(p.type)
+            }
+            if(this.castable(types,mtypes)){
+                return m
+            }
+        }
+        return null
     }
 
 
@@ -241,65 +291,13 @@ class TypeChecker extends AstVisitor<String> {
         if(ast==null){
             fail("no class:"+target ,node)
         }
-        MethodNode method = ensureHasMethod(ast,methodName,types)
+        MethodNode method = getMethod(ast,methodName,types)
         if(method==null){
             def ps = types.join(",")
             String mdesc = "${ast.name}.${methodName}(${ps})"
             fail("no method:${mdesc}",node);
         }
         return method.type
-    }
-
-
-
-    private boolean castable(String from,String to){
-        to = getClassType(to)
-        from = getClassType(from)
-        if(from==to) return true
-        HashMap<String,List> baseMap = [:]
-        baseMap.put(INT_CLASS , [LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS])
-        baseMap.put(LONG_CLASS  , [FLOAT_CLASS, DOUBLE_CLASS])
-        baseMap.put(FLOAT_CLASS  , [DOUBLE_CLASS])
-        baseMap.put(DOUBLE_CLASS  , [])
-        if(baseMap.containsKey(from)){
-            return baseMap.get(from).contains(to)
-        }
-        def fromAst = astLoader.loadAst(from)
-        while(fromAst){
-            def parent = fromAst.parentName
-            if(!parent) return false;
-            if(parent==to) return true;
-            fromAst = astLoader.loadAst(parent)
-        }
-        return false;
-    }
-
-    private boolean castable(List<String> from,List<String> to){
-        if(from.size()!=to.size())  return false
-        for(int i=0;i<from.size();i++){
-            def f = from.get(i)
-            def t = to.get(i)
-            if(!castable(f,t)){
-                return false
-            }
-        }
-        return true
-    }
-
-    private MethodNode ensureHasMethod(ClassNode ast,String name,List types){
-        def methods = ast.methods
-        for(def m in methods){
-            if(m.name!=name) continue
-            def ps = m.parameters
-            def mtypes = []
-            for(def p in ps){
-                mtypes.add(p.type)
-            }
-            if(this.castable(types,mtypes)){
-                return m
-            }
-        }
-        return null
     }
 
     @Override
@@ -323,7 +321,7 @@ class TypeChecker extends AstVisitor<String> {
     public String visitVarExpr(VarExpr node) {
         Integer vid = node.varId;
         def declStmt = this.varDeclStmts.get(vid);
-	declStmt.type
+        declStmt?.type
     }
 
     @Override

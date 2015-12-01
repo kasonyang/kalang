@@ -58,7 +58,6 @@ import kalang.antlr.KalangParser.VarDeclStatContext;
 import kalang.antlr.KalangParser.VarInitContext;
 import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
-import kalang.core.VarObject;
 import kalang.core.VarTable;
 import jast.ast.*;
 
@@ -73,6 +72,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 
 public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements KalangVisitor<ExprNode> {
+    
+    
     private static final String MAP_CLASS = "java.util.HashMap";
     private static final String ROOT_CLASS = "java.lang.Object";
     private static final String FLOAT_CLASS = "java.lang.Float";
@@ -94,17 +95,11 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     //short name to full name
     private final Map<String,String> fullNames = new HashMap();
     private final List<String> importPaths = new LinkedList();
-    //VarTable vtb = new VarTable();
     Stack<VarTable> vtbs = new Stack();
-    //List<VarObject> vars = new LinkedList();
     int varCounter = 0;
-    //HashMap<VarObject,VarDeclStmt> varDeclStmts = new HashMap();
-    //List<String> fields = new LinkedList();
-    //HashMap<String,ParameterNode> parameters;
     ClassNode cls = new ClassNode();
     List<Statement> codes;
     List<ExprNode> arguments;
-    //ClassNode classNode;
     MethodNode method;	
     private final Map<AstNode,ParseTree> a2p = new HashMap();
 	
@@ -115,130 +110,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     private final CommonTokenStream tokens;
     
     private final String className;
-
-    @Override
-    public ExprNode visitMapExpr(KalangParser.MapExprContext ctx) {
-        return visit(ctx.map());
-    }
-
-    @Override
-    public ExprNode visitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) {
-        return visit(ctx.listOrArray());
-    }
-
-    @Override
-    public ExprNode visitMap(KalangParser.MapContext ctx) {
-        VarObject vo = new VarObject();
-        int vid = this.varCounter++;
-        VarDeclStmt vds = new VarDeclStmt();
-        vds.varId = vid;
-        vds.type = MAP_CLASS;
-        vds.initExpr = new NewExpr(vds.type);
-        codes.add(vds);
-        VarExpr ve = new VarExpr();
-        ve.varId = vid;
-        ve.declStmt = vds;
-        List ids = ctx.Identifier();
-        for(int i=0;i<ids.size();i++){
-            ExpressionContext e = ctx.expression(i);
-            ExprNode v = visit(e);
-            List args = new LinkedList();
-            ConstExpr k = new ConstExpr();
-            k.type = STRING_CLASS;
-            k.value = ctx.Identifier(i).getText();
-            args.add(k);
-            args.add(v);
-            InvocationExpr iv = new InvocationExpr(ve,"put",args);
-            ExprStmt es = new ExprStmt(iv);
-            codes.add(es);
-        }
-        //TODO set generic type
-        return ve;
-    }
-
-    @Override
-    public ExprNode visitListOrArray(KalangParser.ListOrArrayContext ctx) {
-        String type = ROOT_CLASS;
-        String clsName = DEFAULT_LIST_CLASS;
-        VarObject vo = new VarObject();
-        int vid = this.varCounter++;
-        VarDeclStmt vds = new VarDeclStmt();
-        vds.varId = vid;
-        vds.type = clsName;
-        vds.initExpr = new NewExpr(vds.type);
-        codes.add(vds);
-        VarExpr ve = new VarExpr();
-        ve.varId = vid;
-        ve.declStmt = vds;
-        for(ExpressionContext e:ctx.expression()){
-            List args = new LinkedList();
-            args.add(visit(e));
-            InvocationExpr iv = new InvocationExpr(ve,"add",args);
-            codes.add(new ExprStmt(iv));
-        }
-        //TODO set generic type
-        return ve;
-    }
-
-    @Override
-    public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
-        NewArrayExpr nae = new NewArrayExpr();
-        nae.size = visit(ctx.expression());
-        nae.type = ctx.noArrayType().getText();
-        return nae;
-    }
-
-    @Override
-    public ExprNode visitNoArrayType(KalangParser.NoArrayTypeContext ctx) {
-        //do nothing
-        return null;
-    }
-
-    @Override
-    public ExprNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
-        int vid = this.varCounter++;
-        VarDeclStmt vds = new VarDeclStmt();
-        codes.add(vds);
-        vds.varId = vid;
-        VarExpr ve = new VarExpr();
-        ve.varId = vid;
-        ve.declStmt = vds;
-        IfStmt is = new IfStmt();
-        is.conditionExpr = visit(ctx.expression(0));
-        is.trueBody =new ExprStmt(new AssignExpr(ve,visit(ctx.expression(1))));
-        is.falseBody = new ExprStmt(new AssignExpr(ve,visit(ctx.expression(2))));
-        codes.add(is);
-        this.a2p.put(vds, ctx);
-        this.a2p.put(ve, ctx);
-        return ve;
-    }
-
-    @Override
-    public ExprNode visitPostIfStmt(KalangParser.PostIfStmtContext ctx) {
-        ExprNode leftExpr = visitExpression(ctx.expression(0));
-        if(!(leftExpr instanceof AssignExpr)){
-            this.reportError("AssignExpr required", ctx);
-        }
-        AssignExpr assignExpr = (AssignExpr) leftExpr;
-        ExprNode to = assignExpr.to;
-        ExprNode from = assignExpr.from;
-        ExprNode cond = visitExpression(ctx.expression(1));
-        Token op = ctx.op;
-        if(op!=null){
-            String opStr = op.getText();
-            BinaryExpr be = new BinaryExpr(to,cond,opStr);
-            cond = be;
-        }
-        AssignExpr as = new AssignExpr();
-        as.from = from;as.to = to;
-        IfStmt is = new IfStmt();
-        is.conditionExpr = cond;
-        is.trueBody = new ExprStmt(as);
-        codes.add(is);
-        a2p.put(is, ctx);
-        return null;
-    }
-
+    
     public static class Position{
         int offset;
         int length;
@@ -315,6 +187,130 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         return this.cls;
     }
 
+    private void addCode(Statement node,ParseTree tree){
+        codes.add(node);
+        a2p.put(node, tree);
+    }
+    
+    @Override
+    public ExprNode visitMapExpr(KalangParser.MapExprContext ctx) {
+        return visit(ctx.map());
+    }
+
+    @Override
+    public ExprNode visitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) {
+        return visit(ctx.listOrArray());
+    }
+
+    @Override
+    public ExprNode visitMap(KalangParser.MapContext ctx) {
+        int vid = this.varCounter++;
+        VarDeclStmt vds = new VarDeclStmt();
+        vds.varId = vid;
+        vds.type = MAP_CLASS;
+        vds.initExpr = new NewExpr(vds.type);
+        addCode(vds,ctx);
+        VarExpr ve = new VarExpr();
+        ve.varId = vid;
+        ve.declStmt = vds;
+        List ids = ctx.Identifier();
+        for(int i=0;i<ids.size();i++){
+            ExpressionContext e = ctx.expression(i);
+            ExprNode v = visit(e);
+            List args = new LinkedList();
+            ConstExpr k = new ConstExpr();
+            k.type = STRING_CLASS;
+            k.value = ctx.Identifier(i).getText();
+            args.add(k);
+            args.add(v);
+            InvocationExpr iv = new InvocationExpr(ve,"put",args);
+            ExprStmt es = new ExprStmt(iv);
+            addCode(es,ctx);
+        }
+        //TODO set generic type
+        return ve;
+    }
+
+    @Override
+    public ExprNode visitListOrArray(KalangParser.ListOrArrayContext ctx) {
+        String type = ROOT_CLASS;
+        String clsName = DEFAULT_LIST_CLASS;
+        int vid = this.varCounter++;
+        VarDeclStmt vds = new VarDeclStmt();
+        vds.varId = vid;
+        vds.type = clsName;
+        vds.initExpr = new NewExpr(vds.type);
+        addCode(vds,ctx);
+        VarExpr ve = new VarExpr();
+        ve.varId = vid;
+        ve.declStmt = vds;
+        for(ExpressionContext e:ctx.expression()){
+            List args = new LinkedList();
+            args.add(visit(e));
+            InvocationExpr iv = new InvocationExpr(ve,"add",args);
+            addCode(new ExprStmt(iv),ctx);
+        }
+        //TODO set generic type
+        return ve;
+    }
+
+    @Override
+    public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
+        NewArrayExpr nae = new NewArrayExpr();
+        nae.size = visit(ctx.expression());
+        nae.type = ctx.noArrayType().getText();
+        return nae;
+    }
+
+    @Override
+    public ExprNode visitNoArrayType(KalangParser.NoArrayTypeContext ctx) {
+        //do nothing
+        return null;
+    }
+
+    @Override
+    public ExprNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
+        int vid = this.varCounter++;
+        VarDeclStmt vds = new VarDeclStmt();
+        addCode(vds,ctx);
+        vds.varId = vid;
+        VarExpr ve = new VarExpr();
+        ve.varId = vid;
+        ve.declStmt = vds;
+        IfStmt is = new IfStmt();
+        is.conditionExpr = visit(ctx.expression(0));
+        is.trueBody =new ExprStmt(new AssignExpr(ve,visit(ctx.expression(1))));
+        is.falseBody = new ExprStmt(new AssignExpr(ve,visit(ctx.expression(2))));
+        addCode(is,ctx);
+        return ve;
+    }
+
+    @Override
+    public ExprNode visitPostIfStmt(KalangParser.PostIfStmtContext ctx) {
+        ExprNode leftExpr = visitExpression(ctx.expression(0));
+        if(!(leftExpr instanceof AssignExpr)){
+            this.reportError("AssignExpr required", ctx);
+        }
+        AssignExpr assignExpr = (AssignExpr) leftExpr;
+        ExprNode to = assignExpr.to;
+        ExprNode from = assignExpr.from;
+        ExprNode cond = visitExpression(ctx.expression(1));
+        Token op = ctx.op;
+        if(op!=null){
+            String opStr = op.getText();
+            BinaryExpr be = new BinaryExpr(to,cond,opStr);
+            cond = be;
+        }
+        AssignExpr as = new AssignExpr();
+        as.from = from;as.to = to;
+        IfStmt is = new IfStmt();
+        is.conditionExpr = cond;
+        is.trueBody = new ExprStmt(as);
+        addCode(is,ctx);
+        
+        return null;
+    }
+
     @Override
     public ExprNode visitCompiliantUnit(CompiliantUnitContext ctx) {
         //List<ImportNode> imports = 
@@ -334,7 +330,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         this.pushVarTable();
         this.visitFieldDeclList(ctx.fieldDeclList());
         this.visitMethodDeclList(ctx.methodDeclList());
-        a2p.put(cls,ctx);
+        
         return null;
     }
 
@@ -406,7 +402,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         visitStatList(ctx.statList());
         this.popVarTable();
         ///this.parameters = null;
-        a2p.put(method,ctx);
+        
         cls.methods.add(method);
         return null;
     }
@@ -432,19 +428,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         String type = DEFAULT_VAR_TYPE;
         if(ctx.type()!=null){
             type = ctx.type().getText();
-        }
-        /*VarObject vo = new VarObject();
-        this.getVarTable().put(name, vo);
-        this.vars.add(vo);
-        vo.setName(name);
-        vo.setType(type);
-        vo.setId(vars.indexOf(vo));*/
-		
+        }		
         ParameterNode pn = new ParameterNode();
         pn.name = name;
         pn.type = type;
-        //this.parameters.put(name,pn);
-        a2p.put(pn,ctx);
         method.parameters.add(pn);
         return null;
     }
@@ -472,9 +459,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         visitStatList(ctx.statList());
         codes = falseBody.statements = new LinkedList();
         visitIfStatSuffix(ctx.ifStatSuffix());
-        a2p.put(ifStmt,ctx);
+        
         codes = oCodes;
-        codes.add(ifStmt);
+        addCode(ifStmt,ctx);
         return null;
     }
 
@@ -494,19 +481,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         return null;
     }
 
-    /*private void visitAll(ParserRuleContext ctx) {
-    for(ParseTree c:ctx.children){
-    visit(c);
-    }
-    }*/
-
     @Override
     public ExprNode visitReturnStat(ReturnStatContext ctx) {
         ExprNode expr = visitExpression(ctx.expression());
         ReturnStmt rs = new ReturnStmt();
         rs.expr = expr;
-        a2p.put(rs,ctx);
-        codes.add(rs);
+        
+        addCode(rs,ctx);
         return null;
     }
 
@@ -530,23 +511,16 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             reportError("defined duplicatedly:" + name,ctx.Identifier());
         }
         VarDeclStmt vds = new VarDeclStmt();
-        //vars.add(vo);
-        //this.varDeclStmts.put(vo, vds);
         Integer vid = varCounter++;
         vtb.put(name, vds);
-        
-        /*
-        NameExpr ve = new NameExpr();
-        ve.name = name;*/
-		
         vds.varName = name;
         vds.type = type;
         vds.varId = vid;
         if(ctx.varInit()!=null){
             vds.initExpr = visit(ctx.varInit());
         }
-        a2p.put(vds,ctx);
-        codes.add(vds);
+        
+        addCode(vds,ctx);
         return null;
     }
 
@@ -563,16 +537,16 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitBreakStat(BreakStatContext ctx) {
         BreakStmt bs = new BreakStmt();
-        a2p.put(bs,ctx);
-        codes.add(bs);
+        
+        addCode(bs,ctx);
         return null;
     }
 
     @Override
     public ExprNode visitContinueStat(ContinueStatContext ctx) {
         ContinueStmt cs = new ContinueStmt();
-        a2p.put(cs,ctx);
-        codes.add(cs);
+        
+        addCode(cs,ctx);
         return null;
     }
 
@@ -587,9 +561,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ws.preConditionExpr = (ExprNode) expr;
         codes = body.statements = new LinkedList();
         visitStatList(ctx.statList());
-        a2p.put(ws,ctx);
+        
         codes = oCodes;
-        codes.add(ws);
+        addCode(ws,ctx);
         return null;
     }
 
@@ -604,8 +578,8 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         LoopStmt ls =new LoopStmt();
         ls.loopBody  = bs;
         ls.postConditionExpr = cond;
-        codes.add(ls);
-        a2p.put(ls, ctx);
+        addCode(ls,ctx);
+        
         return null;
     }
 
@@ -624,7 +598,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         visitStatList(ctx.statList());
         visitForUpdate(ctx.forUpdate());
         this.popVarTable();
-        a2p.put(ls,ctx);
+        
         codes = oCodes;
         return null;
     }
@@ -645,7 +619,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ExprNode visitExpressions(ExpressionsContext ctx) {
         for(ExpressionContext e:ctx.expression()){
             ExprNode expr = visitExpression(e);
-            codes.add(new ExprStmt(expr));
+            addCode(new ExprStmt(expr),ctx);
         }
         return null;
     }
@@ -655,8 +629,8 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         AstNode expr = visitExpression(ctx.expression());
         ExprStmt es = new ExprStmt();
         es.expr = (ExprNode) expr;
-        a2p.put(es,ctx);
-        codes.add(es);
+        
+        addCode(es,ctx);
         return null;
     }
 
@@ -671,7 +645,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             null
             , ctx.Identifier().getText()
             ,ctx.arguments());
-        a2p.put(ie,ctx);
+        
         return ie;
     }
 
@@ -687,7 +661,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         AssignExpr aexpr = new AssignExpr();
         aexpr.from = (ExprNode) from;
         aexpr.to = (ExprNode) to;
-        a2p.put(aexpr, ctx);
+        
         return aexpr;
     }
 
@@ -698,7 +672,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
         be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
         be.operation = op;
-        a2p.put(be, ctx);
+        
         return be;
     }
 	
@@ -717,7 +691,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             visitExpression(ctx.expression())
             , ctx.Identifier().getText()
             , ctx.arguments());
-        a2p.put(ei, ctx);
+        
         return ei;
     }
 
@@ -728,7 +702,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         FieldExpr fe = new FieldExpr();
         fe.target = (ExprNode) expr;
         fe.fieldName = name;
-        a2p.put(fe, ctx);
+        
         return fe;
     }
 
@@ -737,7 +711,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         UnaryExpr ue = new UnaryExpr();
         ue.postOperation = ctx.getChild(1).getText();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
-        a2p.put(ue, ctx);
+        
         return ue;
     }
 
@@ -747,7 +721,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         UnaryExpr ue = new UnaryExpr();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
         ue.preOperation = op;
-        a2p.put(ue, ctx);
+        
         return ue;
     }
 
@@ -756,7 +730,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ElementExpr ee = new ElementExpr();
         ee.target = (ExprNode) visitExpression(ctx.expression(0));
         ee.key = (ExprNode) visitExpression(ctx.expression(1));
-        a2p.put(ee, ctx);
+        
         return ee;
     }
 
@@ -855,7 +829,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         }else{
             ce.type = NULL_CLASS;
         }
-        a2p.put(ce, ctx);
+        
         return ce;
     }
 
@@ -919,7 +893,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         newExpr.type = checkFullClassName(type,ctx);
         arguments = newExpr.arguments = new LinkedList();
         this.visitArguments(ctx.arguments());
-        a2p.put(newExpr, ctx);
+        
         return newExpr;
     }
 
@@ -928,7 +902,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         CastExpr ce = new CastExpr();
         ce.expr = visitExpression(ctx.expression());
         ce.type = ctx.type().getText();
-        a2p.put(ce, ctx);
+        
         return ce;
     }
 
