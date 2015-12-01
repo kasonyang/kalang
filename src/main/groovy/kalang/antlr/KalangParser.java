@@ -2720,8 +2720,8 @@ public class KalangParser extends Parser {
 	}
 	public static class ExprNewArrayContext extends ExpressionContext {
 		public TerminalNode NEW() { return getToken(KalangParser.NEW, 0); }
-		public TypeContext type() {
-			return getRuleContext(TypeContext.class,0);
+		public NoArrayTypeContext noArrayType() {
+			return getRuleContext(NoArrayTypeContext.class,0);
 		}
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
@@ -2867,7 +2867,7 @@ public class KalangParser extends Parser {
 				setState(354);
 				match(NEW);
 				setState(355);
-				type();
+				noArrayType();
 				setState(356);
 				match(LBRACK);
 				setState(357);
@@ -3775,7 +3775,7 @@ public class KalangParser extends Parser {
 		"\u016b\3\2\2\2\u0158\u0159\t\5\2\2\u0159\u016b\5F$\17\u015a\u015b\t\6"+
 		"\2\2\u015b\u016b\5F$\16\u015c\u016b\5H%\2\u015d\u016b\5J&\2\u015e\u016b"+
 		"\5L\'\2\u015f\u0160\7l\2\2\u0160\u016b\5P)\2\u0161\u0162\7\'\2\2\u0162"+
-		"\u0163\7l\2\2\u0163\u016b\5P)\2\u0164\u0165\7\'\2\2\u0165\u0166\5\32\16"+
+		"\u0163\7l\2\2\u0163\u016b\5P)\2\u0164\u0165\7\'\2\2\u0165\u0166\5\34\17"+
 		"\2\u0166\u0167\7E\2\2\u0167\u0168\5F$\2\u0168\u0169\7F\2\2\u0169\u016b"+
 		"\3\2\2\2\u016a\u0152\3\2\2\2\u016a\u0158\3\2\2\2\u016a\u015a\3\2\2\2\u016a"+
 		"\u015c\3\2\2\2\u016a\u015d\3\2\2\2\u016a\u015e\3\2\2\2\u016a\u015f\3\2"+
