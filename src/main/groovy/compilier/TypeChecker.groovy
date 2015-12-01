@@ -10,7 +10,9 @@ import jast.ast.ClassExpr;
 import jast.ast.ClassNode
 import jast.ast.ConstExpr;
 import jast.ast.ElementExpr;
+import jast.ast.ExprNode
 import jast.ast.FieldExpr;
+import jast.ast.IfStmt
 import jast.ast.InvocationExpr;
 import jast.ast.MethodNode
 import jast.ast.NewArrayExpr
@@ -135,6 +137,26 @@ class TypeChecker extends AstVisitor<String> {
         if(type1==LONG_CLASS || type2==LONG_CLASS) return LONG_CLASS
         return INT_CLASS
     }
+    
+    private ExprNode checkAndCastToBoolean(ExprNode expr){
+        String type = visit(expr);
+        if(!this.isBoolean(type)){
+            def be = new BinaryExpr();
+            be.expr1 = expr;
+            be.operation = "!="
+            def zero = new ConstExpr();
+            if(isNumber(type)){
+                zero.type = INT_CLASS;
+                zero.value = 0;
+            }else{
+                zero.type = NULL_CLASS;
+            }
+            be.expr2 = zero;
+            return be;
+        }
+        //TODO cast string to boolean
+        return expr;
+    }
 
 
     @Override
@@ -144,6 +166,13 @@ class TypeChecker extends AstVisitor<String> {
         String op = node.operation
         String t;
         switch(op){
+        case "==":
+            if(isNumber(t1)){
+                if(!isNumber(t2)) fail("Number required",node);
+            }else{
+                //pass anything
+            }
+            break;
         case '+':
         case '-':
         case '*':
@@ -156,7 +185,6 @@ class TypeChecker extends AstVisitor<String> {
             break;
         case ">=":
         case "<=":
-        case "==":
         case ">":
         case "<":
             if(!isNumber(t1)||!isNumber(t2)){
@@ -323,6 +351,13 @@ class TypeChecker extends AstVisitor<String> {
     @Override
     public String visitNewArrayExpr(NewArrayExpr node){
         "${node.type}[]"
+    }
+    @Override
+    public String visitIfStmt(IfStmt node){
+        node.conditionExpr = this.checkAndCastToBoolean(node.conditionExpr);
+        if(node.trueBody) visit(node.trueBody)
+        if(node.falseBody) visit(node.falseBody)
+        return null;
     }
 
 }
