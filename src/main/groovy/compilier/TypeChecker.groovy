@@ -234,7 +234,15 @@ class TypeChecker extends AstVisitor<String> {
 
     @Override
     public String visitFieldExpr(FieldExpr node) {
-        return this.fieldTypes.get(node.fieldName)
+		String t = visit(node.target)
+		ClassNode target = this.astLoader.loadAst(t)
+		String fname = node.fieldName
+		def field = this.astParser.getField(target,fname)
+		if(field==null){
+			AstError.fieldNotFound(node,fname)
+		}
+		return field.type
+        //return this.fieldTypes.get(node.fieldName)
     }
 
     @Override

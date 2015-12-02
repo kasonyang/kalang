@@ -19,7 +19,8 @@ class AstError extends RuntimeException {
     METHOD_NOT_FOUND = 3,
     UNABLE_TO_CAST = 4,
     METHOD_NOT_IMPLEMENTED = 5,
-	UNSUPPORTED = 6;
+	UNSUPPORTED = 6,
+	FIELD_NOT_FOUND = 7;
     
     AstNode node;
 	int errorCode;
@@ -41,6 +42,10 @@ class AstError extends RuntimeException {
         def method = AstParser.methodToString(name,types)
 		fail("Method Missing:${className}#${method}",METHOD_NOT_FOUND,node)
     }
+	
+	static void fieldNotFound(AstNode node,String fieldName){
+		fail("Field missing:${fieldName}",FIELD_NOT_FOUND,node)
+	}
     
     static void failedToCast(AstNode node,String fromType,String toType){
         fail("Unable to cast ${fromType} to ${toType}",UNABLE_TO_CAST,node)

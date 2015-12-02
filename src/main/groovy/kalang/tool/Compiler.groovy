@@ -20,12 +20,16 @@ kac src dest
 	}
 	
     static void main(String[] args) {
-		if(args.length<2){
-			printUsage();
-			return 
+		def srcDir = "."
+		def outDir = "."
+		if(args.length==1){
+			srcDir = outDir = args[0]
+		}else if(args.length>=2){
+			srcDir = args[0]
+			outDir = args[1]
 		}
-		def src =new File( args[0])
-		def dest =new File(args[1])
+		def src =new File(srcDir)
+		def dest =new File(outDir)
 		if(!src.exists()){
 			throw new RuntimeException("source directory not exist!")
 		}

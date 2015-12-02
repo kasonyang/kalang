@@ -1,3 +1,5 @@
-class implements MyInterface{
-    var myMethod(){}
+class{
+    var hello(){
+        System.out.println("HelloWorld");
+    }
 }

@@ -25,6 +25,13 @@ class AstParser {
 		methodToString(node.name,getParameterTypes(node))
 	}
 	
+	FieldNode getField(ClassNode ast,String name){
+		for(def f in ast.fields){
+			if(f.name==name) return f
+		}
+		return null;
+	}
+	
 	MethodNode getMethod(ClassNode ast,String name,List<String> types){
 		def methods = ast.methods
 		for(def m in methods){

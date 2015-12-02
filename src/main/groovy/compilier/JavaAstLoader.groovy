@@ -1,7 +1,7 @@
 package compilier
 
 import jast.ast.*;
-
+@groovy.transform.TypeChecked
 class JavaAstLoader extends AstLoader {
 	
 	static ClassNode buildFromClass(Class clz){
@@ -21,6 +21,12 @@ class JavaAstLoader extends AstLoader {
 			methodNode.modifier = m.modifiers
 			cn.methods.add(methodNode)
 			methodNode.body = null;
+		}
+		for(f in clz.fields){
+			def fn = new FieldNode()
+			fn.name = f.name
+			fn.type = f.type.name
+			cn.fields.add(fn)
 		}
 		return cn
 	}
