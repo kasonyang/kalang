@@ -149,15 +149,18 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         Position loc = new Position();
         Interval itv = tree.getSourceInterval();
         Token t = tokens.get(itv.a);
+        Token tt = tokens.get(itv.b);
         loc.offset = t.getStartIndex();
-        loc.length = t.getStopIndex() - loc.offset;
+        loc.length = tt.getStopIndex() - loc.offset + 1;
         return loc;
     }
 	
     public Position getLocation(AstNode node){
         ParseTree tree = this.a2p.get(node);
-        if(tree==null) return new Position();
-        return getLocation(tree);
+        if(tree!=null){
+        	return getLocation(tree);
+        }
+        return null;
     }
 	
     private VarTable getVarTable(){
@@ -259,6 +262,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         NewArrayExpr nae = new NewArrayExpr();
         nae.size = visit(ctx.expression());
         nae.type = ctx.noArrayType().getText();
+        a2p.put(nae, ctx);
         return nae;
     }
 
@@ -282,6 +286,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         is.trueBody =new ExprStmt(new AssignExpr(ve,visit(ctx.expression(1))));
         is.falseBody = new ExprStmt(new AssignExpr(ve,visit(ctx.expression(2))));
         addCode(is,ctx);
+        a2p.put(ve, ctx);
         return ve;
     }
 
@@ -390,26 +395,24 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitMethodDecl(MethodDeclContext ctx) {
         this.pushVarTable();
-        //this.parameters = new HashMap();
         String name = ctx.Identifier().getText();
         String type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
-        int mdf = 0;
-            mdf = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
+        int mdf = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
         boolean isStatic = false;
         if(ctx.STATIC()!=null){
             isStatic = true;
         }
         method = new MethodNode(mdf,type,name,isStatic);
-        BlockStmt body = new BlockStmt();
-        method.body = body;
         if(ctx.argumentDeclList()!=null){
             visitArgumentDeclList(ctx.argumentDeclList());
         }
-        codes = body.statements = new LinkedList();
-        visitStatList(ctx.statList());
+        if(ctx.statList()!=null){
+        	BlockStmt body = new BlockStmt();
+        	method.body = body;
+        	codes = body.statements = new LinkedList();
+        	visitStatList(ctx.statList());
+        }
         this.popVarTable();
-        ///this.parameters = null;
-        
         cls.methods.add(method);
         return null;
     }
@@ -643,7 +646,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitExprPrimay(ExprPrimayContext ctx) {
-        return (ExprNode) visit(ctx.primary());
+        ExprNode expr = (ExprNode) visit(ctx.primary());
+        a2p.put(expr, ctx);
+        return expr;
     }
 
     @Override
@@ -652,7 +657,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             null
             , ctx.Identifier().getText()
             ,ctx.arguments());
-        
+        a2p.put(ie, ctx);
         return ie;
     }
 
@@ -668,7 +673,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         AssignExpr aexpr = new AssignExpr();
         aexpr.from = (ExprNode) from;
         aexpr.to = (ExprNode) to;
-        
+        a2p.put(aexpr, ctx);
         return aexpr;
     }
 
@@ -679,7 +684,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
         be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
         be.operation = op;
-        
+        a2p.put(be, ctx);
         return be;
     }
 	
@@ -698,7 +703,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             visitExpression(ctx.expression())
             , ctx.Identifier().getText()
             , ctx.arguments());
-        
+        a2p.put(ei, ctx);
         return ei;
     }
 
@@ -709,7 +714,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         FieldExpr fe = new FieldExpr();
         fe.target = (ExprNode) expr;
         fe.fieldName = name;
-        
+        a2p.put(fe, ctx);
         return fe;
     }
 
@@ -718,7 +723,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         UnaryExpr ue = new UnaryExpr();
         ue.postOperation = ctx.getChild(1).getText();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
-        
+        a2p.put(ue, ctx);
         return ue;
     }
 
@@ -728,7 +733,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         UnaryExpr ue = new UnaryExpr();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
         ue.preOperation = op;
-        
+        a2p.put(ue, ctx);
         return ue;
     }
 
@@ -737,7 +742,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ElementExpr ee = new ElementExpr();
         ee.target = (ExprNode) visitExpression(ctx.expression(0));
         ee.key = (ExprNode) visitExpression(ctx.expression(1));
-        
+        a2p.put(ee, ctx);
         return ee;
     }
 

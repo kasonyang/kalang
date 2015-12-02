@@ -42,7 +42,8 @@ methodDeclList:
   methodDecl*
 ;
 methodDecl:
-   STATIC? 'var' Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? '{' statList '}'
+   STATIC? 'var' Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? 
+   ( ('{' statList '}') | ';')
 ;
 type:
   noArrayType  ( '[]' )?

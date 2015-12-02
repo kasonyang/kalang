@@ -14,11 +14,13 @@ import jast.ast.ExprNode
 import jast.ast.FieldExpr;
 import jast.ast.IfStmt
 import jast.ast.InvocationExpr;
+import jast.ast.LoopStmt;
 import jast.ast.MethodNode
 import jast.ast.NewArrayExpr
 import jast.ast.NewExpr;
 import jast.ast.ParameterExpr;
 import jast.ast.ParameterNode;
+import jast.ast.ReturnStmt;
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
@@ -70,6 +72,8 @@ class TypeChecker extends AstVisitor<String> {
 	CastSystem castSys
 	
 	AstParser astParser
+	
+	MethodNode method
 
     TypeChecker(AstLoader astLoader){
         this.astLoader = astLoader
@@ -293,17 +297,48 @@ class TypeChecker extends AstVisitor<String> {
     }
     @Override
     public String visitIfStmt(IfStmt node){
-        node.conditionExpr = this.checkAndCastToBoolean(node.conditionExpr);
-        if(node.trueBody) visit(node.trueBody)
+        //node.conditionExpr = this.checkAndCastToBoolean(node.conditionExpr);
+        this.requireBoolean(node,visit(node.conditionExpr))
+		if(node.trueBody) visit(node.trueBody)
         if(node.falseBody) visit(node.falseBody)
         return null;
     }
     
-    void requireNumber(AstNode node,String t){
+    @Override
+	public String visitLoopStmt(LoopStmt node) {
+		super.visit(node)
+		if(node.preConditionExpr){
+			requireBoolean(node.preConditionExpr);
+		}
+		if(node.postConditionExpr){
+			requireBoolean(node.postConditionExpr)
+		}
+		return null
+	}
+
+	@Override
+	public String visitMethodNode(MethodNode node) {
+		method = node
+		return super.visitMethodNode(node)
+	}
+
+	@Override
+	public String visitReturnStmt(ReturnStmt node) {
+		String retType = method.type
+		this.checkCastable(visit(node.expr),retType,node)
+		return null
+	}
+
+	void requireNumber(AstNode node,String t){
         if(!castSys.isNumber(t)){
             CE.failedToCast(node,t,INT_CLASS)
         }
     }
+	
+	void requireBoolean(AstNode node){
+		String t = visit(node);
+		requireBoolean(node,t)
+	}
     
     void requireBoolean(AstNode node,String t){
         if(!castSys.isBoolean(t)) CE.failedToCast(node,t,BOOLEAN_CLASS)

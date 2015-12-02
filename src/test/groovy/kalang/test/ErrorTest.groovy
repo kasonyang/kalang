@@ -5,24 +5,25 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import compilier.*
-import kalang.Compiler as KC
+//import kalang.Compiler as KC
 import jast.ast.*
 import compilier.AstError as E
 @groovy.transform.TypeChecked
 class ErrorTest {
 	
 	AstError e
+	
+	KalangCompiler kc
 
 	private void compile(String dir,String...name){
-		def cls = []
-		def srces = []
+		kc = new KalangCompiler(new JavaAstLoader())
 		for(def n in name){
-			cls.add(n)
 			def src = new File("${dir}/${n}.kl").readLines().join("\r\n")
-			srces.add(src)
+			kc.addSource(n,src)
 		}
 		def out = "TestScript/"
-		KC.compile(cls,srces)
+		kc.compile();
+		//KC.compile(cls,srces)
 	}
 	
 	private void cp(String... name){
@@ -32,8 +33,8 @@ class ErrorTest {
 	private void ecp(String... name){
 		try{
 			compile("TestScript/error_src",name)
-		}catch(AstError e){
-			this.e = e
+		}catch(CompileError error){
+			this.e = kc.getAstError()
 			println e.message
 		}
 	}

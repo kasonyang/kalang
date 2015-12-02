@@ -14,7 +14,7 @@ class {
     var i as int;
     i += 123;
     var a;
-    a = a?a:a;
+    a = i>0?a:a;
   }
   var func() as int{
     var a as int=3;
@@ -41,7 +41,7 @@ class {
   }
   var f3(){
     var a as int;
-    a = f if 3;
+    a = f if true;
     a = f if > 3;
   }
 }

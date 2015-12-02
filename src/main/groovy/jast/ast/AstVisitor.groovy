@@ -1,6 +1,6 @@
 package jast.ast;
 
-public class AstVisitor<T> extends AbstractAstVisitor implements IAstVisitor<T>{
+public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<T>{
     
     @Override
     public T visitClassNode(ClassNode node){

@@ -20,6 +20,8 @@ class KalangCompiler extends AstLoader {
 	
     AstLoader astLoader
 	
+	AstError astError
+	
     public KalangCompiler(AstLoader astLoader = null){
         this.astLoader = astLoader
     }
@@ -68,7 +70,9 @@ class KalangCompiler extends AstLoader {
                 cn = c
                 typeChecker.check(cls)
             }
-        }catch(TypeChecker.TypeError e){
+        //}catch(TypeChecker.TypeError e){
+        }catch(AstError e){
+			astError = e
             def node = e.getNode()
             this.reportError(e.message,cn,node)
         }
@@ -83,15 +87,21 @@ class KalangCompiler extends AstLoader {
         }
     }
 	
-    protected void reportError(String msg,String className,SourceParser.Position loc){
+    protected void reportError(String msg,String className,SourceParser.Position loc=null){
         def src = sources.get(className)
-        throw new CompileError(msg,className,src,loc.offset,loc.length)
+		int offset = loc?.offset ?: 0
+		int len = loc?.length   ?: 0
+        throw new CompileError(msg,className,src,offset,len)
     }
 	
     protected void reportError(String msg,String className,AstNode node){
         def unit = this.units.get(className)
-        def loc = unit.getLocation(node)
-        reportError(msg,className,loc)
+		def loc = unit.getLocation(node)
+		if(loc){
+			reportError(msg,className,loc)
+		}else{
+			reportError(msg,className)
+		}
     }
 	
     void compile(){

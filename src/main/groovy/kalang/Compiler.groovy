@@ -47,7 +47,7 @@ class Compiler {
             cpl.compile()
         }catch(CompileError e){
             def src = e.getSource();
-            def ltext = src.substring(e.offset,e.offset + e.length +1)
+            def ltext = src.substring(e.offset,e.offset + e.length)
             System.err.println e.message + " on ${ltext}"
         }
 	}
