@@ -30,25 +30,41 @@ class Compiler {
         }
         return list;
     }
-    
-    static void compile(File srcDir,File outDir) {
-        def astLoader = new JavaAstLoader();
+	
+	static void compile(String className,String src){
+		compile([className],[src])
+	}
+	
+	static void compile(List<String> className,List<String> srcList){
+		def astLoader = new JavaAstLoader();
         def cpl = new KalangCompiler(astLoader);
-        def srcs = getFiles(srcDir);
-        def abSrcPath = srcDir.getAbsolutePath()
-        for(File s in srcs){
-            def fname = s.getAbsolutePath();
-            if(!fname.endsWith(".kl")) continue;
-            def clsName = fname.substring(abSrcPath.length()+1,fname.length()-3).replace(File.separator,".");
-            def txt = s.readLines().join("\r\n");
-            cpl.addSource(clsName,txt)
-        }
-        try{
-            cpl.compile();	
+		assert className.size() == srcList.size()
+		int size = srcList.size();
+		for(int i=0;i<size;i++){
+			cpl.addSource(className.get(i),srcList.get(i));
+		}
+		try{
+            cpl.compile()
         }catch(CompileError e){
             def src = e.getSource();
             def ltext = src.substring(e.offset,e.offset + e.length +1)
             System.err.println e.message + " on ${ltext}"
         }
+	}
+    
+    static void compile(File srcDir,File outDir) {
+		def srcs = getFiles(srcDir);
+        def abSrcPath = srcDir.getAbsolutePath()
+		def classNames = []
+		def srces = []
+        for(File s in srcs){
+            def fname = s.getAbsolutePath();
+            if(!fname.endsWith(".kl")) continue;
+            def clsName = fname.substring(abSrcPath.length()+1,fname.length()-3).replace(File.separator,".");
+            def txt = s.readLines().join("\r\n");
+            classNames.add(clsName)
+			srces.add(txt);
+        }
+        compile(classNames,srces)
     }
 }

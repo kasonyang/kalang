@@ -24,16 +24,20 @@ import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
 import kalang.core.FieldObject
 import kalang.core.VarObject
+import compilier.AstError as CE
 @groovy.transform.TypeChecked
 class TypeChecker extends AstVisitor<String> {
     
     static class TypeError extends Exception{
         
         AstNode node
+        
+        int errorCode
 
-        public TypeError(String msg,AstNode node){
+        public TypeError(int errorCode,String msg,AstNode node){
             super(msg)
             this.node = node
+            this.errorCode =errorCode;
         }
     }
 
@@ -67,19 +71,22 @@ class TypeChecker extends AstVisitor<String> {
         this.astLoader = astLoader
     }
     
-    private void fail(String str,AstNode node){
-        throw new TypeError(str,node);
-    }
+    /*private void fail(int errorCode,String str,AstNode node){
+        throw new TypeError(errorCode,str,node);
+    }*/
     
     private void checkCastable(String from,String to,AstNode node){
         if(!castable(from,to)){
-            fail("can not cast type:${from} => ${to}",node)
+            CE.failedToCast(node,from,to);
+            //fail(CompileError.UNABLE_TO_CAST,"${from} => ${to}",node)
         }
     }
     
     public ClassNode loadAst(String name,AstNode node){
         ClassNode ast = this.astLoader.getAst(name);
-        if(ast==null) fail("Unable to load class:",node)
+        if(ast==null) 
+        CE.classNotFound(node,name);
+            //fail(CE.CLASS_NOT_FOUND,name,node)
         return ast;
     }
     
@@ -101,7 +108,8 @@ class TypeChecker extends AstVisitor<String> {
                 def unImps = getUnimplementedMethod(clazz,itfNode)
                 if(unImps?.size()>0){
                     String mStr = methodToString(unImps.get(0));
-                    fail("unimplemented method:${mStr}",clazz);
+                    CE.notImplementedMethods(clazz,itfNode,unImps)
+                    //fail(CE"unimplemented method:${mStr}",clazz);
                 }
             }
         }
@@ -233,6 +241,12 @@ class TypeChecker extends AstVisitor<String> {
         }
         return list;
     }
+    
+    private MethodNode loadMethod(AstNode node,ClassNode ast,String name,List<String> types){
+        def m = getMethod(ast,name,types)
+        if(m==null) CE.methodNotFound(node,name,types)
+		return m
+    }
 
     private MethodNode getMethod(ClassNode ast,String name,List<String> types){
         def methods = ast.methods
@@ -260,7 +274,8 @@ class TypeChecker extends AstVisitor<String> {
         switch(op){
         case "==":
             if(isNumber(t1)){
-                if(!isNumber(t2)) fail("Number required",node);
+                if(!isNumber(t2)) CE.failedToCast(node,t2,INT_CLASS);
+                //fail("Number required",node);
             }else{
                 //pass anything
             }
@@ -270,37 +285,34 @@ class TypeChecker extends AstVisitor<String> {
         case '*':
         case '/':
         case '%':
-            if(!isNumber(t1)||!isNumber(t2)){
-                fail("number required!",node);
-            }
+            requireNumber(node,t1)
+            requireNumber(node,t2)
             t = getMathType(t1,t2,op);
             break;
         case ">=":
         case "<=":
         case ">":
         case "<":
-            if(!isNumber(t1)||!isNumber(t2)){
-                fail("number required!",node)
-            }
+            requireNumber(node,t1);
+            requireNumber(node,t2)
             t = BOOLEAN_CLASS
             break;
         case "&&":
         case "||":
-            if(!isBoolean(t1)||!isBoolean(t2)){
-                fail("Boolean type required!",node)
-            }
+            requireBoolean(node,t1)
+            requireBoolean(node,t2)
             t = BOOLEAN_CLASS
             break;
         case "&":
         case "|":
         case "^":
-            if(!isNumber(t1)||!isNumber(t2)){
-                fail("number required!",node)
-            }
+            requireNumber(node,t1);
+            requireNumber(node,t2);
             t = getHigherType(t1,t2)
             break;
         default:
-            throw new TypeError("unsupport operation:${op}",node);
+			AstError.fail("unsupport operation:${op}",AstError.UNSUPPORTED,node);
+            //throw new TypeError();
         }
         return t;
     }
@@ -313,9 +325,10 @@ class TypeChecker extends AstVisitor<String> {
     @Override
     public String visitElementExpr(ElementExpr node) {
         String type = visit(node.target)
-        if(!type.endsWith("[]")){
-            fail("Array type required",node)
-        }
+        //if(!type.endsWith("[]")){
+            requireArray(node,type)
+            //fail("Array type required",node)
+        //}
         return type.substring(0,type.length()-2)
     }
 
@@ -329,16 +342,8 @@ class TypeChecker extends AstVisitor<String> {
         List<String> types = visit(node.arguments);
         String target = node.target?visit(node.target):this.clazz.name;
         String methodName = node.methodName;
-        ClassNode ast = astLoader.getAst(target);
-        if(ast==null){
-            fail("no class:"+target ,node)
-        }
-        MethodNode method = getMethod(ast,methodName,types)
-        if(method==null){
-            def ps = types.join(",")
-            String mdesc = "${ast.name}.${methodName}(${ps})"
-            fail("no method:${mdesc}",node);
-        }
+        ClassNode ast = loadAst(target,node);
+        MethodNode method = loadMethod(node,ast,methodName,types)
         return method.type
     }
 
@@ -352,9 +357,7 @@ class TypeChecker extends AstVisitor<String> {
         def preOp = node.preOperation
         String et = visit(node.expr)
         if(preOp=="!"){
-            if(!isBoolean(et)){
-                fail("boolean required!",node)
-            }
+            requireBoolean(node,et)
         }
         return et;
     }
@@ -399,5 +402,25 @@ class TypeChecker extends AstVisitor<String> {
         if(node.falseBody) visit(node.falseBody)
         return null;
     }
+    
+    void requireNumber(AstNode node,String t){
+        if(!isNumber(t)){
+            CE.failedToCast(node,t,INT_CLASS)
+        }
+    }
+    
+    void requireBoolean(AstNode node,String t){
+        if(!isBoolean(t)) CE.failedToCast(node,t,BOOLEAN_CLASS)
+    }
+    
+    boolean isArray(String t){
+        return t.endsWith("[]")
+    }
+    
+    void requireArray(AstNode node,String t){
+        if(!isArray(t)) CE.failedToCast(node,t,'array')
+    }
+    
+    
 
 }

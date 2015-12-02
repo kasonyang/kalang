@@ -497,6 +497,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterPostIfStmt(@NotNull KalangParser.PostIfStmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPostIfStmt(@NotNull KalangParser.PostIfStmtContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprSelfOpPre(@NotNull KalangParser.ExprSelfOpPreContext ctx) { }
 	/**
 	 * {@inheritDoc}

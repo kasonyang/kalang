@@ -1,0 +1,3 @@
+interface{
+    var myMethod(p as int){}
+}

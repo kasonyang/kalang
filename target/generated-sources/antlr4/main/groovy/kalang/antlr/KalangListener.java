@@ -437,6 +437,16 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitExprSelfOp(@NotNull KalangParser.ExprSelfOpContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#postIfStmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterPostIfStmt(@NotNull KalangParser.PostIfStmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#postIfStmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitPostIfStmt(@NotNull KalangParser.PostIfStmtContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code exprSelfOpPre}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
