@@ -1,7 +1,7 @@
 apply plugin:'groovy'
 apply plugin:'eclipse'
 apply plugin:'application'
-mainClassName = "Application"
+mainClassName = "kalang.tool.Compiler"
 //mainClassName = "kalang.Compiler"
 
 repositories{
@@ -9,7 +9,6 @@ repositories{
 }
 
 dependencies{
-    //compile 'org.antlr:antlr4-runtime:4.5'
     compile 'org.antlr:antlr4-runtime:4.5.1'
     compile 'org.codehaus.groovy:groovy-all:2.3.10'
 	testCompile 'junit:junit:4.12'

@@ -18,6 +18,8 @@ class KalangCompiler extends AstLoader {
 	
     HashMap<String,SourceParser> units = [:]
 	
+	HashMap<String,String> javaCodes = [:]
+	
     AstLoader astLoader
 	
 	AstError astError
@@ -83,7 +85,7 @@ class KalangCompiler extends AstLoader {
         for(c in cls){
             def a2j = new Ast2Java();
             def source = a2j.generate(c);
-            println source;
+			this.javaCodes.put(c.name,source)
         }
     }
 	

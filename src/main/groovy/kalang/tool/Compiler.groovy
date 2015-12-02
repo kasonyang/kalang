@@ -1,4 +1,4 @@
-package kalang;
+package kalang.tool;
 import compilier.*
 import jast.ast.*
 import kalang.antlr.KalangLexer
@@ -12,10 +12,27 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTree
 
 class Compiler {
-    static void main(args) {
-//        def src = args[0]
-//        def out = args[1]
-//        compile(new File(src),new File(out))
+	
+	static void printUsage(){
+		println '''\
+kac src dest
+'''
+	}
+	
+    static void main(String[] args) {
+		if(args.length<2){
+			printUsage();
+			return 
+		}
+		def src =new File( args[0])
+		def dest =new File(args[1])
+		if(!src.exists()){
+			throw new RuntimeException("source directory not exist!")
+		}
+		if(!dest.exists()){
+			dest.mkdirs()
+		}
+		compile(src,dest)
     }
     
     static List<File> getFiles(File dir){
@@ -31,11 +48,11 @@ class Compiler {
         return list;
     }
 	
-	static void compile(String className,String src){
-		compile([className],[src])
+	static void compile(String className,String src,File outDir=null){
+		compile([className],[src],outDir)
 	}
 	
-	static void compile(List<String> className,List<String> srcList){
+	static void compile(List<String> className,List<String> srcList,File outDir=null){
 		def astLoader = new JavaAstLoader();
         def cpl = new KalangCompiler(astLoader);
 		assert className.size() == srcList.size()
@@ -45,6 +62,19 @@ class Compiler {
 		}
 		try{
             cpl.compile()
+			def javaCodes = cpl.getJavaCodes();
+			for(def cls in javaCodes.keySet()){
+				def code = javaCodes.get(cls)
+				if(outDir){
+					def fname = cls.replace(".","/") + ".java";
+					def destFile = new File(outDir,fname)
+					destFile.withWriter{ w ->
+						w.write(code)
+					}
+				}else{
+					println code
+				}
+			}
         }catch(CompileError e){
             def src = e.getSource();
             def ltext = src.substring(e.offset,e.offset + e.length)
@@ -65,6 +95,6 @@ class Compiler {
             classNames.add(clsName)
 			srces.add(txt);
         }
-        compile(classNames,srces)
+        compile(classNames,srces,outDir)
     }
 }

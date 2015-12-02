@@ -8,8 +8,12 @@ import compilier.*
 //import kalang.Compiler as KC
 import jast.ast.*
 import compilier.AstError as E
+import kalang.tool.Compiler as TC
 @groovy.transform.TypeChecked
 class ErrorTest {
+	
+	String outDir = "TestScript/generatedCode"
+	String srcDir = "TestScript/src"
 	
 	AstError e
 	
@@ -21,13 +25,13 @@ class ErrorTest {
 			def src = new File("${dir}/${n}.kl").readLines().join("\r\n")
 			kc.addSource(n,src)
 		}
-		def out = "TestScript/"
 		kc.compile();
+		println kc.getJavaCodes();
 		//KC.compile(cls,srces)
 	}
 	
 	private void cp(String... name){
-		compile("TestScript/src",name)
+		compile(srcDir,name)
 	}
 	
 	private void ecp(String... name){
@@ -55,6 +59,11 @@ class ErrorTest {
 	void test(){
 		cp("HelloWorld","MyInterface")
 		cp "kava"
+	}
+	
+	@Test
+	void toolTest(){
+		TC.main(this.srcDir,outDir)
 	}
 
 }
