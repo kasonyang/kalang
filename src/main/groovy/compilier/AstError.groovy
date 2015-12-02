@@ -34,11 +34,12 @@ class AstError extends RuntimeException {
     }
     
     static void classNotFound(AstNode node,String className){
-        fail(className,CLASS_NOT_FOUND,node)
+        fail("Class not found:${className}",CLASS_NOT_FOUND,node)
     }
     
-    static void methodNotFound(AstNode node,String name,List<String> types){
-        fail(name,METHOD_NOT_FOUND,node)
+    static void methodNotFound(AstNode node,String className,String name,List<String> types){
+        def method = AstParser.methodToString(name,types)
+		fail("Method Missing:${className}#${method}",METHOD_NOT_FOUND,node)
     }
     
     static void failedToCast(AstNode node,String fromType,String toType){
@@ -46,8 +47,9 @@ class AstError extends RuntimeException {
     }
     
     static void notImplementedMethods(AstNode node,ClassNode theInterface,List<MethodNode> method){
-		String name = method?.get(0).name
-        fail("The method in interface ${theInterface.name} isn't implemented:${name}",METHOD_NOT_IMPLEMENTED,node)
+		//String methodStr = AstParser.methodToString(
+		String methodStr = theInterface.name + "#" + AstParser.methodToString(method.get(0))
+        fail("The method isn't implemented:${methodStr}",METHOD_NOT_IMPLEMENTED,node)
     }
 }
 

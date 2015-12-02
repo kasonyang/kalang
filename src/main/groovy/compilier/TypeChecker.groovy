@@ -66,17 +66,19 @@ class TypeChecker extends AstVisitor<String> {
     AstLoader astLoader
 
     ClassNode clazz
+	
+	CastSystem castSys
+	
+	AstParser astParser
 
     TypeChecker(AstLoader astLoader){
         this.astLoader = astLoader
+		this.castSys = new CastSystem(astLoader);
+		this.astParser = new AstParser(astLoader);
     }
     
-    /*private void fail(int errorCode,String str,AstNode node){
-        throw new TypeError(errorCode,str,node);
-    }*/
-    
     private void checkCastable(String from,String to,AstNode node){
-        if(!castable(from,to)){
+        if(!castSys.castable(from,to)){
             CE.failedToCast(node,from,to);
             //fail(CompileError.UNABLE_TO_CAST,"${from} => ${to}",node)
         }
@@ -89,11 +91,6 @@ class TypeChecker extends AstVisitor<String> {
             //fail(CE.CLASS_NOT_FOUND,name,node)
         return ast;
     }
-    
-    String methodToString(MethodNode node){
-        String ptypes = getParameterTypes(node).join(",")
-        "${node.name}(${ptypes})"
-    }
 
     public void check(ClassNode clz){
         this.fieldTypes = [:]
@@ -105,9 +102,9 @@ class TypeChecker extends AstVisitor<String> {
         if(clazz.interfaces?.size()>0){
             for(def itfName in clazz.interfaces){
                 def itfNode = this.loadAst(itfName,clazz)
-                def unImps = getUnimplementedMethod(clazz,itfNode)
+                def unImps = astParser.getUnimplementedMethod(clazz,itfNode)
                 if(unImps?.size()>0){
-                    String mStr = methodToString(unImps.get(0));
+                    String mStr = astParser.methodToString(unImps.get(0));
                     CE.notImplementedMethods(clazz,itfNode,unImps)
                     //fail(CE"unimplemented method:${mStr}",clazz);
                 }
@@ -129,53 +126,23 @@ class TypeChecker extends AstVisitor<String> {
         return tt
     }
 
-    static private String getClassType(String from){
-        if(from=="int") from=INT_CLASS
-        if(from=="long") from = LONG_CLASS
-        if(from=="float") from = FLOAT_CLASS
-        if(from=="double") from = DOUBLE_CLASS
-        return from
-    }
-
-    static private String getPrimaryType(String type){
-        if(type==INT_CLASS) return "int"
-        if(type==LONG_CLASS) return "long"
-        if(type==FLOAT_CLASS) return "float"
-        if(type==DOUBLE_CLASS) return "double"
-        return type
-    }
+    
 
     private String getMathType(String t1,String t2,String op){
-        def pt1 = getPrimaryType(t1)
-        def pt2 = getPrimaryType(t2)
+        def pt1 = castSys.getPrimaryType(t1)
+        def pt2 = castSys.getPrimaryType(t2)
         def ret = MathType.getType(pt1,pt2,op)
-        return getClassType(ret)
-    }
-
-    static private boolean isNumber(String type){
-        def numTypes = [INT_CLASS, LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS]
-        return numTypes.contains(type)
-    }
-
-    static private boolean isBoolean(String type){
-        return type ==BOOLEAN_CLASS
-    }
-
-    static String getHigherType(String type1,String type2){
-        if(type1==DOUBLE_CLASS || type2==DOUBLE_CLASS) return DOUBLE_CLASS
-        if(type1==FLOAT_CLASS || type2 ==FLOAT_CLASS) return FLOAT_CLASS
-        if(type1==LONG_CLASS || type2==LONG_CLASS) return LONG_CLASS
-        return INT_CLASS
+        return castSys.getClassType(ret)
     }
     
     private ExprNode checkAndCastToBoolean(ExprNode expr){
         String type = visit(expr);
-        if(!this.isBoolean(type)){
+        if(!castSys.isBoolean(type)){
             def be = new BinaryExpr();
             be.expr1 = expr;
             be.operation = "!="
             def zero = new ConstExpr();
-            if(isNumber(type)){
+            if(castSys.isNumber(type)){
                 zero.type = INT_CLASS;
                 zero.value = 0;
             }else{
@@ -188,93 +155,22 @@ class TypeChecker extends AstVisitor<String> {
         return expr;
     }
     
-    private  boolean castable(String from,String to){
-        to = getClassType(to)
-        from = getClassType(from)
-        if(from==to) return true
-        HashMap<String,List> baseMap = [:]
-        baseMap.put(INT_CLASS , [LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS])
-        baseMap.put(LONG_CLASS  , [FLOAT_CLASS, DOUBLE_CLASS])
-        baseMap.put(FLOAT_CLASS  , [DOUBLE_CLASS])
-        baseMap.put(DOUBLE_CLASS  , [])
-        if(baseMap.containsKey(from)){
-            return baseMap.get(from).contains(to)
-        }
-        def fromAst = astLoader.loadAst(from)
-        while(fromAst){
-            def parent = fromAst.parentName
-            if(!parent) return false;
-            if(parent==to) return true;
-            fromAst = astLoader.loadAst(parent)
-        }
-        return false;
-    }
-
-    private boolean castable(List<String> from,List<String> to){
-        if(from.size()!=to.size())  return false
-        for(int i=0;i<from.size();i++){
-            def f = from.get(i)
-            def t = to.get(i)
-            if(!castable(f,t)){
-                return false
-            }
-        }
-        return true
-    }
-    
-    List<String> getParameterTypes(MethodNode mn){
-        List<String> types = []
-        for(ParameterNode p in mn.parameters){
-            types.add(p.type);
-        }
-        return types
-    }
-    
-    List<MethodNode> getUnimplementedMethod(ClassNode theClass,ClassNode theInterface){
-        List<MethodNode> list = []
-        for(MethodNode m in theInterface.methods){
-            String name = m.name;
-            List<String> types = getParameterTypes(m);
-            if(!getMethod(theClass,name,types)){
-                list.add(m);
-            }
-        }
-        return list;
-    }
-    
     private MethodNode loadMethod(AstNode node,ClassNode ast,String name,List<String> types){
-        def m = getMethod(ast,name,types)
-        if(m==null) CE.methodNotFound(node,name,types)
+        def m = astParser.getMethod(ast,name,types)
+        if(m==null) CE.methodNotFound(node,ast.name,name,types)
 		return m
     }
 
-    private MethodNode getMethod(ClassNode ast,String name,List<String> types){
-        def methods = ast.methods
-        for(def m in methods){
-            if(m.name!=name) continue
-            def ps = m.parameters
-            def mtypes = []
-            for(def p in ps){
-                mtypes.add(p.type)
-            }
-            if(this.castable(types,mtypes)){
-                return m
-            }
-        }
-        return null
-    }
-
-
     @Override
     public String visitBinaryExpr(BinaryExpr node) {
-        String t1 = getClassType(visit(node.expr1).toString())
-        String t2 = getClassType(visit(node.expr2).toString())
+        String t1 = castSys.getClassType(visit(node.expr1).toString())
+        String t2 = castSys.getClassType(visit(node.expr2).toString())
         String op = node.operation
         String t;
         switch(op){
         case "==":
-            if(isNumber(t1)){
-                if(!isNumber(t2)) CE.failedToCast(node,t2,INT_CLASS);
+            if(castSys.isNumber(t1)){
+                if(!castSys.isNumber(t2)) CE.failedToCast(node,t2,INT_CLASS);
                 //fail("Number required",node);
             }else{
                 //pass anything
@@ -308,7 +204,7 @@ class TypeChecker extends AstVisitor<String> {
         case "^":
             requireNumber(node,t1);
             requireNumber(node,t2);
-            t = getHigherType(t1,t2)
+            t = castSys.getHigherType(t1,t2)
             break;
         default:
 			AstError.fail("unsupport operation:${op}",AstError.UNSUPPORTED,node);
@@ -319,7 +215,7 @@ class TypeChecker extends AstVisitor<String> {
 
     @Override
     public String visitConstExpr(ConstExpr node) {
-        return getClassType(node.type)
+        return castSys.getClassType(node.type)
     }
 
     @Override
@@ -404,13 +300,13 @@ class TypeChecker extends AstVisitor<String> {
     }
     
     void requireNumber(AstNode node,String t){
-        if(!isNumber(t)){
+        if(!castSys.isNumber(t)){
             CE.failedToCast(node,t,INT_CLASS)
         }
     }
     
     void requireBoolean(AstNode node,String t){
-        if(!isBoolean(t)) CE.failedToCast(node,t,BOOLEAN_CLASS)
+        if(!castSys.isBoolean(t)) CE.failedToCast(node,t,BOOLEAN_CLASS)
     }
     
     boolean isArray(String t){
