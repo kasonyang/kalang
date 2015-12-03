@@ -366,7 +366,8 @@ class TypeChecker extends AstVisitor<String> {
 		method = node
 		returned = false
 		def ret = super.visitMethodNode(node)
-		if(node.body && !returned){
+		boolean needReturn = (node.type!='void'&&node.type==null)
+		if(node.body && needReturn && !returned){
 			String mStr = this.astParser.methodToString(node,this.clazz.name)
 			CE.fail("Missing return statement in method:${mStr}",CE.LACKS_OF_STATEMENT,node)
 		}

@@ -42,7 +42,11 @@ methodDeclList:
   methodDecl*
 ;
 methodDecl:
-   STATIC? 'var' Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? 
+   STATIC? 
+   (
+     (prefix='var' Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? )
+     |(prefix='void' Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' )
+   )
    ( ('{' statList '}') | ';')
 ;
 type:

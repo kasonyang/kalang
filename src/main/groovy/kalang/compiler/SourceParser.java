@@ -396,7 +396,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ExprNode visitMethodDecl(MethodDeclContext ctx) {
         this.pushVarTable();
         String name = ctx.Identifier().getText();
-        String type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
+        String type = "void";
+        if(!ctx.prefix.getText().equals(type)){
+        	type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
+        }
         int mdf = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
         boolean isStatic = false;
         if(ctx.STATIC()!=null){
