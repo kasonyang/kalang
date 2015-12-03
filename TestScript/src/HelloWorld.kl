@@ -1,5 +1,6 @@
 class{
     var hello(){
         System.out.println("HelloWorld");
+        return 1;
     }
 }

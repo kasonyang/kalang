@@ -16,13 +16,17 @@ class AstParser {
 		this.castSystem = new CastSystem(astLoader)
 	}
 	
-	static String methodToString(String name,List<String> types){
+	static String methodToString(String name,List<String> types,String className=null){
 		String typeStr = types.join(",")
-		"${name}(${typeStr})"
+		String str = "${name}(${typeStr})"
+		if(className){
+			str = "${className}#${str}"
+		}
+		return str
 	}
 	
-	static String methodToString(MethodNode node){
-		methodToString(node.name,getParameterTypes(node))
+	static String methodToString(MethodNode node,String className=null){
+		methodToString(node.name,getParameterTypes(node),className)
 	}
 	
 	FieldNode getField(ClassNode ast,String name){

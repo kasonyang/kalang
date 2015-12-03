@@ -44,6 +44,7 @@ class CastSystem {
 	}
 	
 	private  boolean castable(String from,String to){
+		if(to==DEFAULT_CLASS) return true
 		to = getClassType(to)
 		from = getClassType(from)
 		if(from==to) return true

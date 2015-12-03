@@ -24,6 +24,7 @@ import jast.ast.NewExpr;
 import jast.ast.ParameterExpr;
 import jast.ast.ParameterNode;
 import jast.ast.ReturnStmt;
+import jast.ast.Statement
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
@@ -79,6 +80,8 @@ class TypeChecker extends AstVisitor<String> {
 	AstParser astParser
 	
 	MethodNode method
+	
+	boolean returned
 
     TypeChecker(AstLoader astLoader){
         this.astLoader = astLoader
@@ -121,6 +124,14 @@ class TypeChecker extends AstVisitor<String> {
         }
         //if(implemented(clazz))
     }
+	
+	@Override
+	public String visit(AstNode node){
+		if(node instanceof Statement){
+			if(returned) CE.fail("unabled to reach statement",CE.LACKS_OF_STATEMENT,node)
+		}
+		return super.visit(node)
+	}
 
     @Override
     public String visitCastExpr(CastExpr node) {
@@ -327,8 +338,15 @@ class TypeChecker extends AstVisitor<String> {
         //node.conditionExpr = this.checkAndCastToBoolean(node.conditionExpr);
         this.requireBoolean(node,visit(node.conditionExpr))
 		if(node.trueBody) visit(node.trueBody)
-        if(node.falseBody) visit(node.falseBody)
-        return null;
+		boolean returnedOld = returned
+		returned = false
+        if(node.falseBody){
+			visit(node.falseBody)
+        }else{
+			returned = true
+        }
+        returned = returnedOld && returned
+		return null;
     }
     
     @Override
@@ -346,13 +364,20 @@ class TypeChecker extends AstVisitor<String> {
 	@Override
 	public String visitMethodNode(MethodNode node) {
 		method = node
-		return super.visitMethodNode(node)
+		returned = false
+		def ret = super.visitMethodNode(node)
+		if(node.body && !returned){
+			String mStr = this.astParser.methodToString(node,this.clazz.name)
+			CE.fail("Missing return statement in method:${mStr}",CE.LACKS_OF_STATEMENT,node)
+		}
+		return ret
 	}
 
 	@Override
 	public String visitReturnStmt(ReturnStmt node) {
 		String retType = method.type
 		this.checkCastable(visit(node.expr),retType,node)
+		returned = true
 		return null
 	}
 

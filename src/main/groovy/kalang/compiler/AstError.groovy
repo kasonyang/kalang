@@ -20,7 +20,8 @@ class AstError extends RuntimeException {
     UNABLE_TO_CAST = 4,
     METHOD_NOT_IMPLEMENTED = 5,
 	UNSUPPORTED = 6,
-	FIELD_NOT_FOUND = 7;
+	FIELD_NOT_FOUND = 7,
+	LACKS_OF_STATEMENT = 8;
     
     AstNode node;
 	int errorCode;
