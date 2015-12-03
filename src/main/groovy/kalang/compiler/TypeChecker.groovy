@@ -1,5 +1,7 @@
 package kalang.compiler
 
+import java.lang.reflect.Modifier;
+
 import jast.ast.AbstractAstVisitor
 import jast.ast.AssignExpr;
 import jast.ast.AstNode
@@ -12,6 +14,7 @@ import jast.ast.ConstExpr;
 import jast.ast.ElementExpr;
 import jast.ast.ExprNode
 import jast.ast.FieldExpr;
+import jast.ast.FieldNode
 import jast.ast.IfStmt
 import jast.ast.InvocationExpr;
 import jast.ast.LoopStmt;
@@ -63,8 +66,10 @@ class TypeChecker extends AstVisitor<String> {
     
     //HashMap<AstNode,String> types = [:]
     //HashMap<AstNode,VarObject> vars
-    HashMap<String,String> fieldTypes
+    //HashMap<String,String> fieldTypes
 
+	HashMap<String,FieldNode> fields
+	
     AstLoader astLoader
 
     ClassNode clazz
@@ -97,9 +102,9 @@ class TypeChecker extends AstVisitor<String> {
     }
 
     public void check(ClassNode clz){
-        this.fieldTypes = [:]
+        this.fields = [:]
         for(def f in clz.fields){
-            this.fieldTypes.put(f.name,f.type)
+            this.fields.put(f.name,f)
         }
         this.clazz = clz
         visit(clazz)
@@ -235,7 +240,11 @@ class TypeChecker extends AstVisitor<String> {
     @Override
     public String visitFieldExpr(FieldExpr node) {
 		if(!node.target){
-			return this.fieldTypes.get(node.fieldName)
+			def field = fields.get(node.fieldName)
+			if(isStatic(method?.modifier)){
+				requireStatic(field.modifier,node)
+			}
+			return field.type
 		}
 		String t = visit(node.target)
 		ClassNode target = this.astLoader.loadAst(t)
@@ -243,6 +252,9 @@ class TypeChecker extends AstVisitor<String> {
 		def field = this.astParser.getField(target,fname)
 		if(field==null){
 			AstError.fieldNotFound(node,fname)
+		}
+		if(node.target instanceof ClassExpr){
+			requireStatic(field.modifier,node)
 		}
 		return field.type
     }
@@ -254,7 +266,12 @@ class TypeChecker extends AstVisitor<String> {
         String methodName = node.methodName;
         ClassNode ast = loadAst(target,node);
         MethodNode method = loadMethod(node,ast,methodName,types)
-        return method.type
+        boolean inStaticMethod = node.target==null && Modifier.isStatic(method.modifier)
+		boolean isClassExpr = node.target instanceof ClassExpr
+		if(inStaticMethod || isClassExpr){
+			requireStatic(method.modifier,node)
+		}
+		return method.type
     }
 
     @Override
@@ -362,6 +379,16 @@ class TypeChecker extends AstVisitor<String> {
         if(!isArray(t)) CE.failedToCast(node,t,'array')
     }
     
+	boolean isStatic(Integer modifier){
+		modifier ? Modifier.isStatic(modifier) : false
+	}
+	
+	void requireStatic(Integer modifier,AstNode node){
+		boolean isStatic = isStatic(modifier)
+		if(!isStatic){
+			CE.fail("couldn't refer non-static member in static context",CE.UNSUPPORTED,node)
+		}
+	}
     
 
 }

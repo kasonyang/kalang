@@ -1,6 +1,7 @@
 package kalang.compiler
 
 import jast.ast.*;
+import java.lang.reflect.Field
 @groovy.transform.TypeChecked
 class JavaAstLoader extends AstLoader {
 	
@@ -22,10 +23,11 @@ class JavaAstLoader extends AstLoader {
 			cn.methods.add(methodNode)
 			methodNode.body = null;
 		}
-		for(f in clz.fields){
+		for(Field f in clz.fields){
 			def fn = new FieldNode()
 			fn.name = f.name
 			fn.type = f.type.name
+			fn.modifier = f.modifiers
 			cn.fields.add(fn)
 		}
 		return cn
