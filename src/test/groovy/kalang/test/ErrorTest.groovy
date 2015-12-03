@@ -4,10 +4,10 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import compilier.*
+import kalang.compiler.*
 //import kalang.Compiler as KC
 import jast.ast.*
-import compilier.AstError as E
+import kalang.compiler.AstError as E
 import kalang.tool.Compiler as TC
 @groovy.transform.TypeChecked
 class ErrorTest {

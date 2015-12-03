@@ -1,4 +1,4 @@
-package compilier
+package kalang.compiler
 
 class CompileError  extends RuntimeException{
 	

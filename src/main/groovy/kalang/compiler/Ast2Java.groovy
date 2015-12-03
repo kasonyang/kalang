@@ -1,4 +1,4 @@
-package compilier
+package kalang.compiler
 
 import jast.ast.AbstractAstVisitor
 import jast.ast.AssignExpr;

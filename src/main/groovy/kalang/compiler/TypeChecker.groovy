@@ -1,4 +1,4 @@
-package compilier
+package kalang.compiler
 
 import jast.ast.AbstractAstVisitor
 import jast.ast.AssignExpr;
@@ -26,7 +26,7 @@ import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
 import kalang.core.FieldObject
 import kalang.core.VarObject
-import compilier.AstError as CE
+import kalang.compiler.AstError as CE
 @groovy.transform.TypeChecked
 class TypeChecker extends AstVisitor<String> {
     

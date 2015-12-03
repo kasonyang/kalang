@@ -1,4 +1,4 @@
-package compilier
+package kalang.compiler
 import jast.ast.AstNode
 import jast.ast.ClassNode;
 import kalang.antlr.KalangLexer

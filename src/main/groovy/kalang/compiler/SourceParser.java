@@ -1,4 +1,4 @@
-package compilier;
+package kalang.compiler;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.LinkedList;

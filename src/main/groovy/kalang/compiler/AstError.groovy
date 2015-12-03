@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package compilier
+package kalang.compiler
 
 import jast.ast.*
 

@@ -1,5 +1,5 @@
 package kalang.tool;
-import compilier.*
+import kalang.compiler.*
 import jast.ast.*
 import kalang.antlr.KalangLexer
 import kalang.antlr.KalangParser
