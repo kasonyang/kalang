@@ -24,6 +24,7 @@
 -isStatic:boolean
 +parameters:ParameterNode*
 +body:Statement
+-exceptionTypes:String*
 
 #ParameterNode
 -type:String

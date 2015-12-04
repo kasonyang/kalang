@@ -395,7 +395,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitMethodDecl(MethodDeclContext ctx) {
         this.pushVarTable();
-        String name = ctx.Identifier().getText();
+        String name = ctx.name.getText();
         String type = "void";
         if(!ctx.prefix.getText().equals(type)){
         	type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
@@ -414,6 +414,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         	method.body = body;
         	codes = body.statements = new LinkedList();
         	visitStatList(ctx.statList());
+        }
+        method.exceptionTypes = new LinkedList();
+        if(ctx.exceptionTypes!=null){
+        	for(Token et:ctx.exceptionTypes){
+        		String eFullType = this.getFullClassName(et.getText());
+        		method.exceptionTypes.add(eFullType);
+        	}
         }
         this.popVarTable();
         cls.methods.add(method);

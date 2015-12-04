@@ -1,5 +1,5 @@
 class{
-    void hello(){
+    void hello() throws Exception{
         System.out.println("HelloWorld");
     }
 }

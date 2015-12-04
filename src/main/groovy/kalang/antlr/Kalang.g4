@@ -44,9 +44,10 @@ methodDeclList:
 methodDecl:
    STATIC? 
    (
-     (prefix='var' Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? )
-     |(prefix='void' Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' )
+     (prefix='var' name=Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? )
+     |(prefix='void' name=Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' )
    )
+   ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
    ( ('{' statList '}') | ';')
 ;
 type:

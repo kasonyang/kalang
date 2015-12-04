@@ -156,7 +156,11 @@ class Ast2Java extends AbstractAstVisitor<String>{
             body = visit(node.body)
         }
         decIndent()
-        indent + "${visitModifier(node.modifier)} ${node.type} ${node.name}(${ps}) ${body}"
+		String exStr = ""
+		if(node.exceptionTypes?.size()>0){
+			exStr = "throws " + node.exceptionTypes.join(",")
+		}
+        indent + "${visitModifier(node.modifier)} ${node.type} ${node.name}(${ps}) ${exStr} ${body}"
     }
 
     @Override

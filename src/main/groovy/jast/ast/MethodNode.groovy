@@ -17,9 +17,11 @@ public class MethodNode extends AstNode{
     
     public Statement body;
     
+    public List<String> exceptionTypes;
     
     
-    public MethodNode(Integer modifier=null,String type=null,String name=null,boolean isStatic=null,List<ParameterNode> parameters=null,Statement body=null){
+    
+    public MethodNode(Integer modifier=null,String type=null,String name=null,boolean isStatic=null,List<ParameterNode> parameters=null,Statement body=null,List<String> exceptionTypes=null){
         
             this.modifier = modifier;
         
@@ -33,6 +35,8 @@ public class MethodNode extends AstNode{
         
             this.body = body;
         
+            this.exceptionTypes = exceptionTypes;
+        
     }
     
     
@@ -40,6 +44,8 @@ public class MethodNode extends AstNode{
         MethodNode node = new MethodNode();
         
         node.parameters = new LinkedList();
+        
+        node.exceptionTypes = new LinkedList();
         
         return node;
     }
@@ -76,6 +82,8 @@ public class MethodNode extends AstNode{
         str += "  parameters:" + parameters.toString()+"\r\n";
         
         str += "  body:" + body.toString()+"\r\n";
+        
+        str += "  exceptionTypes:" + exceptionTypes.toString()+"\r\n";
         
         return str+"}";
     }

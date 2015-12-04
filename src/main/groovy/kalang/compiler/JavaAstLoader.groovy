@@ -22,6 +22,9 @@ class JavaAstLoader extends AstLoader {
 			methodNode.modifier = m.modifiers
 			cn.methods.add(methodNode)
 			methodNode.body = null;
+			for(def e in m.exceptionTypes){
+				methodNode.exceptionTypes.add(e.name)
+			}
 		}
 		for(Field f in clz.fields){
 			def fn = new FieldNode()
