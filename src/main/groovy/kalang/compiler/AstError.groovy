@@ -21,7 +21,8 @@ class AstError extends RuntimeException {
     METHOD_NOT_IMPLEMENTED = 5,
 	UNSUPPORTED = 6,
 	FIELD_NOT_FOUND = 7,
-	LACKS_OF_STATEMENT = 8;
+	LACKS_OF_STATEMENT = 8,
+	UNCAUGHT_EXCEPTION = 9;
     
     AstNode node;
 	int errorCode;
@@ -51,6 +52,10 @@ class AstError extends RuntimeException {
     static void failedToCast(AstNode node,String fromType,String toType){
         fail("Unable to cast ${fromType} to ${toType}",UNABLE_TO_CAST,node)
     }
+	
+	static void uncaughtException(AstNode node,List<String> exType){
+		fail("Uncaught exception:${exType}",UNCAUGHT_EXCEPTION,node)
+	}
     
     static void notImplementedMethods(AstNode node,ClassNode theInterface,List<MethodNode> method){
 		//String methodStr = AstParser.methodToString(

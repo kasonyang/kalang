@@ -8,6 +8,7 @@ import jast.ast.AstNode
 import jast.ast.AstVisitor
 import jast.ast.BinaryExpr;
 import jast.ast.CastExpr;
+import jast.ast.CatchStmt;
 import jast.ast.ClassExpr;
 import jast.ast.ClassNode
 import jast.ast.ConstExpr;
@@ -25,6 +26,7 @@ import jast.ast.ParameterExpr;
 import jast.ast.ParameterNode;
 import jast.ast.ReturnStmt;
 import jast.ast.Statement
+import jast.ast.TryStmt;
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
@@ -82,6 +84,8 @@ class TypeChecker extends AstVisitor<String> {
 	MethodNode method
 	
 	boolean returned
+	
+	private Stack<List<String>> exceptionStack = new Stack()
 
     TypeChecker(AstLoader astLoader){
         this.astLoader = astLoader
@@ -282,6 +286,8 @@ class TypeChecker extends AstVisitor<String> {
 		if(inStaticMethod || isClassExpr){
 			requireStatic(method.modifier,node)
 		}
+		//TODO here could be optim
+		this.exceptionStack.peek().addAll(method.exceptionTypes)
 		return method.type
     }
 
@@ -306,8 +312,38 @@ class TypeChecker extends AstVisitor<String> {
         def declStmt = this.varDeclStmts.get(vid);
         declStmt?.type
     }
+	
+	private void caughException(String type){
+		List<String> exceptions = this.exceptionStack.peek();
+		for(def e in exceptions){
+			if(this.castSys.castable(e,type)){
+				exceptions.remove(e)
+			}
+		}
+	}
 
     @Override
+	public String visitTryStmt(TryStmt node) {
+		this.exceptionStack.add(new LinkedList());
+		return super.visitTryStmt(node);
+		if(method.exceptionTypes){
+			for(e in method.exceptionTypes){
+				this.caughException(e)
+			}
+		}
+		List<String> uncaught = this.exceptionStack.pop()
+		if(uncaught.size()>0){
+			CE.uncaughtException(node,uncaught)
+		}
+	}
+
+	@Override
+	public String visitCatchStmt(CatchStmt node) {
+		this.caughException(node.catchVarDecl.type)
+		return super.visitCatchStmt(node);
+	}
+
+	@Override
     public String visitClassExpr(ClassExpr node) {
         return node.name
     }
@@ -365,7 +401,9 @@ class TypeChecker extends AstVisitor<String> {
 	public String visitMethodNode(MethodNode node) {
 		method = node
 		returned = false
+		this.exceptionStack.push(new LinkedList());
 		def ret = super.visitMethodNode(node)
+		this.exceptionStack.pop()
 		boolean needReturn = (node.type!='void'&&node.type==null)
 		if(node.body && needReturn && !returned){
 			String mStr = this.astParser.methodToString(node,this.clazz.name)
