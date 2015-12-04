@@ -972,7 +972,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	 */
 	private VarDeclStmt getVarDecl(String name,String type){
 		VarDeclStmt vds = new VarDeclStmt();
-		vds.type = type;
+		vds.type = this.getFullClassName(type);
 		vds.varId = this.varCounter++;
 		vds.varName = name;
 		this.getVarTable().put(name, vds.varId);
