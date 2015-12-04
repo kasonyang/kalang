@@ -909,14 +909,11 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     @Override
-    public NewExpr visitNewExpr(NewExprContext ctx) {
-        String type =  ctx.Identifier().getText();
-        NewExpr newExpr = new NewExpr();
-        newExpr.type = checkFullClassName(type,ctx);
-        arguments = newExpr.arguments = new LinkedList();
-        this.visitArguments(ctx.arguments());
-        
-        return newExpr;
+    public ExprNode visitNewExpr(NewExprContext ctx) {
+    	String type =  ctx.Identifier().getText();
+    	ClassExpr expr = new ClassExpr();
+    	expr.name = checkFullClassName(type,ctx);        
+    	return this.getInvocationExpr(expr, "<init>",ctx.arguments());
     }
 
     @Override

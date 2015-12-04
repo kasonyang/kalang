@@ -1,7 +1,11 @@
 package kalang.compiler
 
 import jast.ast.*;
+import java.lang.reflect.Constructor
+import java.lang.reflect.Executable
 import java.lang.reflect.Field
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 @groovy.transform.TypeChecked
 class JavaAstLoader extends AstLoader {
 	
@@ -9,17 +13,26 @@ class JavaAstLoader extends AstLoader {
 		def cn = ClassNode.create();
 		cn.name = clz.name
 		cn.parentName = clz.superclass?.name
-		for(def m in clz.methods){
+		List<Executable> methods = []
+		methods.addAll(clz.methods)
+		methods.addAll(clz.constructors)
+		for(def m in methods){
 			def methodNode = MethodNode.create();
-			methodNode.name = m.name
 			for(def p in m.parameters){
 				def param = new ParameterNode();
 				param.name = p.name
 				param.type = p.type.name
 				methodNode.parameters.add(param)
 			}
-			methodNode.type = m.returnType.name
-			methodNode.modifier = m.modifiers
+			if(m instanceof Method){
+				methodNode.type = ((Method)m).returnType.name
+				methodNode.name = m.name
+				methodNode.modifier = m.modifiers
+			}else if(m instanceof Constructor){
+				methodNode.name = "<init>"
+				methodNode.type = clz.name
+				methodNode.modifier = m.modifiers | Modifier.STATIC
+			}
 			cn.methods.add(methodNode)
 			methodNode.body = null;
 			for(def e in m.exceptionTypes){

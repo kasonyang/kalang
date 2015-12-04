@@ -1,5 +1,6 @@
 class{
     void hello() throws Exception{
-        System.out.println("HelloWorld");
+        var s = new String("HelloWorld");
+        System.out.println(s);
     }
 }
