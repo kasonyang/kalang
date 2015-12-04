@@ -48,7 +48,8 @@ class Ast2Java extends AbstractAstVisitor<String>{
     private String indent = "";
     
     private String trimStmt(String stmt){
-        if(stmt.endsWith(";")){
+        stmt = stmt.trim();
+		if(stmt.endsWith(";")){
             stmt = stmt.substring(0,stmt.length()-1);
         }
         return stmt;
@@ -192,13 +193,15 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitIfStmt(IfStmt node) {
-        def cdt = visit(node.conditionExpr);
-        def trueStmt = visit(node.trueBody);
+        def cdt = trimStmt(visit(node.conditionExpr));
+        def trueStmt = trimStmt(visit(node.trueBody));
         def falseStmt;
-        String res = "if(${cdt}) ${trimStmt(trueStmt)}"
-        if(node.falseBody) res += " else ${visit(node.falseBody)}"
-        else res += ";"
-        return indent + res;
+        String res = "if(${cdt})${trueStmt}"
+        if(node.falseBody){
+			String falseBody =trimStmt(visit(node.falseBody))
+			res += "\r\n" + indent + "else ${falseBody}"
+        }
+        return indent + res + ";";
     }
 
     /*@Override
@@ -309,7 +312,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
 	@Override
 	public String visitCatchStmt(CatchStmt node) {
-		String varDecl = visit(node.catchVarDecl);
+		String varDecl = this.trimStmt(visit(node.catchVarDecl));
 		String exec = visit(node.execStmt);
 		indent + "catch(${varDecl}) ${exec}";
 	}
