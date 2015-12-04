@@ -305,16 +305,6 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitPrimaryLiteral(@NotNull KalangParser.PrimaryLiteralContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link KalangParser#importPath}.
-	 * @param ctx the parse tree
-	 */
-	void enterImportPath(@NotNull KalangParser.ImportPathContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link KalangParser#importPath}.
-	 * @param ctx the parse tree
-	 */
-	void exitImportPath(@NotNull KalangParser.ImportPathContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code newExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree

@@ -1,4 +1,4 @@
-import java.util.*;
+import \java\util\*;
 class {
   var hw as HelloWorld;
   var f! as int = 123;

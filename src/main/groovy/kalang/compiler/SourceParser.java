@@ -39,7 +39,6 @@ import kalang.antlr.KalangParser.IfStatContext;
 import kalang.antlr.KalangParser.IfStatSuffixContext;
 import kalang.antlr.KalangParser.ImportDeclContext;
 import kalang.antlr.KalangParser.ImportDeclListContext;
-import kalang.antlr.KalangParser.ImportPathContext;
 import kalang.antlr.KalangParser.LiteralContext;
 import kalang.antlr.KalangParser.MethodDeclContext;
 import kalang.antlr.KalangParser.MethodDeclListContext;
@@ -111,6 +110,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     private final CommonTokenStream tokens;
     
     private final String className;
+	private String classPath;
     
     public static class Position{
         int offset;
@@ -139,6 +139,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         KalangParser parser = new KalangParser(tokens);
         this.context = parser.compiliantUnit();
         this.className = className;
+        this.classPath = "";
+        if(className.contains(".")){
+        	classPath = className.substring(0, className.lastIndexOf('.'));
+        }
         cls = new ClassNode();
     }
 	
@@ -881,24 +885,24 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitImportDecl(ImportDeclContext ctx) {
-        String name = ctx.importPath().getText();
-        if(name.endsWith(".*")){
-            this.importPaths.add(name.substring(0, name.length()-2));
+        String name = ctx.name.getText();
+        String prefix = "";
+        boolean relative = ctx.root==null || ctx.root.getText().length()==0;
+        if(relative && this.classPath.length()>0){
+        	prefix = this.classPath + ".";
+        }
+        if(ctx.path!=null)
+        	for(Token p:ctx.path) prefix += p.getText()+".";
+        if(name.equals("*")){
+        	this.importPaths.add(prefix.substring(0,prefix.length()-1));
         }else{
-            String[] namePs = name.split("\\.");
-            this.fullNames.put(namePs[namePs.length-1], name);
+        	this.fullNames.put(name, prefix + name);
         }
         return null;
     }
 
     @Override
     public ExprNode visitQualifiedName(QualifiedNameContext ctx) {
-        //do nothing
-        return null;
-    }
-
-    @Override
-    public ExprNode visitImportPath(ImportPathContext ctx) {
         //do nothing
         return null;
     }

@@ -14,10 +14,10 @@ importDeclList:
   importDecl*
 ;
 importDecl:
-   'import' STATIC? importPath ';'
-;
-importPath:
-  qualifiedName ('.' '*')?
+   'import' root=('\\'|'') 
+    path+=Identifier ('\\' path+=Identifier)*
+    '\\' name=(Identifier|'*')
+    ';'
 ;
 qualifiedName:
    Identifier ('.' Identifier)*

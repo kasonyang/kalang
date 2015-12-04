@@ -38,16 +38,6 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitImportDecl(KalangParser.ImportDeclContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link KalangParser#importPath}.
-	 * @param ctx the parse tree
-	 */
-	void enterImportPath(KalangParser.ImportPathContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link KalangParser#importPath}.
-	 * @param ctx the parse tree
-	 */
-	void exitImportPath(KalangParser.ImportPathContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link KalangParser#qualifiedName}.
 	 * @param ctx the parse tree
 	 */

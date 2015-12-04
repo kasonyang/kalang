@@ -1,4 +1,4 @@
-import java.io.FileInputStream;
+import \java\io\FileInputStream;
 class{
     void hello() throws Exception{
         var s = new String("HelloWorld");
