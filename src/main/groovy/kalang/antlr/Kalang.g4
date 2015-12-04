@@ -16,7 +16,10 @@ importDeclList:
 importDecl:
    'import' root=('\\'|'') 
     path+=Identifier ('\\' path+=Identifier)*
-    '\\' name=(Identifier|'*')
+    '\\'( 
+        (name=Identifier ('as' alias=Identifier)? )
+        |(name='*')
+    )
     ';'
 ;
 qualifiedName:

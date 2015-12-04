@@ -896,7 +896,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         if(name.equals("*")){
         	this.importPaths.add(prefix.substring(0,prefix.length()-1));
         }else{
-        	this.fullNames.put(name, prefix + name);
+        	String key = name;
+        	if(ctx.alias!=null) key = ctx.alias.getText();
+        	this.fullNames.put(key, prefix + name);
         }
         return null;
     }

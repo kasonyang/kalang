@@ -1,10 +1,10 @@
-import \java\io\FileInputStream;
+import \java\io\FileInputStream as FIS;
 class{
     void hello() throws Exception{
         var s = new String("HelloWorld");
         System.out.println(s);
         try{
-            var is = new FileInputStream(".");
+            var is = new FIS(".");
         }catch(Exception e){
             //do nothing
         }finally{
