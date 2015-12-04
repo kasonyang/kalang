@@ -25,6 +25,10 @@ public interface IAstVisitor<T>{
     
     public T visitVarDeclStmt(VarDeclStmt node);
     
+    public T visitTryStmt(TryStmt node);
+    
+    public T visitCatchStmt(CatchStmt node);
+    
     public T visitAssignExpr(AssignExpr node);
     
     public T visitBinaryExpr(BinaryExpr node);

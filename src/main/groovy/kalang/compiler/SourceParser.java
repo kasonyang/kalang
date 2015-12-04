@@ -52,6 +52,7 @@ import kalang.antlr.KalangParser.ReturnStatContext;
 import kalang.antlr.KalangParser.SetterContext;
 import kalang.antlr.KalangParser.StatContext;
 import kalang.antlr.KalangParser.StatListContext;
+import kalang.antlr.KalangParser.TryStatContext;
 import kalang.antlr.KalangParser.TypeContext;
 import kalang.antlr.KalangParser.VarDeclContext;
 import kalang.antlr.KalangParser.VarDeclStatContext;
@@ -924,5 +925,58 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         
         return ce;
     }
+
+	@Override
+	public ExprNode visitTryStat(TryStatContext ctx) {
+		TryStmt tryStmt = new TryStmt();
+		BlockStmt execStmt = new BlockStmt();
+		tryStmt.execStmt = execStmt;
+		List oCodes = codes;
+		codes = execStmt.statements = new LinkedList();
+		visit(ctx.tryStmtList);
+		if(ctx.catchTypes!=null){
+			tryStmt.catchStmts = new LinkedList();
+			for(int i=0;i<ctx.catchTypes.size();i++){
+				BlockStmt catchBody = new BlockStmt();
+				codes = catchBody.statements = new LinkedList();
+				String vName = ctx.catchVarNames.get(i).getText();
+				String vType = ctx.catchTypes.get(i).getText();
+				this.pushVarTable();
+				VarDeclStmt declStmt = this.getVarDecl(vName, vType);
+				visit(ctx.catchStmts.get(i));
+				this.popVarTable();
+				CatchStmt catchStmt = new CatchStmt();
+				catchStmt.catchVarDecl = declStmt;
+				catchStmt.execStmt = catchBody;
+				tryStmt.catchStmts.add(catchStmt);
+			}
+		}
+		if(ctx.finalStmtList!=null){
+			this.pushVarTable();
+			BlockStmt finalBody = new BlockStmt();
+			codes = finalBody.statements;
+			visit(ctx.finalStmtList);
+			this.popVarTable();
+			tryStmt.finallyStmt = finalBody;
+		}
+		codes = oCodes;
+		this.addCode(tryStmt, ctx);
+		return null;
+	}
+	
+	/**
+	 * create var decl stmt and put to var table
+	 * @param name
+	 * @param type
+	 * @return
+	 */
+	private VarDeclStmt getVarDecl(String name,String type){
+		VarDeclStmt vds = new VarDeclStmt();
+		vds.type = type;
+		vds.varId = this.varCounter++;
+		vds.varName = name;
+		this.getVarTable().put(name, vds.varId);
+		return vds;
+	}
 
 }

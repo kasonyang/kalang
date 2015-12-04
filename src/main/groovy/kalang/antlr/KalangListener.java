@@ -208,6 +208,16 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitStat(KalangParser.StatContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#tryStat}.
+	 * @param ctx the parse tree
+	 */
+	void enterTryStat(KalangParser.TryStatContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#tryStat}.
+	 * @param ctx the parse tree
+	 */
+	void exitTryStat(KalangParser.TryStatContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#returnStat}.
 	 * @param ctx the parse tree
 	 */

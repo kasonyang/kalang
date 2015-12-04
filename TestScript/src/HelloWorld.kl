@@ -1,6 +1,14 @@
+import java.io.FileInputStream;
 class{
     void hello() throws Exception{
         var s = new String("HelloWorld");
         System.out.println(s);
+        try{
+            var is = new FileInputStream(".");
+        }catch(Exception e){
+            //do nothing
+        }finally{
+        
+        }
     }
 }

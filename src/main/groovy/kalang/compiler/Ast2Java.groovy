@@ -6,6 +6,7 @@ import jast.ast.BinaryExpr;
 import jast.ast.BlockStmt;
 import jast.ast.BreakStmt;
 import jast.ast.CastExpr;
+import jast.ast.CatchStmt;
 import jast.ast.ClassExpr;
 import jast.ast.ClassNode;
 import jast.ast.ConstExpr;
@@ -15,6 +16,7 @@ import jast.ast.ExprNode;
 import jast.ast.ExprStmt;
 import jast.ast.FieldExpr;
 import jast.ast.FieldNode;
+import jast.ast.FinallyStmt;
 import jast.ast.IAstVisitor
 import jast.ast.AstVisitor
 import jast.ast.IfStmt;
@@ -27,11 +29,13 @@ import jast.ast.ParameterExpr;
 import jast.ast.ParameterNode;
 import jast.ast.ReturnStmt;
 import jast.ast.Statement;
+import jast.ast.TryStmt;
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
 
 import java.lang.reflect.Modifier
+import java.util.prefs.AbstractPreferences.NodeAddedEvent;
 @groovy.transform.TypeChecked
 class Ast2Java extends AbstractAstVisitor<String>{
 
@@ -286,5 +290,28 @@ class Ast2Java extends AbstractAstVisitor<String>{
         String type = node.type
         "new ${type}[${visit(node.size)}]"
     }
+
+
+	@Override
+	public String visitTryStmt(TryStmt node) {
+		String exec = visit(node.execStmt);
+		String catchStmt = "";
+		for(def c:node.catchStmts){
+			catchStmt += visit(c)
+		}
+		String finallyStmt = ""
+		if(node.finallyStmt){
+			finallyStmt = indent + "finally " + visit(node.finallyStmt);
+		}
+		indent + "try ${exec}\r\n${catchStmt}\r\n${finallyStmt}"
+	}
+
+
+	@Override
+	public String visitCatchStmt(CatchStmt node) {
+		String varDecl = visit(node.catchVarDecl);
+		String exec = visit(node.execStmt);
+		indent + "catch(${varDecl}) ${exec}";
+	}
 
 }

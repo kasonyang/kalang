@@ -61,7 +61,13 @@
 //##WhileStmt
 //+conditionExpr:ExprNode
 //+body:Statement
-
+##TryStmt
++execStmt:Statement
++catchStmts:CatchStmt*
++finallyStmt:Statement
+##CatchStmt
++catchVarDecl:VarDeclStmt
++execStmt:Statement
 @ExprNode
 
 ##AssignExpr

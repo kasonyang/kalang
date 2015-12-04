@@ -131,6 +131,12 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStat(KalangParser.StatContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KalangParser#tryStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTryStat(KalangParser.TryStatContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KalangParser#returnStat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

@@ -53,6 +53,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterTryStat(@NotNull KalangParser.TryStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitTryStat(@NotNull KalangParser.TryStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterListOrArray(@NotNull KalangParser.ListOrArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}

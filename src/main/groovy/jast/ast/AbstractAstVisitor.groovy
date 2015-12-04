@@ -26,6 +26,10 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
     abstract public T visitVarDeclStmt(VarDeclStmt node);
     
+    abstract public T visitTryStmt(TryStmt node);
+    
+    abstract public T visitCatchStmt(CatchStmt node);
+    
     abstract public T visitAssignExpr(AssignExpr node);
     
     abstract public T visitBinaryExpr(BinaryExpr node);
@@ -100,6 +104,14 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         
         if(node instanceof VarDeclStmt){
             return visitVarDeclStmt(node);
+        }
+        
+        if(node instanceof TryStmt){
+            return visitTryStmt(node);
+        }
+        
+        if(node instanceof CatchStmt){
+            return visitCatchStmt(node);
         }
         
         if(node instanceof AssignExpr){

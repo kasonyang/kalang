@@ -86,6 +86,12 @@ stat:
     |continueStat
     |varDeclStat
     |returnStat
+    |tryStat
+;
+tryStat:
+    'try' '{' tryStmtList=statList '}'
+    ('catch' '(' catchTypes+=noArrayType catchVarNames+=Identifier ')' '{' catchStmts+=statList '}' )*
+    ('finally' '{' finalStmtList = statList '}')?
 ;
 returnStat:
     'return' expression? ';'
