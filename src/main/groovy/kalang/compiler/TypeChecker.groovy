@@ -1,6 +1,7 @@
 package kalang.compiler
 
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import jast.ast.AbstractAstVisitor
 import jast.ast.AssignExpr;
@@ -67,10 +68,6 @@ class TypeChecker extends AstVisitor<String> {
         
     private HashMap<Integer,VarDeclStmt> varDeclStmts = [:]
     
-    //HashMap<AstNode,String> types = [:]
-    //HashMap<AstNode,VarObject> vars
-    //HashMap<String,String> fieldTypes
-
 	HashMap<String,FieldNode> fields
 	
     AstLoader astLoader
@@ -153,13 +150,13 @@ class TypeChecker extends AstVisitor<String> {
     
 
     private String getMathType(String t1,String t2,String op){
-        def pt1 = castSys.getPrimaryType(t1)
-        def pt2 = castSys.getPrimaryType(t2)
+        def pt1 = castSys.getPrimitiveType(t1) ?: t1
+        def pt2 = castSys.getPrimitiveType(t2) ?: t2
         def ret = MathType.getType(pt1,pt2,op)
-        return castSys.getClassType(ret)
+        return castSys.classifyType(ret)
     }
     
-    private ExprNode checkAndCastToBoolean(ExprNode expr){
+  /*  private ExprNode checkAndCastToBoolean(ExprNode expr){
         String type = visit(expr);
         if(!castSys.isBoolean(type)){
             def be = new BinaryExpr();
@@ -177,18 +174,13 @@ class TypeChecker extends AstVisitor<String> {
         }
         //TODO cast string to boolean
         return expr;
-    }
+    }*/
     
-    private MethodNode loadMethod(AstNode node,ClassNode ast,String name,List<String> types){
-        def m = astParser.getMethod(ast,name,types)
-        if(m==null) CE.methodNotFound(node,ast.name,name,types)
-		return m
-    }
 
     @Override
     public String visitBinaryExpr(BinaryExpr node) {
-        String t1 = castSys.getClassType(visit(node.expr1).toString())
-        String t2 = castSys.getClassType(visit(node.expr2).toString())
+        String t1 = (visit(node.expr1).toString())
+        String t2 = (visit(node.expr2).toString())
         String op = node.operation
         String t;
         switch(op){
@@ -239,7 +231,7 @@ class TypeChecker extends AstVisitor<String> {
 
     @Override
     public String visitConstExpr(ConstExpr node) {
-        return castSys.getClassType(node.type)
+        return node.type
     }
 
     @Override
@@ -280,7 +272,7 @@ class TypeChecker extends AstVisitor<String> {
         String target = node.target?visit(node.target):this.clazz.name;
         String methodName = node.methodName;
         ClassNode ast = loadAst(target,node);
-        MethodNode method = loadMethod(node,ast,methodName,types)
+        MethodNode method = selectMethod(node,ast,methodName,(String[])types.toArray())
         boolean inStaticMethod = node.target==null && Modifier.isStatic(method.modifier)
 		boolean isClassExpr = node.target instanceof ClassExpr
 		if(inStaticMethod || isClassExpr){
@@ -453,6 +445,27 @@ class TypeChecker extends AstVisitor<String> {
 			CE.fail("couldn't refer non-static member in static context",CE.UNSUPPORTED,node)
 		}
 	}
-    
+	
+	
+	MethodNode selectMethod(AstNode node,ClassNode cls,String methodName,String[] types){
+		def methods = this.astParser.getMethodsByName(cls,methodName)
+		def matches 
+		matches = this.astParser.matchMethodsByType(methods,types,false,false)
+		if(!matches){
+			matches = this.astParser.matchMethodsByType(methods,types,true,false)
+		}
+		if(!matches){
+			matches = this.astParser.matchMethodsByType(methods,types,true,true)
+		}
+		List typeList = []
+		if(types) typeList.addAll(types)
+		if(!matches){
+			CE.methodNotFound(node,cls.name,methodName,typeList)
+		}	
+		if(matches.length>1){
+			CE.fail("the method ${methodName} is ambiguous",CE.METHOD_NOT_FOUND,node)
+		}
+		return matches[0]
+	}
 
 }

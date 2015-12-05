@@ -1,6 +1,14 @@
 package kalang.compiler
 
+import jast.ast.CastExpr
+import jast.ast.ClassExpr
+import jast.ast.ExprNode
+import jast.ast.InvocationExpr
+
 import java.util.List;
+
+import org.apache.commons.collections4.BidiMap
+import org.apache.commons.collections4.bidimap.TreeBidiMap
 
 @groovy.transform.TypeChecked
 class CastSystem {
@@ -19,34 +27,110 @@ class CastSystem {
 
 	private static final String NULL_CLASS = "java.lang.NullObject";
 
-	private static final String DEFAULT_CLASS = "java.lang.Object";
-		
+	private static final String ROOT_CLASS = "java.lang.Object";
+			
+	private BidiMap primitive2class;
+	
+	private List numberClass = [INT_CLASS,LONG_CLASS,FLOAT_CLASS,DOUBLE_CLASS]
+	
+	private List numberPrimitive = ["int","long","float","double"]
+
 	AstLoader astLoader
 	
-	public CastSystem(AstLoader astLoader){
+	CastSystem(AstLoader astLoader){
+		def m = primitive2class = new TreeBidiMap();
+		m."int" = INT_CLASS
+		m."long" = LONG_CLASS
+		m."float" = FLOAT_CLASS
+		m."double" = DOUBLE_CLASS
+		m."char" = CHAR_CLASS
+		m."boolean" = BOOLEAN_CLASS
 		this.astLoader = astLoader
 	}
 	
-	static private String getClassType(String from){
-		if(from=="int") from=INT_CLASS
-		if(from=="long") from = LONG_CLASS
-		if(from=="float") from = FLOAT_CLASS
-		if(from=="double") from = DOUBLE_CLASS
-		return from
-	}
-
-	static private String getPrimaryType(String type){
-		if(type==INT_CLASS) return "int"
-		if(type==LONG_CLASS) return "long"
-		if(type==FLOAT_CLASS) return "float"
-		if(type==DOUBLE_CLASS) return "double"
-		return type
+	boolean isPrimitiveType(String type){
+		primitive2class.containsKey(type)
 	}
 	
-	private  boolean castable(String from,String to){
-		if(to==DEFAULT_CLASS) return true
-		to = getClassType(to)
-		from = getClassType(from)
+	String classifyType(String from){
+		return primitive2class.get(from) ?: from
+	}
+
+	boolean hasPrimitiveType(String type){
+		this.primitive2class.containsValue(type)
+	}
+	
+	String getPrimitiveType(String type){
+		primitive2class.getKey(type)
+	}
+	
+	String[] getPrimitiveTypes(){
+		return primitive2class.values().toArray()
+	}
+	
+	ExprNode classExprToPrimitiveExpr(ExprNode expr,String clsType){
+		String fromPri = this.getPrimitiveType(clsType)
+		def ivc = new InvocationExpr();
+		ivc.target = expr;
+		ivc.methodName = "${fromPri}Value"
+		return ivc
+	}
+	
+	ExprNode primitiveExprToClassExpr(ExprNode expr,String primitiveType){
+		String classType = this.primitive2class.get(primitiveType)
+		if(!classType) return expr
+		ClassExpr ce = new ClassExpr(classType)
+		InvocationExpr ie = new InvocationExpr(ce,"valueOf",[expr]);
+		return ie
+	}
+	
+	/**
+	 * auto cast type
+	 * @param expr
+	 * @param fromType
+	 * @param toType
+	 * @return
+	 */
+	ExprNode cast(ExprNode expr,String fromType,String toType){
+		if(fromType==toType) return expr;
+		if(isNumber(fromType)){
+			if(isNumber(toType)){
+				return numberToNumber(expr,fromType,toType)
+			}else if(toType==ROOT_CLASS){
+				if(isPrimitiveType(fromType)){
+					return this.primitiveExprToClassExpr(expr,fromType)
+				}else return expr;
+			}
+			return null;
+		}else{
+			if(isSubclass(fromType,toType)) return expr;
+			return null;
+		}
+	}		
+	public ExprNode numberToNumber(ExprNode expr,String fromType,String toType){
+		String priFrom = this.getPrimitiveType(fromType) ?: fromType
+		String priTo = this.getPrimitiveType(toType) ?: toType
+		if(!this.isPrimitiveType(fromType)){//from class type
+			expr = this.classExprToPrimitiveExpr(expr,fromType)
+		}
+		if(priFrom!=priTo){
+			expr = primitiveCast(expr,priFrom,priTo);
+		}
+		if(toType==priTo) return expr;
+		return this.primitiveExprToClassExpr(expr,priTo)
+	}
+	
+	private ExprNode primitiveCast(ExprNode expr,String fromType,String toType){
+		if(castable(fromType,toType)){
+			return new CastExpr(fromType,expr)
+		}
+		return null
+	}
+	
+	boolean castable(String from,String to){
+		if(to==this.ROOT_CLASS) return true
+		to = classifyType(to)
+		from = classifyType(from)
 		if(from==to) return true
 		HashMap<String,List> baseMap = [:]
 		baseMap.put(INT_CLASS , [LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS])
@@ -56,17 +140,11 @@ class CastSystem {
 		if(baseMap.containsKey(from)){
 			return baseMap.get(from).contains(to)
 		}
-		def fromAst = astLoader.loadAst(from)
-		while(fromAst){
-			def parent = fromAst.parentName
-			if(!parent) return false;
-			if(parent==to) return true;
-			fromAst = astLoader.loadAst(parent)
-		}
+		if(isSubclass(from,to)) return true
 		return false;
 	}
 
-	private boolean castable(List<String> from,List<String> to){
+	boolean castable(List<String> from,List<String> to){
 		if(from.size()!=to.size())  return false
 		for(int i=0;i<from.size();i++){
 			def f = from.get(i)
@@ -78,21 +156,39 @@ class CastSystem {
 		return true
 	}
 	
-
-	static private boolean isNumber(String type){
-		def numTypes = [INT_CLASS, LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS]
-		return numTypes.contains(type)
+	boolean isNumberPrimitive(String type){
+		return this.numberPrimitive.contains(type)
 	}
 
-	static private boolean isBoolean(String type){
-		return type ==BOOLEAN_CLASS
+	boolean isNumberClass(String type){
+		return this.numberClass.contains(type)
+	}
+	
+	boolean isNumber(String type){
+		return this.isNumberPrimitive(type)||this.isNumberClass(type)
 	}
 
-	static String getHigherType(String type1,String type2){
+	boolean isBoolean(String type){
+		return type == BOOLEAN_CLASS || type == "boolean"
+	}
+
+	String getHigherType(String type1,String type2){
 		if(type1==DOUBLE_CLASS || type2==DOUBLE_CLASS) return DOUBLE_CLASS
 		if(type1==FLOAT_CLASS || type2 ==FLOAT_CLASS) return FLOAT_CLASS
 		if(type1==LONG_CLASS || type2==LONG_CLASS) return LONG_CLASS
 		return INT_CLASS
+	}
+	
+	boolean isSubclass(String type,String subclassType){
+		if(isPrimitiveType(type)) return false
+		def fromAst = astLoader.loadAst(type)
+		while(fromAst){
+			def parent = fromAst.parentName
+			if(!parent) return false;
+			if(parent==subclassType) return true;
+			fromAst = astLoader.loadAst(parent)
+		}
+		return false;
 	}
 	
 }

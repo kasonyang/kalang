@@ -11,6 +11,7 @@ repositories{
 dependencies{
     compile 'org.antlr:antlr4-runtime:4.5.1'
     compile 'org.codehaus.groovy:groovy-all:2.3.10'
+	compile 'org.apache.commons:commons-collections4:4.1'
 	testCompile 'junit:junit:4.12'
 }
 buildscript {

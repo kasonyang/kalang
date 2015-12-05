@@ -9,10 +9,15 @@ import java.lang.reflect.Modifier
 @groovy.transform.TypeChecked
 class JavaAstLoader extends AstLoader {
 	
+	static String ROOT_CLASS = "java.lang.Object"
+	
 	static ClassNode buildFromClass(Class clz){
 		def cn = ClassNode.create();
 		cn.name = clz.name
 		cn.parentName = clz.superclass?.name
+		if(!cn.parentName && cn.name!=ROOT_CLASS){
+			cn.parentName = ROOT_CLASS
+		}
 		List<Executable> methods = []
 		methods.addAll(clz.methods)
 		methods.addAll(clz.constructors)
