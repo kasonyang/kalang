@@ -76,9 +76,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     
     private static final String MAP_CLASS = "java.util.HashMap";
     private static final String ROOT_CLASS = "java.lang.Object";
-    private static final String FLOAT_CLASS = "java.lang.Float";
 
-    private static final String INT_CLASS = "java.lang.Integer";
+    private static final String FLOAT_CLASS = "float";
+
+    private static final String INT_CLASS = "int";
 
     private static final String BOOLEAN_CLASS = "java.lang.Boolean";
 
