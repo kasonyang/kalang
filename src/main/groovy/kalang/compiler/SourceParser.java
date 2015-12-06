@@ -113,7 +113,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     private final String className;
 	private String classPath;
 	
-	CastSystem castSystem;
+	TypeSystem castSystem;
     
     public static class Position{
         int offset;
@@ -133,7 +133,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	
     public void compile(AstLoader astLoader){
         this.astLoader = astLoader;
-        this.castSystem = new CastSystem(astLoader);
+        this.castSystem = new TypeSystem(astLoader);
         visit(context);
     }
 	

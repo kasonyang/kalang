@@ -9,11 +9,11 @@ class AstParser {
 	
 	AstLoader astLoader
 	
-	CastSystem castSystem
+	TypeSystem castSystem
 	
 	public AstParser(AstLoader astLoader){
 		this.astLoader = astLoader
-		this.castSystem = new CastSystem(astLoader)
+		this.castSystem = new TypeSystem(astLoader)
 	}
 	
 	static String methodToString(String name,List<String> types,String className=null){

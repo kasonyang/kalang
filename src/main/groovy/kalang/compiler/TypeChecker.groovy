@@ -74,7 +74,7 @@ class TypeChecker extends AstVisitor<String> {
 
     ClassNode clazz
 	
-	CastSystem castSys
+	TypeSystem castSys
 	
 	AstParser astParser
 	
@@ -86,7 +86,7 @@ class TypeChecker extends AstVisitor<String> {
 
     TypeChecker(AstLoader astLoader){
         this.astLoader = astLoader
-		this.castSys = new CastSystem(astLoader);
+		this.castSys = new TypeSystem(astLoader);
 		this.astParser = new AstParser(astLoader);
     }
     

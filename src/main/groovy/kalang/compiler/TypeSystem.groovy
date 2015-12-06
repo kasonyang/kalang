@@ -12,7 +12,7 @@ import org.apache.commons.collections4.BidiMap
 import org.apache.commons.collections4.bidimap.TreeBidiMap
 
 @groovy.transform.TypeChecked
-class CastSystem {
+class TypeSystem {
 	
 	private static final String FLOAT_CLASS = "java.lang.Float";
 	private static final String DOUBLE_CLASS = "java.lang.Double";
@@ -38,7 +38,7 @@ class CastSystem {
 
 	AstLoader astLoader
 	
-	CastSystem(AstLoader astLoader){
+	TypeSystem(AstLoader astLoader){
 		def m = primitive2class = new TreeBidiMap();
 		m."int" = INT_CLASS
 		m."long" = LONG_CLASS
