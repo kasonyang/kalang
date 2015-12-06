@@ -408,7 +408,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         int mdf = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
         boolean isStatic = false;
         if(ctx.STATIC()!=null){
-            isStatic = true;
+            mdf += Modifier.STATIC;
         }
         method = new MethodNode(mdf,type,name,isStatic);
         if(ctx.argumentDeclList()!=null){
