@@ -1,7 +1,7 @@
 import \java\io\FileInputStream as FIS;
 class{
     void hello() throws Exception{
-        var s = new String("HelloWorld");
+        var s = new String("HelloWorld\n");
         System.out.println(s);
         try{
             var is = new FIS(".");
