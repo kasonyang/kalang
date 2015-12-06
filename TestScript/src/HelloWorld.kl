@@ -11,4 +11,28 @@ class{
         
         }
     }
+    
+    void autocast(){
+        var i as int;
+        var l as long;
+        var f as float;
+        var d as double;
+        var I as Integer;
+        var L as Long;
+        var D as Double;
+        var F as Float;
+        i=1;
+        l=1;
+        f=1.0;
+        d = 1.0;
+        I = i;
+        L = l;
+        F = l;
+        D = d;
+        i=I;
+        l= L;
+        f = F;
+        d = D;
+   
+    }
 }
