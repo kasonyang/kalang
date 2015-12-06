@@ -112,6 +112,8 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     
     private final String className;
 	private String classPath;
+	
+	CastSystem castSystem;
     
     public static class Position{
         int offset;
@@ -131,6 +133,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	
     public void compile(AstLoader astLoader){
         this.astLoader = astLoader;
+        this.castSystem = new CastSystem(astLoader);
         visit(context);
     }
 	
@@ -529,6 +532,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         String type = DEFAULT_VAR_TYPE;
         if(ctx.type()!=null){
             type = ctx.type().getText();
+            type = checkFullType(type,ctx);
         }
         boolean isReadOnly = ctx.getChild(0).getText() == "val";
         //TODO readonly
@@ -778,7 +782,8 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         return getNodeByName(name);
     }
 	
-    private String checkFullClassName(String name,ParseTree tree){
+    private String checkFullType(String name,ParseTree tree){
+    	if(this.castSystem.isPrimitiveType(name)) return name;
         String fn = getFullClassName(name);
         if(fn==null){
             this.reportError("Unknown class:"+name,tree);
@@ -920,7 +925,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ExprNode visitNewExpr(NewExprContext ctx) {
     	String type =  ctx.Identifier().getText();
     	ClassExpr expr = new ClassExpr();
-    	expr.name = checkFullClassName(type,ctx);        
+    	expr.name = checkFullType(type,ctx);        
     	return this.getInvocationExpr(expr, "<init>",ctx.arguments());
     }
 
