@@ -100,7 +100,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     int varCounter = 0;
     ClassNode cls = new ClassNode();
     //List<Statement> codes;
-    Stack<List> code = new Stack();
+    Stack<List> codeStack = new Stack();
     List<ExprNode> arguments;
     MethodNode method;	
     private final Map<AstNode,ParseTree> a2p = new HashMap();
@@ -172,6 +172,14 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         }
         return null;
     }
+    
+    private void startBlock(){
+    	this.codeStack.add(new LinkedList());
+    }
+    
+    private List<Statement> endBlock(){
+    	return this.codeStack.pop();
+    }
 	
     private VarTable getVarTable(){
         return vtbs.peek();
@@ -201,7 +209,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     private void addCode(Statement node,ParseTree tree){
-    	code.peek().add(node);
+    	codeStack.peek().add(node);
         a2p.put(node, tree);
     }
     
@@ -420,9 +428,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
             visitArgumentDeclList(ctx.argumentDeclList());
         }
         if(ctx.statList()!=null){        	
-        	code.add(new LinkedList());
+        	startBlock();
         	visitStatList(ctx.statList());
-        	method.body = new BlockStmt(code.pop());
+        	method.body = new BlockStmt(endBlock());
         }
         method.exceptionTypes = new LinkedList();
         if(ctx.exceptionTypes!=null){
@@ -483,12 +491,12 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ifStmt.falseBody = falseBody;
         ExprNode expr = visitExpression(ctx.expression());
         ifStmt.conditionExpr = expr;
-        code.add(new LinkedList());
+        startBlock();
         visitStatList(ctx.statList());
-        trueBody.statements = code.pop();
-        code.add(new LinkedList());
+        trueBody.statements = endBlock();
+        startBlock();
         visitIfStatSuffix(ctx.ifStatSuffix());
-        falseBody.statements = code.pop();
+        falseBody.statements = endBlock();
         addCode(ifStmt,ctx);
         return null;
     }
@@ -587,9 +595,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ws.loopBody = body;
         AstNode expr = visitExpression(ctx.expression());
         ws.preConditionExpr = (ExprNode) expr;
-        code.add(new LinkedList());
+        startBlock();
         visitStatList(ctx.statList());
-        body.statements = code.pop();        
+        body.statements = endBlock();        
         addCode(ws,ctx);
         return null;
     }
@@ -597,15 +605,14 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitDoWhileStat(DoWhileStatContext ctx) {
         BlockStmt bs = new BlockStmt();
-        code.add(new Stack());
+        startBlock();
         visit(ctx.statList());
-        bs.statements = code.pop();
+        bs.statements = endBlock();
         ExprNode cond = visit(ctx.expression());
         LoopStmt ls =new LoopStmt();
         ls.loopBody  = bs;
         ls.postConditionExpr = cond;
         addCode(ls,ctx);
-        
         return null;
     }
 
@@ -615,14 +622,14 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         LoopStmt ls = new LoopStmt();
         BlockStmt body = new BlockStmt();
         ls.loopBody = body;
-        code.add(new LinkedList());
+        startBlock();
         visitForInit(ctx.forInit());
-        ls.initStmts = code.pop();
+        ls.initStmts = endBlock();
         AstNode texpr = visitExpression(ctx.expression());
         ls.preConditionExpr = (ExprNode) texpr;
-        code.add(new LinkedList());
+        startBlock();
         visitStatList(ctx.statList());
-        body.statements = code.pop();
+        body.statements = endBlock();
         visitForUpdate(ctx.forUpdate());
         this.popVarTable();
         return null;
@@ -938,14 +945,14 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 		TryStmt tryStmt = new TryStmt();
 		BlockStmt execStmt = new BlockStmt();
 		tryStmt.execStmt = execStmt;
-		code.add(new LinkedList());
+		startBlock();
 		visit(ctx.tryStmtList);
-		execStmt.statements = code.pop();
+		execStmt.statements = endBlock();
 		if(ctx.catchTypes!=null){
 			tryStmt.catchStmts = new LinkedList();
 			for(int i=0;i<ctx.catchTypes.size();i++){
 				BlockStmt catchBody = new BlockStmt();
-				code.add(new LinkedList());
+				startBlock();
 				String vName = ctx.catchVarNames.get(i).getText();
 				String vType = ctx.catchTypes.get(i).getText();
 				this.pushVarTable();
@@ -954,7 +961,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 				this.popVarTable();
 				CatchStmt catchStmt = new CatchStmt();
 				catchStmt.catchVarDecl = declStmt;
-				catchBody.statements = code.pop();
+				catchBody.statements = endBlock();
 				catchStmt.execStmt = catchBody;
 				tryStmt.catchStmts.add(catchStmt);
 			}
@@ -962,10 +969,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 		if(ctx.finalStmtList!=null){
 			this.pushVarTable();
 			BlockStmt finalBody = new BlockStmt();
-			code.add(new LinkedList());
+			startBlock();
 			visit(ctx.finalStmtList);
 			this.popVarTable();
-			finalBody.statements = code.pop();
+			finalBody.statements = endBlock();
 			tryStmt.finallyStmt = finalBody;
 		}
 		this.addCode(tryStmt, ctx);
