@@ -156,7 +156,8 @@ class TypeChecker extends AstVisitor<String> {
         def pt1 = castSys.getPrimitiveType(t1) ?: t1
         def pt2 = castSys.getPrimitiveType(t2) ?: t2
         def ret = MathType.getType(pt1,pt2,op)
-        return castSys.classifyType(ret)
+        return ret
+		//return castSys.classifyType(ret)
     }
     
   /*  private ExprNode checkAndCastToBoolean(ExprNode expr){
