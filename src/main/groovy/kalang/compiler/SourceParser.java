@@ -94,16 +94,16 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
 
     //short name to full name
-    private final Map<String,String> fullNames = new HashMap();
-    private final List<String> importPaths = new LinkedList();
+    private final Map<String,String> fullNames = new HashMap<String, String>();
+    private final List<String> importPaths = new LinkedList<String>();
     Stack<VarTable> vtbs = new Stack();
     int varCounter = 0;
     ClassNode cls = new ClassNode();
     //List<Statement> codes;
-    Stack<List> codeStack = new Stack();
+    Stack<List<Statement>> codeStack = new Stack<List<Statement>>();
     List<ExprNode> arguments;
     MethodNode method;	
-    private final Map<AstNode,ParseTree> a2p = new HashMap();
+    private final Map<AstNode,ParseTree> a2p = new HashMap<AstNode, ParseTree>();
 	
     private AstLoader astLoader;
 
@@ -179,6 +179,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     
     private List<Statement> endBlock(){
     	return this.codeStack.pop();
+    }
+    
+    private BlockStmt endBlockAsStmt(){
+    	return new BlockStmt(endBlock());
     }
 	
     private VarTable getVarTable(){
@@ -876,18 +880,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         }
         return null;
     }
-	
-    private List doVisitAll(List list){
-        List retList = new LinkedList();
-        for(Object i:list){
-            retList.add(visit((ParseTree) i));
-        }
-        return retList;
-    }
 
     @Override
     public ExprNode visitImportDeclList(ImportDeclListContext ctx) {
-        doVisitAll(ctx.importDecl());
+        this.visitChildren(ctx);
         return null;
     }
 
@@ -943,15 +939,12 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	@Override
 	public ExprNode visitTryStat(TryStatContext ctx) {
 		TryStmt tryStmt = new TryStmt();
-		BlockStmt execStmt = new BlockStmt();
-		tryStmt.execStmt = execStmt;
 		startBlock();
 		visit(ctx.tryStmtList);
-		execStmt.statements = endBlock();
+		tryStmt.execStmt = endBlockAsStmt();
 		if(ctx.catchTypes!=null){
 			tryStmt.catchStmts = new LinkedList();
 			for(int i=0;i<ctx.catchTypes.size();i++){
-				BlockStmt catchBody = new BlockStmt();
 				startBlock();
 				String vName = ctx.catchVarNames.get(i).getText();
 				String vType = ctx.catchTypes.get(i).getText();
@@ -961,8 +954,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 				this.popVarTable();
 				CatchStmt catchStmt = new CatchStmt();
 				catchStmt.catchVarDecl = declStmt;
-				catchBody.statements = endBlock();
-				catchStmt.execStmt = catchBody;
+				catchStmt.execStmt =  endBlockAsStmt();
 				tryStmt.catchStmts.add(catchStmt);
 			}
 		}
