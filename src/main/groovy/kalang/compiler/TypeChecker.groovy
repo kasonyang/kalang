@@ -90,11 +90,13 @@ class TypeChecker extends AstVisitor<String> {
 		this.astParser = new AstParser(astLoader);
     }
     
-    private void checkCastable(String from,String to,AstNode node){
-        if(!castSys.castable(from,to)){
+    private ExprNode cast(ExprNode expr,String from,String to,AstNode node){
+        expr = castSys.cast(expr,from,to)
+		if(!expr){
             CE.failedToCast(node,from,to);
             //fail(CompileError.UNABLE_TO_CAST,"${from} => ${to}",node)
         }
+		return expr
     }
     
     public ClassNode loadAst(String name,AstNode node){
@@ -143,7 +145,8 @@ class TypeChecker extends AstVisitor<String> {
     public String visitAssignExpr(AssignExpr node) {
         String ft = visit(node.from);
         String tt = visit(node.to);
-        checkCastable(ft,tt,node);
+		node.from = cast(node.from,ft,tt,node)
+        //checkCastable(ft,tt,node);
         return tt
     }
 
@@ -278,6 +281,7 @@ class TypeChecker extends AstVisitor<String> {
 		if(inStaticMethod || isClassExpr){
 			requireStatic(method.modifier,node)
 		}
+		castInvocationParams(node,method)
 		//TODO here could be optim
 		this.exceptionStack.peek().addAll(method.exceptionTypes)
 		return method.type
@@ -308,7 +312,7 @@ class TypeChecker extends AstVisitor<String> {
 	private void caughException(String type){
 		List<String> exceptions = this.exceptionStack.peek();
 		for(def e in exceptions){
-			if(this.castSys.castable(e,type)){
+			if(this.castSys.isSubclass(e,type)){
 				exceptions.remove(e)
 			}
 		}
@@ -407,7 +411,11 @@ class TypeChecker extends AstVisitor<String> {
 	@Override
 	public String visitReturnStmt(ReturnStmt node) {
 		String retType = method.type
-		this.checkCastable(visit(node.expr),retType,node)
+		//this.checkCastable(visit(node.expr),retType,node)
+		if(node.expr){
+			String exType = visit(node.expr)
+			node.expr = this.cast(node.expr,exType,retType,node)
+		}
 		returned = true
 		return null
 	}
@@ -466,6 +474,16 @@ class TypeChecker extends AstVisitor<String> {
 			CE.fail("the method ${methodName} is ambiguous",CE.METHOD_NOT_FOUND,node)
 		}
 		return matches[0]
+	}
+	
+	private void castInvocationParams(InvocationExpr expr,MethodNode method){
+		String[] mTypes = this.astParser.getParameterTypes(method)
+		int i=0;
+		for(mt in mTypes){
+			def pt = visit(expr.arguments[i])
+			expr.arguments[i] = this.castSys.cast(expr.arguments[i],pt,mt)
+			i++
+		}
 	}
 
 }

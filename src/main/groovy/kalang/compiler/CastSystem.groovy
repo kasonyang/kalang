@@ -5,6 +5,7 @@ import jast.ast.ClassExpr
 import jast.ast.ExprNode
 import jast.ast.InvocationExpr
 
+import java.lang.reflect.Method
 import java.util.List;
 
 import org.apache.commons.collections4.BidiMap
@@ -61,74 +62,14 @@ class CastSystem {
 	}
 	
 	String getPrimitiveType(String type){
-		primitive2class.getKey(type)
+		primitive2class.getKey(type)?:type
 	}
 	
 	String[] getPrimitiveTypes(){
 		return primitive2class.values().toArray()
 	}
 	
-	ExprNode classExprToPrimitiveExpr(ExprNode expr,String clsType){
-		String fromPri = this.getPrimitiveType(clsType)
-		def ivc = new InvocationExpr();
-		ivc.target = expr;
-		ivc.methodName = "${fromPri}Value"
-		return ivc
-	}
-	
-	ExprNode primitiveExprToClassExpr(ExprNode expr,String primitiveType){
-		String classType = this.primitive2class.get(primitiveType)
-		if(!classType) return expr
-		ClassExpr ce = new ClassExpr(classType)
-		InvocationExpr ie = new InvocationExpr(ce,"valueOf",[expr]);
-		return ie
-	}
-	
-	/**
-	 * auto cast type
-	 * @param expr
-	 * @param fromType
-	 * @param toType
-	 * @return
-	 */
-	ExprNode cast(ExprNode expr,String fromType,String toType){
-		if(fromType==toType) return expr;
-		if(isNumber(fromType)){
-			if(isNumber(toType)){
-				return numberToNumber(expr,fromType,toType)
-			}else if(toType==ROOT_CLASS){
-				if(isPrimitiveType(fromType)){
-					return this.primitiveExprToClassExpr(expr,fromType)
-				}else return expr;
-			}
-			return null;
-		}else{
-			if(isSubclass(fromType,toType)) return expr;
-			return null;
-		}
-	}		
-	public ExprNode numberToNumber(ExprNode expr,String fromType,String toType){
-		String priFrom = this.getPrimitiveType(fromType) ?: fromType
-		String priTo = this.getPrimitiveType(toType) ?: toType
-		if(!this.isPrimitiveType(fromType)){//from class type
-			expr = this.classExprToPrimitiveExpr(expr,fromType)
-		}
-		if(priFrom!=priTo){
-			expr = primitiveCast(expr,priFrom,priTo);
-		}
-		if(toType==priTo) return expr;
-		return this.primitiveExprToClassExpr(expr,priTo)
-	}
-	
-	private ExprNode primitiveCast(ExprNode expr,String fromType,String toType){
-		if(castable(fromType,toType)){
-			return new CastExpr(fromType,expr)
-		}
-		return null
-	}
-	
-	boolean castable(String from,String to){
-		if(to==this.ROOT_CLASS) return true
+	private boolean primitiveCastable(String from,String to){
 		to = classifyType(to)
 		from = classifyType(from)
 		if(from==to) return true
@@ -140,11 +81,10 @@ class CastSystem {
 		if(baseMap.containsKey(from)){
 			return baseMap.get(from).contains(to)
 		}
-		if(isSubclass(from,to)) return true
 		return false;
 	}
 
-	boolean castable(List<String> from,List<String> to){
+	/*boolean castable(List<String> from,List<String> to){
 		if(from.size()!=to.size())  return false
 		for(int i=0;i<from.size();i++){
 			def f = from.get(i)
@@ -154,7 +94,7 @@ class CastSystem {
 			}
 		}
 		return true
-	}
+	}*/
 	
 	boolean isNumberPrimitive(String type){
 		return this.numberPrimitive.contains(type)
@@ -189,6 +129,62 @@ class CastSystem {
 			fromAst = astLoader.loadAst(parent)
 		}
 		return false;
+	}
+	
+	ExprNode cast(ExprNode expr,String fromType,String toType){
+		def closure = this.getCastMethod(fromType,toType)
+		def result = closure?.call(expr,fromType,toType)
+		if(result){
+			return (ExprNode) result
+		}
+	}
+	
+	boolean castable(String fromType,String toType){
+		return getCastMethod(fromType,toType)!=null
+	}
+	
+	private Closure getCastMethod(String fromType,String toType){
+		if(fromType==toType) return this.&castNothing
+		if(isPrimitiveType(fromType)){
+			if(isPrimitiveType(toType)){
+				if(this.primitiveCastable(fromType,toType)){
+					return this.&castPrimitive
+				}
+			}else{
+				if(toType==ROOT_CLASS) return this.&castPrimitive2Object
+				String toPriType = getPrimitiveType(toType)
+				if(toPriType == fromType){
+					return this.&castPrimitive2Object
+				}
+			}
+		}else{
+			if(isPrimitiveType(toType)){
+				String fromPrimitive = getPrimitiveType(fromType)
+				if(fromPrimitive==toType){
+					return this.&castObject2Primitive
+				}
+			}else{
+				if(isSubclass(fromType,toType)) return this.&castNothing
+			}
+		}
+		return null
+	}
+	
+	private ExprNode castPrimitive(ExprNode expr,String fromType,String toType){
+		return new CastExpr(toType,expr)
+	}
+	
+	private ExprNode castPrimitive2Object(ExprNode expr,String fromType,String toType){
+		String classType = this.classifyType(fromType)
+		return new InvocationExpr(new ClassExpr(classType),"valueOf",[expr])
+	}
+	
+	private ExprNode castObject2Primitive(ExprNode expr,String fromType,String toType){
+		return new InvocationExpr(expr,"${toType}Value")
+	}
+	
+	private ExprNode castNothing(ExprNode expr,String fromType,String toType){
+		return expr
 	}
 	
 }
