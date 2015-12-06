@@ -27,12 +27,22 @@ class{
         d = 1.0;
         I = i;
         L = l;
-        F = l;
+        F = f;
         D = d;
         i=I;
         l= L;
         f = F;
         d = D;
+        
+        var b as boolean;
+        var B as Boolean;
+        B = b;
+        b=B;
+        
+        var c as char;
+        var C as Character;
+        c=C;
+        C=c;
    
     }
 }
