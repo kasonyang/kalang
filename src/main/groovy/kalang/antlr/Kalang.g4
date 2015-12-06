@@ -57,7 +57,7 @@ type:
   noArrayType  ( '[]' )?
 ;
 noArrayType:
-  (Identifier|DOUBLE|LONG|FLOAT|INT)
+  (Identifier|DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN)
 ;
 
 argumentDeclList:

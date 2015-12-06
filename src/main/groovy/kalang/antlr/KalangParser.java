@@ -1195,6 +1195,8 @@ public class KalangParser extends Parser {
 		public TerminalNode LONG() { return getToken(KalangParser.LONG, 0); }
 		public TerminalNode FLOAT() { return getToken(KalangParser.FLOAT, 0); }
 		public TerminalNode INT() { return getToken(KalangParser.INT, 0); }
+		public TerminalNode CHAR() { return getToken(KalangParser.CHAR, 0); }
+		public TerminalNode BOOLEAN() { return getToken(KalangParser.BOOLEAN, 0); }
 		public NoArrayTypeContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -1223,7 +1225,7 @@ public class KalangParser extends Parser {
 			{
 			setState(244);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG))) != 0) || _la==Identifier) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BOOLEAN) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG))) != 0) || _la==Identifier) ) {
 			_errHandler.recoverInline(this);
 			} else {
 				consume();
@@ -1398,7 +1400,7 @@ public class KalangParser extends Parser {
 			setState(262);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__3) | (1L << T__4) | (1L << T__7) | (1L << BREAK) | (1L << CONTINUE) | (1L << DO) | (1L << DOUBLE) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << RETURN) | (1L << TRY) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__3) | (1L << T__4) | (1L << T__7) | (1L << BOOLEAN) | (1L << BREAK) | (1L << CHAR) | (1L << CONTINUE) | (1L << DO) | (1L << DOUBLE) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << RETURN) | (1L << TRY) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				{
 				setState(259);
@@ -1847,7 +1849,7 @@ public class KalangParser extends Parser {
 			match(RETURN);
 			setState(320);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__7) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__7) | (1L << BOOLEAN) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				setState(319);
 				expression(0);
@@ -1945,6 +1947,8 @@ public class KalangParser extends Parser {
 				}
 				break;
 			case T__7:
+			case BOOLEAN:
+			case CHAR:
 			case DOUBLE:
 			case FLOAT:
 			case INT:
@@ -2414,7 +2418,7 @@ public class KalangParser extends Parser {
 			match(LPAREN);
 			setState(379);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__3) | (1L << T__4) | (1L << T__7) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__3) | (1L << T__4) | (1L << T__7) | (1L << BOOLEAN) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				setState(378);
 				forInit();
@@ -2425,7 +2429,7 @@ public class KalangParser extends Parser {
 			match(SEMI);
 			setState(383);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__7) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__7) | (1L << BOOLEAN) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				setState(382);
 				expression(0);
@@ -2436,7 +2440,7 @@ public class KalangParser extends Parser {
 			match(SEMI);
 			setState(387);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__7) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__7) | (1L << BOOLEAN) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				setState(386);
 				forUpdate();
@@ -2505,6 +2509,8 @@ public class KalangParser extends Parser {
 				}
 				break;
 			case T__7:
+			case BOOLEAN:
+			case CHAR:
 			case DOUBLE:
 			case FLOAT:
 			case INT:
@@ -3604,7 +3610,7 @@ public class KalangParser extends Parser {
 			{
 			setState(509);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG))) != 0) || _la==Identifier) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BOOLEAN) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG))) != 0) || _la==Identifier) {
 				{
 				setState(508);
 				noArrayType();
@@ -3704,6 +3710,8 @@ public class KalangParser extends Parser {
 				match(T__7);
 				}
 				break;
+			case BOOLEAN:
+			case CHAR:
 			case DOUBLE:
 			case FLOAT:
 			case INT:
@@ -3714,7 +3722,7 @@ public class KalangParser extends Parser {
 				{
 				setState(530);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG))) != 0) || _la==Identifier) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BOOLEAN) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG))) != 0) || _la==Identifier) {
 					{
 					setState(529);
 					noArrayType();
@@ -3851,7 +3859,7 @@ public class KalangParser extends Parser {
 			match(LPAREN);
 			setState(556);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__7) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__7) | (1L << BOOLEAN) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				setState(548);
 				expression(0);
@@ -3973,36 +3981,36 @@ public class KalangParser extends Parser {
 		"&\3&\3\'\3\'\5\'\u0215\n\'\3\'\3\'\3\'\3\'\7\'\u021b\n\'\f\'\16\'\u021e"+
 		"\13\'\3\'\3\'\5\'\u0222\n\'\3(\3(\3)\3)\3)\3)\7)\u022a\n)\f)\16)\u022d"+
 		"\13)\5)\u022f\n)\3)\3)\3)\2\3F*\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36"+
-		" \"$&(*,.\60\62\64\668:<>@BDFHJLNP\2\20\4\2OOQQ\3\2\3\4\3\2\6\7\7\2\30"+
-		"\30\36\36%%\'\'nn\3\2Y\\\3\2OP\4\2]^bb\3\2[\\\4\2MNTU\4\2SSVV\3\2WX\4"+
-		"\2LLcm\3\2YZ\3\2=B\u0268\2R\3\2\2\2\4p\3\2\2\2\6s\3\2\2\2\b\u0088\3\2"+
-		"\2\2\n\u0090\3\2\2\2\f\u0096\3\2\2\2\16\u009a\3\2\2\2\20\u00b0\3\2\2\2"+
-		"\22\u00b8\3\2\2\2\24\u00c0\3\2\2\2\26\u00c4\3\2\2\2\30\u00f2\3\2\2\2\32"+
-		"\u00f6\3\2\2\2\34\u00f8\3\2\2\2\36\u0100\3\2\2\2 \u0108\3\2\2\2\"\u010b"+
-		"\3\2\2\2$\u0115\3\2\2\2&\u0125\3\2\2\2(\u0127\3\2\2\2*\u0140\3\2\2\2,"+
-		"\u0146\3\2\2\2.\u0153\3\2\2\2\60\u0156\3\2\2\2\62\u015f\3\2\2\2\64\u0162"+
-		"\3\2\2\2\66\u0165\3\2\2\28\u0168\3\2\2\2:\u0170\3\2\2\2<\u017a\3\2\2\2"+
-		">\u018e\3\2\2\2@\u0190\3\2\2\2B\u0192\3\2\2\2D\u019a\3\2\2\2F\u01b5\3"+
-		"\2\2\2H\u01fc\3\2\2\2J\u01ff\3\2\2\2L\u0221\3\2\2\2N\u0223\3\2\2\2P\u0225"+
-		"\3\2\2\2RU\5\4\3\2SV\7\23\2\2TV\7&\2\2US\3\2\2\2UT\3\2\2\2VX\3\2\2\2W"+
-		"Y\t\2\2\2XW\3\2\2\2XY\3\2\2\2Y\\\3\2\2\2Z[\7\33\2\2[]\7n\2\2\\Z\3\2\2"+
-		"\2\\]\3\2\2\2]g\3\2\2\2^_\7\"\2\2_d\7n\2\2`a\7J\2\2ac\7n\2\2b`\3\2\2\2"+
-		"cf\3\2\2\2db\3\2\2\2de\3\2\2\2eh\3\2\2\2fd\3\2\2\2g^\3\2\2\2gh\3\2\2\2"+
-		"hi\3\2\2\2ij\7E\2\2jk\5\n\6\2kl\7F\2\2l\3\3\2\2\2mo\5\6\4\2nm\3\2\2\2"+
-		"or\3\2\2\2pn\3\2\2\2pq\3\2\2\2q\5\3\2\2\2rp\3\2\2\2st\7#\2\2tu\t\3\2\2"+
-		"uz\7n\2\2vw\7\3\2\2wy\7n\2\2xv\3\2\2\2y|\3\2\2\2zx\3\2\2\2z{\3\2\2\2{"+
-		"}\3\2\2\2|z\3\2\2\2}\u0084\7\3\2\2~\u0081\7n\2\2\177\u0080\7\5\2\2\u0080"+
-		"\u0082\7n\2\2\u0081\177\3\2\2\2\u0081\u0082\3\2\2\2\u0082\u0085\3\2\2"+
-		"\2\u0083\u0085\7]\2\2\u0084~\3\2\2\2\u0084\u0083\3\2\2\2\u0085\u0086\3"+
-		"\2\2\2\u0086\u0087\7I\2\2\u0087\7\3\2\2\2\u0088\u008d\7n\2\2\u0089\u008a"+
-		"\7K\2\2\u008a\u008c\7n\2\2\u008b\u0089\3\2\2\2\u008c\u008f\3\2\2\2\u008d"+
-		"\u008b\3\2\2\2\u008d\u008e\3\2\2\2\u008e\t\3\2\2\2\u008f\u008d\3\2\2\2"+
-		"\u0090\u0091\5\f\7\2\u0091\u0092\5\24\13\2\u0092\13\3\2\2\2\u0093\u0095"+
-		"\5\16\b\2\u0094\u0093\3\2\2\2\u0095\u0098\3\2\2\2\u0096\u0094\3\2\2\2"+
-		"\u0096\u0097\3\2\2\2\u0097\r\3\2\2\2\u0098\u0096\3\2\2\2\u0099\u009b\7"+
-		"\60\2\2\u009a\u0099\3\2\2\2\u009a\u009b\3\2\2\2\u009b\u009c\3\2\2\2\u009c"+
-		"\u009d\t\4\2\2\u009d\u009f\7n\2\2\u009e\u00a0\t\2\2\2\u009f\u009e\3\2"+
-		"\2\2\u009f\u00a0\3\2\2\2\u00a0\u00a3\3\2\2\2\u00a1\u00a2\7\5\2\2\u00a2"+
+		" \"$&(*,.\60\62\64\668:<>@BDFHJLNP\2\20\4\2OOQQ\3\2\3\4\3\2\6\7\t\2\r"+
+		"\r\22\22\30\30\36\36%%\'\'nn\3\2Y\\\3\2OP\4\2]^bb\3\2[\\\4\2MNTU\4\2S"+
+		"SVV\3\2WX\4\2LLcm\3\2YZ\3\2=B\u0268\2R\3\2\2\2\4p\3\2\2\2\6s\3\2\2\2\b"+
+		"\u0088\3\2\2\2\n\u0090\3\2\2\2\f\u0096\3\2\2\2\16\u009a\3\2\2\2\20\u00b0"+
+		"\3\2\2\2\22\u00b8\3\2\2\2\24\u00c0\3\2\2\2\26\u00c4\3\2\2\2\30\u00f2\3"+
+		"\2\2\2\32\u00f6\3\2\2\2\34\u00f8\3\2\2\2\36\u0100\3\2\2\2 \u0108\3\2\2"+
+		"\2\"\u010b\3\2\2\2$\u0115\3\2\2\2&\u0125\3\2\2\2(\u0127\3\2\2\2*\u0140"+
+		"\3\2\2\2,\u0146\3\2\2\2.\u0153\3\2\2\2\60\u0156\3\2\2\2\62\u015f\3\2\2"+
+		"\2\64\u0162\3\2\2\2\66\u0165\3\2\2\28\u0168\3\2\2\2:\u0170\3\2\2\2<\u017a"+
+		"\3\2\2\2>\u018e\3\2\2\2@\u0190\3\2\2\2B\u0192\3\2\2\2D\u019a\3\2\2\2F"+
+		"\u01b5\3\2\2\2H\u01fc\3\2\2\2J\u01ff\3\2\2\2L\u0221\3\2\2\2N\u0223\3\2"+
+		"\2\2P\u0225\3\2\2\2RU\5\4\3\2SV\7\23\2\2TV\7&\2\2US\3\2\2\2UT\3\2\2\2"+
+		"VX\3\2\2\2WY\t\2\2\2XW\3\2\2\2XY\3\2\2\2Y\\\3\2\2\2Z[\7\33\2\2[]\7n\2"+
+		"\2\\Z\3\2\2\2\\]\3\2\2\2]g\3\2\2\2^_\7\"\2\2_d\7n\2\2`a\7J\2\2ac\7n\2"+
+		"\2b`\3\2\2\2cf\3\2\2\2db\3\2\2\2de\3\2\2\2eh\3\2\2\2fd\3\2\2\2g^\3\2\2"+
+		"\2gh\3\2\2\2hi\3\2\2\2ij\7E\2\2jk\5\n\6\2kl\7F\2\2l\3\3\2\2\2mo\5\6\4"+
+		"\2nm\3\2\2\2or\3\2\2\2pn\3\2\2\2pq\3\2\2\2q\5\3\2\2\2rp\3\2\2\2st\7#\2"+
+		"\2tu\t\3\2\2uz\7n\2\2vw\7\3\2\2wy\7n\2\2xv\3\2\2\2y|\3\2\2\2zx\3\2\2\2"+
+		"z{\3\2\2\2{}\3\2\2\2|z\3\2\2\2}\u0084\7\3\2\2~\u0081\7n\2\2\177\u0080"+
+		"\7\5\2\2\u0080\u0082\7n\2\2\u0081\177\3\2\2\2\u0081\u0082\3\2\2\2\u0082"+
+		"\u0085\3\2\2\2\u0083\u0085\7]\2\2\u0084~\3\2\2\2\u0084\u0083\3\2\2\2\u0085"+
+		"\u0086\3\2\2\2\u0086\u0087\7I\2\2\u0087\7\3\2\2\2\u0088\u008d\7n\2\2\u0089"+
+		"\u008a\7K\2\2\u008a\u008c\7n\2\2\u008b\u0089\3\2\2\2\u008c\u008f\3\2\2"+
+		"\2\u008d\u008b\3\2\2\2\u008d\u008e\3\2\2\2\u008e\t\3\2\2\2\u008f\u008d"+
+		"\3\2\2\2\u0090\u0091\5\f\7\2\u0091\u0092\5\24\13\2\u0092\13\3\2\2\2\u0093"+
+		"\u0095\5\16\b\2\u0094\u0093\3\2\2\2\u0095\u0098\3\2\2\2\u0096\u0094\3"+
+		"\2\2\2\u0096\u0097\3\2\2\2\u0097\r\3\2\2\2\u0098\u0096\3\2\2\2\u0099\u009b"+
+		"\7\60\2\2\u009a\u0099\3\2\2\2\u009a\u009b\3\2\2\2\u009b\u009c\3\2\2\2"+
+		"\u009c\u009d\t\4\2\2\u009d\u009f\7n\2\2\u009e\u00a0\t\2\2\2\u009f\u009e"+
+		"\3\2\2\2\u009f\u00a0\3\2\2\2\u00a0\u00a3\3\2\2\2\u00a1\u00a2\7\5\2\2\u00a2"+
 		"\u00a4\5\30\r\2\u00a3\u00a1\3\2\2\2\u00a3\u00a4\3\2\2\2\u00a4\u00a6\3"+
 		"\2\2\2\u00a5\u00a7\5\62\32\2\u00a6\u00a5\3\2\2\2\u00a6\u00a7\3\2\2\2\u00a7"+
 		"\u00a9\3\2\2\2\u00a8\u00aa\5\20\t\2\u00a9\u00a8\3\2\2\2\u00a9\u00aa\3"+
