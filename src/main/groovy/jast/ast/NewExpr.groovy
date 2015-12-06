@@ -13,6 +13,9 @@ public class NewExpr extends ExprNode{
     
     public NewExpr(String type=null,List<ExprNode> arguments=null){
         
+            if(arguments == null) arguments = new LinkedList();
+        
+        
             this.type = type;
         
             this.arguments = arguments;

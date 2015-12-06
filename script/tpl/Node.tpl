@@ -10,6 +10,9 @@ public class {{name}} extends {{parent}}{
     
     {{#if fields}}
     public {{name}}({{#fields}}{{#if @index}},{{/if}}{{&type}} {{name}}=null{{/fields}}){
+        {{#each listFields}}
+            if({{this}} == null) {{this}} = new LinkedList();
+        {{/each}}
         {{#each fields}}
             this.{{name}} = {{name}};
         {{/each}}

@@ -63,12 +63,10 @@ import jast.ast.*;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 
 public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements KalangVisitor<ExprNode> {
@@ -96,10 +94,8 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     //short name to full name
     private final Map<String,String> fullNames = new HashMap<String, String>();
     private final List<String> importPaths = new LinkedList<String>();
-    Stack<VarTable> vtbs = new Stack();
     int varCounter = 0;
     ClassNode cls = new ClassNode();
-    //List<Statement> codes;
     Stack<List<Statement>> codeStack = new Stack<List<Statement>>();
     List<ExprNode> arguments;
     MethodNode method;	
@@ -115,6 +111,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	private String classPath;
 	
 	TypeSystem castSystem;
+	private VarTable<String,VarDeclStmt> vtb;
     
     public static class Position{
         int offset;
@@ -174,7 +171,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
     
     private void startBlock(){
-    	this.codeStack.add(new LinkedList());
+    	this.codeStack.add(new LinkedList<Statement>());
     }
     
     private List<Statement> endBlock(){
@@ -184,28 +181,21 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     private BlockStmt endBlockAsStmt(){
     	return new BlockStmt(endBlock());
     }
+    
+    void newVarStack(){
+		if(vtb!=null){
+			vtb = new VarTable<String,VarDeclStmt>(vtb);
+		}else{
+			vtb = new VarTable<String,VarDeclStmt>();
+		}
+	}
 	
-    private VarTable getVarTable(){
-        return vtbs.peek();
-    }
+	void popVarStack(){
+		vtb = vtb.getParent();
+	}
 	
     public Map<AstNode,ParseTree> getParseTreeMap(){
         return this.a2p;
-    }
-	
-    private void pushVarTable(){
-        VarTable vtb;
-        if(vtbs.size()>0){
-            vtb = new VarTable(getVarTable());
-        }else{
-            vtb = new VarTable();
-        }
-		
-        vtbs.push(vtb);
-    }
-	
-    private void popVarTable(){
-        vtbs.pop();
     }
 	
     public ClassNode getAst(){
@@ -242,13 +232,12 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         for(int i=0;i<ids.size();i++){
             ExpressionContext e = ctx.expression(i);
             ExprNode v = visit(e);
-            List args = new LinkedList();
+            InvocationExpr iv = new InvocationExpr(ve,"put");
             ConstExpr k = new ConstExpr();
             k.type = STRING_CLASS;
             k.value = ctx.Identifier(i).getText();
-            args.add(k);
-            args.add(v);
-            InvocationExpr iv = new InvocationExpr(ve,"put",args);
+            iv.arguments.add(k);
+            iv.arguments.add(v);
             ExprStmt es = new ExprStmt(iv);
             addCode(es,ctx);
         }
@@ -270,9 +259,8 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ve.varId = vid;
         ve.declStmt = vds;
         for(ExpressionContext e:ctx.expression()){
-            List args = new LinkedList();
-            args.add(visit(e));
-            InvocationExpr iv = new InvocationExpr(ve,"add",args);
+            InvocationExpr iv = new InvocationExpr(ve,"add");
+            iv.arguments.add(visit(e));
             addCode(new ExprStmt(iv),ctx);
         }
         //TODO set generic type
@@ -350,7 +338,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         if(classType.equals("interface")) cls.isInterface = true;
         if(ctx.parentClass!=null) 
             cls.parentName=(ctx.parentClass.getText());
-        cls.interfaces = new LinkedList();
         if(ctx.interfaces!=null && ctx.interfaces.size()>0){
             for(Token itf:ctx.interfaces){
                 cls.interfaces.add(itf.getText());
@@ -361,7 +348,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitClassBody(ClassBodyContext ctx) {
-        this.pushVarTable();
+        this.newVarStack();
         this.visitFieldDeclList(ctx.fieldDeclList());
         this.visitMethodDeclList(ctx.methodDeclList());
         
@@ -370,7 +357,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitFieldDeclList(FieldDeclListContext ctx) {
-        cls.fields = new LinkedList();
         for(FieldDeclContext fd:ctx.fieldDecl()){
             this.visitFieldDecl(fd);
         }
@@ -407,16 +393,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitMethodDeclList(MethodDeclListContext ctx) {
-        cls.methods = new LinkedList();
-        for(MethodDeclContext md:ctx.methodDecl()){
-            visitMethodDecl(md);
-        }
+        visitChildren(ctx);
         return null;
     }
 
     @Override
     public ExprNode visitMethodDecl(MethodDeclContext ctx) {
-        this.pushVarTable();
+        this.newVarStack();
         String name = ctx.name.getText();
         String type = "void";
         if(!ctx.prefix.getText().equals(type)){
@@ -436,14 +419,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         	visitStatList(ctx.statList());
         	method.body = new BlockStmt(endBlock());
         }
-        method.exceptionTypes = new LinkedList();
         if(ctx.exceptionTypes!=null){
         	for(Token et:ctx.exceptionTypes){
         		String eFullType = this.getFullClassName(et.getText());
         		method.exceptionTypes.add(eFullType);
         	}
         }
-        this.popVarTable();
+        this.popVarStack();
         cls.methods.add(method);
         return null;
     }
@@ -456,7 +438,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitArgumentDeclList(ArgumentDeclListContext ctx) {
-        method.parameters = new LinkedList();
         for(ArgumentDeclContext ad:ctx.argumentDecl()){
             visitArgumentDecl(ad);
         }
@@ -547,7 +528,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         }
         boolean isReadOnly = ctx.getChild(0).getText() == "val";
         //TODO readonly
-        VarTable vtb = this.getVarTable();
         if(this.getNodeByName(name)!=null){
             reportError("defined duplicatedly:" + name,ctx.Identifier());
         }
@@ -622,7 +602,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitForStat(ForStatContext ctx) {
-        this.pushVarTable();
+        this.newVarStack();
         LoopStmt ls = new LoopStmt();
         BlockStmt body = new BlockStmt();
         ls.loopBody = body;
@@ -635,7 +615,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         visitStatList(ctx.statList());
         body.statements = endBlock();
         visitForUpdate(ctx.forUpdate());
-        this.popVarTable();
+        this.popVarStack();
         return null;
     }
 
@@ -718,7 +698,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         InvocationExpr is = new InvocationExpr();
         is.methodName =methodName;
         is.target = (ExprNode) expr;
-        arguments = is.arguments = new LinkedList();
+        arguments = is.arguments;
         visitArguments(argumentsCtx);
         return is;
     }
@@ -813,7 +793,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     private ExprNode getNodeByName(String name) {
-        VarTable vtb = this.getVarTable();
         if(vtb.exist(name)){
             VarExpr ve = new VarExpr();
             VarDeclStmt declStmt = (VarDeclStmt) vtb.get(name); //vars.indexOf(vo);
@@ -943,15 +922,14 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 		visit(ctx.tryStmtList);
 		tryStmt.execStmt = endBlockAsStmt();
 		if(ctx.catchTypes!=null){
-			tryStmt.catchStmts = new LinkedList();
 			for(int i=0;i<ctx.catchTypes.size();i++){
 				startBlock();
 				String vName = ctx.catchVarNames.get(i).getText();
 				String vType = ctx.catchTypes.get(i).getText();
-				this.pushVarTable();
+				this.newVarStack();
 				VarDeclStmt declStmt = this.getVarDecl(vName, vType);
 				visit(ctx.catchStmts.get(i));
-				this.popVarTable();
+				this.popVarStack();
 				CatchStmt catchStmt = new CatchStmt();
 				catchStmt.catchVarDecl = declStmt;
 				catchStmt.execStmt =  endBlockAsStmt();
@@ -959,11 +937,11 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 			}
 		}
 		if(ctx.finalStmtList!=null){
-			this.pushVarTable();
+			this.newVarStack();
 			BlockStmt finalBody = new BlockStmt();
 			startBlock();
 			visit(ctx.finalStmtList);
-			this.popVarTable();
+			this.popVarStack();
 			finalBody.statements = endBlock();
 			tryStmt.finallyStmt = finalBody;
 		}
@@ -982,7 +960,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 		vds.type = this.getFullClassName(type);
 		vds.varId = this.varCounter++;
 		vds.varName = name;
-		this.getVarTable().put(name, vds.varId);
+		vtb.put(name, vds);
 		return vds;
 	}
 

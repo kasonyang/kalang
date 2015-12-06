@@ -17,6 +17,7 @@ public class VarDeclStmt extends Statement{
     
     public VarDeclStmt(Integer varId=null,String varName=null,String type=null,ExprNode initExpr=null){
         
+        
             this.varId = varId;
         
             this.varName = varName;

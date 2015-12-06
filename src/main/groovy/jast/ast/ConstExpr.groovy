@@ -13,6 +13,7 @@ public class ConstExpr extends ExprNode{
     
     public ConstExpr(Object value=null,String type=null){
         
+        
             this.value = value;
         
             this.type = type;

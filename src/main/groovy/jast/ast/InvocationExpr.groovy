@@ -15,6 +15,9 @@ public class InvocationExpr extends ExprNode{
     
     public InvocationExpr(ExprNode target=null,String methodName=null,List<ExprNode> arguments=null){
         
+            if(arguments == null) arguments = new LinkedList();
+        
+        
             this.target = target;
         
             this.methodName = methodName;

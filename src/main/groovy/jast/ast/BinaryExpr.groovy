@@ -15,6 +15,7 @@ public class BinaryExpr extends ExprNode{
     
     public BinaryExpr(ExprNode expr1=null,ExprNode expr2=null,String operation=null){
         
+        
             this.expr1 = expr1;
         
             this.expr2 = expr2;

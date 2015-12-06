@@ -17,6 +17,9 @@ public class LoopStmt extends Statement{
     
     public LoopStmt(List<Statement> initStmts=null,Statement loopBody=null,ExprNode preConditionExpr=null,ExprNode postConditionExpr=null){
         
+            if(initStmts == null) initStmts = new LinkedList();
+        
+        
             this.initStmts = initStmts;
         
             this.loopBody = loopBody;

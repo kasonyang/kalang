@@ -23,6 +23,13 @@ public class ClassNode extends AstNode{
     
     public ClassNode(Integer modifier=null,String name=null,String parentName=null,List<FieldNode> fields=null,List<MethodNode> methods=null,List<String> interfaces=null,Boolean isInterface=null){
         
+            if(fields == null) fields = new LinkedList();
+        
+            if(methods == null) methods = new LinkedList();
+        
+            if(interfaces == null) interfaces = new LinkedList();
+        
+        
             this.modifier = modifier;
         
             this.name = name;

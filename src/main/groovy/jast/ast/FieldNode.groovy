@@ -17,6 +17,7 @@ public class FieldNode extends AstNode{
     
     public FieldNode(Integer modifier=null,String type=null,String name=null,ExprNode initExpr=null){
         
+        
             this.modifier = modifier;
         
             this.type = type;

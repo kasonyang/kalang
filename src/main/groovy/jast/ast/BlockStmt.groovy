@@ -11,6 +11,9 @@ public class BlockStmt extends Statement{
     
     public BlockStmt(List<Statement> statements=null){
         
+            if(statements == null) statements = new LinkedList();
+        
+        
             this.statements = statements;
         
     }

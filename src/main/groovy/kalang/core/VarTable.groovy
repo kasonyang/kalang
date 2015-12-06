@@ -4,7 +4,7 @@ class VarTable<T,V> {
 	
     private HashMap<T,V> vars = [:]
 	
-    VarTable parent
+    VarTable<T,V> parent
 	
     VarTable(){
 		

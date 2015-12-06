@@ -15,6 +15,9 @@ public class TryStmt extends Statement{
     
     public TryStmt(Statement execStmt=null,List<CatchStmt> catchStmts=null,Statement finallyStmt=null){
         
+            if(catchStmts == null) catchStmts = new LinkedList();
+        
+        
             this.execStmt = execStmt;
         
             this.catchStmts = catchStmts;
