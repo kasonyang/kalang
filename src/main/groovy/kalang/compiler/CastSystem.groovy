@@ -50,6 +50,7 @@ class CastSystem {
 	}
 	
 	boolean isPrimitiveType(String type){
+		if(type.endsWith("[]")) type = type.substring(0,type.length()-2)
 		primitive2class.containsKey(type)
 	}
 	
