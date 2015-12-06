@@ -3,7 +3,6 @@ import kalang.compiler.*
 import jast.ast.*
 import kalang.antlr.KalangLexer
 import kalang.antlr.KalangParser
-import kalang.core.VarObject
 import kalang.core.VarTable
 import kava.antlr.*
 
