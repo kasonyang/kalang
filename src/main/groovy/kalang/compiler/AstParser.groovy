@@ -16,7 +16,7 @@ class AstParser {
 		this.castSystem = new TypeSystem(astLoader)
 	}
 	
-	static String methodToString(String name,List<String> types,String className=null){
+	static String getMethodDescriptor(String name,List<String> types,String className=null){
 		String typeStr = types.join(",")
 		String str = "${name}(${typeStr})"
 		if(className){
@@ -25,8 +25,8 @@ class AstParser {
 		return str
 	}
 	
-	static String methodToString(MethodNode node,String className=null){
-		methodToString(node.name,getParameterTypes(node),className)
+	static String getMethodDescriptor(MethodNode node,String className=null){
+		getMethodDescriptor(node.name,getParameterTypes(node),className)
 	}
 	
 	FieldNode getField(ClassNode ast,String name){

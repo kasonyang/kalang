@@ -119,7 +119,7 @@ class TypeChecker extends AstVisitor<String> {
                 def itfNode = this.loadAst(itfName,clazz)
                 def unImps = astParser.getUnimplementedMethod(clazz,itfNode)
                 if(unImps?.size()>0){
-                    String mStr = astParser.methodToString(unImps.get(0));
+                    String mStr = astParser.getMethodDescriptor(unImps.get(0));
                     CE.notImplementedMethods(clazz,itfNode,unImps)
                     //fail(CE"unimplemented method:${mStr}",clazz);
                 }
@@ -408,7 +408,7 @@ class TypeChecker extends AstVisitor<String> {
 		this.exceptionStack.pop()
 		boolean needReturn = (node.type!='void'&&node.type==null)
 		if(node.body && needReturn && !returned){
-			String mStr = this.astParser.methodToString(node,this.clazz.name)
+			String mStr = this.astParser.getMethodDescriptor(node,this.clazz.name)
 			CE.fail("Missing return statement in method:${mStr}",CE.LACKS_OF_STATEMENT,node)
 		}
 		return ret
