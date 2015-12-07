@@ -186,7 +186,7 @@ class TypeChecker extends AstVisitor<String> {
     public String visitBinaryExpr(BinaryExpr node) {
         String t1 = (visit(node.expr1).toString())
         String t2 = (visit(node.expr2).toString())
-        String op = node.operation
+		String op = node.operation
         String t;
         switch(op){
         case "==":
@@ -300,6 +300,9 @@ class TypeChecker extends AstVisitor<String> {
         String et = visit(node.expr)
         if(preOp=="!"){
             requireBoolean(node,et)
+        }else{
+			//TODO unary type check
+			//requireNumber(node,et)
         }
         return et;
     }
