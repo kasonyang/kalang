@@ -63,7 +63,9 @@ class TypeChecker extends AstVisitor<String> {
     private static final String NULL_CLASS = "java.lang.NullObject";
 
     private static final String DEFAULT_CLASS = "java.lang.Object";
-        
+    
+	private static final String VOID_TYPE = "void"    
+	
     private HashMap<Integer,VarDeclStmt> varDeclStmts = [:]
     
 	HashMap<String,FieldNode> fields
@@ -142,6 +144,7 @@ class TypeChecker extends AstVisitor<String> {
     @Override
     public String visitAssignExpr(AssignExpr node) {
         String ft = visit(node.from);
+		requireNoneVoid(ft,node)
         String tt = visit(node.to);
 		node.from = cast(node.from,ft,tt,node)
         //checkCastable(ft,tt,node);
@@ -354,6 +357,7 @@ class TypeChecker extends AstVisitor<String> {
         if(node.type==null){
             if(node.initExpr){
                 node.type = visit(node.initExpr)
+				requireNoneVoid(node.type,node);
             }else{
                 node.type = DEFAULT_CLASS
             }
@@ -453,6 +457,11 @@ class TypeChecker extends AstVisitor<String> {
 		}
 	}
 	
+	void requireNoneVoid(String type,AstNode node){
+		if(!type || type==VOID_TYPE){
+			CE.unsupported("use void type as value",node)
+		}
+	}
 	
 	MethodNode selectMethod(AstNode node,ClassNode cls,String methodName,String[] types){
 		def methods = this.astParser.getMethodsByName(cls,methodName)

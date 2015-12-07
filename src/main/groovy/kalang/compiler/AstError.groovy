@@ -31,6 +31,10 @@ class AstError extends RuntimeException {
         this.node = node
 		this.errorCode = errorCode
     }
+	
+	static void unsupported(String op,AstNode node){
+		fail("It is unsupported to ${op}",UNSUPPORTED,node)
+	}
     
     static void fail(String msg,int errorCode,AstNode node){
         throw new AstError(msg,errorCode,node)
