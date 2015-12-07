@@ -81,7 +81,8 @@ kac src dest
         }catch(CompileError e){
             def src = e.getSource();
             def ltext = src.substring(e.offset,e.offset + e.length)
-            System.err.println e.message + " on ${ltext}"
+            String errMsg =  e.message + " on ${ltext}"
+			throw new Exception(errMsg)
         }
 	}
     
