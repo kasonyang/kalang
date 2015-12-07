@@ -80,6 +80,8 @@ class TypeChecker extends AstVisitor<String> {
 	
 	MethodNode method
 	
+	List<MethodNode> methodDeclared
+	
 	boolean returned
 	
 	private Stack<List<String>> exceptionStack = new Stack()
@@ -109,6 +111,7 @@ class TypeChecker extends AstVisitor<String> {
 
     public void check(ClassNode clz){
         this.fields = [:]
+		this.methodDeclared = []
         for(def f in clz.fields){
             this.fields.put(f.name,f)
         }
@@ -401,6 +404,10 @@ class TypeChecker extends AstVisitor<String> {
 
 	@Override
 	public String visitMethodNode(MethodNode node) {
+		String mStr = this.astParser.getMethodDescriptor(node,this.clazz.name)
+		if(methodDeclared.contains(mStr)){
+			CE.unsupported("declare method duplicately",node)
+		}
 		method = node
 		returned = false
 		this.exceptionStack.push(new LinkedList());
@@ -408,7 +415,6 @@ class TypeChecker extends AstVisitor<String> {
 		this.exceptionStack.pop()
 		boolean needReturn = (node.type!='void'&&node.type==null)
 		if(node.body && needReturn && !returned){
-			String mStr = this.astParser.getMethodDescriptor(node,this.clazz.name)
 			CE.fail("Missing return statement in method:${mStr}",CE.LACKS_OF_STATEMENT,node)
 		}
 		return ret
