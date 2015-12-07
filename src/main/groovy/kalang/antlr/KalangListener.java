@@ -58,16 +58,6 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitClassBody(KalangParser.ClassBodyContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link KalangParser#fieldDeclList}.
-	 * @param ctx the parse tree
-	 */
-	void enterFieldDeclList(KalangParser.FieldDeclListContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link KalangParser#fieldDeclList}.
-	 * @param ctx the parse tree
-	 */
-	void exitFieldDeclList(KalangParser.FieldDeclListContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link KalangParser#fieldDecl}.
 	 * @param ctx the parse tree
 	 */
@@ -97,16 +87,6 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitGetter(KalangParser.GetterContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link KalangParser#methodDeclList}.
-	 * @param ctx the parse tree
-	 */
-	void enterMethodDeclList(KalangParser.MethodDeclListContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link KalangParser#methodDeclList}.
-	 * @param ctx the parse tree
-	 */
-	void exitMethodDeclList(KalangParser.MethodDeclListContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#methodDecl}.
 	 * @param ctx the parse tree

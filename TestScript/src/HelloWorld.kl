@@ -1,5 +1,10 @@
 import \java\io\FileInputStream as FIS;
 class{
+
+    constructor(name as String){
+        
+    }
+
     static void main(args as String[]) throws Exception{
         var s = new String("HelloWorld\n");
         System.out.println(s);

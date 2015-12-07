@@ -26,11 +26,8 @@ qualifiedName:
    Identifier ('.' Identifier)*
 ;
 classBody:
-  fieldDeclList
-  methodDeclList
-;
-fieldDeclList:
   fieldDecl*
+  methodDecl*
 ;
 fieldDecl:
    STATIC? ('val'|'var') Identifier (QUESTION|BANG)? ('as' type)? varInit? setter? getter? ';'
@@ -41,14 +38,12 @@ setter:
 getter:
   'get' '{' statList '}'
 ;
-methodDeclList:
-  methodDecl*
-;
 methodDecl:
    STATIC? 
    (
      (prefix='var' name=Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? )
      |(prefix='void' name=Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' )
+     |(prefix='constructor' (QUESTION|BANG)? '(' argumentDeclList? ')' )
    )
    ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
    ( ('{' statList '}') | ';')

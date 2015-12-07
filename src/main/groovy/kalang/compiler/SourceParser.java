@@ -30,7 +30,6 @@ import kalang.antlr.KalangParser.ExprStatContext;
 import kalang.antlr.KalangParser.ExpressionContext;
 import kalang.antlr.KalangParser.ExpressionsContext;
 import kalang.antlr.KalangParser.FieldDeclContext;
-import kalang.antlr.KalangParser.FieldDeclListContext;
 import kalang.antlr.KalangParser.ForInitContext;
 import kalang.antlr.KalangParser.ForStatContext;
 import kalang.antlr.KalangParser.ForUpdateContext;
@@ -41,7 +40,6 @@ import kalang.antlr.KalangParser.ImportDeclContext;
 import kalang.antlr.KalangParser.ImportDeclListContext;
 import kalang.antlr.KalangParser.LiteralContext;
 import kalang.antlr.KalangParser.MethodDeclContext;
-import kalang.antlr.KalangParser.MethodDeclListContext;
 import kalang.antlr.KalangParser.NewExprContext;
 import kalang.antlr.KalangParser.PrimaryIdentifierContext;
 import kalang.antlr.KalangParser.PrimaryLiteralContext;
@@ -349,17 +347,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitClassBody(ClassBodyContext ctx) {
         this.newVarStack();
-        this.visitFieldDeclList(ctx.fieldDeclList());
-        this.visitMethodDeclList(ctx.methodDeclList());
-        
-        return null;
-    }
-
-    @Override
-    public ExprNode visitFieldDeclList(FieldDeclListContext ctx) {
-        for(FieldDeclContext fd:ctx.fieldDecl()){
-            this.visitFieldDecl(fd);
-        }
+        this.visitChildren(ctx);
         return null;
     }
 
@@ -392,18 +380,21 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     @Override
-    public ExprNode visitMethodDeclList(MethodDeclListContext ctx) {
-        visitChildren(ctx);
-        return null;
-    }
-
-    @Override
     public ExprNode visitMethodDecl(MethodDeclContext ctx) {
         this.newVarStack();
-        String name = ctx.name.getText();
-        String type = "void";
-        if(!ctx.prefix.getText().equals(type)){
-        	type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
+        String name;
+        String type;
+        String prefixType = ctx.prefix.getText();
+        if(prefixType.equals("constructor")){
+        	type = "void";
+        	name = "<init>";
+        }else{
+        	if(prefixType.equals("void")){
+        		type = "void";
+        	}else{
+        		type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
+        	}
+        	name = ctx.name.getText();
         }
         int mdf = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
         boolean isStatic = false;

@@ -76,18 +76,6 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFieldDeclList(KalangParser.FieldDeclListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFieldDeclList(KalangParser.FieldDeclListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterFieldDecl(KalangParser.FieldDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -119,18 +107,6 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitGetter(KalangParser.GetterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterMethodDeclList(KalangParser.MethodDeclListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitMethodDeclList(KalangParser.MethodDeclListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -41,12 +41,6 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitClassBody(KalangParser.ClassBodyContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link KalangParser#fieldDeclList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFieldDeclList(KalangParser.FieldDeclListContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link KalangParser#fieldDecl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -64,12 +58,6 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitGetter(KalangParser.GetterContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link KalangParser#methodDeclList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitMethodDeclList(KalangParser.MethodDeclListContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link KalangParser#methodDecl}.
 	 * @param ctx the parse tree

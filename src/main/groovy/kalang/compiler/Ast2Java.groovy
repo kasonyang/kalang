@@ -46,6 +46,8 @@ class Ast2Java extends AbstractAstVisitor<String>{
     private String stmtDelim = ";"
 	
     private String indent = "";
+	
+	private ClassNode cls;
     
     private String trimStmt(String stmt){
         stmt = stmt.trim();
@@ -121,6 +123,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 	
     @Override
     public String visitClassNode(ClassNode node) {
+		cls = node
         String imports = ""// visit(node.imports).join("\r\n")
         incIndent()
         String fs = visit(node.fields).join("\r\n");
@@ -165,7 +168,14 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		if(node.exceptionTypes?.size()>0){
 			exStr = "throws " + node.exceptionTypes.join(",")
 		}
-        indent + "${visitModifier(node.modifier)} ${node.type} ${node.name}(${ps}) ${exStr} ${body}"
+		String mname = node.name
+		String typeStr = ""
+		if(mname=="<init>"){
+			mname = cls.name
+		}else{
+			typeStr = node.type
+		}
+        indent + "${visitModifier(node.modifier)} ${typeStr} ${mname}(${ps}) ${exStr} ${body}"
     }
 
     @Override
