@@ -476,7 +476,15 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         if(type!=null) type = checkFullType(type,ctx);
         ExprNode namedNode = this.getNodeByName(name);
         if(namedNode!=null){
-            reportError("defined duplicatedly:" + name,ctx);
+        	String msg = null;
+        	if(namedNode instanceof ClassExpr){
+        		msg = "Can't use class name as variable name:" + name;
+        	}else if(namedNode instanceof ParameterExpr){
+        		msg = "Variable was definded in parameters:" + name;
+        	}else if(namedNode instanceof VarExpr){
+        		msg = "Variable was definded already:" + name;
+        	}
+        	if(msg!=null) reportError(msg,ctx);
         }
         VarObject vds = new VarObject();
         vds.name = name;
