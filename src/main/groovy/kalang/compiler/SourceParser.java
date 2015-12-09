@@ -877,7 +877,12 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
 	@Override
 	public ExprNode visitExprIdentifier(ExprIdentifierContext ctx) {
-		return this.getNodeByName(ctx.Identifier().getText());
+		String name = ctx.Identifier().getText();
+		ExprNode expr = this.getNodeByName(name);
+		if(expr==null){
+			this.reportError(name + " is undefined!", ctx);
+		}
+		return expr;
 	}
 
 	@Override
