@@ -30,7 +30,7 @@ classBody:
   methodDecl*
 ;
 fieldDecl:
-   STATIC? ('val'|'var') Identifier (QUESTION|BANG)? ('as' type)? varInit? setter? getter? ';'
+   STATIC? varDecl ';'
 ;
 setter:
   'set' '(' argumentDeclList ')' '{' statList '}'
@@ -110,14 +110,17 @@ varDeclStat:
 ;
 varDecl:
   (
-      ('var'|'val') name=Identifier ('as' type)? varInit?
+      ('var'|'val') name=Identifier ('as' type)? ('=' expression)?
   )|(
-      varType=Identifier name=Identifier varInit?
+      varType=Identifier name=Identifier ('=' expression)?
   )
 ;
+/*
 varInit:
  '=' expression
 ;
+* 
+*/
 
 breakStat:BREAK ';';
 continueStat:CONTINUE ';';
