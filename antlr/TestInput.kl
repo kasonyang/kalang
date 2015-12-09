@@ -1,0 +1,10 @@
+class{
+    String msg = "Hello,world";
+    constructor(String msg){
+        this.msg = msg;
+    }
+    void main(String[] args){
+        var s = msg;
+        System.out.println(s);
+    }
+}
