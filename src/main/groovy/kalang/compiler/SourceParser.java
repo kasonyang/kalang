@@ -511,16 +511,18 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitVarDecl(VarDeclContext ctx) {
-        String name = ctx.Identifier().getText();
+        String name = ctx.name.getText();
         String type = DEFAULT_VAR_TYPE;
-        if(ctx.type()!=null){
-            type = ctx.type().getText();
-            type = checkFullType(type,ctx);
+        if(ctx.varType!=null){
+            type = ctx.varType.getText();    
+        }else if(ctx.type()!=null){
+        	type = ctx.type().getText();
         }
+        if(type!=null) type = checkFullType(type,ctx);
         boolean isReadOnly = ctx.getChild(0).getText() == "val";
         //TODO readonly
         if(this.getNodeByName(name)!=null){
-            reportError("defined duplicatedly:" + name,ctx.Identifier());
+            reportError("defined duplicatedly:" + name,ctx);
         }
         VarDeclStmt vds = new VarDeclStmt();
         Integer vid = varCounter++;

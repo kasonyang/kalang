@@ -109,7 +109,11 @@ varDeclStat:
   varDecl ';'
 ;
 varDecl:
-  ('var'|'val') Identifier ('as' type)? varInit?
+  (
+      ('var'|'val') name=Identifier ('as' type)? varInit?
+  )|(
+      varType=Identifier name=Identifier varInit?
+  )
 ;
 varInit:
  '=' expression

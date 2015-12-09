@@ -2,7 +2,7 @@ import \java\io\FileInputStream as FIS;
 class{
 
     constructor(name as String){
-        
+        String s;
     }
 
     static void main(args as String[]) throws Exception{
