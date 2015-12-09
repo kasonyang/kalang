@@ -3,11 +3,7 @@ public interface IAstVisitor<T>{
     
     public T visitClassNode(ClassNode node);
     
-    public T visitFieldNode(FieldNode node);
-    
     public T visitMethodNode(MethodNode node);
-    
-    public T visitParameterNode(ParameterNode node);
     
     public T visitBlockStmt(BlockStmt node);
     

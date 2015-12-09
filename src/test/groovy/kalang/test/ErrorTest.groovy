@@ -13,7 +13,7 @@ import kalang.tool.Compiler as TC
 class ErrorTest {
 	
 	String outDir = "TestScript/generatedCode"
-	String srcDir = "TestScript/src"
+	String srcDir = "antlr"
 	
 	AstError e
 	
@@ -57,8 +57,9 @@ class ErrorTest {
 	
 	@Test
 	void test(){
-		cp("HelloWorld","MyInterface")
-		cp "kava"
+		cp("TestInput")
+		//cp("HelloWorld","MyInterface")
+		//cp "kava"
 	}
 	
 	@Test

@@ -24,7 +24,7 @@ class JavaAstLoader extends AstLoader {
 		for(def m in methods){
 			def methodNode = MethodNode.create();
 			for(def p in m.parameters){
-				def param = new ParameterNode();
+				def param = new VarObject();
 				param.name = p.name
 				param.type = p.type.name
 				methodNode.parameters.add(param)
@@ -45,7 +45,7 @@ class JavaAstLoader extends AstLoader {
 			}
 		}
 		for(Field f in clz.fields){
-			def fn = new FieldNode()
+			def fn = new VarObject()
 			fn.name = f.name
 			fn.type = f.type.name
 			fn.modifier = f.modifiers

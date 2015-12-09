@@ -8,17 +8,7 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
     }
     
     @Override
-    public T visitFieldNode(FieldNode node){
-        this.visitChildren(node);
-    }
-    
-    @Override
     public T visitMethodNode(MethodNode node){
-        this.visitChildren(node);
-    }
-    
-    @Override
-    public T visitParameterNode(ParameterNode node){
         this.visitChildren(node);
     }
     

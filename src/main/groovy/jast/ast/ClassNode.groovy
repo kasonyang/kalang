@@ -11,7 +11,7 @@ public class ClassNode extends AstNode{
     
     public String parentName;
     
-    public List<FieldNode> fields;
+    public List<VarObject> fields;
     
     public List<MethodNode> methods;
     
@@ -21,7 +21,7 @@ public class ClassNode extends AstNode{
     
     
     
-    public ClassNode(Integer modifier=null,String name=null,String parentName=null,List<FieldNode> fields=null,List<MethodNode> methods=null,List<String> interfaces=null,Boolean isInterface=null){
+    public ClassNode(Integer modifier=null,String name=null,String parentName=null,List<VarObject> fields=null,List<MethodNode> methods=null,List<String> interfaces=null,Boolean isInterface=null){
         
             if(fields == null) fields = new LinkedList();
         

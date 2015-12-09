@@ -13,7 +13,7 @@ public class MethodNode extends AstNode{
     
     public boolean isStatic;
     
-    public List<ParameterNode> parameters;
+    public List<VarObject> parameters;
     
     public Statement body;
     
@@ -21,7 +21,7 @@ public class MethodNode extends AstNode{
     
     
     
-    public MethodNode(Integer modifier=null,String type=null,String name=null,boolean isStatic=null,List<ParameterNode> parameters=null,Statement body=null,List<String> exceptionTypes=null){
+    public MethodNode(Integer modifier=null,String type=null,String name=null,boolean isStatic=null,List<VarObject> parameters=null,Statement body=null,List<String> exceptionTypes=null){
         
             if(parameters == null) parameters = new LinkedList();
         

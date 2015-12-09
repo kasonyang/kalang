@@ -1,20 +1,18 @@
 grammar Kalang;
 
 compiliantUnit:
-  importDeclList
+    importDecl*
+    VarModifier?
     (
         classType='class'
         |classType='interface'
-    ) (QUESTION|BANG)? 
+    ) 
     ('extends' parentClass = Identifier)? 
     ( 'implements' interfaces+=Identifier ( ',' interfaces+=Identifier)* )?
     '{' classBody '}'
 ;
-importDeclList:
-  importDecl*
-;
 importDecl:
-   'import' root=('\\'|'') 
+   'import' (root='\\')? 
     path+=Identifier ('\\' path+=Identifier)*
     '\\'( 
         (name=Identifier ('as' alias=Identifier)? )
@@ -30,21 +28,15 @@ classBody:
   methodDecl*
 ;
 fieldDecl:
-   STATIC? varDecl ';'
-;
-setter:
-  'set' '(' argumentDeclList ')' '{' statList '}'
-;
-getter:
-  'get' '{' statList '}'
+   VarModifier? varDecls ';'
 ;
 methodDecl:
-   STATIC? 
+   VarModifier? 
    (
-     (prefix='var' name=Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' ('as' type)? )
-     |(prefix='void' name=Identifier (QUESTION|BANG)? '(' argumentDeclList? ')' )
-     |(prefix='constructor' (QUESTION|BANG)? '(' argumentDeclList? ')' )
+     ((type|'void') name=Identifier )
+     |(prefix='constructor')
    )
+   '(' varDecls? ')'
    ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
    ( ('{' statList '}') | ';')
 ;
@@ -52,14 +44,11 @@ type:
   noArrayType  ( '[]' )?
 ;
 noArrayType:
-  (Identifier|DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN)
+  (Identifier|DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN|BYTE)
 ;
 
-argumentDeclList:
-   argumentDecl (',' argumentDecl)*
-;
-argumentDecl:   
-  Identifier ('as' type)?
+varDecls:
+   varDecl (',' varDecl)*
 ;
 
 statList:
@@ -112,16 +101,9 @@ varDecl:
   (
       ('var'|'val') name=Identifier ('as' type)? ('=' expression)?
   )|(
-      varType=Identifier name=Identifier ('=' expression)?
+      varType=type name=Identifier ('=' expression)?
   )
 ;
-/*
-varInit:
- '=' expression
-;
-* 
-*/
-
 breakStat:BREAK ';';
 continueStat:CONTINUE ';';
 whileStat:
@@ -132,27 +114,25 @@ doWhileStat:
 ;
 
 forStat:
-  FOR '(' forInit? ';' expression? ';' forUpdate? ')' '{' statList '}'
+  FOR '(' varDecls? ';' expression? ';' expressions? ')'
+  '{' statList '}'
 ;
-
-forInit:
-        varDecl
-       |expressions
-    ;
-forUpdate
-    :   expressions
-;
-
 expressions:
     expression (',' expression)*
 ;
 
 exprStat:
-expression ';'
+    expression ';'
 ;
 
 expression
-    :   primary #exprPrimay
+    :   LPAREN 
+        expression 
+        RPAREN #exprParen
+    |   'this' #exprThis
+    //|   'super'
+    |   literal #exprLiteral
+    |   Identifier #exprIdentifier 
     | map #mapExpr
     | listOrArray # listOrArrayExpr
     |   expression '.' Identifier #exprGetField
@@ -195,18 +175,6 @@ expression
         )
         expression #exprAssign
 ;
-primary
-    :   LPAREN 
-        expression 
-        RPAREN #primayParen
-    //|   'this'
-    //|   'super'
-    |   literal #primaryLiteral
-    |   Identifier #primaryIdentifier 
-    //|   type '.' 'class'
-    //|   'void' '.' 'class'
-    //|   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
-    ;
 map:
 noArrayType? '{' ( Identifier ':' expression ( ',' Identifier ':' expression)*)? '}'
 ;
@@ -229,8 +197,8 @@ arguments
     ;
 // LEXER
 
-//Modifier:( '!' | '?' );
-//STATIC:'static';
+VarModifier:('static'|'final'|'private'|'public'|'protected')+;
+
 // §3.9 Keywords
 
 ABSTRACT      : 'abstract';

@@ -13,6 +13,7 @@ public abstract class {{name}}<T> implements {{interface}}<T>{
     }
     
     public List<T> visit(List nodes){
+        if(nodes==null) return null;
         List<T> result = new LinkedList();
         for(AstNode n:nodes){
             result.add(visit(n));

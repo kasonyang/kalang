@@ -8,8 +8,6 @@ import java.util.Stack;
 
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
-import kalang.antlr.KalangParser.ArgumentDeclContext;
-import kalang.antlr.KalangParser.ArgumentDeclListContext;
 import kalang.antlr.KalangParser.ArgumentsContext;
 import kalang.antlr.KalangParser.BreakStatContext;
 import kalang.antlr.KalangParser.CastExprContext;
@@ -20,40 +18,35 @@ import kalang.antlr.KalangParser.DoWhileStatContext;
 import kalang.antlr.KalangParser.ExprAssignContext;
 import kalang.antlr.KalangParser.ExprGetArrayElementContext;
 import kalang.antlr.KalangParser.ExprGetFieldContext;
+import kalang.antlr.KalangParser.ExprIdentifierContext;
 import kalang.antlr.KalangParser.ExprInvocationContext;
+import kalang.antlr.KalangParser.ExprLiteralContext;
 import kalang.antlr.KalangParser.ExprMemberInvocationContext;
 import kalang.antlr.KalangParser.ExprMidOpContext;
-import kalang.antlr.KalangParser.ExprPrimayContext;
+import kalang.antlr.KalangParser.ExprParenContext;
 import kalang.antlr.KalangParser.ExprSelfOpContext;
 import kalang.antlr.KalangParser.ExprSelfOpPreContext;
 import kalang.antlr.KalangParser.ExprStatContext;
+import kalang.antlr.KalangParser.ExprThisContext;
 import kalang.antlr.KalangParser.ExpressionContext;
 import kalang.antlr.KalangParser.ExpressionsContext;
 import kalang.antlr.KalangParser.FieldDeclContext;
-import kalang.antlr.KalangParser.ForInitContext;
 import kalang.antlr.KalangParser.ForStatContext;
-import kalang.antlr.KalangParser.ForUpdateContext;
-import kalang.antlr.KalangParser.GetterContext;
 import kalang.antlr.KalangParser.IfStatContext;
 import kalang.antlr.KalangParser.IfStatSuffixContext;
 import kalang.antlr.KalangParser.ImportDeclContext;
-import kalang.antlr.KalangParser.ImportDeclListContext;
 import kalang.antlr.KalangParser.LiteralContext;
 import kalang.antlr.KalangParser.MethodDeclContext;
 import kalang.antlr.KalangParser.NewExprContext;
-import kalang.antlr.KalangParser.PrimaryIdentifierContext;
-import kalang.antlr.KalangParser.PrimaryLiteralContext;
-import kalang.antlr.KalangParser.PrimayParenContext;
 import kalang.antlr.KalangParser.QualifiedNameContext;
 import kalang.antlr.KalangParser.ReturnStatContext;
-import kalang.antlr.KalangParser.SetterContext;
 import kalang.antlr.KalangParser.StatContext;
 import kalang.antlr.KalangParser.StatListContext;
 import kalang.antlr.KalangParser.TryStatContext;
 import kalang.antlr.KalangParser.TypeContext;
 import kalang.antlr.KalangParser.VarDeclContext;
 import kalang.antlr.KalangParser.VarDeclStatContext;
-import kalang.antlr.KalangParser.VarInitContext;
+import kalang.antlr.KalangParser.VarDeclsContext;
 import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
@@ -65,6 +58,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 
 public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements KalangVisitor<ExprNode> {
@@ -110,6 +104,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	
 	TypeSystem castSystem;
 	private VarTable<String,VarDeclStmt> vtb;
+	private int varModifier;
+	private List<VarObject> varCollector = new LinkedList();
+	
     
     public static class Position{
         int offset;
@@ -217,15 +214,12 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitMap(KalangParser.MapContext ctx) {
-        int vid = this.varCounter++;
-        VarDeclStmt vds = new VarDeclStmt();
-        vds.varId = vid;
-        vds.type = MAP_CLASS;
-        vds.initExpr = new NewExpr(vds.type);
+        VarObject vo = new VarObject();
+        VarDeclStmt vds = new VarDeclStmt(vo);
+        vo.type = MAP_CLASS;
+        vo.initExpr = new NewExpr(vo.type);
         addCode(vds,ctx);
-        VarExpr ve = new VarExpr();
-        ve.varId = vid;
-        ve.declStmt = vds;
+        VarExpr ve = new VarExpr(vo);
         List ids = ctx.Identifier();
         for(int i=0;i<ids.size();i++){
             ExpressionContext e = ctx.expression(i);
@@ -245,17 +239,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitListOrArray(KalangParser.ListOrArrayContext ctx) {
-        String type = ROOT_CLASS;
         String clsName = DEFAULT_LIST_CLASS;
-        int vid = this.varCounter++;
-        VarDeclStmt vds = new VarDeclStmt();
-        vds.varId = vid;
-        vds.type = clsName;
-        vds.initExpr = new NewExpr(vds.type);
+        VarObject vo = new VarObject();
+        VarDeclStmt vds = new VarDeclStmt(vo);
+        vo.type = clsName;
+        vo.initExpr = new NewExpr(vo.type);
         addCode(vds,ctx);
-        VarExpr ve = new VarExpr();
-        ve.varId = vid;
-        ve.declStmt = vds;
+        VarExpr ve = new VarExpr(vo);
         for(ExpressionContext e:ctx.expression()){
             InvocationExpr iv = new InvocationExpr(ve,"add");
             iv.arguments.add(visit(e));
@@ -282,13 +272,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
-        int vid = this.varCounter++;
-        VarDeclStmt vds = new VarDeclStmt();
+        VarObject vo = new VarObject();
+        VarDeclStmt vds = new VarDeclStmt(vo);
         addCode(vds,ctx);
-        vds.varId = vid;
-        VarExpr ve = new VarExpr();
-        ve.varId = vid;
-        ve.declStmt = vds;
+        VarExpr ve = new VarExpr(vo);
         IfStmt is = new IfStmt();
         is.conditionExpr = visit(ctx.expression(0));
         is.trueBody =new ExprStmt(new AssignExpr(ve,visit(ctx.expression(1))));
@@ -326,12 +313,11 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitCompiliantUnit(CompiliantUnitContext ctx) {
-        //List<ImportNode> imports = 
-        this.visitImportDeclList(ctx.importDeclList());
+    	this.visitAll(ctx.importDecl());
         visitClassBody(ctx.classBody());
-        //cls.imports = imports;
         cls.name= this.className;
-        cls.modifier=getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
+        //cls.modifier=getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
+        cls.modifier = parseModifier(ctx.VarModifier());
         String classType = ctx.classType.getText();
         if(classType.equals("interface")) cls.isInterface = true;
         if(ctx.parentClass!=null) 
@@ -353,58 +339,39 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitFieldDecl(FieldDeclContext ctx) {
-        String type = ctx.type()==null?DEFAULT_VAR_TYPE:ctx.type().getText();
-        FieldNode fo = new FieldNode();
-        fo.name=(ctx.Identifier().getText());
-        fo.type=(type);
-        if(ctx.varInit()!=null){
-            fo.initExpr =  (visitVarInit(ctx.varInit()));
-        }
-            fo.modifier = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
-        //fields.add(fo.name);
-        cls.fields.add(fo);
-        //TODO visit setter and getter
+        visit(ctx.varDecls());
+        cls.fields.addAll(varCollector);
+        varCollector.clear();
         return null;
     }
 
-    @Override
-    public ExprNode visitSetter(SetterContext ctx) {
-        // TODO setter imp
-        return null;
-    }
+    private int parseModifier(TerminalNode varModifier) {
+		if(varModifier==null) return Modifier.PUBLIC;
+		return parseModifier(varModifier.getText());
+	}
 
-    @Override
-    public ExprNode visitGetter(GetterContext ctx) {
-        // TODO getter imp
-        return null;
-    }
 
     @Override
     public ExprNode visitMethodDecl(MethodDeclContext ctx) {
         this.newVarStack();
         String name;
         String type;
-        String prefixType = ctx.prefix.getText();
-        if(prefixType.equals("constructor")){
+        if(ctx.prefix!=null && ctx.prefix.getText().equals("constructor")){
         	type = "void";
         	name = "<init>";
         }else{
-        	if(prefixType.equals("void")){
+        	if(ctx.type()==null){
         		type = "void";
         	}else{
-        		type = ctx.type()==null ? DEFAULT_METHOD_TYPE :ctx.type().getText();
+        		type = ctx.type().getText();
         	}
         	name = ctx.name.getText();
         }
-        int mdf = getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
-        boolean isStatic = false;
-        if(ctx.STATIC()!=null){
-            mdf += Modifier.STATIC;
-        }
-        method = new MethodNode(mdf,type,name,isStatic);
-        if(ctx.argumentDeclList()!=null){
-            visitArgumentDeclList(ctx.argumentDeclList());
-        }
+        int mdf = parseModifier(ctx.VarModifier());
+        method = new MethodNode(mdf,type,name);
+        if(ctx.varDecls()!=null) visit(ctx.varDecls());
+        method.parameters.addAll(varCollector);
+        varCollector.clear();
         if(ctx.statList()!=null){        	
         	startBlock();
         	visitStatList(ctx.statList());
@@ -426,27 +393,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         //do nothing
         return null;
     }
-
-    @Override
-    public ExprNode visitArgumentDeclList(ArgumentDeclListContext ctx) {
-        for(ArgumentDeclContext ad:ctx.argumentDecl()){
-            visitArgumentDecl(ad);
-        }
-        return null;
-    }
-
-    @Override
-    public ExprNode visitArgumentDecl(ArgumentDeclContext ctx) {
-        String name = ctx.Identifier().getText();
-        String type = DEFAULT_VAR_TYPE;
-        if(ctx.type()!=null){
-            type = ctx.type().getText();
-        }		
-        ParameterNode pn = new ParameterNode();
-        pn.name = name;
-        pn.type = type;
-        method.parameters.add(pn);
-        return null;
+    
+    public void visitAll(List<? extends ParseTree> list){
+    	for(ParseTree i:list) visit(i);
     }
 
     @Override
@@ -505,7 +454,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitVarDeclStat(VarDeclStatContext ctx) {
-        this.visitVarDecl(ctx.varDecl());
+    	this.visitVarDecl(ctx.varDecl());
+    	for(VarObject v:this.varCollector){
+    		VarDeclStmt vds = new VarDeclStmt(v);
+    		addCode(vds,ctx);
+    		vtb.put(v.name,vds);
+    	}
+    	this.varCollector.clear();
         return null;
     }
 
@@ -519,33 +474,22 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         	type = ctx.type().getText();
         }
         if(type!=null) type = checkFullType(type,ctx);
-        boolean isReadOnly = ctx.getChild(0).getText() == "val";
-        //TODO readonly
-        if(this.getNodeByName(name)!=null){
+        ExprNode namedNode = this.getNodeByName(name);
+        if(namedNode!=null){
             reportError("defined duplicatedly:" + name,ctx);
         }
-        VarDeclStmt vds = new VarDeclStmt();
-        Integer vid = varCounter++;
-        vtb.put(name, vds);
-        vds.varName = name;
+        VarObject vds = new VarObject();
+        vds.name = name;
         vds.type = type;
-        vds.varId = vid;
-        if(ctx.varInit()!=null){
-            vds.initExpr = visit(ctx.varInit());
+        if(ctx.expression()!=null){
+            vds.initExpr = visit(ctx.expression());
         }
-        
-        addCode(vds,ctx);
+        this.varCollector.add(vds);
         return null;
     }
 
     private void reportError(String string, ParseTree tree) {
         throw new ParseError(string,this.getLocation(tree));
-    }
-
-    @Override
-    public ExprNode visitVarInit(VarInitContext ctx) {
-        ExprNode vo = visitExpression(ctx.expression());
-        return vo;
     }
 
     @Override
@@ -597,30 +541,21 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ExprNode visitForStat(ForStatContext ctx) {
         this.newVarStack();
         LoopStmt ls = new LoopStmt();
-        BlockStmt body = new BlockStmt();
-        ls.loopBody = body;
-        startBlock();
-        visitForInit(ctx.forInit());
-        ls.initStmts = endBlock();
+        visit(ctx.varDecls());
+        for(VarObject v:this.varCollector){
+        	VarDeclStmt vds = new VarDeclStmt(v);
+        	ls.initStmts.add(vds);
+        	vtb.put(v.name, vds);
+        }
+        this.varCollector.clear();
         AstNode texpr = visitExpression(ctx.expression());
         ls.preConditionExpr = (ExprNode) texpr;
         startBlock();
         visitStatList(ctx.statList());
-        body.statements = endBlock();
-        visitForUpdate(ctx.forUpdate());
+        visit(ctx.expressions());
+        ls.loopBody = endBlockAsStmt();
         this.popVarStack();
-        return null;
-    }
-
-    @Override
-    public ExprNode visitForInit(ForInitContext ctx) {
-        visit(ctx.varDecl());
-        return null;
-    }
-
-    @Override
-    public ExprNode visitForUpdate(ForUpdateContext ctx) {
-        visitExpressions(ctx.expressions());
+        addCode(ls,ctx);
         return null;
     }
 
@@ -641,13 +576,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         
         addCode(es,ctx);
         return null;
-    }
-
-    @Override
-    public ExprNode visitExprPrimay(ExprPrimayContext ctx) {
-        ExprNode expr = (ExprNode) visit(ctx.primary());
-        a2p.put(expr, ctx);
-        return expr;
     }
 
     @Override
@@ -744,22 +672,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         a2p.put(ee, ctx);
         return ee;
     }
-
-    @Override
-    public ExprNode visitPrimayParen(PrimayParenContext ctx) {
-        return visitExpression(ctx.expression());
-    }
-
-    @Override
-    public ConstExpr visitPrimaryLiteral(PrimaryLiteralContext ctx) {
-        return visitLiteral(ctx.literal());
-    }
-
-    @Override
-    public ExprNode visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
-        String name = ctx.Identifier().getText();
-        return getNodeByName(name);
-    }
 	
     private String checkFullType(String name,ParseTree tree){
     	if(this.castSystem.isPrimitiveType(name)) return name;
@@ -789,18 +701,17 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         if(vtb.exist(name)){
             VarExpr ve = new VarExpr();
             VarDeclStmt declStmt = (VarDeclStmt) vtb.get(name); //vars.indexOf(vo);
-            ve.varId = declStmt.varId;
-            ve.declStmt = declStmt;
+            ve.var = declStmt.var;
             return ve;
         }else{
             //find parameters
             if(method!=null && method.parameters!=null){
-                for(ParameterNode p:method.parameters){
-                    if(p.name.equals(name)) return new ParameterExpr(p);
+                for(VarObject p:method.parameters){
+                    if(p.name.equals(name)) return new VarExpr(p);
                 }
             }
             if(cls.fields!=null){
-                for(FieldNode f:cls.fields){
+                for(VarObject f:cls.fields){
                     if(f.name.equals(name)){
                         FieldExpr fe = new FieldExpr();
                         fe.fieldName = name;
@@ -854,12 +765,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     @Override
-    public ExprNode visitImportDeclList(ImportDeclListContext ctx) {
-        this.visitChildren(ctx);
-        return null;
-    }
-
-    @Override
     public ExprNode visitImportDecl(ImportDeclContext ctx) {
         String name = ctx.name.getText();
         String prefix = "";
@@ -883,6 +788,25 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ExprNode visitQualifiedName(QualifiedNameContext ctx) {
         //do nothing
         return null;
+    }
+    
+    public int parseModifier(String modifier){
+    	String[] mdfs = modifier.split(" ");
+    	int m = 0;
+    	for(String s:mdfs){
+    		if(s=="public"){
+    			m+= Modifier.PUBLIC;
+    		}else if (s=="protected"){
+    			m+= Modifier.PROTECTED;
+    		}else if(s=="private"){
+    			m+= Modifier.PRIVATE;
+    		}else if(s=="static"){
+    			m+= Modifier.STATIC;
+    		}else if(s=="final"){
+    			m+= Modifier.FINAL;
+    		}
+    	}
+    	return m;
     }
 
     public Integer getModifier(boolean isPrivated,boolean isProtected) {
@@ -920,7 +844,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 				String vName = ctx.catchVarNames.get(i).getText();
 				String vType = ctx.catchTypes.get(i).getText();
 				this.newVarStack();
-				VarDeclStmt declStmt = this.getVarDecl(vName, vType);
+				VarObject vo = new VarObject();
+				vo.name = vName;
+				vo.type = vType;
+				VarDeclStmt declStmt = new VarDeclStmt(vo);
 				visit(ctx.catchStmts.get(i));
 				this.popVarStack();
 				CatchStmt catchStmt = new CatchStmt();
@@ -941,20 +868,32 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 		this.addCode(tryStmt, ctx);
 		return null;
 	}
-	
-	/**
-	 * create var decl stmt and put to var table
-	 * @param name
-	 * @param type
-	 * @return
-	 */
-	private VarDeclStmt getVarDecl(String name,String type){
-		VarDeclStmt vds = new VarDeclStmt();
-		vds.type = this.getFullClassName(type);
-		vds.varId = this.varCounter++;
-		vds.varName = name;
-		vtb.put(name, vds);
-		return vds;
+
+	@Override
+	public ExprNode visitVarDecls(VarDeclsContext ctx) {
+		for(VarDeclContext v:ctx.varDecl()) visit(v);
+		return null;
+	}
+
+	@Override
+	public ExprNode visitExprIdentifier(ExprIdentifierContext ctx) {
+		return this.getNodeByName(ctx.Identifier().getText());
+	}
+
+	@Override
+	public ExprNode visitExprLiteral(ExprLiteralContext ctx) {
+		return visit(ctx.literal());
+	}
+
+	@Override
+	public ExprNode visitExprParen(ExprParenContext ctx) {
+		return visit(ctx.expression());
+	}
+
+	@Override
+	public ExprNode visitExprThis(ExprThisContext ctx) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

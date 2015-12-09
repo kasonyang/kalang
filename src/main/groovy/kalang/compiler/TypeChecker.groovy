@@ -31,6 +31,7 @@ import jast.ast.TryStmt;
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
+import jast.ast.VarObject
 import kalang.compiler.AstError as CE
 @groovy.transform.TypeChecked
 class TypeChecker extends AstVisitor<String> {
@@ -68,7 +69,7 @@ class TypeChecker extends AstVisitor<String> {
 	
     private HashMap<Integer,VarDeclStmt> varDeclStmts = [:]
     
-	HashMap<String,FieldNode> fields
+	HashMap<String,VarObject> fields
 	
     AstLoader astLoader
 
@@ -312,9 +313,10 @@ class TypeChecker extends AstVisitor<String> {
 
     @Override
     public String visitVarExpr(VarExpr node) {
-        Integer vid = node.varId;
-        def declStmt = this.varDeclStmts.get(vid);
-        declStmt?.type
+        //Integer vid = node.varId;
+        //def declStmt = this.varDeclStmts.get(vid);
+        //declStmt?.type
+		node.var.type
     }
 	
 	private void caughException(String type){
@@ -343,7 +345,7 @@ class TypeChecker extends AstVisitor<String> {
 
 	@Override
 	public String visitCatchStmt(CatchStmt node) {
-		this.caughException(node.catchVarDecl.type)
+		this.caughException(node.catchVarDecl.var.type)
 		return super.visitCatchStmt(node);
 	}
 
@@ -360,15 +362,16 @@ class TypeChecker extends AstVisitor<String> {
     @Override
     public String visitVarDeclStmt(VarDeclStmt node) {
         //Type infer
-        if(node.type==null){
-            if(node.initExpr){
-                node.type = visit(node.initExpr)
-				requireNoneVoid(node.type,node);
+		def var = node.var
+        if(var.type==null){
+            if(var.initExpr){
+                var.type = visit(var.initExpr)
+				requireNoneVoid(var.type,node);
             }else{
-                node.type = DEFAULT_CLASS
+                var.type = DEFAULT_CLASS
             }
         }
-        this.varDeclStmts.put(node.varId,node)
+        //this.varDeclStmts.put(node.varId,node)
     }
     @Override
     public String visitNewArrayExpr(NewArrayExpr node){
@@ -392,10 +395,11 @@ class TypeChecker extends AstVisitor<String> {
     
     @Override
 	public String visitLoopStmt(LoopStmt node) {
-		super.visit(node)
 		if(node.preConditionExpr){
 			requireBoolean(node.preConditionExpr);
 		}
+		if(node.initStmts) visit(node.initStmts)
+		if(node.loopBody) visit(node.loopBody);
 		if(node.postConditionExpr){
 			requireBoolean(node.postConditionExpr)
 		}

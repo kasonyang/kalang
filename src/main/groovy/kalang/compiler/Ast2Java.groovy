@@ -33,6 +33,7 @@ import jast.ast.TryStmt;
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
+import jast.ast.VarObject
 
 import java.lang.reflect.Modifier
 import java.util.prefs.AbstractPreferences.NodeAddedEvent;
@@ -79,11 +80,6 @@ class Ast2Java extends AbstractAstVisitor<String>{
     }
 
     @Override
-    public String visitParameterNode(ParameterNode node) {
-        return "${node.type} ${node.name}"
-    }
-
-    @Override
     public String visitParameterExpr(ParameterExpr node) {
 		"${node.parameter.name}"
     }
@@ -96,9 +92,10 @@ class Ast2Java extends AbstractAstVisitor<String>{
 	
     @Override
     public String visitVarExpr(VarExpr node) {
-        def var = node.declStmt.varName
+        def var = node.var.name
         if(!var){
-            var = "tmp_" + node.varId
+			//FIXME change to id
+            var = "tmp_" + node.var.name
         }
         return var
     }
@@ -121,12 +118,28 @@ class Ast2Java extends AbstractAstVisitor<String>{
         return Modifier.toString(m)
     }
 	
+	String getVarStr(VarObject f){
+		String fs = ""
+		String mdf = ""
+		if(f.modifier){
+			fs += Modifier.toString(f.modifier) + " "
+		}
+		fs += "${f.type} ${f.name}"
+		if(f.initExpr){
+			fs += "=${visit(f.initExpr)}"
+		}
+		return fs;
+	}
+	
     @Override
     public String visitClassNode(ClassNode node) {
 		cls = node
         String imports = ""// visit(node.imports).join("\r\n")
         incIndent()
-        String fs = visit(node.fields).join("\r\n");
+        String fs = ""
+		for(f in node.fields){
+			fs += this.getVarStr(f) + "\r\n";
+		}
         String mds = visit(node.methods).join("\r\n");
         decIndent()
         String mdf = visitModifier( node.modifier )
@@ -148,15 +161,13 @@ class Ast2Java extends AbstractAstVisitor<String>{
     }
 
     @Override
-    public String visitFieldNode(FieldNode node) {
-        String type = node.type ?: "Object"
-        indent + "${visitModifier(node.modifier)} ${type} ${node.name}" +(node.initExpr?"=${visit(node.initExpr)}":"") +";"
-    }
-
-    @Override
     public String visitMethodNode(MethodNode node) {
         this.stmtDelim = ""
-        String ps = visit(node.parameters).join(",")
+		List<String> psList = []
+		for(p in node.parameters){
+			psList.add(this.getVarStr(p))
+		}
+        String ps = psList.join(",")
         this.stmtDelim = ";"
         incIndent()
         String body = ";";
@@ -244,15 +255,16 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitVarDeclStmt(VarDeclStmt node) {
-        varNames.put(node.varId,node.varName)
-        String type = node.type ?: "Object";
-        String name = node.varName
+        //varNames.put(node.varId,node.varName)
+        String type = node.var.type ?: "Object";
+        String name = node.var.name
         if(!name){
-            name = "tmp_" + node.varId
+			//FIXME change to id
+            name = "tmp_" + node.var.name
         }
         String code = "${type} ${name}"
-        if(node.initExpr){
-            code+= "=${visit(node.initExpr)}"
+        if(node.var.initExpr){
+            code+= "=${visit(node.var.initExpr)}"
         }
         indent + code + this.stmtDelim;
     }

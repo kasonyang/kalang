@@ -1,7 +1,7 @@
 class{
-    var test(){
-        var a;
-        var i as int = 0;
+    int test(){
+        Object a;
+        int i = 0;
         i = a;
     }
 }

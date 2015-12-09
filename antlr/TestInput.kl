@@ -1,10 +1,26 @@
+import \java\lang\*;
+import \java\util\List;
+import java\util\LinkedList;
 class{
     String msg = "Hello,world";
-    constructor(String msg){
-        this.msg = msg;
+    constructor(String m){
+        this.msg = m;
     }
-    void main(String[] args){
-        var s = msg;
-        System.out.println(s);
+    static void main(String args){
+        System.out.println(msg);
     }
+    void decl(){
+        int i;
+        var l = i;
+        var emptyMap = {};
+        var map = {name:"kalang"};
+        var emptyList = [];
+        var list = ["item"];
+    }
+    void method(int p,long q){
+        for(int i=0;i<100;i++){
+            method(p,q);
+        }
+    }
+    int methodWithReturn(int p){}
 }

@@ -4,11 +4,7 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
     abstract public T visitClassNode(ClassNode node);
     
-    abstract public T visitFieldNode(FieldNode node);
-    
     abstract public T visitMethodNode(MethodNode node);
-    
-    abstract public T visitParameterNode(ParameterNode node);
     
     abstract public T visitBlockStmt(BlockStmt node);
     
@@ -62,16 +58,8 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
             return visitClassNode(node);
         }
         
-        if(node instanceof FieldNode){
-            return visitFieldNode(node);
-        }
-        
         if(node instanceof MethodNode){
             return visitMethodNode(node);
-        }
-        
-        if(node instanceof ParameterNode){
-            return visitParameterNode(node);
         }
         
         if(node instanceof BlockStmt){
@@ -169,6 +157,7 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     }
     
     public List<T> visit(List nodes){
+        if(nodes==null) return null;
         List<T> result = new LinkedList();
         for(AstNode n:nodes){
             result.add(visit(n));

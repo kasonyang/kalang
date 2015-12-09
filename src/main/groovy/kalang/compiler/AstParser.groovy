@@ -29,7 +29,7 @@ class AstParser {
 		getMethodDescriptor(node.name,getParameterTypes(node),className)
 	}
 	
-	FieldNode getField(ClassNode ast,String name){
+	VarObject getField(ClassNode ast,String name){
 		for(def f in ast.fields){
 			if(f.name==name) return f
 		}
@@ -54,7 +54,7 @@ class AstParser {
 	
 	static List<String> getParameterTypes(MethodNode mn){
 		List<String> types = []
-		for(ParameterNode p in mn.parameters){
+		for(def p in mn.parameters){
 			types.add(p.type);
 		}
 		return types

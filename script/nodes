@@ -2,7 +2,7 @@
 -modifier:Integer
 -name:String
 -parentName:String
-+fields:FieldNode*
++fields:VarObject*
 +methods:MethodNode*
 -interfaces:String*
 -isInterface:Boolean
@@ -11,24 +11,29 @@
 //#ImportNode
 //-name:String
 
-#FieldNode
--modifier:Integer
--type:String
--name:String
-+initExpr:ExprNode
+//#FieldNode
+//-modifier:Integer
+//-type:String
+//-name:String
+//+initExpr:ExprNode
 
 #MethodNode
 -modifier:Integer
 -type:String
 -name:String
 -isStatic:boolean
-+parameters:ParameterNode*
++parameters:VarObject*
 +body:Statement
 -exceptionTypes:String*
 
-#ParameterNode
+//#ParameterNode
+//-type:String
+//-name:String
+@VarObject
+-modifier:Integer
 -type:String
 -name:String
++initExpr:ExprNode
 
 @Statement
 ##BlockStmt
@@ -54,10 +59,7 @@
 ##ReturnStmt
 +expr:ExprNode
 ##VarDeclStmt
--varId:Integer
--varName:String
--type:String
-+initExpr:ExprNode
+-var:VarObject
 //##WhileStmt
 //+conditionExpr:ExprNode
 //+body:Statement
@@ -97,8 +99,8 @@
 //##NameExpr
 //-name:String
 ##VarExpr
--varId:Integer
--declStmt:VarDeclStmt
+-var:VarObject
+//-declStmt:VarDeclStmt
 ##ClassExpr
 -name:String
 ##NewExpr

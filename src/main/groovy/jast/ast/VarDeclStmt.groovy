@@ -5,26 +5,14 @@ package jast.ast;
 import java.util.*;
 public class VarDeclStmt extends Statement{
     
-    public Integer varId;
-    
-    public String varName;
-    
-    public String type;
-    
-    public ExprNode initExpr;
+    public VarObject var;
     
     
     
-    public VarDeclStmt(Integer varId=null,String varName=null,String type=null,ExprNode initExpr=null){
+    public VarDeclStmt(VarObject var=null){
         
         
-            this.varId = varId;
-        
-            this.varName = varName;
-        
-            this.type = type;
-        
-            this.initExpr = initExpr;
+            this.var = var;
         
     }
     
@@ -46,21 +34,13 @@ public class VarDeclStmt extends Statement{
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
-        addChild(ls,initExpr);
-        
         return ls;
     }
     
     public String toString(){
         String str = "VarDeclStmt{\r\n";
         
-        str += "  varId:" + varId.toString()+"\r\n";
-        
-        str += "  varName:" + varName.toString()+"\r\n";
-        
-        str += "  type:" + type.toString()+"\r\n";
-        
-        str += "  initExpr:" + initExpr.toString()+"\r\n";
+        str += "  var:" + var.toString()+"\r\n";
         
         return str+"}";
     }

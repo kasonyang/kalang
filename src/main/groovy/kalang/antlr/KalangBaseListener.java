@@ -28,18 +28,6 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterImportDeclList(KalangParser.ImportDeclListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitImportDeclList(KalangParser.ImportDeclListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterImportDecl(KalangParser.ImportDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -88,30 +76,6 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSetter(KalangParser.SetterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSetter(KalangParser.SetterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterGetter(KalangParser.GetterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitGetter(KalangParser.GetterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterMethodDecl(KalangParser.MethodDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -148,25 +112,13 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArgumentDeclList(KalangParser.ArgumentDeclListContext ctx) { }
+	@Override public void enterVarDecls(KalangParser.VarDeclsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArgumentDeclList(KalangParser.ArgumentDeclListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterArgumentDecl(KalangParser.ArgumentDeclContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitArgumentDecl(KalangParser.ArgumentDeclContext ctx) { }
+	@Override public void exitVarDecls(KalangParser.VarDeclsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -280,18 +232,6 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVarInit(KalangParser.VarInitContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitVarInit(KalangParser.VarInitContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterBreakStat(KalangParser.BreakStatContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -352,30 +292,6 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterForInit(KalangParser.ForInitContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitForInit(KalangParser.ForInitContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterForUpdate(KalangParser.ForUpdateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitForUpdate(KalangParser.ForUpdateContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterExpressions(KalangParser.ExpressionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -395,18 +311,6 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprStat(KalangParser.ExprStatContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterExprPrimay(KalangParser.ExprPrimayContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExprPrimay(KalangParser.ExprPrimayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -443,6 +347,18 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprMemberInvocation(KalangParser.ExprMemberInvocationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprIdentifier(KalangParser.ExprIdentifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprIdentifier(KalangParser.ExprIdentifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -508,6 +424,30 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExprLiteral(KalangParser.ExprLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprLiteral(KalangParser.ExprLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprParen(KalangParser.ExprParenContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprParen(KalangParser.ExprParenContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprGetField(KalangParser.ExprGetFieldContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -556,6 +496,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExprThis(KalangParser.ExprThisContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprThis(KalangParser.ExprThisContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprGetArrayElement(KalangParser.ExprGetArrayElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -575,42 +527,6 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprNewArray(KalangParser.ExprNewArrayContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterPrimayParen(KalangParser.PrimayParenContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitPrimayParen(KalangParser.PrimayParenContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterPrimaryLiteral(KalangParser.PrimaryLiteralContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitPrimaryLiteral(KalangParser.PrimaryLiteralContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterPrimaryIdentifier(KalangParser.PrimaryIdentifierContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitPrimaryIdentifier(KalangParser.PrimaryIdentifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
