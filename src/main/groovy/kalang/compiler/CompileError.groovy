@@ -28,7 +28,7 @@ class CompileError  extends RuntimeException{
 		if(text==null || text.length()==0){
 			text = "unknown position"
 		}
-		this.getMessage() + " on " + text
+		this.getMessage() + " on ${className}:" + text
 	}
 	
 	
