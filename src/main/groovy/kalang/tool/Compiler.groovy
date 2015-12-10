@@ -63,26 +63,24 @@ kac src dest
 		for(int i=0;i<size;i++){
 			cpl.addSource(className.get(i),srcList.get(i));
 		}
-		try{
-            cpl.compile()
-			def javaCodes = cpl.getJavaCodes();
-			for(def cls in javaCodes.keySet()){
-				def code = javaCodes.get(cls)
-				if(outDir){
-					def fname = cls.replace(".","/") + ".java";
-					def destFile = new File(outDir,fname)
-					destFile.withWriter{ w ->
-						w.write(code)
-					}
-				}else{
-					println code
+        cpl.compile()
+		def javaCodes = cpl.getJavaCodes();
+		for(def cls in javaCodes.keySet()){
+			def code = javaCodes.get(cls)
+			if(outDir){
+				def fname = cls.replace(".","/") + ".java";
+				def destFile = new File(outDir,fname)
+				destFile.withWriter{ w ->
+					w.write(code)
 				}
+			}else{
+				println code
 			}
-        }catch(CompileError e){
-            def src = e.getSource();
-            def ltext = src.substring(e.offset,e.offset + e.length)
-            String errMsg =  e.message + " on ${ltext}"
-			throw new Exception(errMsg)
+		}
+		if(cpl.hasError()){
+			for(e in cpl.getErrors()){
+				System.err.println(e)
+			}
         }
 	}
     

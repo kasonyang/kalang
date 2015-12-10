@@ -42,13 +42,7 @@ class KalangCompiler extends AstLoader {
 				errors = new LinkedList();
 			}
 			String clsName = clazz.name
-			String src = sources.get(clsName)
-			def unit = units.get(clsName)
-			def loc = unit.getLocation(node)
-			int start = loc?.offset ?:0;
-			int end = start + (loc?.length ?: 0);
-			def err = new CompileError(errMsg,clazz.name,src,start,end)
-			errors.add(err)
+			reportError(errMsg,clsName,node);
 		}
 	}
 	
@@ -115,7 +109,9 @@ class KalangCompiler extends AstLoader {
         def src = sources.get(className)
 		int offset = loc?.offset ?: 0
 		int len = loc?.length   ?: 0
-        throw new CompileError(msg,className,src,offset,len)
+        def ce =  new CompileError(msg,className,src,offset,offset + len)
+		if(errors==null) errors = new LinkedList();
+		errors.add(ce);
     }
 	
     protected void reportError(String msg,String className,AstNode node){

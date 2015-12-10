@@ -24,7 +24,11 @@ class CompileError  extends RuntimeException{
 
 	@Override
 	public String toString() {
-		this.getMessage() + " on " + getErrorSource()
+		String text = getErrorSource();
+		if(text==null || text.length()==0){
+			text = "unknown position"
+		}
+		this.getMessage() + " on " + text
 	}
 	
 	
