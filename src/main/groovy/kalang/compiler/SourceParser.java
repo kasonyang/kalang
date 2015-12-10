@@ -692,14 +692,19 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 	
     private String getFullClassName(String name){
+    	String postfix = "";
+    	if(name.endsWith("[]")){
+    		name = name.substring(0, name.length()-2);
+    		postfix = "[]";
+    	}
         if(fullNames.containsKey(name)){
-            return fullNames.get(name);
+            return fullNames.get(name) + postfix;
         }else{
             for(String p:this.importPaths){
                 String clsName = p + "." + name;
                 ClassNode cls = astLoader.getAst(clsName);
                 if(cls!=null){
-                    return clsName;
+                    return clsName + postfix;
                 }
             }
         }

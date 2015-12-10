@@ -273,7 +273,7 @@ class TypeChecker extends AstVisitor<String> {
 		String fname = node.fieldName
 		def field = this.astParser.getField(target,fname)
 		if(field==null){
-			AstError.fieldNotFound(node,fname)
+			err.fieldNotFound(node,fname)
 		}
 		if(node.target instanceof ClassExpr){
 			requireStatic(field.modifier,node)
