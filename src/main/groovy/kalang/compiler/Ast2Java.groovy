@@ -39,16 +39,32 @@ import java.lang.reflect.Modifier
 import java.util.prefs.AbstractPreferences.NodeAddedEvent;
 @groovy.transform.TypeChecked
 class Ast2Java extends AbstractAstVisitor<String>{
-
-    HashMap<Integer,String> varNames = [:]
+	
+	List<VarObject> varList = []
     
     protected String code = "";
 	
-    private String stmtDelim = ";"
-	
-    private String indent = "";
-	
 	private ClassNode cls;
+	
+	private String getVarName(VarObject vo){
+		String name = vo.name
+		String tmpNamePrefix = "tmp"
+		if(name==null || name.startsWith(tmpNamePrefix)){
+			if(!varList.contains(vo)){
+				varList.add(vo)
+			}
+			name = tmpNamePrefix + "_" + varList.indexOf(vo)
+		}
+		return name;
+	}
+	
+	private List<String> trimStmtAll(List<String> stmts){
+		List retList = []
+		for(s in stmts){
+			retList.add(trimStmt(s));
+		}
+		return retList
+	}
     
     private String trimStmt(String stmt){
         stmt = stmt.trim();
@@ -74,6 +90,10 @@ class Ast2Java extends AbstractAstVisitor<String>{
         return visit(cls)
     }
 	
+	private String indent(String str){
+		"  " + str.readLines().join("\r\n  ")
+	}
+	
     @Override
     public String visitCastExpr(CastExpr node) {
 		"(${node.type}) ${visit(node.expr)}"
@@ -92,25 +112,12 @@ class Ast2Java extends AbstractAstVisitor<String>{
 	
     @Override
     public String visitVarExpr(VarExpr node) {
-        def var = node.var.name
-        if(!var){
-			//FIXME change to id
-            var = "tmp_" + node.var.name
-        }
-        return var
+		return this.getVarName(node.var)
     }
 
     @Override
     public String visitClassExpr(ClassExpr node) {
         return node.name
-    }
-	
-    private void incIndent(){
-        indent += "  "
-    }
-	
-    private void decIndent(){
-        indent = indent.substring(0,indent.length()-2)
     }
 	
     public String visitModifier(Integer modifier){
@@ -135,13 +142,11 @@ class Ast2Java extends AbstractAstVisitor<String>{
     public String visitClassNode(ClassNode node) {
 		cls = node
         String imports = ""// visit(node.imports).join("\r\n")
-        incIndent()
         String fs = ""
 		for(f in node.fields){
-			fs += this.getVarStr(f) + "\r\n";
+			fs += this.getVarStr(f) + ";\r\n";
 		}
         String mds = visit(node.methods).join("\r\n");
-        decIndent()
         String mdf = visitModifier( node.modifier )
         def pkg = ""
         def name = node.name
@@ -157,24 +162,20 @@ class Ast2Java extends AbstractAstVisitor<String>{
             impStr = "implements ${node.interfaces.join(",")}"
         }
         String classType = node.isInterface ? "interface" : "class"
-        return "${pkgStr}\r\n${imports}\r\n${mdf} ${classType} ${name} ${parentStr} ${impStr} {\r\n${fs}\r\n${mds}\r\n}"
+        return "${pkgStr}\r\n${imports}\r\n${mdf} ${classType} ${name} ${parentStr} ${impStr} {\r\n${indent(fs)}\r\n${indent(mds)}\r\n}"
     }
 
     @Override
     public String visitMethodNode(MethodNode node) {
-        this.stmtDelim = ""
 		List<String> psList = []
 		for(p in node.parameters){
 			psList.add(this.getVarStr(p))
 		}
         String ps = psList.join(",")
-        this.stmtDelim = ";"
-        incIndent()
         String body = ";";
         if(node.body){
             body = visit(node.body)
         }
-        decIndent()
 		String exStr = ""
 		if(node.exceptionTypes?.size()>0){
 			exStr = "throws " + node.exceptionTypes.join(",")
@@ -186,30 +187,28 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		}else{
 			typeStr = node.type
 		}
-        indent + "${visitModifier(node.modifier)} ${typeStr} ${mname}(${ps}) ${exStr} ${body}"
+        "${visitModifier(node.modifier)} ${typeStr} ${mname}(${ps}) ${exStr} ${(body)}"
     }
 
     @Override
     public String visitBlockStmt(BlockStmt node) {
-        incIndent()
         String body = visit(node.statements).join("\r\n")
-        decIndent()
-		"{\n${body}\n" + indent + "}"
+		"\r\n{\r\n${indent(body)}" + "\r\n}\r\n"
     }
 
     @Override
     public String visitBreakStmt(BreakStmt node) {
-        indent + "break;"
+        "break;"
     }
 
     @Override
     public String visitContinueStmt(ContinueStmt node) {
-        indent + "continue;"
+        "continue;"
     }
 
     @Override
     public String visitExprStmt(ExprStmt node) {
-        return indent + visit(node.expr) +';';
+        return visit(node.expr) +';';
     }
 
     @Override
@@ -220,9 +219,9 @@ class Ast2Java extends AbstractAstVisitor<String>{
         String res = "if(${cdt})${trueStmt}"
         if(node.falseBody){
 			String falseBody =trimStmt(visit(node.falseBody))
-			res += "\r\n" + indent + "else ${falseBody}"
+			res += "\r\n" + "else ${falseBody}"
         }
-        return indent + res + ";";
+        return  res + ";";
     }
 
     /*@Override
@@ -232,25 +231,20 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitLoopStmt(LoopStmt node) {
-        def oldIndent = this.indent
-        this.indent = ""
         def pre = node.preConditionExpr;
         def post = node.postConditionExpr;
-        this.stmtDelim = ""
-        def init = visit(node.initStmts).join(",");
-        this.stmtDelim = ";"
-        this.indent = oldIndent
+        def init = trimStmtAll(visit(node.initStmts)).join(",");
         def body = visit(node.loopBody)
         if(pre){
-            return indent + "for(${init};${visit(pre)};)${body}"
+            return "for(${trimStmt(init)};${trimStmt(visit(pre))};)${body}"
         }else{
-            return indent + "do{${body}}while(${visit(post)});"
+            return "do{${body}}while(${visit(post)});"
         }
     }
 
     @Override
     public String visitReturnStmt(ReturnStmt node) {
-        indent + "return ${visit(node.expr)};"
+        "return ${visit(node.expr)};"
     }
 
     @Override
@@ -259,14 +253,13 @@ class Ast2Java extends AbstractAstVisitor<String>{
         String type = node.var.type ?: "Object";
         String name = node.var.name
         if(!name){
-			//FIXME change to id
-            name = "tmp_" + node.var.name
+            name = getVarName(node.var)
         }
         String code = "${type} ${name}"
         if(node.var.initExpr){
             code+= "=${visit(node.var.initExpr)}"
         }
-        indent + code + this.stmtDelim;
+        code + ";"
     }
 
     @Override
@@ -291,11 +284,11 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitFieldExpr(FieldExpr node) {
-        def target = "" 
+        def target = "this" 
         if(node.target){
-            target = visit(node.target) + "."
+            target = visit(node.target)
         }
-		"${target}${node.fieldName}"
+		"${target}.${node.fieldName}"
     }
 
     @Override
@@ -332,9 +325,9 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		}
 		String finallyStmt = ""
 		if(node.finallyStmt){
-			finallyStmt = indent + "finally " + visit(node.finallyStmt);
+			finallyStmt = "finally " + visit(node.finallyStmt);
 		}
-		indent + "try ${exec}\r\n${catchStmt}\r\n${finallyStmt}"
+		"try ${exec}\r\n${catchStmt}\r\n${finallyStmt}"
 	}
 
 
@@ -342,7 +335,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 	public String visitCatchStmt(CatchStmt node) {
 		String varDecl = this.trimStmt(visit(node.catchVarDecl));
 		String exec = visit(node.execStmt);
-		indent + "catch(${varDecl}) ${exec}";
+		"catch(${varDecl}) ${exec}";
 	}
 
 }
