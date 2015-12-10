@@ -65,8 +65,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     
     
     private static final String MAP_CLASS = "java.util.HashMap";
-    private static final String ROOT_CLASS = "java.lang.Object";
-
     private static final String FLOAT_CLASS = "float";
 
     private static final String INT_CLASS = "int";
@@ -104,7 +102,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	
 	TypeSystem castSystem;
 	private VarTable<String,VarDeclStmt> vtb;
-	private int varModifier;
 	private List<VarObject> varCollector = new LinkedList();
 	
     
@@ -340,6 +337,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitFieldDecl(FieldDeclContext ctx) {
         visit(ctx.varDecls());
+        int mdf = this.parseModifier(ctx.VarModifier());
+        for(VarObject v:varCollector){
+        	v.modifier = mdf;
+        }
         cls.fields.addAll(varCollector);
         varCollector.clear();
         return null;
@@ -801,20 +802,22 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public int parseModifier(String modifier){
     	String[] mdfs = modifier.split(" ");
     	int m = 0;
+    	int access = 0;
     	for(String s:mdfs){
     		if(s=="public"){
-    			m+= Modifier.PUBLIC;
+    			access = Modifier.PUBLIC;
     		}else if (s=="protected"){
-    			m+= Modifier.PROTECTED;
+    			access = Modifier.PROTECTED;
     		}else if(s=="private"){
-    			m+= Modifier.PRIVATE;
+    			access = Modifier.PRIVATE;
     		}else if(s=="static"){
     			m+= Modifier.STATIC;
     		}else if(s=="final"){
     			m+= Modifier.FINAL;
     		}
     	}
-    	return m;
+    	if(access==0) access = Modifier.PUBLIC;
+    	return m + access;
     }
 
     public Integer getModifier(boolean isPrivated,boolean isProtected) {
