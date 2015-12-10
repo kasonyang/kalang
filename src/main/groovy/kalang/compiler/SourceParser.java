@@ -809,15 +809,15 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     	int m = 0;
     	int access = 0;
     	for(String s:mdfs){
-    		if(s=="public"){
+    		if(s.equals("public")){
     			access = Modifier.PUBLIC;
-    		}else if (s=="protected"){
+    		}else if (s.equals("protected")){
     			access = Modifier.PROTECTED;
-    		}else if(s=="private"){
+    		}else if(s.equals("private")){
     			access = Modifier.PRIVATE;
-    		}else if(s=="static"){
+    		}else if(s.equals("static")){
     			m+= Modifier.STATIC;
-    		}else if(s=="final"){
+    		}else if(s.equals("final")){
     			m+= Modifier.FINAL;
     		}
     	}

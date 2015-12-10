@@ -2,7 +2,7 @@ import \java\lang\*;
 import \java\util\List;
 import java\util\LinkedList;
 class{
-    String msg = "Hello,world";
+    static String msg = "Hello,world";
     constructor(String m){
         this.msg = m;
     }

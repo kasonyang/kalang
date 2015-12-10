@@ -17,15 +17,18 @@ class ErrorTest {
 	
 	int eCode
 	
+	String errMsg
+	
 	KalangCompiler kc
 	
-	ErrorHandler typeErrorHandler
+	ErrorHandler typeErrorHandler = new TypeErrorHandler();
 
 	class TypeErrorHandler implements ErrorHandler{
 
 		@Override
-		public void error(AstNode node, String errMsg, int errorCode) {
+		public void error(AstNode node, String msg, int errorCode) {
 			eCode = errorCode
+			errMsg = msg
 			System.err.println(errMsg)
 		}
 		
@@ -37,22 +40,20 @@ class ErrorTest {
 			def src = new File("${dir}/${n}.kl").readLines().join("\r\n")
 			kc.addSource(n,src)
 		}
-		if(this.typeErrorHandler){
-			kc.setTypeErrorHanlder(typeErrorHandler)
-		}
+		kc.setTypeErrorHanlder(typeErrorHandler)
 		kc.compile();
 		println kc.getJavaCodes();
-		//KC.compile(cls,srces)
 	}
 	
 	private void cp(String... name){
+		this.errMsg = null;
 		compile(srcDir,name)
+		if(errMsg!=null){
+			throw new Exception(errMsg);
+		}
 	}
 	
 	private void ecp(String... name){
-		if(!this.typeErrorHandler){
-			typeErrorHandler = new TypeErrorHandler();
-		}
 		compile("TestScript/error_src",name)
 	}
 	
