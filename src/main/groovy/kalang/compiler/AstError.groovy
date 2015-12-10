@@ -26,8 +26,11 @@ class AstError extends RuntimeException {
 	
 	ErrorHandler handler
 	
-    public AstError(ErrorHandler handler){
+	ClassNode clazz
+	
+    public AstError(ClassNode clazz,ErrorHandler handler){
 		this.handler = handler
+		this.clazz = clazz
     }
 	
 	void unsupported(String op,AstNode node){
@@ -35,7 +38,7 @@ class AstError extends RuntimeException {
 	}
     
      void fail(String msg,int errorCode,AstNode node){
-        handler.error(node,msg,errorCode);
+        handler.error(clazz,node,msg,errorCode);
     }
     
      void classNotFound(AstNode node,String className){

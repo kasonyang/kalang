@@ -87,6 +87,8 @@ class TypeChecker extends AstVisitor<String> {
 	
 	private AstError err;
 	
+	private ErrorHandler errHandler
+	
 	private Stack<List<String>> exceptionStack = new Stack()
 
     TypeChecker(AstLoader astLoader){
@@ -96,7 +98,7 @@ class TypeChecker extends AstVisitor<String> {
     }
 	
 	public void setErrorHandler(ErrorHandler handler){
-		err = new AstError(handler)
+		errHandler = handler
 	}
     
     private ExprNode cast(ExprNode expr,String from,String to,AstNode node){
@@ -116,6 +118,9 @@ class TypeChecker extends AstVisitor<String> {
     }
 
     public void check(ClassNode clz){
+		if(this.errHandler){
+			err = new AstError(clz,this.errHandler)
+		}
         this.fields = [:]
 		this.methodDeclared = []
         for(def f in clz.fields){

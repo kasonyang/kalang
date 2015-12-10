@@ -28,18 +28,28 @@ class KalangCompiler extends AstLoader {
 	
 	private ErrorHandler _errorHandler
 	
-	private boolean hasError = false;
+	
+	private List<CompileError> errors
 	
 	class ErrorHandlerProxy implements ErrorHandler{
 
 		@Override
-		public void error(AstNode node, String errMsg, int errorCode) {
+		public void error(ClassNode clazz,AstNode node, String errMsg, int errorCode) {
 			if(typeErrorHanlder){
-				typeErrorHanlder.error(node,errMsg,errorCode)
+				typeErrorHanlder.error(clazz,node,errMsg,errorCode)
 			}
-			hasError = true
+			if(errors==null){
+				errors = new LinkedList();
+			}
+			String clsName = clazz.name
+			String src = sources.get(clsName)
+			def unit = units.get(clsName)
+			def loc = unit.getLocation(node)
+			int start = loc?.offset ?:0;
+			int end = start + (loc?.length ?: 0);
+			def err = new CompileError(errMsg,clazz.name,src,start,end)
+			errors.add(err)
 		}
-		
 	}
 	
     public KalangCompiler(AstLoader astLoader = null){
@@ -118,11 +128,16 @@ class KalangCompiler extends AstLoader {
 		}
     }
 	
+	boolean hasError(){
+		return errors!=null
+	}
+	
     void compile(){
+		this.errors = null;
         init();
-        if(!hasError) buildAst()
-        if(!hasError) typeCheck()
-        if(!hasError) codeGen()
+        if(!hasError()) buildAst()
+        if(!hasError()) typeCheck()
+        if(!hasError()) codeGen()
     }
 	
     @Override

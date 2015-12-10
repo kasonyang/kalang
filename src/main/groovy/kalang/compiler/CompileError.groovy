@@ -2,19 +2,31 @@ package kalang.compiler
 
 class CompileError  extends RuntimeException{
 	
-    int offset = 0;
+    int start = 0;
 	
-    int length = 0;
+    int stop = 0;
     
     String className
     
     String source
 	
-    public CompileError(String msg,String className,String src,int offset = 0,int length = 0){
+    public CompileError(String msg,String className,String src,int start = 0,int stop = 0){
         super(msg)
-        this.offset = offset
-        this.length = length
+        this.start = start
+        this.stop = stop
         this.className = className
         this.source = src
     }
+	
+	public String getErrorSource(){
+		return source.substring(start,stop)
+	}
+
+	@Override
+	public String toString() {
+		this.getMessage() + " on " + getErrorSource()
+	}
+	
+	
+	
 }

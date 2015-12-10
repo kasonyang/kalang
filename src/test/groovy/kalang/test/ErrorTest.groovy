@@ -26,10 +26,9 @@ class ErrorTest {
 	class TypeErrorHandler implements ErrorHandler{
 
 		@Override
-		public void error(AstNode node, String msg, int errorCode) {
+		public void error(ClassNode clazz,AstNode node, String msg, int errorCode) {
 			eCode = errorCode
 			errMsg = msg
-			System.err.println(errMsg)
 		}
 		
 	}
@@ -48,13 +47,18 @@ class ErrorTest {
 	private void cp(String... name){
 		this.errMsg = null;
 		compile(srcDir,name)
-		if(errMsg!=null){
-			throw new Exception(errMsg);
+		if(kc.hasError()){
+			throw kc.errors.get(0)
 		}
 	}
 	
 	private void ecp(String... name){
 		compile("TestScript/error_src",name)
+		if(kc.hasError()){
+			for(e in kc.errors){
+				System.err.println(e)
+			}
+		}
 	}
 	
 	@Test
