@@ -23,46 +23,43 @@ class AstError extends RuntimeException {
 	FIELD_NOT_FOUND = 7,
 	LACKS_OF_STATEMENT = 8,
 	UNCAUGHT_EXCEPTION = 9;
-    
-    AstNode node;
-	int errorCode;
-    public AstError(String msg,int errorCode,AstNode node){
-        super(msg)
-        this.node = node
-		this.errorCode = errorCode
+	
+	ErrorHandler handler
+	
+    public AstError(ErrorHandler handler){
+		this.handler = handler
     }
 	
-	static void unsupported(String op,AstNode node){
+	void unsupported(String op,AstNode node){
 		fail("It is unsupported to ${op}",UNSUPPORTED,node)
 	}
     
-    static void fail(String msg,int errorCode,AstNode node){
-        throw new AstError(msg,errorCode,node)
+     void fail(String msg,int errorCode,AstNode node){
+        handler.error(node,msg,errorCode);
     }
     
-    static void classNotFound(AstNode node,String className){
+     void classNotFound(AstNode node,String className){
         fail("Class not found:${className}",CLASS_NOT_FOUND,node)
     }
     
-    static void methodNotFound(AstNode node,String className,String name,List<String> types){
+     void methodNotFound(AstNode node,String className,String name,List<String> types){
         def method = AstParser.getMethodDescriptor(name,types)
 		fail("Method Missing:${className}#${method}",METHOD_NOT_FOUND,node)
     }
 	
-	static void fieldNotFound(AstNode node,String fieldName){
+	 void fieldNotFound(AstNode node,String fieldName){
 		fail("Field missing:${fieldName}",FIELD_NOT_FOUND,node)
 	}
     
-    static void failedToCast(AstNode node,String fromType,String toType){
+     void failedToCast(AstNode node,String fromType,String toType){
         fail("Unable to cast ${fromType} to ${toType}",UNABLE_TO_CAST,node)
     }
 	
-	static void uncaughtException(AstNode node,List<String> exType){
+	 void uncaughtException(AstNode node,List<String> exType){
 		fail("Uncaught exception:${exType}",UNCAUGHT_EXCEPTION,node)
 	}
     
-    static void notImplementedMethods(AstNode node,ClassNode theInterface,List<MethodNode> method){
-		//String methodStr = AstParser.methodToString(
+     void notImplementedMethods(AstNode node,ClassNode theInterface,List<MethodNode> method){
 		String methodStr = theInterface.name + "#" + AstParser.getMethodDescriptor(method.get(0))
         fail("The method isn't implemented:${methodStr}",METHOD_NOT_IMPLEMENTED,node)
     }

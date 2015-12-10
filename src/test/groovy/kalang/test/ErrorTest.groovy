@@ -15,15 +15,30 @@ class ErrorTest {
 	String outDir = "TestScript/generatedCode"
 	String srcDir = "antlr"
 	
-	AstError e
+	int eCode
 	
 	KalangCompiler kc
+	
+	ErrorHandler typeErrorHandler
 
+	class TypeErrorHandler implements ErrorHandler{
+
+		@Override
+		public void error(AstNode node, String errMsg, int errorCode) {
+			eCode = errorCode
+			System.err.println(errMsg)
+		}
+		
+	}
+	
 	private void compile(String dir,String...name){
 		kc = new KalangCompiler(new JavaAstLoader())
 		for(def n in name){
 			def src = new File("${dir}/${n}.kl").readLines().join("\r\n")
 			kc.addSource(n,src)
+		}
+		if(this.typeErrorHandler){
+			kc.setTypeErrorHanlder(typeErrorHandler)
 		}
 		kc.compile();
 		println kc.getJavaCodes();
@@ -35,12 +50,10 @@ class ErrorTest {
 	}
 	
 	private void ecp(String... name){
-		try{
-			compile("TestScript/error_src",name)
-		}catch(CompileError error){
-			this.e = kc.getAstError()
-			println e.message
+		if(!this.typeErrorHandler){
+			typeErrorHandler = new TypeErrorHandler();
 		}
+		compile("TestScript/error_src",name)
 	}
 	
 	@Test
@@ -48,11 +61,11 @@ class ErrorTest {
 		//throw new RuntimeException("tt")
 		//cp "NotImplemented"
 		ecp("ErrorAssign")
-		assert e.errorCode == E.UNABLE_TO_CAST
+		assert eCode == E.UNABLE_TO_CAST
 		ecp("NotImplemented")
-		assert e.errorCode == E.CLASS_NOT_FOUND
+		assert eCode == E.CLASS_NOT_FOUND
 		ecp("NotImplemented","MyFace")
-		assert e.errorCode == E.METHOD_NOT_IMPLEMENTED
+		assert eCode == E.METHOD_NOT_IMPLEMENTED
 	}
 	
 	@Test

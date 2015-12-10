@@ -24,6 +24,8 @@ class KalangCompiler extends AstLoader {
 	
 	AstError astError
 	
+	ErrorHandler typeErrorHanlder;
+	
     public KalangCompiler(AstLoader astLoader = null){
         this.astLoader = astLoader
     }
@@ -64,19 +66,15 @@ class KalangCompiler extends AstLoader {
 
     protected void typeCheck(){
         def typeChecker = new TypeChecker(this)
+		if(this.typeErrorHanlder){
+			typeChecker.setErrorHandler(this.typeErrorHanlder)
+		}
         def cnames = this.asts.keySet();
         def cn
-        try{
-            for(def c in cnames){
-                def cls = asts.get(c)
-                cn = c
-                typeChecker.check(cls)
-            }
-        //}catch(TypeChecker.TypeError e){
-        }catch(AstError e){
-			astError = e
-            def node = e.getNode()
-            this.reportError(e.message,cn,node)
+        for(def c in cnames){
+            def cls = asts.get(c)
+            cn = c
+            typeChecker.check(cls)
         }
     }
 	

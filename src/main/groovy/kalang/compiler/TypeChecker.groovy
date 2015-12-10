@@ -85,6 +85,8 @@ class TypeChecker extends AstVisitor<String> {
 	
 	boolean returned
 	
+	private AstError err;
+	
 	private Stack<List<String>> exceptionStack = new Stack()
 
     TypeChecker(AstLoader astLoader){
@@ -92,11 +94,15 @@ class TypeChecker extends AstVisitor<String> {
 		this.castSys = new TypeSystem(astLoader);
 		this.astParser = new AstParser(astLoader);
     }
+	
+	public void setErrorHandler(ErrorHandler handler){
+		err = new AstError(handler)
+	}
     
     private ExprNode cast(ExprNode expr,String from,String to,AstNode node){
         expr = castSys.cast(expr,from,to)
 		if(!expr){
-            CE.failedToCast(node,from,to);
+            err?.failedToCast(node,from,to);
             //fail(CompileError.UNABLE_TO_CAST,"${from} => ${to}",node)
         }
 		return expr
@@ -105,8 +111,7 @@ class TypeChecker extends AstVisitor<String> {
     public ClassNode loadAst(String name,AstNode node){
         ClassNode ast = this.astLoader.getAst(name);
         if(ast==null) 
-        CE.classNotFound(node,name);
-            //fail(CE.CLASS_NOT_FOUND,name,node)
+        err?.classNotFound(node,name);
         return ast;
     }
 
@@ -121,10 +126,11 @@ class TypeChecker extends AstVisitor<String> {
         if(clazz.interfaces?.size()>0){
             for(def itfName in clazz.interfaces){
                 def itfNode = this.loadAst(itfName,clazz)
+				if(!itfNode) continue
                 def unImps = astParser.getUnimplementedMethod(clazz,itfNode)
                 if(unImps?.size()>0){
                     String mStr = astParser.getMethodDescriptor(unImps.get(0));
-                    CE.notImplementedMethods(clazz,itfNode,unImps)
+                    err?.notImplementedMethods(clazz,itfNode,unImps)
                     //fail(CE"unimplemented method:${mStr}",clazz);
                 }
             }
@@ -135,7 +141,7 @@ class TypeChecker extends AstVisitor<String> {
 	@Override
 	public String visit(AstNode node){
 		if(node instanceof Statement){
-			if(returned) CE.fail("unabled to reach statement",CE.LACKS_OF_STATEMENT,node)
+			if(returned) err?.fail("unabled to reach statement",CE.LACKS_OF_STATEMENT,node)
 		}
 		return super.visit(node)
 	}
@@ -191,11 +197,11 @@ class TypeChecker extends AstVisitor<String> {
         String t1 = (visit(node.expr1).toString())
         String t2 = (visit(node.expr2).toString())
 		String op = node.operation
-        String t;
+        String t = this.DEFAULT_CLASS;
         switch(op){
         case "==":
             if(castSys.isNumber(t1)){
-                if(!castSys.isNumber(t2)) CE.failedToCast(node,t2,INT_CLASS);
+                if(!castSys.isNumber(t2)) err?.failedToCast(node,t2,INT_CLASS);
                 //fail("Number required",node);
             }else{
                 //pass anything
@@ -232,7 +238,7 @@ class TypeChecker extends AstVisitor<String> {
             t = castSys.getHigherType(t1,t2)
             break;
         default:
-			AstError.fail("unsupport operation:${op}",AstError.UNSUPPORTED,node);
+			err?.fail("unsupport operation:${op}",AstError.UNSUPPORTED,node);
             //throw new TypeError();
         }
         return t;
@@ -339,7 +345,7 @@ class TypeChecker extends AstVisitor<String> {
 		}
 		List<String> uncaught = this.exceptionStack.pop()
 		if(uncaught.size()>0){
-			CE.uncaughtException(node,uncaught)
+			err?.uncaughtException(node,uncaught)
 		}
 	}
 
@@ -410,7 +416,7 @@ class TypeChecker extends AstVisitor<String> {
 	public String visitMethodNode(MethodNode node) {
 		String mStr = this.astParser.getMethodDescriptor(node,this.clazz.name)
 		if(methodDeclared.contains(mStr)){
-			CE.unsupported("declare method duplicately",node)
+			err?.unsupported("declare method duplicately",node)
 		}
 		method = node
 		returned = false
@@ -419,7 +425,7 @@ class TypeChecker extends AstVisitor<String> {
 		this.exceptionStack.pop()
 		boolean needReturn = (node.type!='void'&&node.type==null)
 		if(node.body && needReturn && !returned){
-			CE.fail("Missing return statement in method:${mStr}",CE.LACKS_OF_STATEMENT,node)
+			err?.fail("Missing return statement in method:${mStr}",CE.LACKS_OF_STATEMENT,node)
 		}
 		return ret
 	}
@@ -438,7 +444,7 @@ class TypeChecker extends AstVisitor<String> {
 
 	void requireNumber(AstNode node,String t){
         if(!castSys.isNumber(t)){
-            CE.failedToCast(node,t,INT_CLASS)
+            err?.failedToCast(node,t,INT_CLASS)
         }
     }
 	
@@ -448,7 +454,7 @@ class TypeChecker extends AstVisitor<String> {
 	}
     
     void requireBoolean(AstNode node,String t){
-        if(!castSys.isBoolean(t)) CE.failedToCast(node,t,BOOLEAN_CLASS)
+        if(!castSys.isBoolean(t)) err?.failedToCast(node,t,BOOLEAN_CLASS)
     }
     
     boolean isArray(String t){
@@ -456,7 +462,7 @@ class TypeChecker extends AstVisitor<String> {
     }
     
     void requireArray(AstNode node,String t){
-        if(!isArray(t)) CE.failedToCast(node,t,'array')
+        if(!isArray(t)) err?.failedToCast(node,t,'array')
     }
     
 	boolean isStatic(Integer modifier){
@@ -466,13 +472,13 @@ class TypeChecker extends AstVisitor<String> {
 	void requireStatic(Integer modifier,AstNode node){
 		boolean isStatic = isStatic(modifier)
 		if(!isStatic){
-			CE.fail("couldn't refer non-static member in static context",CE.UNSUPPORTED,node)
+			err?.fail("couldn't refer non-static member in static context",CE.UNSUPPORTED,node)
 		}
 	}
 	
 	void requireNoneVoid(String type,AstNode node){
 		if(!type || type==VOID_TYPE){
-			CE.unsupported("use void type as value",node)
+			err?.unsupported("use void type as value",node)
 		}
 	}
 	
@@ -489,10 +495,12 @@ class TypeChecker extends AstVisitor<String> {
 		List typeList = []
 		if(types) typeList.addAll(types)
 		if(!matches){
-			CE.methodNotFound(node,cls.name,methodName,typeList)
+			err?.methodNotFound(node,cls.name,methodName,typeList)
+			return null;
 		}	
 		if(matches.length>1){
-			CE.fail("the method ${methodName} is ambiguous",CE.METHOD_NOT_FOUND,node)
+			err?.fail("the method ${methodName} is ambiguous",CE.METHOD_NOT_FOUND,node)
+			return null;
 		}
 		return matches[0]
 	}
