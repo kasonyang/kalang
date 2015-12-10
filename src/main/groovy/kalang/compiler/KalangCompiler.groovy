@@ -26,6 +26,22 @@ class KalangCompiler extends AstLoader {
 	
 	ErrorHandler typeErrorHanlder;
 	
+	private ErrorHandler _errorHandler
+	
+	private boolean hasError = false;
+	
+	class ErrorHandlerProxy implements ErrorHandler{
+
+		@Override
+		public void error(AstNode node, String errMsg, int errorCode) {
+			if(typeErrorHanlder){
+				typeErrorHanlder.error(node,errMsg,errorCode)
+			}
+			hasError = true
+		}
+		
+	}
+	
     public KalangCompiler(AstLoader astLoader = null){
         this.astLoader = astLoader
     }
@@ -66,9 +82,7 @@ class KalangCompiler extends AstLoader {
 
     protected void typeCheck(){
         def typeChecker = new TypeChecker(this)
-		if(this.typeErrorHanlder){
-			typeChecker.setErrorHandler(this.typeErrorHanlder)
-		}
+		typeChecker.setErrorHandler(new ErrorHandlerProxy())
         def cnames = this.asts.keySet();
         def cn
         for(def c in cnames){
@@ -106,9 +120,9 @@ class KalangCompiler extends AstLoader {
 	
     void compile(){
         init();
-        buildAst()
-        typeCheck()
-        codeGen()
+        if(!hasError) buildAst()
+        if(!hasError) typeCheck()
+        if(!hasError) codeGen()
     }
 	
     @Override
