@@ -10,7 +10,8 @@ class{
         System.out.println(msg);
     }
     void decl(){
-        int i;
+        int i = 1;
+        if(i==0) return;
         var l = i;
         var emptyMap = {};
         var map = {name:"kalang"};

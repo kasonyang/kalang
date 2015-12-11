@@ -9,6 +9,7 @@ import java.util.Stack;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.ArgumentsContext;
+import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
 import kalang.antlr.KalangParser.CastExprContext;
 import kalang.antlr.KalangParser.ClassBodyContext;
@@ -47,6 +48,7 @@ import kalang.antlr.KalangParser.TypeContext;
 import kalang.antlr.KalangParser.VarDeclContext;
 import kalang.antlr.KalangParser.VarDeclStatContext;
 import kalang.antlr.KalangParser.VarDeclsContext;
+import kalang.antlr.KalangParser.VarModifierContext;
 import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
@@ -167,7 +169,16 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         cls = new ClassNode();
     }
 	
-    public void importPackage(String packageName){
+    @Override
+	public ExprNode visit(ParseTree tree) {
+		if(tree==null){
+			System.err.println("visit null");
+			return null;
+		}
+		return super.visit(tree);
+	}
+
+	public void importPackage(String packageName){
         this.importPaths.add(packageName);
     }
     
@@ -352,7 +363,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         visitClassBody(ctx.classBody());
         cls.name= this.className;
         //cls.modifier=getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
-        cls.modifier = parseModifier(ctx.VarModifier());
+        cls.modifier = parseModifier(ctx.varModifier());
         String classType = ctx.classType.getText();
         if(classType.equals("interface")) cls.isInterface = true;
         if(ctx.parentClass!=null) 
@@ -377,7 +388,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     @Override
     public ExprNode visitFieldDecl(FieldDeclContext ctx) {
         visit(ctx.varDecls());
-        int mdf = this.parseModifier(ctx.VarModifier());
+        int mdf = this.parseModifier(ctx.varModifier());
         for(VarObject v:varCollector){
         	v.modifier = mdf;
         }
@@ -386,7 +397,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         return null;
     }
 
-    private int parseModifier(TerminalNode varModifier) {
+    private int parseModifier(VarModifierContext varModifier) {
 		if(varModifier==null) return Modifier.PUBLIC;
 		return parseModifier(varModifier.getText());
 	}
@@ -408,7 +419,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         	}
         	name = ctx.name.getText();
         }
-        int mdf = parseModifier(ctx.VarModifier());
+        int mdf = parseModifier(ctx.varModifier());
         method = new MethodNode(mdf,type,name);
         if(ctx.varDecls()!=null) visit(ctx.varDecls());
         method.parameters.addAll(varCollector);
@@ -459,10 +470,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ExprNode expr = visitExpression(ctx.expression());
         ifStmt.conditionExpr = expr;
         startBlock();
-        visitStatList(ctx.statList());
+        visit(ctx.stat());
         trueBody.statements = endBlock();
         startBlock();
-        visitIfStatSuffix(ctx.ifStatSuffix());
+        visit(ctx.ifStatSuffix());
         falseBody.statements = endBlock();
         addCode(ifStmt,ctx);
         return null;
@@ -474,7 +485,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitIfStatSuffix(IfStatSuffixContext ctx) {
-        visitStatList(ctx.statList());
+        visit(ctx.stat());
         return null;
     }
 
@@ -571,7 +582,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         AstNode expr = visitExpression(ctx.expression());
         ws.preConditionExpr = (ExprNode) expr;
         startBlock();
-        visitStatList(ctx.statList());
+        visit(ctx.stat());
         body.statements = endBlock();        
         addCode(ws,ctx);
         return null;
@@ -581,7 +592,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ExprNode visitDoWhileStat(DoWhileStatContext ctx) {
         BlockStmt bs = new BlockStmt();
         startBlock();
-        visit(ctx.statList());
+        visit(ctx.stat());
         bs.statements = endBlock();
         ExprNode cond = visit(ctx.expression());
         LoopStmt ls =new LoopStmt();
@@ -605,7 +616,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         AstNode texpr = visitExpression(ctx.expression());
         ls.preConditionExpr = (ExprNode) texpr;
         startBlock();
-        visitStatList(ctx.statList());
+        visit(ctx.stat());
         visit(ctx.expressions());
         ls.loopBody = endBlockAsStmt();
         this.popVarStack();
@@ -959,6 +970,19 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	@Override
 	public ExprNode visitExprThis(ExprThisContext ctx) {
 		// TODO exor this
+		return null;
+	}
+
+	@Override
+	public ExprNode visitBlockStmt(BlockStmtContext ctx) {
+		if(ctx.stat()==null) return null;
+		for(StatContext s:ctx.stat()) visit(s);
+		return null;
+	}
+
+	@Override
+	public ExprNode visitVarModifier(VarModifierContext ctx) {
+		// do nothing
 		return null;
 	}
 

@@ -244,7 +244,11 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitReturnStmt(ReturnStmt node) {
-        "return ${visit(node.expr)};"
+		String expr = "";
+		if(node.expr!=null){
+			expr = visit(node.expr);
+		}
+        "return ${expr};"
     }
 
     @Override

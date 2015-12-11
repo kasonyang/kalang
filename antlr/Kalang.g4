@@ -2,7 +2,7 @@ grammar Kalang;
 
 compiliantUnit:
     importDecl*
-    VarModifier?
+    varModifier?
     (
         classType='class'
         |classType='interface'
@@ -28,10 +28,10 @@ classBody:
   methodDecl*
 ;
 fieldDecl:
-   VarModifier? varDecls ';'
+   varModifier? varDecls ';'
 ;
 methodDecl:
-   VarModifier? 
+   varModifier? 
    (
      ((type|'void') name=Identifier )
      |(prefix='constructor')
@@ -56,14 +56,15 @@ statList:
 ;
 
 ifStat:
-    IF '(' expression ')' '{' statList '}' ifStatSuffix?
+    IF '(' expression ')' stat ifStatSuffix?
     ;
 ifStatSuffix:
-    ELSE '{' statList '}'
+    ELSE stat
 ;
 
 stat:
-    postIfStmt
+    blockStmt
+    |postIfStmt
     |exprStat
     |ifStat
     |whileStat
@@ -74,6 +75,9 @@ stat:
     |varDeclStat
     |returnStat
     |tryStat
+;
+blockStmt:
+    '{' stat* '}'
 ;
 tryStat:
     'try' '{' tryStmtList=statList '}'
@@ -107,15 +111,15 @@ varDecl:
 breakStat:BREAK ';';
 continueStat:CONTINUE ';';
 whileStat:
-    WHILE '(' expression ')' '{' statList '}'
+    WHILE '(' expression ')' stat
 ;
 doWhileStat:
-    DO '{' statList '}' WHILE '(' expression ')' ';'
+    DO stat WHILE '(' expression ')' ';'
 ;
 
 forStat:
   FOR '(' varDecls? ';' expression? ';' expressions? ')'
-  '{' statList '}'
+  stat
 ;
 expressions:
     expression (',' expression)*
@@ -197,7 +201,7 @@ arguments
     ;
 // LEXER
 
-VarModifier:('static'|'final'|'private'|'public'|'protected')+;
+varModifier:('static'|'final'|'private'|'public'|'protected')+;
 
 // §3.9 Keywords
 

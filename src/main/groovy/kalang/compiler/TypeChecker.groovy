@@ -211,6 +211,7 @@ class TypeChecker extends AstVisitor<String> {
             }else{
                 //pass anything
             }
+			t = BOOLEAN_CLASS;
             break;
         case '+':
         case '-':

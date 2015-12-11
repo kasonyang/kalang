@@ -138,6 +138,16 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitStat(KalangParser.StatContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#blockStmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterBlockStmt(KalangParser.BlockStmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#blockStmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitBlockStmt(KalangParser.BlockStmtContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#tryStat}.
 	 * @param ctx the parse tree
 	 */
@@ -513,4 +523,14 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArguments(KalangParser.ArgumentsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KalangParser#varModifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterVarModifier(KalangParser.VarModifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#varModifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitVarModifier(KalangParser.VarModifierContext ctx);
 }
