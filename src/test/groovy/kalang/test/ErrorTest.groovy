@@ -14,6 +14,7 @@ class ErrorTest {
 	
 	String outDir = "TestScript/generatedCode"
 	String srcDir = "antlr"
+	String errSrcDir = "TestScript/error_src"
 	
 	int eCode
 	
@@ -48,12 +49,12 @@ class ErrorTest {
 		this.errMsg = null;
 		compile(srcDir,name)
 		if(kc.hasError()){
-			throw kc.errors.get(0)
+			throw kc.getErrors().get(0)
 		}
 	}
 	
 	private void ecp(String... name){
-		compile("TestScript/error_src",name)
+		compile(errSrcDir,name)
 		if(kc.hasError()){
 			for(e in kc.errors){
 				System.err.println(e)
@@ -84,7 +85,7 @@ class ErrorTest {
 	
 	@Test
 	void toolTest(){
-		TC.main(this.srcDir,outDir)
+		TC.main(this.errSrcDir,outDir)
 	}
 
 }

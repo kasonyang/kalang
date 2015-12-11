@@ -50,6 +50,10 @@ class KalangCompiler extends AstLoader {
         this.astLoader = astLoader
     }
 	
+	public List<CompileError> getErrors(){
+		return errors
+	}
+	
     ClassNode[] getCompiledClasses(){
         return (ClassNode[]) asts.values().toArray()
     }

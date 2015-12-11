@@ -9,7 +9,7 @@ import kava.antlr.*
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTree
-
+@groovy.transform.TypeChecked
 class Compiler {
 	
 	static void printUsage(){
@@ -52,16 +52,22 @@ kac src dest
     }
 	
 	static void compile(String className,String src,File outDir=null){
-		compile([className],[src],outDir)
+		def su = new SourceUnit();
+		su.className = className
+		su.source = src
+		compile([su],outDir)
 	}
 	
-	static void compile(List<String> className,List<String> srcList,File outDir=null){
+	static void compile(List<SourceUnit> sources,File outDir=null){
 		def astLoader = new JavaAstLoader();
         def cpl = new KalangCompiler(astLoader);
-		assert className.size() == srcList.size()
-		int size = srcList.size();
+		int size = sources.size();
+		HashMap<String,SourceUnit> sourcesMap = [:]
 		for(int i=0;i<size;i++){
-			cpl.addSource(className.get(i),srcList.get(i));
+			def src = sources.get(i)
+			def clsName = src.className
+			sourcesMap.put(clsName,src)
+			cpl.addSource(clsName,src.source);
 		}
         cpl.compile()
 		def javaCodes = cpl.getJavaCodes();
@@ -79,7 +85,9 @@ kac src dest
 		}
 		if(cpl.hasError()){
 			for(e in cpl.getErrors()){
-				System.err.println(e)
+				String cname = e.getClassName();
+				String fn = sourcesMap.get(cname).fileName;
+				System.err.println("${fn}:${e}")
 			}
         }
 	}
@@ -87,16 +95,18 @@ kac src dest
     static void compile(File srcDir,File outDir) {
 		def srcs = getFiles(srcDir);
         def abSrcPath = srcDir.getAbsolutePath()
-		def classNames = []
-		def srces = []
+		def srcUnits = []
         for(File s in srcs){
             def fname = s.getAbsolutePath();
             if(!fname.endsWith(".kl")) continue;
             def clsName = fname.substring(abSrcPath.length()+1,fname.length()-3).replace(File.separator,".");
             def txt = s.readLines().join("\r\n");
-            classNames.add(clsName)
-			srces.add(txt);
+            def sUnit = new SourceUnit();
+			sUnit.className = clsName
+			sUnit.fileName = fname.substring(abSrcPath.length()+1);
+			sUnit.source = txt
+			srcUnits.add(sUnit)
         }
-        compile(classNames,srces,outDir)
+        compile(srcUnits,outDir)
     }
 }
