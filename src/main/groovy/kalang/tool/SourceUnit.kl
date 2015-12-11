@@ -1,0 +1,5 @@
+class {
+    String fileName;
+    String className;
+    String source;
+}
