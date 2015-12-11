@@ -436,6 +436,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExprSelfRef(KalangParser.ExprSelfRefContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprSelfRef(KalangParser.ExprSelfRefContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprLiteral(KalangParser.ExprLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -503,18 +515,6 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprSelfOpPre(KalangParser.ExprSelfOpPreContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterExprThis(KalangParser.ExprThisContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExprThis(KalangParser.ExprThisContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

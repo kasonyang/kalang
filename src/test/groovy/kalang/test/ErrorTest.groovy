@@ -13,7 +13,7 @@ import kalang.tool.Compiler as TC
 class ErrorTest {
 	
 	String outDir = "TestScript/generatedCode"
-	String srcDir = "antlr"
+	String srcDir = "antlr/TestScript"
 	String errSrcDir = "TestScript/error_src"
 	
 	int eCode
@@ -62,7 +62,7 @@ class ErrorTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void errorTest() {
 		//throw new RuntimeException("tt")
 		//cp "NotImplemented"
@@ -78,14 +78,15 @@ class ErrorTest {
 	
 	@Test
 	void test(){
-		cp("TestInput")
+		//cp("TestInput")
+		cp("Base")
 		//cp("HelloWorld","MyInterface")
 		//cp "kava"
 	}
 	
 	@Test
 	void toolTest(){
-		TC.main(this.errSrcDir,outDir)
+		//TC.main(this.errSrcDir,outDir)
 	}
 	
 

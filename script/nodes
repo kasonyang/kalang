@@ -114,3 +114,5 @@
 ##NewArrayExpr
 -type:String
 -size:ExprNode
+##KeyExpr
+-key:String

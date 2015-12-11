@@ -54,6 +54,7 @@ class AstParser {
 	
 	static List<String> getParameterTypes(MethodNode mn){
 		List<String> types = []
+		if(mn?.parameters==null) return types
 		for(def p in mn.parameters){
 			types.add(p.type);
 		}

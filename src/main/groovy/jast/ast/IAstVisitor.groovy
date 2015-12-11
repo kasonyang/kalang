@@ -51,4 +51,6 @@ public interface IAstVisitor<T>{
     
     public T visitNewArrayExpr(NewArrayExpr node);
     
+    public T visitKeyExpr(KeyExpr node);
+    
 }

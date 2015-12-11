@@ -28,6 +28,12 @@ class TypeSystem {
 
 	private static final String NULL_CLASS = "java.lang.NullObject";
 
+	private static final String VOID_CLASS = "java.lang.Void";
+	
+	private static final String SHORT_CLASS = "java.lang.Short";
+	
+	private static final String BYTE_CLASS = "java.lang.Byte"
+	
 	private static final String ROOT_CLASS = "java.lang.Object";
 			
 	private BidiMap primitive2class;
@@ -46,6 +52,9 @@ class TypeSystem {
 		m."double" = DOUBLE_CLASS
 		m."char" = CHAR_CLASS
 		m."boolean" = BOOLEAN_CLASS
+		m."void" = VOID_CLASS
+		m."short" = SHORT_CLASS
+		m."byte" = BYTE_CLASS
 		this.astLoader = astLoader
 	}
 	

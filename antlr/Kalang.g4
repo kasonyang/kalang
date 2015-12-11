@@ -133,7 +133,7 @@ expression
     :   LPAREN 
         expression 
         RPAREN #exprParen
-    |   'this' #exprThis
+    |   ref=('this'|'super') #exprSelfRef
     //|   'super'
     |   literal #exprLiteral
     |   Identifier #exprIdentifier 
@@ -144,7 +144,7 @@ expression
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
     |     expression '.' Identifier arguments  #exprInvocation
-    |     Identifier arguments  #exprMemberInvocation
+    |     (Identifier|key='this'|key='super') arguments  #exprMemberInvocation
     |  expression '[' expression ']' #exprGetArrayElement    
     |   NEW Identifier  arguments     #newExpr
     |   NEW noArrayType '[' expression ']'     #exprNewArray

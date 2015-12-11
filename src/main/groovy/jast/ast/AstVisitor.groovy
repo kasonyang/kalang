@@ -127,4 +127,9 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
         this.visitChildren(node);
     }
     
+    @Override
+    public T visitKeyExpr(KeyExpr node){
+        this.visitChildren(node);
+    }
+    
 }

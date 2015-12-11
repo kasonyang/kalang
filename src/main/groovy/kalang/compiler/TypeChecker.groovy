@@ -19,6 +19,7 @@ import jast.ast.FieldExpr;
 import jast.ast.FieldNode
 import jast.ast.IfStmt
 import jast.ast.InvocationExpr;
+import jast.ast.KeyExpr;
 import jast.ast.LoopStmt;
 import jast.ast.MethodNode
 import jast.ast.NewArrayExpr
@@ -294,7 +295,8 @@ class TypeChecker extends AstVisitor<String> {
         String methodName = node.methodName;
         ClassNode ast = loadAst(target,node);
         MethodNode method = selectMethod(node,ast,methodName,(String[])types.toArray())
-        boolean inStaticMethod = node.target==null && Modifier.isStatic(this.method.modifier)
+        if(method==null) return castSys.ROOT_CLASS;
+		boolean inStaticMethod = node.target==null && Modifier.isStatic(this.method.modifier)
 		boolean isClassExpr = node.target instanceof ClassExpr
 		if(inStaticMethod || isClassExpr){
 			requireStatic(method.modifier,node)
@@ -518,6 +520,19 @@ class TypeChecker extends AstVisitor<String> {
 			def pt = visit(expr.arguments[i])
 			expr.arguments[i] = this.castSys.cast(expr.arguments[i],pt,mt)
 			i++
+		}
+	}
+
+	@Override
+	public String visitKeyExpr(KeyExpr node) {
+		String key = node.key
+		if(key=="this"){
+			return this.clazz.name
+		}else if(key == "super"){
+			return this.clazz.parentName ?: this.castSys.ROOT_CLASS
+		}else {
+			System.err.println "Unknown key!";
+			return null;
 		}
 	}
 

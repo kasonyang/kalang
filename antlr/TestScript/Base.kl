@@ -1,0 +1,52 @@
+class{
+    private int f1;
+    protected int f2;
+    public int f3;
+    static int f4;
+    static protected int f5 = 2;
+    constructor(){
+        super();
+        this.method1();
+    }
+    constructor(String name){
+        
+    }
+    int method1(){
+        return 2;
+    }
+    void method2(){}
+    void decl(){
+        int i = 1;
+        var l = i;
+        var emptyMap = {};
+        var map = {name:"kalang"};
+        var emptyList = [];
+        var list = ["item"];
+    }
+    void ifStmt(){
+        int i=0;
+        if(i==0) return;
+        if(i==1){
+            return;
+        }
+    }
+    void forStmt(){
+        int s;
+        for(int i=0;i<100;i++) s++;
+        for(int i=0;i<100;i++){
+            s++;
+        }
+    }
+    void whileStmt(){
+        int i;
+        while(i<10) i++;
+        while(i<20){i++;}
+    }
+    void invocation(){
+        invocation();
+        this.invocation();
+    }
+    void getField(){
+        f1 = 1;
+    }
+}

@@ -21,6 +21,7 @@ import jast.ast.IAstVisitor
 import jast.ast.AstVisitor
 import jast.ast.IfStmt;
 import jast.ast.InvocationExpr;
+import jast.ast.KeyExpr;
 import jast.ast.LoopStmt;
 import jast.ast.MethodNode;
 import jast.ast.NewArrayExpr
@@ -310,7 +311,10 @@ class Ast2Java extends AbstractAstVisitor<String>{
         def args = visit(node.arguments).join(",");
 		String mname = node.methodName
 		if(mname=="<init>"){
-			return "new ${target}(${args})"
+			if(node.target instanceof KeyExpr){
+				KeyExpr keyExpr = (KeyExpr) node.target
+				return "${keyExpr.key}(${args})";
+			}else return "new ${target}(${args})";
 		}else{
 			if(target) target+= "."
 			"${target}${node.methodName}($args)"
@@ -349,6 +353,11 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		String varDecl = this.trimStmt(visit(node.catchVarDecl));
 		String exec = visit(node.execStmt);
 		"catch(${varDecl}) ${exec}";
+	}
+
+	@Override
+	public String visitKeyExpr(KeyExpr node) {
+		return node.key
 	}
 
 }

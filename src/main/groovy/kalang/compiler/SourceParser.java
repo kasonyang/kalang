@@ -27,8 +27,8 @@ import kalang.antlr.KalangParser.ExprMidOpContext;
 import kalang.antlr.KalangParser.ExprParenContext;
 import kalang.antlr.KalangParser.ExprSelfOpContext;
 import kalang.antlr.KalangParser.ExprSelfOpPreContext;
+import kalang.antlr.KalangParser.ExprSelfRefContext;
 import kalang.antlr.KalangParser.ExprStatContext;
-import kalang.antlr.KalangParser.ExprThisContext;
 import kalang.antlr.KalangParser.ExpressionContext;
 import kalang.antlr.KalangParser.ExpressionsContext;
 import kalang.antlr.KalangParser.FieldDeclContext;
@@ -640,9 +640,18 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public InvocationExpr visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
-        InvocationExpr ie = this.getInvocationExpr(
-            null
-            , ctx.Identifier().getText()
+        String methodName;
+        ExprNode target;
+        if(ctx.key!=null){
+        	target = new KeyExpr(ctx.key.getText());
+        	methodName = "<init>";
+        }else{
+        	methodName = ctx.Identifier().getText();
+        	target = null;
+        }
+    	InvocationExpr ie = this.getInvocationExpr(
+            target
+            , methodName
             ,ctx.arguments());
         a2p.put(ie, ctx);
         return ie;
@@ -965,12 +974,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	}
 
 	@Override
-	public ExprNode visitExprThis(ExprThisContext ctx) {
-		// TODO exor this
-		return null;
-	}
-
-	@Override
 	public ExprNode visitBlockStmt(BlockStmtContext ctx) {
 		if(ctx.stat()==null) return null;
 		for(StatContext s:ctx.stat()) visit(s);
@@ -982,5 +985,14 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 		// do nothing
 		return null;
 	}
+
+	@Override
+	public ExprNode visitExprSelfRef(ExprSelfRefContext ctx) {
+		KeyExpr expr =  new KeyExpr(ctx.ref.getText());
+		a2p.put(expr, ctx);
+		return expr;
+	}
+
+	
 
 }
