@@ -294,7 +294,7 @@ class TypeChecker extends AstVisitor<String> {
         String methodName = node.methodName;
         ClassNode ast = loadAst(target,node);
         MethodNode method = selectMethod(node,ast,methodName,(String[])types.toArray())
-        boolean inStaticMethod = node.target==null && Modifier.isStatic(method.modifier)
+        boolean inStaticMethod = node.target==null && Modifier.isStatic(this.method.modifier)
 		boolean isClassExpr = node.target instanceof ClassExpr
 		if(inStaticMethod || isClassExpr){
 			requireStatic(method.modifier,node)
