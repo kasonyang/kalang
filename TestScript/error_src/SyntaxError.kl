@@ -1,0 +1,5 @@
+class{
+    void test(){
+        here syntax error!
+    }
+}

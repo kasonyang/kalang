@@ -65,6 +65,8 @@ class ErrorTest {
 	public void errorTest() {
 		//throw new RuntimeException("tt")
 		//cp "NotImplemented"
+		ecp("SyntaxError")
+		
 		ecp("ErrorAssign")
 		assert eCode == E.UNABLE_TO_CAST
 		ecp("NotImplemented")

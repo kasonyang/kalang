@@ -57,6 +57,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
@@ -136,18 +137,23 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         KalangLexer lexer = new KalangLexer(new ANTLRInputStream(source));
         tokens = new CommonTokenStream(lexer);
         parser = new KalangParser(tokens);
-        this.context = parser.compiliantUnit();
         SourceParser that = this;
         parser.setErrorHandler(new DefaultErrorStrategy(){
 
 			@Override
 			public void reportError(Parser recognizer, RecognitionException e) {
-				Token tk = e.getOffendingToken();
-				that.reportError("syntax error!", tk);
+				RuleContext ctx = e.getCtx();
+				if(ctx==null){
+					Token tk = e.getOffendingToken();
+					that.reportError("syntax error!", tk);
+				}else{
+					that.reportError("syntax error!", ctx);
+				}
 				super.reportError(recognizer, e);
 			}
         	
         });
+        this.context = parser.compiliantUnit();
         visit(context);
     }
 	
@@ -172,7 +178,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public Position getLocation(Token token,Token token2){
     	Position loc = new Position();
     	loc.offset = token.getStartIndex();
-        loc.length = token2.getStopIndex() - loc.offset + 1;
+        loc.length = token2.getStopIndex() - loc.offset;
         return loc;
     }
 	

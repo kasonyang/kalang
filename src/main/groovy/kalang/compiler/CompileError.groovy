@@ -19,6 +19,9 @@ class CompileError  extends RuntimeException{
     }
 	
 	public String getErrorSource(){
+		if(stop<0) return null;
+		if(start<0) return null;
+		if(stop<start) return null;
 		return source.substring(start,stop)
 	}
 
