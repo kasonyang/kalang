@@ -81,7 +81,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     private static final String STRING_CLASS = "java.lang.String";
 
-    private static final String NULL_CLASS = "java.lang.NullObject";
+    private static final String NULL_CLASS = "null";
 	
     static String DEFAULT_METHOD_TYPE = "java.lang.Object";
     static String DEFAULT_LIST_CLASS = "java.util.LinkedList";
@@ -367,7 +367,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         String classType = ctx.classType.getText();
         if(classType.equals("interface")) cls.isInterface = true;
         if(ctx.parentClass!=null) 
-            cls.parentName=(ctx.parentClass.getText());
+            cls.parentName=this.checkFullType(ctx.parentClass.getText(),ctx);
         if(ctx.interfaces!=null && ctx.interfaces.size()>0){
             for(Token itf:ctx.interfaces){
                 cls.interfaces.add(itf.getText());

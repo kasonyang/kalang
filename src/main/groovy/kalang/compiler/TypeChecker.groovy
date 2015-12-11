@@ -62,7 +62,6 @@ class TypeChecker extends AstVisitor<String> {
 
     private static final String STRING_CLASS = "java.lang.String";
 
-    private static final String NULL_CLASS = "java.lang.NullObject";
 
     private static final String DEFAULT_CLASS = "java.lang.Object";
     
@@ -210,7 +209,7 @@ class TypeChecker extends AstVisitor<String> {
                 if(!castSys.isNumber(t2)) err?.failedToCast(node,t2,INT_CLASS);
                 //fail("Number required",node);
             }else{
-                //pass anything
+                //TODO pass anything.may be Object needed?
             }
 			t = "boolean";
             break;

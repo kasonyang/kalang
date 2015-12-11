@@ -26,7 +26,6 @@ class TypeSystem {
 
 	private static final String STRING_CLASS = "java.lang.String";
 
-	private static final String NULL_CLASS = "java.lang.NullObject";
 
 	private static final String VOID_CLASS = "java.lang.Void";
 	
@@ -55,6 +54,8 @@ class TypeSystem {
 		m."void" = VOID_CLASS
 		m."short" = SHORT_CLASS
 		m."byte" = BYTE_CLASS
+		//TODO does null has class type?
+		m."null" = "null"
 		this.astLoader = astLoader
 	}
 	
@@ -162,6 +163,7 @@ class TypeSystem {
 				}
 			}else{
 				if(toType==ROOT_CLASS) return this.&castPrimitive2Object
+				if(fromType=="null") return this.&castNothing
 				String toPriType = getPrimitiveType(toType)
 				if(toPriType == fromType){
 					return this.&castPrimitive2Object

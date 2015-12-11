@@ -85,7 +85,7 @@ kac src dest
 		}
 		if(cpl.hasError()){
 			for(e in cpl.getErrors()){
-				String cname = e.getClassName();
+				String cname = e.className;
 				String fn = sourcesMap.get(cname).fileName;
 				System.err.println("${fn}:${e}")
 			}

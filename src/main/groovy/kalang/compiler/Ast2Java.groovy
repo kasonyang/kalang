@@ -187,7 +187,12 @@ class Ast2Java extends AbstractAstVisitor<String>{
 		String mname = node.name
 		String typeStr = ""
 		if(mname=="<init>"){
-			mname = cls.name
+			int lastIdx = cls.name.lastIndexOf(".");
+			if(lastIdx<0){
+				mname = cls.name
+			}else{
+				mname = cls.name.substring(lastIdx+1)
+			}
 		}else{
 			typeStr = node.type
 		}
