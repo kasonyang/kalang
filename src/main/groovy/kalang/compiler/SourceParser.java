@@ -359,6 +359,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
                 cls.interfaces.add(itf.getText());
             }
         }
+        a2p.put(cls, ctx);
         return null;
     }
 
@@ -366,6 +367,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ExprNode visitClassBody(ClassBodyContext ctx) {
         this.newVarStack();
         this.visitChildren(ctx);
+        a2p.put(cls, ctx);
         return null;
     }
 
@@ -421,6 +423,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         }
         this.popVarStack();
         cls.methods.add(method);
+        a2p.put(method, ctx);
         return null;
     }
 
