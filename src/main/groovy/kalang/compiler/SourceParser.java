@@ -178,14 +178,17 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public Position getLocation(Token token,Token token2){
     	Position loc = new Position();
     	loc.offset = token.getStartIndex();
-        loc.length = token2.getStopIndex() - loc.offset;
+        loc.length = token2.getStopIndex() - loc.offset + 1;
         return loc;
     }
 	
     public Position getLocation(ParseTree tree){
         Interval itv = tree.getSourceInterval();
-        Token t = tokens.get(itv.a);
-        Token tt = tokens.get(itv.b);
+        int a = itv.a;
+        int b = itv.b;
+        if(a>b) b=a;
+        Token t = tokens.get(a);
+        Token tt = tokens.get(b);
         return getLocation(t,tt);
     }
 	
