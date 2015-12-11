@@ -54,6 +54,9 @@ import jast.ast.*;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.DefaultErrorStrategy;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
@@ -93,9 +96,9 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	
     private AstLoader astLoader;
 
-    private final ParseTree context;
+    private ParseTree context;
 
-    private final CommonTokenStream tokens;
+    private CommonTokenStream tokens;
     
     private final String className;
 	private String classPath;
@@ -103,6 +106,8 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	TypeSystem castSystem;
 	private VarTable<String,VarDeclStmt> vtb;
 	private List<VarObject> varCollector = new LinkedList<VarObject>();
+	private KalangParser parser;
+	private String source;
 	
     
     public static class Position{
@@ -128,34 +133,54 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public void compile(AstLoader astLoader){
         this.astLoader = astLoader;
         this.castSystem = new TypeSystem(astLoader);
+        KalangLexer lexer = new KalangLexer(new ANTLRInputStream(source));
+        tokens = new CommonTokenStream(lexer);
+        parser = new KalangParser(tokens);
+        this.context = parser.compiliantUnit();
+        SourceParser that = this;
+        parser.setErrorHandler(new DefaultErrorStrategy(){
+
+			@Override
+			public void reportError(Parser recognizer, RecognitionException e) {
+				Token tk = e.getOffendingToken();
+				that.reportError("syntax error!", tk);
+				super.reportError(recognizer, e);
+			}
+        	
+        });
         visit(context);
     }
 	
     public SourceParser(String className,String src){
-        KalangLexer lexer = new KalangLexer(new ANTLRInputStream(src));
-        tokens = new CommonTokenStream(lexer);
-        KalangParser parser = new KalangParser(tokens);
-        this.context = parser.compiliantUnit();
         this.className = className;
         this.classPath = "";
         if(className.contains(".")){
         	classPath = className.substring(0, className.lastIndexOf('.'));
         }
+        source = src;
         cls = new ClassNode();
     }
 	
     public void importPackage(String packageName){
         this.importPaths.add(packageName);
     }
+    
+    public Position getLocation(Token token){
+    	return getLocation(token,token);
+    }
+    
+    public Position getLocation(Token token,Token token2){
+    	Position loc = new Position();
+    	loc.offset = token.getStartIndex();
+        loc.length = token2.getStopIndex() - loc.offset + 1;
+        return loc;
+    }
 	
     public Position getLocation(ParseTree tree){
-        Position loc = new Position();
         Interval itv = tree.getSourceInterval();
         Token t = tokens.get(itv.a);
         Token tt = tokens.get(itv.b);
-        loc.offset = t.getStartIndex();
-        loc.length = tt.getStopIndex() - loc.offset + 1;
-        return loc;
+        return getLocation(t,tt);
     }
 	
     public Position getLocation(AstNode node){
@@ -499,6 +524,10 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         }
         this.varCollector.add(vds);
         return null;
+    }
+    
+    private void reportError(String msg,Token token){
+    	throw new ParseError(msg,this.getLocation(token));
     }
 
     private void reportError(String string, ParseTree tree) {
