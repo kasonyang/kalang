@@ -87,5 +87,6 @@ class ErrorTest {
 	void toolTest(){
 		TC.main(this.errSrcDir,outDir)
 	}
+	
 
 }

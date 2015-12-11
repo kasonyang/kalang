@@ -46,6 +46,8 @@ class Ast2Java extends AbstractAstVisitor<String>{
 	
 	private ClassNode cls;
 	
+	private MethodNode method
+	
 	private String getVarName(VarObject vo){
 		String name = vo.name
 		String tmpNamePrefix = "tmp"
@@ -167,6 +169,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitMethodNode(MethodNode node) {
+		this.method = node
 		List<String> psList = []
 		for(p in node.parameters){
 			psList.add(this.getVarStr(p))
@@ -288,9 +291,15 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitFieldExpr(FieldExpr node) {
-        def target = "this" 
+        def target
         if(node.target){
             target = visit(node.target)
+        }else{
+			if(Modifier.isStatic(this.method.modifier)){
+				target = cls.name
+			}else{
+				target = "this"
+			}
         }
 		"${target}.${node.fieldName}"
     }

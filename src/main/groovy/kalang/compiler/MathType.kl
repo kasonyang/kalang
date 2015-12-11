@@ -35,6 +35,7 @@ class{
         if(type==LONG_STR) {return LONG;}
         if(type==FLOAT_STR) {return FLOAT;}
         if(type==DOUBLE_STR) {return DOUBLE;}
+        return 0;
     }
 	
     static String getTypeStr(int type){
@@ -42,6 +43,7 @@ class{
         if(type==  LONG){ return   LONG_STR;}
         if(type== FLOAT) {return  FLOAT_STR;}
         if(type==DOUBLE){ return DOUBLE_STR;}
+        return "";
     }
 	
     static int getOperation(String op){
@@ -50,6 +52,7 @@ class{
         if(op==OP_MUL_STR) {return OP_MUL;}
         if(op==OP_DIV_STR) {return OP_DIV;}
         if(op==OP_MOD_STR) {return OP_MOD;}
+        return 0;
     }
 	
     static String getOperationStr(int op){
@@ -58,6 +61,7 @@ class{
         if(op==OP_MUL) {return OP_MUL_STR;}
         if(op==OP_DIV) {return OP_DIV_STR;}
         if(op==OP_MOD) {return OP_MOD_STR;}
+        return "";
     }
 	
     static String getType(String type1,String type2,String op){

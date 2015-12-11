@@ -397,12 +397,6 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         return null;
     }
 
-    private int parseModifier(VarModifierContext varModifier) {
-		if(varModifier==null) return Modifier.PUBLIC;
-		return parseModifier(varModifier.getText());
-	}
-
-
     @Override
     public ExprNode visitMethodDecl(MethodDeclContext ctx) {
         this.newVarStack();
@@ -419,6 +413,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         	}
         	name = ctx.name.getText();
         }
+        if(type!=null && type.length()>0) type = this.checkFullType(type, ctx);
         int mdf = parseModifier(ctx.varModifier());
         method = new MethodNode(mdf,type,name);
         if(ctx.varDecls()!=null) visit(ctx.varDecls());
@@ -860,11 +855,13 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         return null;
     }
     
-    public int parseModifier(String modifier){
-    	String[] mdfs = modifier.split(" ");
+    public int parseModifier(VarModifierContext modifier){
+    	//String[] mdfs = modifier.split(" ");
+    	if(modifier==null) return Modifier.PUBLIC;
     	int m = 0;
     	int access = 0;
-    	for(String s:mdfs){
+    	for(ParseTree c:modifier.children){
+    		String s = c.getText();
     		if(s.equals("public")){
     			access = Modifier.PUBLIC;
     		}else if (s.equals("protected")){

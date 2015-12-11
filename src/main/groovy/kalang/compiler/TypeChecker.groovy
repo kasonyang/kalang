@@ -211,7 +211,7 @@ class TypeChecker extends AstVisitor<String> {
             }else{
                 //pass anything
             }
-			t = BOOLEAN_CLASS;
+			t = "boolean";
             break;
         case '+':
         case '-':
@@ -228,13 +228,13 @@ class TypeChecker extends AstVisitor<String> {
         case "<":
             requireNumber(node,t1);
             requireNumber(node,t2)
-            t = BOOLEAN_CLASS
+            t = "boolean"
             break;
         case "&&":
         case "||":
             requireBoolean(node,t1)
             requireBoolean(node,t2)
-            t = BOOLEAN_CLASS
+            t = "boolean"
             break;
         case "&":
         case "|":
@@ -429,7 +429,7 @@ class TypeChecker extends AstVisitor<String> {
 		this.exceptionStack.push(new LinkedList());
 		def ret = super.visitMethodNode(node)
 		this.exceptionStack.pop()
-		boolean needReturn = (node.type!='void'&&node.type==null)
+		boolean needReturn = (node.type!='void'&&node.type!=null)
 		if(node.body && needReturn && !returned){
 			err?.fail("Missing return statement in method:${mStr}",CE.LACKS_OF_STATEMENT,node)
 		}

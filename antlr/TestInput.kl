@@ -4,7 +4,7 @@ import java\util\LinkedList;
 class{
     static String msg = "Hello,world";
     constructor(String m){
-        this.msg = m;
+        msg = m;
     }
     static void main(String[] args){
         System.out.println(msg);
