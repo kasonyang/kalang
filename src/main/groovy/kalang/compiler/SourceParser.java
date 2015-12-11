@@ -102,7 +102,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 	
 	TypeSystem castSystem;
 	private VarTable<String,VarDeclStmt> vtb;
-	private List<VarObject> varCollector = new LinkedList();
+	private List<VarObject> varCollector = new LinkedList<VarObject>();
 	
     
     public static class Position{
@@ -111,7 +111,11 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 	
     public static class ParseError extends RuntimeException{
-        Position position;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -4496606055942267965L;
+		Position position;
         public ParseError(String msg,Position position){
             super(msg);
             this.position = position;
@@ -217,7 +221,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         vo.initExpr = new NewExpr(vo.type);
         addCode(vds,ctx);
         VarExpr ve = new VarExpr(vo);
-        List ids = ctx.Identifier();
+        List<TerminalNode> ids = ctx.Identifier();
         for(int i=0;i<ids.size();i++){
             ExpressionContext e = ctx.expression(i);
             ExprNode v = visit(e);
@@ -439,7 +443,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
     @Override
     public ExprNode visitStat(StatContext ctx) {
-        visit(ctx.getChild(0));
+    	visitChildren(ctx);
         return null;
     }
 
@@ -913,7 +917,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
 
 	@Override
 	public ExprNode visitExprThis(ExprThisContext ctx) {
-		// TODO Auto-generated method stub
+		// TODO exor this
 		return null;
 	}
 
