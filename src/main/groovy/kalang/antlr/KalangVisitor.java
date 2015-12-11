@@ -310,4 +310,10 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitArguments(KalangParser.ArgumentsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KalangParser#varModifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVarModifier(KalangParser.VarModifierContext ctx);
 }
