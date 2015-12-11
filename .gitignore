@@ -9,3 +9,5 @@
 /build/
 /.nb-gradle/
 /target/
+/kac.bat
+/.gitignore
