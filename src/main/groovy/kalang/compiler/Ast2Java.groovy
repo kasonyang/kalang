@@ -15,8 +15,6 @@ import jast.ast.ElementExpr;
 import jast.ast.ExprNode;
 import jast.ast.ExprStmt;
 import jast.ast.FieldExpr;
-import jast.ast.FieldNode;
-import jast.ast.FinallyStmt;
 import jast.ast.IAstVisitor
 import jast.ast.AstVisitor
 import jast.ast.IfStmt;
@@ -27,7 +25,6 @@ import jast.ast.MethodNode;
 import jast.ast.NewArrayExpr
 import jast.ast.NewExpr;
 import jast.ast.ParameterExpr;
-import jast.ast.ParameterNode;
 import jast.ast.ReturnStmt;
 import jast.ast.Statement;
 import jast.ast.TryStmt;
@@ -104,7 +101,8 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitParameterExpr(ParameterExpr node) {
-		"${node.parameter.name}"
+		return node.parameter.name;
+		//"${node.var.name}"
     }
 
     @Override

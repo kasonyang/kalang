@@ -107,7 +107,7 @@
 -type:String
 +arguments:ExprNode*
 ##ParameterExpr
--parameter:ParameterNode
+-parameter:VarObject
 ##CastExpr
 -type:String
 -expr:ExprNode

@@ -5,11 +5,11 @@ package jast.ast;
 import java.util.*;
 public class ParameterExpr extends ExprNode{
     
-    public ParameterNode parameter;
+    public VarObject parameter;
     
     
     
-    public ParameterExpr(ParameterNode parameter=null){
+    public ParameterExpr(VarObject parameter=null){
         
         
             this.parameter = parameter;
