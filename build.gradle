@@ -55,6 +55,10 @@ def templateFile(String simpleTplName,Map data,String outDir,String outName){
         w.write(cnt)
     }
 }
+def deleteFile(String file){
+    def f = new File(file);
+    if(f.exists()) f.delete();
+}
 def copyFile(String from,String to){
     new File(from).withReader {is->
         def cnt = is.readLines().join("\r\n")
@@ -70,16 +74,20 @@ def copyFile(String from,String to){
 
 
 def saveNodeFile(String srcDir,Map cls){
-    def name = cls.name + ".groovy";
+    def name = cls.name + ".java";
     String packageName = cls."package";
     def pkgPath =srcDir + "/" + packageName.replace(".","/")
     templateFile("Node.tpl",cls,pkgPath,name)
+}
+task "cleanAst"{
+    def srcDir = projectDir.getAbsolutePath() + "/src/main/groovy/jast/ast"
+    deleteFile srcDir
 }
 task "genAst"{
     def srcDir = projectDir.getAbsolutePath() + "/src/main/groovy/"
     def packageName = "jast.ast"
     def packagePath = srcDir+ "/" + packageName.replace(".","/")
-    copyFile(projectDir.getAbsolutePath() + "/script/AstNode.groovy",packagePath+"/AstNode.groovy")
+    copyFile(projectDir.getAbsolutePath() + "/script/AstNode.java",packagePath+"/AstNode.java")
     List<String> nodes = []
     new File(projectDir.getAbsolutePath() + "/script/nodes").withReader { r ->
         def cls = [:]
@@ -142,15 +150,15 @@ def createVisitor(List<String> nodes,String packageName,String srcDir){
     data.name = "IAstVisitor"
     data."package" = packageName
     data.nodes = nodes
-    templateFile("IVisitor.tpl",data,path,data.name + ".groovy")
+    templateFile("IVisitor.tpl",data,path,data.name + ".java")
 	
     def vd = [:]
     vd.name = "AbstractAstVisitor"
     vd."package" = packageName
     vd.nodes = nodes
     vd."interface" = data.name
-    templateFile("AVisitor.tpl",vd,path,vd.name+".groovy")
+    templateFile("AVisitor.tpl",vd,path,vd.name+".java")
     vd."parent" = vd.name
     vd.name = "AstVisitor"
-    templateFile("Visitor.tpl",vd,path,vd.name+".groovy")
+    templateFile("Visitor.tpl",vd,path,vd.name+".java")
 }

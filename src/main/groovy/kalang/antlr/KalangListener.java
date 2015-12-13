@@ -98,16 +98,6 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitVarDecls(KalangParser.VarDeclsContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link KalangParser#statList}.
-	 * @param ctx the parse tree
-	 */
-	void enterStatList(KalangParser.StatListContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link KalangParser#statList}.
-	 * @param ctx the parse tree
-	 */
-	void exitStatList(KalangParser.StatListContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link KalangParser#ifStat}.
 	 * @param ctx the parse tree
 	 */
@@ -117,16 +107,6 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIfStat(KalangParser.IfStatContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link KalangParser#ifStatSuffix}.
-	 * @param ctx the parse tree
-	 */
-	void enterIfStatSuffix(KalangParser.IfStatSuffixContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link KalangParser#ifStatSuffix}.
-	 * @param ctx the parse tree
-	 */
-	void exitIfStatSuffix(KalangParser.IfStatSuffixContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#stat}.
 	 * @param ctx the parse tree

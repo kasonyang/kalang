@@ -21,7 +21,7 @@
 -modifier:Integer
 -type:String
 -name:String
--isStatic:boolean
+//-isStatic:boolean
 +parameters:VarObject*
 +body:Statement
 -exceptionTypes:String*
@@ -116,3 +116,6 @@
 -size:ExprNode
 ##KeyExpr
 -key:String
+##MultiStmtExpr
++stmts:Statement*
+-reference:ExprNode

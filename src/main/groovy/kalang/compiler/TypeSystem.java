@@ -211,7 +211,10 @@ class TypeSystem {
 	}
 	
 	private ExprNode castObject2Primitive(ExprNode expr,String fromType,String toType){
-		return new InvocationExpr(expr,"${toType}Value");
+            InvocationExpr inv = new InvocationExpr();
+            inv.target = expr;
+            inv.methodName = toType + "Value";
+            return inv;
 	}
 	
 	private ExprNode castNothing(ExprNode expr,String fromType,String toType){

@@ -8,8 +8,14 @@ public class {{name}} extends {{parent}}{
     public {{&type}} {{name}};
     {{/each}}
     
+    public {{name}}(){
+        {{#each listFields}}
+            if({{this}} == null) {{this}} = new LinkedList();
+        {{/each}}
+    }
+    
     {{#if fields}}
-    public {{name}}({{#fields}}{{#if @index}},{{/if}}{{&type}} {{name}}=null{{/fields}}){
+    public {{name}}({{#fields}}{{#if @index}},{{/if}}{{&type}} {{name}}{{/fields}}){
         {{#each listFields}}
             if({{this}} == null) {{this}} = new LinkedList();
         {{/each}}

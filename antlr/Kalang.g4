@@ -38,7 +38,7 @@ methodDecl:
    )
    '(' varDecls? ')'
    ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
-   ( ('{' statList '}') | ';')
+   ( stat | ';')
 ;
 type:
   noArrayType  ( '[]' )?
@@ -51,17 +51,16 @@ varDecls:
    varDecl (',' varDecl)*
 ;
 
+/*
 statList:
     stat*
 ;
+* 
+*/
 
 ifStat:
-    IF '(' expression ')' stat ifStatSuffix?
+    IF '(' expression ')' trueStmt=stat ( ELSE falseStmt=stat)?
     ;
-ifStatSuffix:
-    ELSE stat
-;
-
 stat:
     blockStmt
     |postIfStmt
@@ -80,9 +79,11 @@ blockStmt:
     '{' stat* '}'
 ;
 tryStat:
-    'try' '{' tryStmtList=statList '}'
-    ('catch' '(' catchTypes+=noArrayType catchVarNames+=Identifier ')' '{' catchStmts+=statList '}' )*
-    ('finally' '{' finalStmtList = statList '}')?
+    'try' '{' tryStmtList=stat* '}'
+    ('catch' '(' catchTypes+=noArrayType catchVarNames+=Identifier ')'
+        '{' catchStmts+=stat* '}'
+    )*
+    ('finally' '{' finalStmtList = stat* '}')?
 ;
 returnStat:
     'return' expression? ';'

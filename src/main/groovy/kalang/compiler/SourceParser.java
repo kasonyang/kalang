@@ -1,4 +1,5 @@
 package kalang.compiler;
+
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -34,7 +35,6 @@ import kalang.antlr.KalangParser.ExpressionsContext;
 import kalang.antlr.KalangParser.FieldDeclContext;
 import kalang.antlr.KalangParser.ForStatContext;
 import kalang.antlr.KalangParser.IfStatContext;
-import kalang.antlr.KalangParser.IfStatSuffixContext;
 import kalang.antlr.KalangParser.ImportDeclContext;
 import kalang.antlr.KalangParser.LiteralContext;
 import kalang.antlr.KalangParser.MethodDeclContext;
@@ -42,7 +42,6 @@ import kalang.antlr.KalangParser.NewExprContext;
 import kalang.antlr.KalangParser.QualifiedNameContext;
 import kalang.antlr.KalangParser.ReturnStatContext;
 import kalang.antlr.KalangParser.StatContext;
-import kalang.antlr.KalangParser.StatListContext;
 import kalang.antlr.KalangParser.TryStatContext;
 import kalang.antlr.KalangParser.TypeContext;
 import kalang.antlr.KalangParser.VarDeclContext;
@@ -66,10 +65,8 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+public class SourceParser extends AbstractParseTreeVisitor implements KalangVisitor {
 
-public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements KalangVisitor<ExprNode> {
-    
-    
     private static final String MAP_CLASS = "java.util.HashMap";
     private static final String FLOAT_CLASS = "float";
 
@@ -82,259 +79,263 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     private static final String STRING_CLASS = "java.lang.String";
 
     private static final String NULL_CLASS = "null";
-	
+
     static String DEFAULT_METHOD_TYPE = "java.lang.Object";
     static String DEFAULT_LIST_CLASS = "java.util.LinkedList";
     static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
 
     //short name to full name
-    private final Map<String,String> fullNames = new HashMap<String, String>();
+    private final Map<String, String> fullNames = new HashMap<String, String>();
     private final List<String> importPaths = new LinkedList<String>();
     int varCounter = 0;
     ClassNode cls = new ClassNode();
-    Stack<List<Statement>> codeStack = new Stack<List<Statement>>();
-    List<ExprNode> arguments;
-    MethodNode method;	
-    private final Map<AstNode,ParseTree> a2p = new HashMap<AstNode, ParseTree>();
-	
+    //Stack<List<Statement>> codeStack = new Stack<List<Statement>>();
+    //List<ExprNode> arguments;
+    MethodNode method;
+    private final Map<AstNode, ParseTree> a2p = new HashMap<AstNode, ParseTree>();
+
     private AstLoader astLoader;
 
     private ParseTree context;
 
     private CommonTokenStream tokens;
-    
+
     private final String className;
-	private String classPath;
-	
-	TypeSystem castSystem;
-	private VarTable<String,VarDeclStmt> vtb;
-	private List<VarObject> varCollector = new LinkedList<VarObject>();
-	private KalangParser parser;
-	private String source;
-	
-    
-    public static class Position{
+    private String classPath;
+
+    TypeSystem castSystem;
+    private VarTable<String, VarDeclStmt> vtb;
+    //private List<VarObject> varCollector = new LinkedList<VarObject>();
+    private KalangParser parser;
+    private String source;
+
+    public static class Position {
+
         int offset;
         int length;
     }
-	
-    public static class ParseError extends RuntimeException{
+
+    public static class ParseError extends RuntimeException {
+
         /**
-		 * 
-		 */
-		private static final long serialVersionUID = -4496606055942267965L;
-		Position position;
-        public ParseError(String msg,Position position){
+         *
+         */
+        private static final long serialVersionUID = -4496606055942267965L;
+        Position position;
+
+        public ParseError(String msg, Position position) {
             super(msg);
             this.position = position;
         }
+
         public Position getPosition() {
             return position;
         }
     }
-	
-    public void compile(AstLoader astLoader){
+
+    public void compile(AstLoader astLoader) {
         this.astLoader = astLoader;
         this.castSystem = new TypeSystem(astLoader);
         KalangLexer lexer = new KalangLexer(new ANTLRInputStream(source));
         tokens = new CommonTokenStream(lexer);
         parser = new KalangParser(tokens);
         SourceParser that = this;
-        parser.setErrorHandler(new DefaultErrorStrategy(){
+        parser.setErrorHandler(new DefaultErrorStrategy() {
 
-			@Override
-			public void reportError(Parser recognizer, RecognitionException e) {
-				RuleContext ctx = e.getCtx();
-				if(ctx==null){
-					Token tk = e.getOffendingToken();
-					that.reportError("syntax error!", tk);
-				}else{
-					that.reportError("syntax error!", ctx);
-				}
-				super.reportError(recognizer, e);
-			}
-        	
+            @Override
+            public void reportError(Parser recognizer, RecognitionException e) {
+                RuleContext ctx = e.getCtx();
+                if (ctx == null) {
+                    Token tk = e.getOffendingToken();
+                    that.reportError("syntax error!", tk);
+                } else {
+                    that.reportError("syntax error!", ctx);
+                }
+                super.reportError(recognizer, e);
+            }
+
         });
         this.context = parser.compiliantUnit();
         visit(context);
     }
-	
-    public SourceParser(String className,String src){
+
+    public SourceParser(String className, String src) {
         this.className = className;
         this.classPath = "";
-        if(className.contains(".")){
-        	classPath = className.substring(0, className.lastIndexOf('.'));
+        if (className.contains(".")) {
+            classPath = className.substring(0, className.lastIndexOf('.'));
         }
         source = src;
-        cls = new ClassNode();
+        cls = ClassNode.create();
     }
-	
-    @Override
-	public ExprNode visit(ParseTree tree) {
-		if(tree==null){
-			System.err.println("visit null");
-			return null;
-		}
-		return super.visit(tree);
-	}
 
-	public void importPackage(String packageName){
+    @Override
+    public Object visit(ParseTree tree) {
+        if (tree == null) {
+            System.err.println("visit null");
+            return null;
+        }
+        return super.visit(tree);
+    }
+
+    public void importPackage(String packageName) {
         this.importPaths.add(packageName);
     }
-    
-    public Position getLocation(Token token){
-    	return getLocation(token,token);
+
+    public Position getLocation(Token token) {
+        return getLocation(token, token);
     }
-    
-    public Position getLocation(Token token,Token token2){
-    	Position loc = new Position();
-    	loc.offset = token.getStartIndex();
+
+    public Position getLocation(Token token, Token token2) {
+        Position loc = new Position();
+        loc.offset = token.getStartIndex();
         loc.length = token2.getStopIndex() - loc.offset + 1;
         return loc;
     }
-	
-    public Position getLocation(ParseTree tree){
+
+    public Position getLocation(ParseTree tree) {
         Interval itv = tree.getSourceInterval();
         int a = itv.a;
         int b = itv.b;
-        if(a>b) b=a;
+        if (a > b) {
+            b = a;
+        }
         Token t = tokens.get(a);
         Token tt = tokens.get(b);
-        return getLocation(t,tt);
+        return getLocation(t, tt);
     }
-	
-    public Position getLocation(AstNode node){
+
+    public Position getLocation(AstNode node) {
         ParseTree tree = this.a2p.get(node);
-        if(tree!=null){
-        	return getLocation(tree);
+        if (tree != null) {
+            return getLocation(tree);
         }
         return null;
     }
-    
-    private void startBlock(){
-    	this.codeStack.add(new LinkedList<Statement>());
+
+    void newVarStack() {
+        if (vtb != null) {
+            vtb = new VarTable<String, VarDeclStmt>(vtb);
+        } else {
+            vtb = new VarTable<String, VarDeclStmt>();
+        }
     }
-    
-    private List<Statement> endBlock(){
-    	return this.codeStack.pop();
+
+    void popVarStack() {
+        vtb = vtb.getParent();
     }
-    
-    private BlockStmt endBlockAsStmt(){
-    	return new BlockStmt(endBlock());
-    }
-    
-    void newVarStack(){
-		if(vtb!=null){
-			vtb = new VarTable<String,VarDeclStmt>(vtb);
-		}else{
-			vtb = new VarTable<String,VarDeclStmt>();
-		}
-	}
-	
-	void popVarStack(){
-		vtb = vtb.getParent();
-	}
-	
-    public Map<AstNode,ParseTree> getParseTreeMap(){
+
+    public Map<AstNode, ParseTree> getParseTreeMap() {
         return this.a2p;
     }
-	
-    public ClassNode getAst(){
+
+    public ClassNode getAst() {
         return this.cls;
     }
 
-    private void addCode(Statement node,ParseTree tree){
-    	codeStack.peek().add(node);
-        a2p.put(node, tree);
-    }
-    
     @Override
-    public ExprNode visitMapExpr(KalangParser.MapExprContext ctx) {
-        return visit(ctx.map());
+    public MultiStmtExpr visitMapExpr(KalangParser.MapExprContext ctx) {
+        return visitMap(ctx.map());
     }
 
     @Override
-    public ExprNode visitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) {
-        return visit(ctx.listOrArray());
+    public MultiStmtExpr visitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) {
+        return visitListOrArray(ctx.listOrArray());
     }
 
     @Override
-    public ExprNode visitMap(KalangParser.MapContext ctx) {
+    public MultiStmtExpr visitMap(KalangParser.MapContext ctx) {
+        MultiStmtExpr mse = MultiStmtExpr.create();
         VarObject vo = new VarObject();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = MAP_CLASS;
-        vo.initExpr = new NewExpr(vo.type);
-        addCode(vds,ctx);
+        NewExpr initExpr = new NewExpr();
+        initExpr.type = vo.type;
+        vo.initExpr = initExpr;
+        mse.stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
         List<TerminalNode> ids = ctx.Identifier();
-        for(int i=0;i<ids.size();i++){
+        for (int i = 0; i < ids.size(); i++) {
             ExpressionContext e = ctx.expression(i);
-            ExprNode v = visit(e);
-            InvocationExpr iv = new InvocationExpr(ve,"put");
+            ExprNode v = (ExprNode) visit(e);
+            InvocationExpr iv = new InvocationExpr();
+            iv.target = ve;
+            iv.methodName = "put";
             ConstExpr k = new ConstExpr();
             k.type = STRING_CLASS;
             k.value = ctx.Identifier(i).getText();
             iv.arguments.add(k);
             iv.arguments.add(v);
             ExprStmt es = new ExprStmt(iv);
-            addCode(es,ctx);
+            mse.stmts.add(es);
         }
+        mse.reference = ve;
         //TODO set generic type
-        return ve;
+        return mse;
     }
 
     @Override
-    public ExprNode visitListOrArray(KalangParser.ListOrArrayContext ctx) {
+    public MultiStmtExpr visitListOrArray(KalangParser.ListOrArrayContext ctx) {
+        MultiStmtExpr mse = MultiStmtExpr.create();
         String clsName = DEFAULT_LIST_CLASS;
         VarObject vo = new VarObject();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = clsName;
-        vo.initExpr = new NewExpr(vo.type);
-        addCode(vds,ctx);
+        NewExpr initExpr = new NewExpr();
+        initExpr.type = vo.type;
+        vo.initExpr = initExpr;
+        mse.stmts.add(vds);
+        //addCode(vds, ctx);
         VarExpr ve = new VarExpr(vo);
-        for(ExpressionContext e:ctx.expression()){
-            InvocationExpr iv = new InvocationExpr(ve,"add");
-            iv.arguments.add(visit(e));
-            addCode(new ExprStmt(iv),ctx);
+        for (ExpressionContext e : ctx.expression()) {
+            InvocationExpr iv = new InvocationExpr();
+            iv.target = ve;
+            iv.methodName = "add";
+            iv.arguments.add((ExprNode) visit(e));
+            mse.stmts.add(new ExprStmt(iv));
         }
+        mse.reference = ve;
         //TODO set generic type
-        return ve;
+        return mse;
     }
 
     @Override
-    public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
+    public AstNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
         NewArrayExpr nae = new NewArrayExpr();
-        nae.size = visit(ctx.expression());
-        nae.type = ctx.noArrayType().getText();
+        nae.size = (ExprNode) visit(ctx.expression());
+        nae.type = checkFullType(ctx.noArrayType().getText(), ctx);
         a2p.put(nae, ctx);
         return nae;
     }
 
     @Override
-    public ExprNode visitNoArrayType(KalangParser.NoArrayTypeContext ctx) {
+    public AstNode visitNoArrayType(KalangParser.NoArrayTypeContext ctx) {
         //do nothing
         return null;
     }
 
     @Override
-    public ExprNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
+    public AstNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
+        MultiStmtExpr mse = MultiStmtExpr.create();
         VarObject vo = new VarObject();
         VarDeclStmt vds = new VarDeclStmt(vo);
-        addCode(vds,ctx);
+        mse.stmts.add(vds);
+        //addCode(vds, ctx);
         VarExpr ve = new VarExpr(vo);
         IfStmt is = new IfStmt();
-        is.conditionExpr = visit(ctx.expression(0));
-        is.trueBody =new ExprStmt(new AssignExpr(ve,visit(ctx.expression(1))));
-        is.falseBody = new ExprStmt(new AssignExpr(ve,visit(ctx.expression(2))));
-        addCode(is,ctx);
+        is.conditionExpr = (ExprNode) visit(ctx.expression(0));
+        is.trueBody = new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(1))));
+        is.falseBody = new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(2))));
+        mse.reference = ve;
+        //addCode(is, ctx);
         a2p.put(ve, ctx);
-        return ve;
+        return mse;
     }
 
     @Override
-    public ExprNode visitPostIfStmt(KalangParser.PostIfStmtContext ctx) {
+    public AstNode visitPostIfStmt(KalangParser.PostIfStmtContext ctx) {
         ExprNode leftExpr = visitExpression(ctx.expression(0));
-        if(!(leftExpr instanceof AssignExpr)){
+        if (!(leftExpr instanceof AssignExpr)) {
             this.reportError("AssignExpr required", ctx);
         }
         AssignExpr assignExpr = (AssignExpr) leftExpr;
@@ -342,136 +343,130 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         ExprNode from = assignExpr.from;
         ExprNode cond = visitExpression(ctx.expression(1));
         Token op = ctx.op;
-        if(op!=null){
+        if (op != null) {
             String opStr = op.getText();
-            BinaryExpr be = new BinaryExpr(to,cond,opStr);
+            BinaryExpr be = new BinaryExpr(to, cond, opStr);
             cond = be;
         }
         AssignExpr as = new AssignExpr();
-        as.from = from;as.to = to;
+        as.from = from;
+        as.to = to;
         IfStmt is = new IfStmt();
         is.conditionExpr = cond;
         is.trueBody = new ExprStmt(as);
-        addCode(is,ctx);
-        
-        return null;
+        //addCode(is, ctx);
+        return is;
     }
 
     @Override
-    public ExprNode visitCompiliantUnit(CompiliantUnitContext ctx) {
-    	this.visitAll(ctx.importDecl());
-        visitClassBody(ctx.classBody());
-        cls.name= this.className;
-        //cls.modifier=getModifier(ctx.BANG()!=null,ctx.QUESTION()!=null);
+    public AstNode visitCompiliantUnit(CompiliantUnitContext ctx) {
+        this.visitAll(ctx.importDecl());
+        cls.name = this.className;
         cls.modifier = parseModifier(ctx.varModifier());
         String classType = ctx.classType.getText();
-        if(classType.equals("interface")) cls.isInterface = true;
-        if(ctx.parentClass!=null) 
-            cls.parentName=this.checkFullType(ctx.parentClass.getText(),ctx);
-        if(ctx.interfaces!=null && ctx.interfaces.size()>0){
-            for(Token itf:ctx.interfaces){
-                cls.interfaces.add(itf.getText());
+        if (classType.equals("interface")) {
+            cls.isInterface = true;
+        }
+        if (ctx.parentClass != null) {
+            cls.parentName = this.checkFullType(ctx.parentClass.getText(), ctx);
+        }
+        if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
+            for (Token itf : ctx.interfaces) {
+                cls.interfaces.add(checkFullType(itf.getText(), ctx));
             }
         }
+        visitClassBody(ctx.classBody());
         a2p.put(cls, ctx);
         return null;
     }
 
     @Override
-    public ExprNode visitClassBody(ClassBodyContext ctx) {
+    public AstNode visitClassBody(ClassBodyContext ctx) {
         this.newVarStack();
         this.visitChildren(ctx);
+        this.popVarStack();
         a2p.put(cls, ctx);
         return null;
     }
 
     @Override
-    public ExprNode visitFieldDecl(FieldDeclContext ctx) {
-        visit(ctx.varDecls());
+    public List<VarObject> visitFieldDecl(FieldDeclContext ctx) {
+        List<VarObject> list = visitVarDecls(ctx.varDecls());
         int mdf = this.parseModifier(ctx.varModifier());
-        for(VarObject v:varCollector){
-        	v.modifier = mdf;
+        if(cls.fields==null){
+        	cls.fields = new LinkedList();
         }
-        cls.fields.addAll(varCollector);
-        varCollector.clear();
-        return null;
+        for (VarObject v : list) {
+            v.modifier = mdf;
+            cls.fields.add(v);
+        }
+        return list;
     }
 
     @Override
-    public ExprNode visitMethodDecl(MethodDeclContext ctx) {
+    public AstNode visitMethodDecl(MethodDeclContext ctx) {
+        method = MethodNode.create();
         this.newVarStack();
         String name;
         String type;
-        if(ctx.prefix!=null && ctx.prefix.getText().equals("constructor")){
-        	type = "void";
-        	name = "<init>";
-        }else{
-        	if(ctx.type()==null){
-        		type = "void";
-        	}else{
-        		type = ctx.type().getText();
-        	}
-        	name = ctx.name.getText();
+        if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
+            type = "void";
+            name = "<init>";
+        } else {
+            if (ctx.type() == null) {
+                type = "void";
+            } else {
+                type = checkFullType(ctx.type().getText(), ctx);
+            }
+            name = ctx.name.getText();
         }
-        if(type!=null && type.length()>0) type = this.checkFullType(type, ctx);
         int mdf = parseModifier(ctx.varModifier());
-        method = new MethodNode(mdf,type,name);
-        if(ctx.varDecls()!=null) visit(ctx.varDecls());
-        method.parameters.addAll(varCollector);
-        varCollector.clear();
-        if(ctx.statList()!=null){        	
-        	startBlock();
-        	visitStatList(ctx.statList());
-        	method.body = new BlockStmt(endBlock());
+        method.modifier = mdf;
+        method.type = type;
+        method.name = name;
+        if (ctx.varDecls() != null) {
+            List<VarObject> vars = visitVarDecls(ctx.varDecls());
+            method.parameters.addAll(vars);
         }
-        if(ctx.exceptionTypes!=null){
-        	for(Token et:ctx.exceptionTypes){
-        		String eFullType = this.getFullClassName(et.getText());
-        		method.exceptionTypes.add(eFullType);
-        	}
+        if (ctx.stat() != null) {
+            method.body = visitStat(ctx.stat());
+        }
+        if (ctx.exceptionTypes != null) {
+            for (Token et : ctx.exceptionTypes) {
+                String eFullType = this.checkFullType(et.getText(), ctx);
+                method.exceptionTypes.add(eFullType);
+            }
         }
         this.popVarStack();
         cls.methods.add(method);
         a2p.put(method, ctx);
-        return null;
+        return method;
     }
 
     @Override
-    public ExprNode visitType(TypeContext ctx) {
+    public AstNode visitType(TypeContext ctx) {
         //do nothing
         return null;
     }
-    
-    public void visitAll(List<? extends ParseTree> list){
-    	for(ParseTree i:list) visit(i);
-    }
 
-    @Override
-    public ExprNode visitStatList(StatListContext ctx) {
-        for(StatContext s:ctx.stat()){
-            visitStat(s);
+    public void visitAll(List<? extends ParseTree> list) {
+        for (ParseTree i : list) {
+            visit(i);
         }
-        return null;
     }
 
-	
     @Override
-    public ExprNode visitIfStat(IfStatContext ctx) {
+    public AstNode visitIfStat(IfStatContext ctx) {
         IfStmt ifStmt = new IfStmt();
-        BlockStmt trueBody = new BlockStmt();
-        BlockStmt falseBody = new BlockStmt();
-        ifStmt.trueBody = trueBody;
-        ifStmt.falseBody = falseBody;
         ExprNode expr = visitExpression(ctx.expression());
         ifStmt.conditionExpr = expr;
-        startBlock();
-        visit(ctx.stat());
-        trueBody.statements = endBlock();
-        startBlock();
-        visit(ctx.ifStatSuffix());
-        falseBody.statements = endBlock();
-        addCode(ifStmt,ctx);
-        return null;
+        if (ctx.trueStmt != null) {
+            ifStmt.trueBody = visitStat(ctx.trueStmt);
+        }
+        if (ctx.falseStmt != null) {
+            ifStmt.falseBody = visitStat(ctx.falseStmt);
+        }
+        return ifStmt;
     }
 
     private ExprNode visitExpression(ExpressionContext expression) {
@@ -479,180 +474,171 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     @Override
-    public ExprNode visitIfStatSuffix(IfStatSuffixContext ctx) {
-        visit(ctx.stat());
-        return null;
+    public Statement visitStat(StatContext ctx) {
+        //visitChildren(ctx);
+        return (Statement) visit(ctx.getChild(0));
     }
 
     @Override
-    public ExprNode visitStat(StatContext ctx) {
-    	visitChildren(ctx);
-        return null;
-    }
-
-    @Override
-    public ExprNode visitReturnStat(ReturnStatContext ctx) {
-        ExprNode expr = visitExpression(ctx.expression());
+    public AstNode visitReturnStat(ReturnStatContext ctx) {
         ReturnStmt rs = new ReturnStmt();
-        rs.expr = expr;
-        
-        addCode(rs,ctx);
-        return null;
+        if (ctx.expression() != null) {
+            rs.expr = visitExpression(ctx.expression());
+        }
+        return rs;
     }
 
     @Override
-    public ExprNode visitVarDeclStat(VarDeclStatContext ctx) {
-    	this.visitVarDecl(ctx.varDecl());
-    	for(VarObject v:this.varCollector){
-    		VarDeclStmt vds = new VarDeclStmt(v);
-    		addCode(vds,ctx);
-    		vtb.put(v.name,vds);
-    	}
-    	this.varCollector.clear();
-        return null;
+    public VarDeclStmt visitVarDeclStat(VarDeclStatContext ctx) {
+        //List<VarDeclStmt> list = new LinkedList();
+        VarObject var = this.visitVarDecl(ctx.varDecl());
+        VarDeclStmt vds = new VarDeclStmt(var);
+        vtb.put(var.name, vds);
+        return vds;
     }
 
     @Override
-    public ExprNode visitVarDecl(VarDeclContext ctx) {
+    public VarObject visitVarDecl(VarDeclContext ctx) {
         String name = ctx.name.getText();
         String type = DEFAULT_VAR_TYPE;
-        if(ctx.varType!=null){
-            type = ctx.varType.getText();    
-        }else if(ctx.type()!=null){
-        	type = ctx.type().getText();
+        if (ctx.varType != null) {
+            type = ctx.varType.getText();
+        } else if (ctx.type() != null) {
+            type = ctx.type().getText();
         }
-        if(type!=null) type = checkFullType(type,ctx);
+        if (type != null) {
+            type = checkFullType(type, ctx);
+        }
         ExprNode namedNode = this.getNodeByName(name);
-        if(namedNode!=null){
-        	String msg = null;
-        	if(namedNode instanceof ClassExpr){
-        		msg = "Can't use class name as variable name:" + name;
-        	}else if(namedNode instanceof ParameterExpr){
-        		msg = "Variable was definded in parameters:" + name;
-        	}else if(namedNode instanceof VarExpr){
-        		msg = "Variable was definded already:" + name;
-        	}
-        	if(msg!=null) reportError(msg,ctx);
+        if (namedNode != null) {
+            String msg = null;
+            if (namedNode instanceof ClassExpr) {
+                msg = "Can't use class name as variable name:" + name;
+            } else if (namedNode instanceof ParameterExpr) {
+                msg = "Variable was definded in parameters:" + name;
+            } else if (namedNode instanceof VarExpr) {
+                msg = "Variable was definded already:" + name;
+            }
+            if (msg != null) {
+                reportError(msg, ctx);
+            }
         }
         VarObject vds = new VarObject();
         vds.name = name;
         vds.type = type;
-        if(ctx.expression()!=null){
-            vds.initExpr = visit(ctx.expression());
+        if (ctx.expression() != null) {
+            vds.initExpr = (ExprNode) visit(ctx.expression());
         }
-        this.varCollector.add(vds);
-        return null;
+        return vds;
     }
-    
-    private void reportError(String msg,Token token){
-    	throw new ParseError(msg,this.getLocation(token));
+
+    private void reportError(String msg, Token token) {
+        throw new ParseError(msg, this.getLocation(token));
     }
 
     private void reportError(String string, ParseTree tree) {
-        throw new ParseError(string,this.getLocation(tree));
+        throw new ParseError(string, this.getLocation(tree));
     }
 
     @Override
-    public ExprNode visitBreakStat(BreakStatContext ctx) {
+    public AstNode visitBreakStat(BreakStatContext ctx) {
         BreakStmt bs = new BreakStmt();
-        
-        addCode(bs,ctx);
-        return null;
+        //addCode(bs, ctx);
+        return bs;
     }
 
     @Override
-    public ExprNode visitContinueStat(ContinueStatContext ctx) {
+    public AstNode visitContinueStat(ContinueStatContext ctx) {
         ContinueStmt cs = new ContinueStmt();
-        
-        addCode(cs,ctx);
-        return null;
+        //addCode(cs, ctx);
+        return cs;
     }
 
     @Override
-    public ExprNode visitWhileStat(WhileStatContext ctx) {
-        //WhileStmt ws = new WhileStmt();
+    public AstNode visitWhileStat(WhileStatContext ctx) {
         LoopStmt ws = new LoopStmt();
-        BlockStmt body = new BlockStmt();
-        ws.loopBody = body;
-        AstNode expr = visitExpression(ctx.expression());
-        ws.preConditionExpr = (ExprNode) expr;
-        startBlock();
-        visit(ctx.stat());
-        body.statements = endBlock();        
-        addCode(ws,ctx);
-        return null;
+        ws.preConditionExpr = visitExpression(ctx.expression());
+        if (ctx.stat() != null) {
+            ws.loopBody = visitStat(ctx.stat());
+        }
+        //addCode(ws, ctx);
+        return ws;
     }
 
     @Override
-    public ExprNode visitDoWhileStat(DoWhileStatContext ctx) {
-        BlockStmt bs = new BlockStmt();
-        startBlock();
-        visit(ctx.stat());
-        bs.statements = endBlock();
-        ExprNode cond = visit(ctx.expression());
-        LoopStmt ls =new LoopStmt();
-        ls.loopBody  = bs;
-        ls.postConditionExpr = cond;
-        addCode(ls,ctx);
-        return null;
-    }
-
-    @Override
-    public ExprNode visitForStat(ForStatContext ctx) {
-        this.newVarStack();
+    public AstNode visitDoWhileStat(DoWhileStatContext ctx) {
         LoopStmt ls = new LoopStmt();
-        visit(ctx.varDecls());
-        for(VarObject v:this.varCollector){
+        if (ctx.stat() != null) {
+            this.newVarStack();
+            ls.loopBody = visitStat(ctx.stat());
+            this.popVarStack();
+        }
+        ls.postConditionExpr = (ExprNode) visit(ctx.expression());
+        //addCode(ls, ctx);
+        return ls;
+    }
+
+    @Override
+    public AstNode visitForStat(ForStatContext ctx) {
+        this.newVarStack();
+        LoopStmt ls = LoopStmt.create();
+        List<VarObject> vars = visitVarDecls(ctx.varDecls());
+        for(VarObject v:vars){
         	VarDeclStmt vds = new VarDeclStmt(v);
-        	ls.initStmts.add(vds);
         	vtb.put(v.name, vds);
+            ls.initStmts.add(vds);
         }
-        this.varCollector.clear();
-        AstNode texpr = visitExpression(ctx.expression());
-        ls.preConditionExpr = (ExprNode) texpr;
-        startBlock();
-        visit(ctx.stat());
-        visit(ctx.expressions());
-        ls.loopBody = endBlockAsStmt();
+        ls.preConditionExpr = (ExprNode) visit(ctx.expression());
+        //TODO fixme
+        BlockStmt bs = BlockStmt.create();
+        if (ctx.stat() != null) {
+            Statement st = visitStat(ctx.stat());
+            if(st instanceof BlockStmt){
+                bs.statements.addAll(((BlockStmt)st).statements);
+            }
+        }
+        if(ctx.expressions()!=null){
+            bs.statements.addAll(visitExpressions(ctx.expressions()));
+        }
+        ls.loopBody = bs;
         this.popVarStack();
-        addCode(ls,ctx);
-        return null;
+        //addCode(ls, ctx);
+        return ls;
     }
 
     @Override
-    public ExprNode visitExpressions(ExpressionsContext ctx) {
-        for(ExpressionContext e:ctx.expression()){
+    public List<Statement> visitExpressions(ExpressionsContext ctx) {
+        List<Statement> list = new LinkedList();
+        for (ExpressionContext e : ctx.expression()) {
             ExprNode expr = visitExpression(e);
-            addCode(new ExprStmt(expr),ctx);
+            //addCode(new ExprStmt(expr), ctx);
+            list.add(new ExprStmt(expr));
         }
-        return null;
+        return list;
     }
 
     @Override
-    public ExprNode visitExprStat(ExprStatContext ctx) {
+    public AstNode visitExprStat(ExprStatContext ctx) {
         AstNode expr = visitExpression(ctx.expression());
         ExprStmt es = new ExprStmt();
         es.expr = (ExprNode) expr;
-        
-        addCode(es,ctx);
-        return null;
+        //addCode(es, ctx);
+        return es;
     }
 
     @Override
     public InvocationExpr visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
         String methodName;
         ExprNode target;
-        if(ctx.key!=null){
-        	target = new KeyExpr(ctx.key.getText());
-        	methodName = "<init>";
-        }else{
-        	methodName = ctx.Identifier().getText();
-        	target = null;
+        if (ctx.key != null) {
+            target = new KeyExpr(ctx.key.getText());
+            methodName = "<init>";
+        } else {
+            methodName = ctx.Identifier().getText();
+            target = null;
         }
-    	InvocationExpr ie = this.getInvocationExpr(
-            target
-            , methodName
-            ,ctx.arguments());
+        InvocationExpr ie = this.getInvocationExpr(
+                target, methodName, ctx.arguments());
         a2p.put(ie, ctx);
         return ie;
     }
@@ -661,11 +647,11 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public AssignExpr visitExprAssign(ExprAssignContext ctx) {
         String assignOp = ctx.getChild(1).getText();
         ExprNode to = visitExpression(ctx.expression(0));
-        ExprNode from  = visitExpression(ctx.expression(1));
-        if(assignOp.length()>1){
-            String op = assignOp.substring(0,assignOp.length()-1);
-            from = new BinaryExpr(to,from,op);
-        }       
+        ExprNode from = visitExpression(ctx.expression(1));
+        if (assignOp.length() > 1) {
+            String op = assignOp.substring(0, assignOp.length() - 1);
+            from = new BinaryExpr(to, from, op);
+        }
         AssignExpr aexpr = new AssignExpr();
         aexpr.from = (ExprNode) from;
         aexpr.to = (ExprNode) to;
@@ -674,7 +660,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     @Override
-    public ExprNode visitExprMidOp(ExprMidOpContext ctx) {
+    public AstNode visitExprMidOp(ExprMidOpContext ctx) {
         String op = ctx.getChild(1).getText();
         BinaryExpr be = new BinaryExpr();
         be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
@@ -683,28 +669,25 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         a2p.put(be, ctx);
         return be;
     }
-	
-    private InvocationExpr getInvocationExpr(AstNode expr,String methodName,ArgumentsContext argumentsCtx){
+
+    private InvocationExpr getInvocationExpr(AstNode expr, String methodName, ArgumentsContext argumentsCtx) {
         InvocationExpr is = new InvocationExpr();
-        is.methodName =methodName;
+        is.methodName = methodName;
         is.target = (ExprNode) expr;
-        arguments = is.arguments;
-        visitArguments(argumentsCtx);
+        is.arguments = visitArguments(argumentsCtx);;
         return is;
     }
 
     @Override
-    public ExprNode visitExprInvocation(ExprInvocationContext ctx) {
+    public AstNode visitExprInvocation(ExprInvocationContext ctx) {
         InvocationExpr ei = this.getInvocationExpr(
-            visitExpression(ctx.expression())
-            , ctx.Identifier().getText()
-            , ctx.arguments());
+                visitExpression(ctx.expression()), ctx.Identifier().getText(), ctx.arguments());
         a2p.put(ei, ctx);
         return ei;
     }
 
     @Override
-    public ExprNode visitExprGetField(ExprGetFieldContext ctx) {
+    public AstNode visitExprGetField(ExprGetFieldContext ctx) {
         AstNode expr = visitExpression(ctx.expression());
         String name = ctx.Identifier().getText();
         FieldExpr fe = new FieldExpr();
@@ -715,7 +698,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     @Override
-    public ExprNode visitExprSelfOp(ExprSelfOpContext ctx) {
+    public AstNode visitExprSelfOp(ExprSelfOpContext ctx) {
         UnaryExpr ue = new UnaryExpr();
         ue.postOperation = ctx.getChild(1).getText();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
@@ -741,29 +724,31 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
         a2p.put(ee, ctx);
         return ee;
     }
-	
-    private String checkFullType(String name,ParseTree tree){
-    	if(this.castSystem.isPrimitiveType(name)) return name;
+
+    private String checkFullType(String name, ParseTree tree) {
+        if (this.castSystem.isPrimitiveType(name)) {
+            return name;
+        }
         String fn = getFullClassName(name);
-        if(fn==null){
-            this.reportError("Unknown class:"+name,tree);
+        if (fn == null) {
+            this.reportError("Unknown class:" + name, tree);
         }
         return fn;
     }
-	
-    private String getFullClassName(String name){
-    	String postfix = "";
-    	if(name.endsWith("[]")){
-    		name = name.substring(0, name.length()-2);
-    		postfix = "[]";
-    	}
-        if(fullNames.containsKey(name)){
+
+    private String getFullClassName(String name) {
+        String postfix = "";
+        if (name.endsWith("[]")) {
+            name = name.substring(0, name.length() - 2);
+            postfix = "[]";
+        }
+        if (fullNames.containsKey(name)) {
             return fullNames.get(name) + postfix;
-        }else{
-            for(String p:this.importPaths){
+        } else {
+            for (String p : this.importPaths) {
                 String clsName = p + "." + name;
                 ClassNode cls = astLoader.getAst(clsName);
-                if(cls!=null){
+                if (cls != null) {
                     return clsName + postfix;
                 }
             }
@@ -772,21 +757,23 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     }
 
     private ExprNode getNodeByName(String name) {
-        if(vtb.exist(name)){
+        if (vtb.exist(name)) {
             VarExpr ve = new VarExpr();
             VarDeclStmt declStmt = (VarDeclStmt) vtb.get(name); //vars.indexOf(vo);
             ve.var = declStmt.var;
             return ve;
-        }else{
+        } else {
             //find parameters
-            if(method!=null && method.parameters!=null){
-                for(VarObject p:method.parameters){
-                    if(p.name.equals(name)) return new VarExpr(p);
+            if (method != null && method.parameters != null) {
+                for (VarObject p : method.parameters) {
+                    if (p.name.equals(name)) {
+                        return new VarExpr(p);
+                    }
                 }
             }
-            if(cls.fields!=null){
-                for(VarObject f:cls.fields){
-                    if(f.name.equals(name)){
+            if (cls.fields != null) {
+                for (VarObject f : cls.fields) {
+                    if (f.name.equals(name)) {
                         FieldExpr fe = new FieldExpr();
                         fe.fieldName = name;
                         return fe;
@@ -794,7 +781,7 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
                 }
             }
             String clsName = this.getFullClassName(name);
-            if(clsName!=null){
+            if (clsName != null) {
                 return new ClassExpr(clsName);
             }
         }
@@ -805,194 +792,208 @@ public class SourceParser extends AbstractParseTreeVisitor<ExprNode> implements 
     public ConstExpr visitLiteral(LiteralContext ctx) {
         ConstExpr ce = new ConstExpr();
         String t = ctx.getText();
-        if(ctx.IntegerLiteral()!=null){
+        if (ctx.IntegerLiteral() != null) {
             ce.type = INT_CLASS;
             ce.value = Integer.parseInt(t);
-        }else if(ctx.FloatingPointLiteral()!=null){
+        } else if (ctx.FloatingPointLiteral() != null) {
             ce.type = FLOAT_CLASS;
             ce.value = Float.parseFloat(t);
-        }else if(ctx.BooleanLiteral()!=null){
+        } else if (ctx.BooleanLiteral() != null) {
             ce.type = BOOLEAN_CLASS;
             ce.value = Boolean.parseBoolean(t);
-        }else if(ctx.CharacterLiteral()!=null){
+        } else if (ctx.CharacterLiteral() != null) {
             ce.type = CHAR_CLASS;
             char[] chars = t.toCharArray();
             ce.value = chars[1];
-        }else if(ctx.StringLiteral()!=null){
+        } else if (ctx.StringLiteral() != null) {
             ce.type = STRING_CLASS;
             //TODO parse string
-            ce.value = t.substring(1,t.length()-1);
-        }else{
+            ce.value = t.substring(1, t.length() - 1);
+        } else {
             ce.type = NULL_CLASS;
         }
-        
+
         return ce;
     }
 
     @Override
-    public ExprNode visitArguments(ArgumentsContext ctx) {
-        for(ExpressionContext e:ctx.expression()){
+    public List<ExprNode> visitArguments(ArgumentsContext ctx) {
+        LinkedList<ExprNode> arguments = new LinkedList();
+        for (ExpressionContext e : ctx.expression()) {
             ExprNode expr = visitExpression(e);
             arguments.add(expr);
         }
-        return null;
+        return arguments;
     }
 
     @Override
-    public ExprNode visitImportDecl(ImportDeclContext ctx) {
+    public AstNode visitImportDecl(ImportDeclContext ctx) {
         String name = ctx.name.getText();
         String prefix = "";
-        boolean relative = ctx.root==null || ctx.root.getText().length()==0;
-        if(relative && this.classPath.length()>0){
-        	prefix = this.classPath + ".";
+        boolean relative = ctx.root == null || ctx.root.getText().length() == 0;
+        if (relative && this.classPath.length() > 0) {
+            prefix = this.classPath + ".";
         }
-        if(ctx.path!=null)
-        	for(Token p:ctx.path) prefix += p.getText()+".";
-        if(name.equals("*")){
-        	this.importPaths.add(prefix.substring(0,prefix.length()-1));
-        }else{
-        	String key = name;
-        	if(ctx.alias!=null) key = ctx.alias.getText();
-        	this.fullNames.put(key, prefix + name);
+        if (ctx.path != null) {
+            for (Token p : ctx.path) {
+                prefix += p.getText() + ".";
+            }
+        }
+        if (name.equals("*")) {
+            this.importPaths.add(prefix.substring(0, prefix.length() - 1));
+        } else {
+            String key = name;
+            if (ctx.alias != null) {
+                key = ctx.alias.getText();
+            }
+            this.fullNames.put(key, prefix + name);
         }
         return null;
     }
 
     @Override
-    public ExprNode visitQualifiedName(QualifiedNameContext ctx) {
+    public AstNode visitQualifiedName(QualifiedNameContext ctx) {
         //do nothing
         return null;
     }
-    
-    public int parseModifier(VarModifierContext modifier){
-    	//String[] mdfs = modifier.split(" ");
-    	if(modifier==null) return Modifier.PUBLIC;
-    	int m = 0;
-    	int access = 0;
-    	for(ParseTree c:modifier.children){
-    		String s = c.getText();
-    		if(s.equals("public")){
-    			access = Modifier.PUBLIC;
-    		}else if (s.equals("protected")){
-    			access = Modifier.PROTECTED;
-    		}else if(s.equals("private")){
-    			access = Modifier.PRIVATE;
-    		}else if(s.equals("static")){
-    			m+= Modifier.STATIC;
-    		}else if(s.equals("final")){
-    			m+= Modifier.FINAL;
-    		}
-    	}
-    	if(access==0) access = Modifier.PUBLIC;
-    	return m + access;
+
+    public int parseModifier(VarModifierContext modifier) {
+        //String[] mdfs = modifier.split(" ");
+        if (modifier == null) {
+            return Modifier.PUBLIC;
+        }
+        int m = 0;
+        int access = 0;
+        for (ParseTree c : modifier.children) {
+            String s = c.getText();
+            if (s.equals("public")) {
+                access = Modifier.PUBLIC;
+            } else if (s.equals("protected")) {
+                access = Modifier.PROTECTED;
+            } else if (s.equals("private")) {
+                access = Modifier.PRIVATE;
+            } else if (s.equals("static")) {
+                m += Modifier.STATIC;
+            } else if (s.equals("final")) {
+                m += Modifier.FINAL;
+            }
+        }
+        if (access == 0) {
+            access = Modifier.PUBLIC;
+        }
+        return m + access;
     }
 
-    public Integer getModifier(boolean isPrivated,boolean isProtected) {
-        if(isPrivated) return Modifier.PRIVATE;
-        if(isProtected) return Modifier.PROTECTED;
+    public Integer getModifier(boolean isPrivated, boolean isProtected) {
+        if (isPrivated) {
+            return Modifier.PRIVATE;
+        }
+        if (isProtected) {
+            return Modifier.PROTECTED;
+        }
         return Modifier.PUBLIC;
     }
 
     @Override
-    public ExprNode visitNewExpr(NewExprContext ctx) {
-    	String type =  ctx.Identifier().getText();
-    	ClassExpr expr = new ClassExpr();
-    	expr.name = checkFullType(type,ctx);        
-    	return this.getInvocationExpr(expr, "<init>",ctx.arguments());
+    public AstNode visitNewExpr(NewExprContext ctx) {
+        String type = ctx.Identifier().getText();
+        ClassExpr expr = new ClassExpr();
+        expr.name = checkFullType(type, ctx);
+        return this.getInvocationExpr(expr, "<init>", ctx.arguments());
     }
 
     @Override
-    public ExprNode visitCastExpr(CastExprContext ctx) {
+    public AstNode visitCastExpr(CastExprContext ctx) {
         CastExpr ce = new CastExpr();
         ce.expr = visitExpression(ctx.expression());
         ce.type = ctx.type().getText();
-        
+
         return ce;
     }
 
-	@Override
-	public ExprNode visitTryStat(TryStatContext ctx) {
-		TryStmt tryStmt = new TryStmt();
-		startBlock();
-		visit(ctx.tryStmtList);
-		tryStmt.execStmt = endBlockAsStmt();
-		if(ctx.catchTypes!=null){
-			for(int i=0;i<ctx.catchTypes.size();i++){
-				startBlock();
-				String vName = ctx.catchVarNames.get(i).getText();
-				String vType = ctx.catchTypes.get(i).getText();
-				this.newVarStack();
-				VarObject vo = new VarObject();
-				vo.name = vName;
-				vo.type = vType;
-				VarDeclStmt declStmt = new VarDeclStmt(vo);
-				visit(ctx.catchStmts.get(i));
-				this.popVarStack();
-				CatchStmt catchStmt = new CatchStmt();
-				catchStmt.catchVarDecl = declStmt;
-				catchStmt.execStmt =  endBlockAsStmt();
-				tryStmt.catchStmts.add(catchStmt);
-			}
-		}
-		if(ctx.finalStmtList!=null){
-			this.newVarStack();
-			BlockStmt finalBody = new BlockStmt();
-			startBlock();
-			visit(ctx.finalStmtList);
-			this.popVarStack();
-			finalBody.statements = endBlock();
-			tryStmt.finallyStmt = finalBody;
-		}
-		this.addCode(tryStmt, ctx);
-		return null;
-	}
+    @Override
+    public AstNode visitTryStat(TryStatContext ctx) {
+        TryStmt tryStmt = new TryStmt();
+        this.newVarStack();
+        tryStmt.execStmt = visitStat(ctx.tryStmtList);
+        this.popVarStack();
+        if (ctx.catchTypes != null) {
+            for (int i = 0; i < ctx.catchTypes.size(); i++) {
+                CatchStmt catchStmt =CatchStmt.create();
+                String vName = ctx.catchVarNames.get(i).getText();
+                String vType = ctx.catchTypes.get(i).getText();
+                this.newVarStack();
+                VarObject vo = new VarObject();
+                vo.name = vName;
+                vo.type = vType;
+                VarDeclStmt declStmt = new VarDeclStmt(vo);
+                catchStmt.execStmt = visitStat(ctx.catchStmts.get(i));
+                this.popVarStack();
+                catchStmt.catchVarDecl = declStmt;
+                tryStmt.catchStmts.add(catchStmt);
+            }
+        }
+        if (ctx.finalStmtList != null) {
+            this.newVarStack();
+            tryStmt.finallyStmt = visitStat(ctx.finalStmtList);
+            this.popVarStack();
+        }
+        //this.addCode(tryStmt, ctx);
+        return tryStmt;
+    }
 
-	@Override
-	public ExprNode visitVarDecls(VarDeclsContext ctx) {
-		for(VarDeclContext v:ctx.varDecl()) visit(v);
-		return null;
-	}
+    @Override
+    public List<VarObject> visitVarDecls(VarDeclsContext ctx) {
+        List<VarObject> list = new LinkedList();
+        for (VarDeclContext v : ctx.varDecl()) {
+            list.add(visitVarDecl(v));
+        }
+        return list;
+    }
 
-	@Override
-	public ExprNode visitExprIdentifier(ExprIdentifierContext ctx) {
-		String name = ctx.Identifier().getText();
-		ExprNode expr = this.getNodeByName(name);
-		if(expr==null){
-			this.reportError(name + " is undefined!", ctx);
-		}
-		return expr;
-	}
+    @Override
+    public AstNode visitExprIdentifier(ExprIdentifierContext ctx) {
+        String name = ctx.Identifier().getText();
+        ExprNode expr = this.getNodeByName(name);
+        if (expr == null) {
+            this.reportError(name + " is undefined!", ctx);
+        }
+        return expr;
+    }
 
-	@Override
-	public ExprNode visitExprLiteral(ExprLiteralContext ctx) {
-		return visit(ctx.literal());
-	}
+    @Override
+    public AstNode visitExprLiteral(ExprLiteralContext ctx) {
+        return visitLiteral(ctx.literal());
+    }
 
-	@Override
-	public ExprNode visitExprParen(ExprParenContext ctx) {
-		return visit(ctx.expression());
-	}
+    @Override
+    public AstNode visitExprParen(ExprParenContext ctx) {
+        return visitExpression(ctx.expression());
+    }
 
-	@Override
-	public ExprNode visitBlockStmt(BlockStmtContext ctx) {
-		if(ctx.stat()==null) return null;
-		for(StatContext s:ctx.stat()) visit(s);
-		return null;
-	}
+    @Override
+    public AstNode visitBlockStmt(BlockStmtContext ctx) {
+        BlockStmt bs = BlockStmt.create();
+        if (ctx.stat() == null) {
+            return bs;
+        }
+        for (StatContext s : ctx.stat()) {
+            bs.statements.add(visitStat(s));
+        }
+        return bs;
+    }
 
-	@Override
-	public ExprNode visitVarModifier(VarModifierContext ctx) {
-		// do nothing
-		return null;
-	}
+    @Override
+    public AstNode visitVarModifier(VarModifierContext ctx) {
+        // do nothing
+        return null;
+    }
 
-	@Override
-	public ExprNode visitExprSelfRef(ExprSelfRefContext ctx) {
-		KeyExpr expr =  new KeyExpr(ctx.ref.getText());
-		a2p.put(expr, ctx);
-		return expr;
-	}
-
-	
+    @Override
+    public AstNode visitExprSelfRef(ExprSelfRefContext ctx) {
+        KeyExpr expr = new KeyExpr(ctx.ref.getText());
+        a2p.put(expr, ctx);
+        return expr;
+    }
 
 }

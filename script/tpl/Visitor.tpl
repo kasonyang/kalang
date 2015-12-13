@@ -5,6 +5,7 @@ public class {{name}}<T> extends {{parent}}<T> implements {{interface}}<T>{
     @Override
     public T visit{{this}}({{this}} node){
         this.visitChildren(node);
+        return null;
     }
     {{/each}}
 }

@@ -25,6 +25,7 @@ import jast.ast.InvocationExpr;
 import jast.ast.KeyExpr;
 import jast.ast.LoopStmt;
 import jast.ast.MethodNode;
+import jast.ast.MultiStmtExpr;
 import jast.ast.NewArrayExpr;
 import jast.ast.NewExpr;
 import jast.ast.ParameterExpr;
@@ -311,7 +312,7 @@ class TypeChecker extends AstVisitor<String> {
 
     @Override
     public String visitInvocationExpr(InvocationExpr node) {
-        List<String> types = visit(node.arguments);
+        List<String> types = visitAll(node.arguments);
         String target = node.target != null ? visit(node.target) : this.clazz.name;
         String methodName = node.methodName;
         ClassNode ast = loadAst(target, node);
@@ -434,7 +435,7 @@ class TypeChecker extends AstVisitor<String> {
         if (node.falseBody != null) {
             visit(node.falseBody);
         } else {
-            returned = true;
+            returned = false;
         }
         returned = returnedOld && returned;
         return null;
@@ -446,7 +447,7 @@ class TypeChecker extends AstVisitor<String> {
             requireBoolean(node.preConditionExpr);
         }
         if (node.initStmts != null) {
-            visit(node.initStmts);
+            visitAll(node.initStmts);
         }
         if (node.loopBody != null) {
             visit(node.loopBody);
@@ -586,5 +587,11 @@ class TypeChecker extends AstVisitor<String> {
             return null;
         }
     }
+
+	@Override
+	public String visitMultiStmtExpr(MultiStmtExpr node) {
+		visitAll(node.stmts);
+		return visit(node.reference);
+	}
 
 }

@@ -1,5 +1,5 @@
 package {{package}};
-
+import java.util.*;
 public abstract class {{name}}<T> implements {{interface}}<T>{
     {{#each nodes}}
     abstract public T visit{{this}}({{this}} node);
@@ -7,12 +7,13 @@ public abstract class {{name}}<T> implements {{interface}}<T>{
     public T visit(AstNode node){
         {{#each nodes}}
         if(node instanceof {{this}}){
-            return visit{{this}}(node);
+            return visit{{this}}(({{this}})node);
         }
         {{/each}}
+        return null;
     }
     
-    public List<T> visit(List nodes){
+    public List<T> visitAll(List<?  extends AstNode> nodes){
         if(nodes==null) return null;
         List<T> result = new LinkedList();
         for(AstNode n:nodes){
