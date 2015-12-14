@@ -60,7 +60,7 @@ class TypeChecker extends AstVisitor<String> {
 
     ClassNode clazz;
 
-    TypeSystem castSys;
+    TypeSystem typeSystem;
 
     AstParser astParser;
 
@@ -78,7 +78,7 @@ class TypeChecker extends AstVisitor<String> {
 
     TypeChecker(AstLoader astLoader) {
         this.astLoader = astLoader;
-        this.castSys = new TypeSystem(astLoader);
+        this.typeSystem = new TypeSystem(astLoader);
         this.astParser = new AstParser(astLoader);
     }
 
@@ -88,7 +88,7 @@ class TypeChecker extends AstVisitor<String> {
 
     private ExprNode cast(ExprNode expr, String from, String to, AstNode node) {
         try {
-            expr = castSys.cast(expr, from, to);
+            expr = typeSystem.cast(expr, from, to);
         } catch (AstNotFoundException e) {
             err.classNotFound(node, e.getMessage());
             throw new RuntimeException(e);
@@ -164,8 +164,8 @@ class TypeChecker extends AstVisitor<String> {
     }
 
     private String getMathType(String t1, String t2, String op) {
-        String pt1 = castSys.getPrimitiveType(t1);
-        String pt2 = castSys.getPrimitiveType(t2);
+        String pt1 = typeSystem.getPrimitiveType(t1);
+        String pt2 = typeSystem.getPrimitiveType(t2);
         if (pt1 == null) {
             pt1 = t1;
         }
@@ -201,12 +201,12 @@ class TypeChecker extends AstVisitor<String> {
         String t1 = (visit(node.expr1).toString());
         String t2 = (visit(node.expr2).toString());
         String op = node.operation;
-        String t = this.castSys.getRootClass();// this.DEFAULT_CLASS;
+        String t = this.typeSystem.getRootClass();// this.DEFAULT_CLASS;
         switch (op) {
             case "==":
-                if (castSys.isNumber(t1)) {
-                    if (!castSys.isNumber(t2)) {
-                        err.failedToCast(node, t2,castSys.getIntClass());
+                if (typeSystem.isNumber(t1)) {
+                    if (!typeSystem.isNumber(t2)) {
+                        err.failedToCast(node, t2,typeSystem.getIntClass());
                     }
                     //fail("Number required",node);
                 } else {
@@ -242,7 +242,7 @@ class TypeChecker extends AstVisitor<String> {
             case "^":
                 requireNumber(node, t1);
                 requireNumber(node, t2);
-                t = castSys.getHigherType(t1, t2);
+                t = typeSystem.getHigherType(t1, t2);
                 break;
             default:
                 err.fail("unsupport operation:" + op, AstError.UNSUPPORTED, node);
@@ -279,7 +279,7 @@ class TypeChecker extends AstVisitor<String> {
         ClassNode target = this.astLoader.getAst(t);
         if (target == null) {
             err.fieldNotFound(node, t);
-            return this.castSys.ROOT_CLASS;
+            return this.typeSystem.ROOT_CLASS;
         }
         String fname = node.fieldName;
         VarObject field = this.astParser.getField(target, fname);
@@ -300,7 +300,7 @@ class TypeChecker extends AstVisitor<String> {
         ClassNode ast = loadAst(target, node);
         MethodNode method = selectMethod(node, ast, methodName, types.toArray(new String[0]));
         if (method == null) {
-            return castSys.ROOT_CLASS;
+            return typeSystem.ROOT_CLASS;
         }
         boolean inStaticMethod = node.target == null && Modifier.isStatic(this.method.modifier);
         boolean isClassExpr = node.target instanceof ClassExpr;
@@ -343,7 +343,7 @@ class TypeChecker extends AstVisitor<String> {
         List<String> exceptions = this.exceptionStack.peek();
         for (String e : exceptions) {
             try {
-                if (this.castSys.isSubclass(e, type)) {
+                if (this.typeSystem.isSubclass(e, type)) {
                     exceptions.remove(e);
                 }
             } catch (AstNotFoundException e1) {
@@ -393,7 +393,7 @@ class TypeChecker extends AstVisitor<String> {
                 var.type = visit(var.initExpr);
                 requireNoneVoid(var.type, node);
             } else {
-                var.type = castSys.getRootClass();
+                var.type = typeSystem.getRootClass();
             }
         }
         //this.varDeclStmts.put(node.varId,node)
@@ -471,8 +471,8 @@ class TypeChecker extends AstVisitor<String> {
     }
 
     void requireNumber(AstNode node, String t) {
-        if (!castSys.isNumber(t)) {
-            err.failedToCast(node, t, castSys.getIntClass());
+        if (!typeSystem.isNumber(t)) {
+            err.failedToCast(node, t, typeSystem.getIntClass());
         }
     }
 
@@ -482,8 +482,8 @@ class TypeChecker extends AstVisitor<String> {
     }
 
     void requireBoolean(AstNode node, String t) {
-        if (!castSys.isBoolean(t)) {
-            err.failedToCast(node, t, castSys.getBooleanClass());
+        if (!typeSystem.isBoolean(t)) {
+            err.failedToCast(node, t, typeSystem.getBooleanClass());
         }
     }
 
@@ -510,8 +510,8 @@ class TypeChecker extends AstVisitor<String> {
 
     void requireNoneVoid(String type, AstNode node) {
         if (type == null 
-        		|| type.equals(castSys.getVoidPrimitiveType())
-        		|| type.equals(castSys.getVoidClass())) {
+        		|| type.equals(typeSystem.getVoidPrimitiveType())
+        		|| type.equals(typeSystem.getVoidClass())) {
             err.unsupported("use void type as value", node);
         }
     }
@@ -547,7 +547,7 @@ class TypeChecker extends AstVisitor<String> {
         for (String mt : mTypes) {
             String pt = visit(expr.arguments.get(i));
             try {
-                expr.arguments.set(i, this.castSys.cast(expr.arguments.get(i), pt, mt));
+                expr.arguments.set(i, this.typeSystem.cast(expr.arguments.get(i), pt, mt));
             } catch (AstNotFoundException e) {
                 err.classNotFound(expr, e.getMessage());
                 throw new RuntimeException(e);
@@ -563,7 +563,7 @@ class TypeChecker extends AstVisitor<String> {
             return this.clazz.name;
         } else if (key.equals("super")) {
             if (clazz.parentName == null) {
-                return castSys.ROOT_CLASS;
+                return typeSystem.ROOT_CLASS;
             }
             return this.clazz.parentName;
         } else {

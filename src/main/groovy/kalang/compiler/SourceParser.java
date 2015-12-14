@@ -89,7 +89,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     private final String className;
     private String classPath;
 
-    TypeSystem castSystem;
+    TypeSystem typeSystem;
     private VarTable<String, VarDeclStmt> vtb;
     private KalangParser parser;
     private String source;
@@ -120,7 +120,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
 
     public void compile(AstLoader astLoader) {
         this.astLoader = astLoader;
-        this.castSystem = new TypeSystem(astLoader);
+        this.typeSystem = new TypeSystem(astLoader);
         KalangLexer lexer = new KalangLexer(new ANTLRInputStream(source));
         tokens = new CommonTokenStream(lexer);
         parser = new KalangParser(tokens);
@@ -251,7 +251,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
             iv.target = ve;
             iv.methodName = "put";
             ConstExpr k = new ConstExpr();
-            k.type = this.castSystem.getStringClass();// STRING_CLASS;
+            k.type = this.typeSystem.getStringClass();// STRING_CLASS;
             k.value = ctx.Identifier(i).getText();
             iv.arguments.add(k);
             iv.arguments.add(v);
@@ -722,7 +722,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     }
 
     private String checkFullType(String name, ParseTree tree) {
-        if (this.castSystem.isPrimitiveType(name)) {
+        if (this.typeSystem.isPrimitiveType(name)) {
             return name;
         }
         String fn = getFullClassName(name);
@@ -789,24 +789,24 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         ConstExpr ce = new ConstExpr();
         String t = ctx.getText();
         if (ctx.IntegerLiteral() != null) {
-            ce.type = castSystem.getIntPrimitiveType();
+            ce.type = typeSystem.getIntPrimitiveType();
             ce.value = Integer.parseInt(t);
         } else if (ctx.FloatingPointLiteral() != null) {
-            ce.type = castSystem.getFloatPrimitiveType();
+            ce.type = typeSystem.getFloatPrimitiveType();
             ce.value = Float.parseFloat(t);
         } else if (ctx.BooleanLiteral() != null) {
-            ce.type = castSystem.getBooleanPrimitiveType();
+            ce.type = typeSystem.getBooleanPrimitiveType();
             ce.value = Boolean.parseBoolean(t);
         } else if (ctx.CharacterLiteral() != null) {
-            ce.type = castSystem.getCharPrimitiveType();
+            ce.type = typeSystem.getCharPrimitiveType();
             char[] chars = t.toCharArray();
             ce.value = chars[1];
         } else if (ctx.StringLiteral() != null) {
-            ce.type = castSystem.getStringClass();
+            ce.type = typeSystem.getStringClass();
             //TODO parse string
             ce.value = t.substring(1, t.length() - 1);
         } else {
-            ce.type = castSystem.getNullPrimitiveType();
+            ce.type = typeSystem.getNullPrimitiveType();
         }
         map(ce,ctx);
         return ce;

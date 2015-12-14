@@ -5,16 +5,19 @@ import java.util.List;
 
 import jast.ast.*;
 
-@groovy.transform.TypeChecked
-class AstParser {
+public class AstParser {
 	
 	AstLoader astLoader;
 	
-	TypeSystem castSystem;
+	TypeSystem typeSystem;
+	
+	public AstParser(AstLoader astLoader,TypeSystem typeSystem){
+		this.astLoader = astLoader;
+		this.typeSystem = typeSystem;
+	}
 	
 	public AstParser(AstLoader astLoader){
-		this.astLoader = astLoader;
-		this.castSystem = new TypeSystem(astLoader);
+		this(astLoader,new TypeSystem(astLoader));
 	}
 	
 	static String getMethodDescriptor(String name,List<String> types,String className){
@@ -89,8 +92,8 @@ class AstParser {
 	boolean matchType(String from,String target,boolean matchSubclass,boolean autoCast){
 		if(from.equals(target)) return true;
 		try {
-			if(matchSubclass && castSystem.isSubclass(from,target)) return true;
-			if(autoCast && this.castSystem.castable(from,target)) return true;
+			if(matchSubclass && typeSystem.isSubclass(from,target)) return true;
+			if(autoCast && this.typeSystem.castable(from,target)) return true;
 		} catch (AstNotFoundException e) {
 			throw new RuntimeException(e);
 		}
