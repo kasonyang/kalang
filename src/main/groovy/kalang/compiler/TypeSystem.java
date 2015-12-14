@@ -18,6 +18,17 @@ import org.apache.commons.collections4.bidimap.TreeBidiMap;
 @groovy.transform.TypeChecked
 class TypeSystem {
 	
+	private static final String SHORT_PRIMITIVE_TYPE= "short",
+	INT_PRIMITIVE_TYPE= "int",
+	LONG_PRIMITIVE_TYPE= "long",
+	FLOAT_PRIMITIVE_TYPE= "float",
+	DOUBLE_PRIMITIVE_TYPE= "double",
+	BOOLEAN_PRIMITIVE_TYPE= "boolean",
+	BYTE_PRIMITIVE_TYPE="byte",
+	CHAR_PRIMITIVE_TYPE= "char",
+	NULL_PRIMITIVE_TYPE = "null",
+	VOID_PRIMITIVE_TYPE = "void";
+	
 	public static final String FLOAT_CLASS = "java.lang.Float";
 	public static final String DOUBLE_CLASS = "java.lang.Double";
 
@@ -41,24 +52,32 @@ class TypeSystem {
 			
 	private BidiMap<String,String> primitive2class;
 	
-	private String[] numberClass = new String[]{INT_CLASS,LONG_CLASS,FLOAT_CLASS,DOUBLE_CLASS};
+	private String[] numberClass = new String[]{
+			INT_CLASS,LONG_CLASS
+			,FLOAT_CLASS,DOUBLE_CLASS
+			};
 	
-	private String[] numberPrimitive =new String[]{"int","long","float","double"};
+	private String[] numberPrimitive =new String[]{
+			INT_PRIMITIVE_TYPE
+			,LONG_PRIMITIVE_TYPE
+			,FLOAT_PRIMITIVE_TYPE
+			,DOUBLE_PRIMITIVE_TYPE
+			};
 
 	AstLoader astLoader;
 	
 	TypeSystem(AstLoader astLoader){
 		BidiMap<String,String> m = primitive2class = new TreeBidiMap();
-		m.put("int"    , INT_CLASS       );
-		m.put("long"   , LONG_CLASS      );
-		m.put("float"  , FLOAT_CLASS     );
-		m.put("double" , DOUBLE_CLASS    );
-		m.put("char"   , CHAR_CLASS      );
-		m.put("boolean", BOOLEAN_CLASS   );
-		m.put("void"   , VOID_CLASS      );
-		m.put("short"  , SHORT_CLASS     );
-		m.put("byte"   , BYTE_CLASS      );
-		m.put("null"   , "null"          );//TODO does null has class type?
+		m.put(INT_PRIMITIVE_TYPE    , INT_CLASS       );
+		m.put(LONG_PRIMITIVE_TYPE   , LONG_CLASS      );
+		m.put(FLOAT_PRIMITIVE_TYPE  , FLOAT_CLASS     );
+		m.put(DOUBLE_PRIMITIVE_TYPE , DOUBLE_CLASS    );
+		m.put(CHAR_PRIMITIVE_TYPE   , CHAR_CLASS      );
+		m.put(BOOLEAN_PRIMITIVE_TYPE, BOOLEAN_CLASS   );
+		m.put(VOID_PRIMITIVE_TYPE   , VOID_CLASS      );
+		m.put(SHORT_PRIMITIVE_TYPE  , SHORT_CLASS     );
+		m.put(BYTE_PRIMITIVE_TYPE   , BYTE_CLASS      );
+		m.put(NULL_PRIMITIVE_TYPE   , "null"          );//TODO does null has class type?
 		this.astLoader = astLoader;
 	}
 	
@@ -90,7 +109,7 @@ class TypeSystem {
 	private boolean primitiveCastable(String from,String to){
 		to = classifyType(to);
 		from = classifyType(from);
-		if(from==to) return true;
+		if(from.equals(to)) return true;
 		HashMap<String,List> baseMap = new HashMap();
 		baseMap.put(INT_CLASS ,Arrays.asList(new String[]{LONG_CLASS, FLOAT_CLASS, DOUBLE_CLASS}));
 		baseMap.put(LONG_CLASS  ,Arrays.asList(new String[]{FLOAT_CLASS, DOUBLE_CLASS}));
@@ -127,13 +146,13 @@ class TypeSystem {
 	}
 
 	boolean isBoolean(String type){
-		return type == BOOLEAN_CLASS || type == "boolean";
+		return type .equals( BOOLEAN_CLASS) || type .equals(BOOLEAN_PRIMITIVE_TYPE);
 	}
 
 	String getHigherType(String type1,String type2){
-		if(type1==DOUBLE_CLASS || type2==DOUBLE_CLASS) return DOUBLE_CLASS;
-		if(type1==FLOAT_CLASS || type2 ==FLOAT_CLASS) return FLOAT_CLASS;
-		if(type1==LONG_CLASS || type2==LONG_CLASS) return LONG_CLASS;
+		if(type1.equals(DOUBLE_CLASS) || type2.equals(DOUBLE_CLASS)) return DOUBLE_CLASS;
+		if(type1.equals(FLOAT_CLASS) || type2 .equals(FLOAT_CLASS)) return FLOAT_CLASS;
+		if(type1.equals(LONG_CLASS )|| type2.equals(LONG_CLASS)) return LONG_CLASS;
 		return INT_CLASS;
 	}
 	
@@ -143,7 +162,7 @@ class TypeSystem {
 		while(fromAst!=null){
 			String parent = fromAst.parentName;
 			if(parent==null) return false;
-			if(parent==subclassType) return true;
+			if(parent.equals(subclassType)) return true;
 			fromAst = astLoader.loadAst(parent);
 		}
 		return false;
@@ -169,24 +188,24 @@ class TypeSystem {
 	}
 	
 	private int getCastMethod(String fromType,String toType) throws AstNotFoundException{
-		if(fromType==toType) return this.CAST_NOTHING;
+		if(fromType.equals(toType)) return this.CAST_NOTHING;
 		if(isPrimitiveType(fromType)){
 			if(isPrimitiveType(toType)){
 				if(this.primitiveCastable(fromType,toType)){
 					return this.CAST_PRIMITIVE;
 				}
 			}else{
-				if(toType==ROOT_CLASS) return this.CAST_PRIMITIVE_TO_OBJECT;
-				if(fromType=="null") return this.CAST_NOTHING;
+				if(toType.equals(ROOT_CLASS)) return this.CAST_PRIMITIVE_TO_OBJECT;
+				if(fromType.equals(NULL_PRIMITIVE_TYPE)) return this.CAST_NOTHING;
 				String toPriType = getPrimitiveType(toType);
-				if(toPriType == fromType){
+				if(toPriType .equals( fromType)){
 					return this.CAST_PRIMITIVE_TO_OBJECT;
 				}
 			}
 		}else{
 			if(isPrimitiveType(toType)){
 				String fromPrimitive = getPrimitiveType(fromType);
-				if(fromPrimitive==toType){
+				if(fromPrimitive.equals(toType)){
 					return this.CAST_OBJECT_TO_PRIMITIVE;
 				}
 			}else{
@@ -219,6 +238,90 @@ class TypeSystem {
 	
 	private ExprNode castNothing(ExprNode expr,String fromType,String toType){
 		return expr;
+	}
+
+	public  String getShortPrimitiveType() {
+		return SHORT_PRIMITIVE_TYPE;
+	}
+
+	public  String getIntPrimitiveType() {
+		return INT_PRIMITIVE_TYPE;
+	}
+
+	public  String getLongPrimitiveType() {
+		return LONG_PRIMITIVE_TYPE;
+	}
+
+	public  String getFloatPrimitiveType() {
+		return FLOAT_PRIMITIVE_TYPE;
+	}
+
+	public  String getDoublePrimitiveType() {
+		return DOUBLE_PRIMITIVE_TYPE;
+	}
+
+	public  String getBooleanPrimitiveType() {
+		return BOOLEAN_PRIMITIVE_TYPE;
+	}
+
+	public  String getBytePrimitiveType() {
+		return BYTE_PRIMITIVE_TYPE;
+	}
+
+	public  String getCharPrimitiveType() {
+		return CHAR_PRIMITIVE_TYPE;
+	}
+
+	public  String getNullPrimitiveType() {
+		return NULL_PRIMITIVE_TYPE;
+	}
+
+	public  String getVoidPrimitiveType() {
+		return VOID_PRIMITIVE_TYPE;
+	}
+
+	public  String getFloatClass() {
+		return FLOAT_CLASS;
+	}
+
+	public  String getDoubleClass() {
+		return DOUBLE_CLASS;
+	}
+
+	public  String getIntClass() {
+		return INT_CLASS;
+	}
+
+	public  String getLongClass() {
+		return LONG_CLASS;
+	}
+
+	public  String getBooleanClass() {
+		return BOOLEAN_CLASS;
+	}
+
+	public  String getCharClass() {
+		return CHAR_CLASS;
+	}
+
+	public  String getStringClass() {
+		return STRING_CLASS;
+	}
+
+	public  String getVoidClass() {
+		return VOID_CLASS;
+	}
+
+	public  String getShortClass() {
+		return SHORT_CLASS;
+	}
+
+	public  String getByteClass() {
+		return BYTE_CLASS;
+	}
+
+	public  String getRootClass() {
+		return ROOT_CLASS;
 	}
 	
 }

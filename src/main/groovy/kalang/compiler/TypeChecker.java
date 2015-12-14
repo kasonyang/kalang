@@ -54,24 +54,6 @@ class TypeChecker extends AstVisitor<String> {
         }
     }
 
-    private static final String FLOAT_CLASS = "java.lang.Float";
-    private static final String DOUBLE_CLASS = "java.lang.Double";
-
-    private static final String INT_CLASS = "java.lang.Integer";
-    private static final String LONG_CLASS = "java.lang.Long";
-
-    private static final String BOOLEAN_CLASS = "java.lang.Boolean";
-
-    private static final String CHAR_CLASS = "java.lang.Character";
-
-    private static final String STRING_CLASS = "java.lang.String";
-
-    private static final String DEFAULT_CLASS = "java.lang.Object";
-
-    private static final String VOID_TYPE = "void";
-
-    private HashMap<Integer, VarDeclStmt> varDeclStmts = new HashMap();
-
     HashMap<String, VarObject> fields;
 
     AstLoader astLoader;
@@ -219,12 +201,12 @@ class TypeChecker extends AstVisitor<String> {
         String t1 = (visit(node.expr1).toString());
         String t2 = (visit(node.expr2).toString());
         String op = node.operation;
-        String t = this.DEFAULT_CLASS;
+        String t = this.castSys.getRootClass();// this.DEFAULT_CLASS;
         switch (op) {
             case "==":
                 if (castSys.isNumber(t1)) {
                     if (!castSys.isNumber(t2)) {
-                        err.failedToCast(node, t2, INT_CLASS);
+                        err.failedToCast(node, t2,castSys.getIntClass());
                     }
                     //fail("Number required",node);
                 } else {
@@ -411,7 +393,7 @@ class TypeChecker extends AstVisitor<String> {
                 var.type = visit(var.initExpr);
                 requireNoneVoid(var.type, node);
             } else {
-                var.type = DEFAULT_CLASS;
+                var.type = castSys.getRootClass();
             }
         }
         //this.varDeclStmts.put(node.varId,node)
@@ -490,7 +472,7 @@ class TypeChecker extends AstVisitor<String> {
 
     void requireNumber(AstNode node, String t) {
         if (!castSys.isNumber(t)) {
-            err.failedToCast(node, t, INT_CLASS);
+            err.failedToCast(node, t, castSys.getIntClass());
         }
     }
 
@@ -501,7 +483,7 @@ class TypeChecker extends AstVisitor<String> {
 
     void requireBoolean(AstNode node, String t) {
         if (!castSys.isBoolean(t)) {
-            err.failedToCast(node, t, BOOLEAN_CLASS);
+            err.failedToCast(node, t, castSys.getBooleanClass());
         }
     }
 
@@ -527,7 +509,9 @@ class TypeChecker extends AstVisitor<String> {
     }
 
     void requireNoneVoid(String type, AstNode node) {
-        if (type == null || type.equals(VOID_TYPE)) {
+        if (type == null 
+        		|| type.equals(castSys.getVoidPrimitiveType())
+        		|| type.equals(castSys.getVoidClass())) {
             err.unsupported("use void type as value", node);
         }
     }

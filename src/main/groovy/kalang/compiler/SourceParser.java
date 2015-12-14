@@ -68,18 +68,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 public class SourceParser extends AbstractParseTreeVisitor implements KalangVisitor {
 
     private static final String MAP_CLASS = "java.util.HashMap";
-    private static final String FLOAT_CLASS = "float";
-
-    private static final String INT_CLASS = "int";
-
-    private static final String BOOLEAN_CLASS = "java.lang.Boolean";
-
-    private static final String CHAR_CLASS = "java.lang.Character";
-
-    private static final String STRING_CLASS = "java.lang.String";
-
-    private static final String NULL_CLASS = "null";
-
+    
     static String DEFAULT_METHOD_TYPE = "java.lang.Object";
     static String DEFAULT_LIST_CLASS = "java.util.LinkedList";
     static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
@@ -262,7 +251,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
             iv.target = ve;
             iv.methodName = "put";
             ConstExpr k = new ConstExpr();
-            k.type = STRING_CLASS;
+            k.type = this.castSystem.getStringClass();// STRING_CLASS;
             k.value = ctx.Identifier(i).getText();
             iv.arguments.add(k);
             iv.arguments.add(v);
@@ -800,24 +789,24 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         ConstExpr ce = new ConstExpr();
         String t = ctx.getText();
         if (ctx.IntegerLiteral() != null) {
-            ce.type = INT_CLASS;
+            ce.type = castSystem.getIntPrimitiveType();
             ce.value = Integer.parseInt(t);
         } else if (ctx.FloatingPointLiteral() != null) {
-            ce.type = FLOAT_CLASS;
+            ce.type = castSystem.getFloatPrimitiveType();
             ce.value = Float.parseFloat(t);
         } else if (ctx.BooleanLiteral() != null) {
-            ce.type = BOOLEAN_CLASS;
+            ce.type = castSystem.getBooleanPrimitiveType();
             ce.value = Boolean.parseBoolean(t);
         } else if (ctx.CharacterLiteral() != null) {
-            ce.type = CHAR_CLASS;
+            ce.type = castSystem.getCharPrimitiveType();
             char[] chars = t.toCharArray();
             ce.value = chars[1];
         } else if (ctx.StringLiteral() != null) {
-            ce.type = STRING_CLASS;
+            ce.type = castSystem.getStringClass();
             //TODO parse string
             ce.value = t.substring(1, t.length() - 1);
         } else {
-            ce.type = NULL_CLASS;
+            ce.type = castSystem.getNullPrimitiveType();
         }
         map(ce,ctx);
         return ce;
