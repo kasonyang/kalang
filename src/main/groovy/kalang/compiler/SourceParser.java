@@ -87,10 +87,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     //short name to full name
     private final Map<String, String> fullNames = new HashMap<String, String>();
     private final List<String> importPaths = new LinkedList<String>();
-    int varCounter = 0;
     ClassNode cls = new ClassNode();
-    //Stack<List<Statement>> codeStack = new Stack<List<Statement>>();
-    //List<ExprNode> arguments;
     MethodNode method;
     private final Map<AstNode, ParseTree> a2p = new HashMap<AstNode, ParseTree>();
 
@@ -105,7 +102,6 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
 
     TypeSystem castSystem;
     private VarTable<String, VarDeclStmt> vtb;
-    //private List<VarObject> varCollector = new LinkedList<VarObject>();
     private KalangParser parser;
     private String source;
 
@@ -232,6 +228,10 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     public ClassNode getAst() {
         return this.cls;
     }
+    
+    private void map(AstNode node,ParseTree tree){
+        a2p.put(node,tree);
+    }
 
     @Override
     public MultiStmtExpr visitMapExpr(KalangParser.MapExprContext ctx) {
@@ -270,6 +270,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
             mse.stmts.add(es);
         }
         mse.reference = ve;
+        map(mse,ctx);
         //TODO set generic type
         return mse;
     }
@@ -296,6 +297,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         }
         mse.reference = ve;
         //TODO set generic type
+        map(mse,ctx);
         return mse;
     }
 
@@ -355,6 +357,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         is.conditionExpr = cond;
         is.trueBody = new ExprStmt(as);
         //addCode(is, ctx);
+        map(is,ctx);
         return is;
     }
 
@@ -466,6 +469,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         if (ctx.falseStmt != null) {
             ifStmt.falseBody = visitStat(ctx.falseStmt);
         }
+        map(ifStmt,ctx);
         return ifStmt;
     }
 
@@ -485,6 +489,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         if (ctx.expression() != null) {
             rs.expr = visitExpression(ctx.expression());
         }
+        map(rs,ctx);
         return rs;
     }
 
@@ -494,6 +499,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         VarObject var = this.visitVarDecl(ctx.varDecl());
         VarDeclStmt vds = new VarDeclStmt(var);
         vtb.put(var.name, vds);
+        map(vds,ctx);
         return vds;
     }
 
@@ -529,6 +535,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         if (ctx.expression() != null) {
             vds.initExpr = (ExprNode) visit(ctx.expression());
         }
+        map(vds,ctx);
         return vds;
     }
 
@@ -543,14 +550,14 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     @Override
     public AstNode visitBreakStat(BreakStatContext ctx) {
         BreakStmt bs = new BreakStmt();
-        //addCode(bs, ctx);
+        map(bs,ctx);
         return bs;
     }
 
     @Override
     public AstNode visitContinueStat(ContinueStatContext ctx) {
         ContinueStmt cs = new ContinueStmt();
-        //addCode(cs, ctx);
+        map(cs,ctx);
         return cs;
     }
 
@@ -561,7 +568,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         if (ctx.stat() != null) {
             ws.loopBody = visitStat(ctx.stat());
         }
-        //addCode(ws, ctx);
+        map(ws,ctx);
         return ws;
     }
 
@@ -574,7 +581,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
             this.popVarStack();
         }
         ls.postConditionExpr = (ExprNode) visit(ctx.expression());
-        //addCode(ls, ctx);
+        map(ls,ctx);
         return ls;
     }
 
@@ -602,7 +609,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         }
         ls.loopBody = bs;
         this.popVarStack();
-        //addCode(ls, ctx);
+        map(ls,ctx);
         return ls;
     }
 
@@ -622,7 +629,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         AstNode expr = visitExpression(ctx.expression());
         ExprStmt es = new ExprStmt();
         es.expr = (ExprNode) expr;
-        //addCode(es, ctx);
+        map(es,ctx);
         return es;
     }
 
@@ -674,7 +681,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         InvocationExpr is = new InvocationExpr();
         is.methodName = methodName;
         is.target = (ExprNode) expr;
-        is.arguments = visitArguments(argumentsCtx);;
+        is.arguments = visitArguments(argumentsCtx);
         return is;
     }
 
@@ -812,7 +819,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         } else {
             ce.type = NULL_CLASS;
         }
-
+        map(ce,ctx);
         return ce;
     }
 
@@ -899,7 +906,9 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         String type = ctx.Identifier().getText();
         ClassExpr expr = new ClassExpr();
         expr.name = checkFullType(type, ctx);
-        return this.getInvocationExpr(expr, "<init>", ctx.arguments());
+        InvocationExpr inv = this.getInvocationExpr(expr, "<init>", ctx.arguments());
+        map(inv,ctx);
+        return inv;
     }
 
     @Override
@@ -907,7 +916,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         CastExpr ce = new CastExpr();
         ce.expr = visitExpression(ctx.expression());
         ce.type = ctx.type().getText();
-
+        map(ce,ctx);
         return ce;
     }
 
@@ -938,7 +947,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
             tryStmt.finallyStmt = visitStat(ctx.finalStmtList);
             this.popVarStack();
         }
-        //this.addCode(tryStmt, ctx);
+        map(tryStmt,ctx);
         return tryStmt;
     }
 
@@ -958,6 +967,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         if (expr == null) {
             this.reportError(name + " is undefined!", ctx);
         }
+        map(expr,ctx);
         return expr;
     }
 
@@ -980,6 +990,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         for (StatContext s : ctx.stat()) {
             bs.statements.add(visitStat(s));
         }
+        map(bs,ctx);
         return bs;
     }
 
