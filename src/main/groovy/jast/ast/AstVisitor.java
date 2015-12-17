@@ -75,6 +75,12 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
     }
     
     @Override
+    public T visitThrowStmt(ThrowStmt node){
+        this.visitChildren(node);
+        return null;
+    }
+    
+    @Override
     public T visitAssignExpr(AssignExpr node){
         this.visitChildren(node);
         return null;

@@ -70,6 +70,10 @@
 ##CatchStmt
 +catchVarDecl:VarDeclStmt
 +execStmt:Statement
+##ThrowStmt
++expr:ExprNode
+
+
 @ExprNode
 
 ##AssignExpr

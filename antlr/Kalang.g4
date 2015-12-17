@@ -74,6 +74,10 @@ stat:
     |varDeclStat
     |returnStat
     |tryStat
+    |throwStat
+;
+throwStat:
+    'throws' expression ';'
 ;
 blockStmt:
     '{' stat* '}'

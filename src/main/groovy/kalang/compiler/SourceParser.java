@@ -94,6 +94,14 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     private KalangParser parser;
     private String source;
 
+    @Override
+    public Object visitThrowStat(KalangParser.ThrowStatContext ctx) {
+        ExprNode expr = (ExprNode) visit(ctx.expression());
+        ThrowStmt ts = new ThrowStmt(expr);
+        map(ts, ctx);
+        return ts;
+    }
+
     public static class Position {
 
         int offset;

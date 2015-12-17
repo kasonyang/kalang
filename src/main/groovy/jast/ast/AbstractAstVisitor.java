@@ -26,6 +26,8 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
     abstract public T visitCatchStmt(CatchStmt node);
     
+    abstract public T visitThrowStmt(ThrowStmt node);
+    
     abstract public T visitAssignExpr(AssignExpr node);
     
     abstract public T visitBinaryExpr(BinaryExpr node);
@@ -104,6 +106,10 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         
         if(node instanceof CatchStmt){
             return visitCatchStmt((CatchStmt)node);
+        }
+        
+        if(node instanceof ThrowStmt){
+            return visitThrowStmt((ThrowStmt)node);
         }
         
         if(node instanceof AssignExpr){

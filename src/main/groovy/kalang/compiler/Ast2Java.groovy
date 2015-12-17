@@ -28,6 +28,7 @@ import jast.ast.NewExpr;
 import jast.ast.ParameterExpr;
 import jast.ast.ReturnStmt;
 import jast.ast.Statement;
+import jast.ast.ThrowStmt;
 import jast.ast.TryStmt;
 import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
@@ -95,7 +96,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 			if(trim) code = code.substring(0,code.length()-1);
             else code += "\r\n" + indent
         }
-        this.code += code
+        this.code += code + " "
     }
     
     private String trimStmt(String stmt){
@@ -386,24 +387,26 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitTryStmt(TryStmt node) {
-        String exec = visit(node.execStmt);
-        String catchStmt = "";
+		c 'try'
+        visit(node.execStmt);
         for(def c:node.catchStmts){
-            catchStmt += visit(c)
+            visit(c)
         }
-        String finallyStmt = ""
         if(node.finallyStmt){
-            finallyStmt = "finally " + visit(node.finallyStmt);
+            c "finally "
+			visit(node.finallyStmt);
         }
-		"try ${exec}\r\n${catchStmt}\r\n${finallyStmt}"
     }
 
 
     @Override
     public String visitCatchStmt(CatchStmt node) {
-        String varDecl = this.trimStmt(visit(node.catchVarDecl));
-        String exec = visit(node.execStmt);
-		"catch(${varDecl}) ${exec}";
+        c 'catch('
+		this.trim = true;
+		visit(node.catchVarDecl);
+		this.trim = false;
+		c ')'
+        visit(node.execStmt);
     }
 
     @Override
@@ -416,5 +419,12 @@ class Ast2Java extends AbstractAstVisitor<String>{
         for(s in node.stmts) visit(s)
         return visit(node.reference);
     }
+
+	@Override
+	public String visitThrowStmt(ThrowStmt node) {
+		String expr = visit(node.expr);
+		c "throws " + expr + ";";
+		return null;
+	}
 
 }
