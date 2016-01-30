@@ -57,13 +57,20 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.commons.collections4.bidimap.TreeBidiMap;
 
 public class SourceParser extends AbstractParseTreeVisitor implements KalangVisitor {
 
@@ -78,13 +85,13 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     private final List<String> importPaths = new LinkedList<String>();
     ClassNode cls = new ClassNode();
     MethodNode method;
-    private final Map<AstNode, ParseTree> a2p = new HashMap<AstNode, ParseTree>();
+    private final BidiMap<AstNode, ParseTree> a2p = new DualHashBidiMap<AstNode, ParseTree>();
 
     private AstLoader astLoader;
 
     private ParseTree context;
 
-    private CommonTokenStream tokens;
+    private TokenStream tokens;
 
     private final String className;
     private String classPath;
@@ -92,8 +99,65 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     TypeSystem typeSystem;
     private VarTable<String, VarDeclStmt> vtb;
     private KalangParser parser;
-    private String source;
+    
+    private HashMap<Token,ParseTree> token2tree = new HashMap<>();
+    
+    private SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler() {
+        @Override
+        public void handleSemanticError(SemanticErrorException see) {
+            System.err.println(see);
+        }
+    };
+    
+    private ParseTreeListener parseTreeListener = new ParseTreeListener() {
+        
+        Stack<Integer> treeStartToken = new Stack<Integer>();
+        
+        @Override
+        public void visitTerminal(TerminalNode tn) {}
 
+        @Override
+        public void visitErrorNode(ErrorNode en) {}
+
+        @Override
+        public void enterEveryRule(ParserRuleContext prc) {
+            treeStartToken.push(parser.getCurrentToken().getTokenIndex());
+        }
+
+        @Override
+        public void exitEveryRule(ParserRuleContext prc) {
+            int stopIndex = parser.getCurrentToken().getTokenIndex();
+            int startIndex = treeStartToken.pop();
+            for(int i=startIndex;i<=stopIndex;i++){
+                Token tk = tokens.get(i);
+                if(!token2tree.containsKey(tk)) token2tree.put(tk, prc);
+            }
+        }
+            
+    };
+
+    public SemanticErrorHandler getSemanticErrorHandler() {
+        return semanticErrorHandler;
+    }
+
+    public void setSemanticErrorHandler(SemanticErrorHandler semanticErrorHandler) {
+        this.semanticErrorHandler = semanticErrorHandler;
+    }
+    
+    public AstNode getAstNode(ParseTree tree){
+        return a2p.getKey(tree);
+    }
+    
+    public ParseTree getParseTree(AstNode node){
+        return a2p.get(node);
+    }
+    
+    public ParseTree getParseTreeByTokenIndex(int tokenIndex){
+        Token t = tokens.get(tokenIndex);
+        ParseTree tree = token2tree.get(t);
+        return tree;
+    }
+  
     @Override
     public Object visitThrowStat(KalangParser.ThrowStatContext ctx) {
         ExprNode expr = (ExprNode) visit(ctx.expression());
@@ -125,40 +189,46 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
             return position;
         }
     }
-
-    public void compile(AstLoader astLoader) {
-        this.astLoader = astLoader;
-        this.typeSystem = new TypeSystem(astLoader);
+    
+    public static SourceParser create(String clsName,String source){
         KalangLexer lexer = new KalangLexer(new ANTLRInputStream(source));
-        tokens = new CommonTokenStream(lexer);
-        parser = new KalangParser(tokens);
-        SourceParser that = this;
-        parser.setErrorHandler(new DefaultErrorStrategy() {
+        TokenStream tokens = new CommonTokenStream(lexer);
+        KalangParser p = new KalangParser(tokens);
+        SourceParser sp = new SourceParser(clsName, p);
+        p.setErrorHandler(new DefaultErrorStrategy() {
 
             @Override
             public void reportError(Parser recognizer, RecognitionException e) {
                 RuleContext ctx = e.getCtx();
                 if (ctx == null) {
                     Token tk = e.getOffendingToken();
-                    that.reportError("syntax error!", tk);
+                    sp.reportError("syntax error!", tk);
                 } else {
-                    that.reportError("syntax error!", ctx);
+                    sp.reportError("syntax error!", ctx);
                 }
                 super.reportError(recognizer, e);
             }
-
         });
-        this.context = parser.compiliantUnit();
-        visit(context);
+        return sp;
     }
 
-    public SourceParser(String className, String src) {
+    public void compile(AstLoader astLoader) {
+        this.astLoader = astLoader;
+        this.typeSystem = new TypeSystem(astLoader);
+        parser.addParseListener(parseTreeListener);
+        this.context = parser.compiliantUnit();
+        visit(context);
+        parser.removeParseListener(parseTreeListener);
+    }
+
+    public SourceParser(String className, KalangParser parser) {
         this.className = className;
         this.classPath = "";
+        this.parser = parser;
+        tokens = parser.getTokenStream();
         if (className.contains(".")) {
             classPath = className.substring(0, className.lastIndexOf('.'));
         }
-        source = src;
         cls = ClassNode.create();
     }
 
@@ -536,12 +606,20 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return vds;
     }
 
-    private void reportError(String msg, Token token) {
-        throw new ParseError(msg, this.getLocation(token));
+    private void reportError(String msg, Token token,ParseTree tree) {
+        SemanticErrorException see = new SemanticErrorException(msg, token,tree);
+        semanticErrorHandler.handleSemanticError(see);
+//        ParseError error = new ParseError(msg, this.getLocation(token));
+//        System.err.println(error.getMessage());
     }
 
     private void reportError(String string, ParseTree tree) {
-        throw new ParseError(string, this.getLocation(tree));
+        int a = tree.getSourceInterval().a;
+        reportError(string, tokens.get(a),tree);
+    }
+    
+    private void reportError(String string, Token token) {
+        reportError(string, token,token2tree.get(token));
     }
 
     @Override
@@ -736,6 +814,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         String fn = getFullClassName(name);
         if (fn == null) {
             this.reportError("Unknown class:" + name, tree);
+            return DEFAULT_VAR_TYPE;
         }
         return fn;
     }

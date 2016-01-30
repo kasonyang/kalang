@@ -73,7 +73,8 @@ public class KalangCompiler extends AstLoader {
         Set<String> ks = sources.keySet();
         for(String k : ks){
             String src = sources.get(k);
-            SourceParser cunit = new SourceParser(k,src);
+            SourceParser cunit = SourceParser.create(k, src);
+            //SourceParser cunit = new SourceParser(k,p);
             cunit.importPackage("java.lang");
             cunit.importPackage("java.util");
             ClassNode cls = cunit.getAst();
