@@ -442,7 +442,10 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (Token itf : ctx.interfaces) {
-                cls.interfaces.add(checkFullType(itf.getText(), ctx));
+                String iType = checkFullType(itf.getText(), ctx);
+                if(iType!=null){
+                    cls.interfaces.add(iType);
+                }
             }
         }
         visitClassBody(ctx.classBody());
@@ -607,7 +610,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     }
 
     private void reportError(String msg, Token token,ParseTree tree) {
-        SemanticErrorException see = new SemanticErrorException(msg, token,tree);
+        SemanticErrorException see = new SemanticErrorException(msg, token,tree,this);
         semanticErrorHandler.handleSemanticError(see);
 //        ParseError error = new ParseError(msg, this.getLocation(token));
 //        System.err.println(error.getMessage());
@@ -811,7 +814,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         if (this.typeSystem.isPrimitiveType(name)) {
             return name;
         }
-        String fn = getFullClassName(name);
+        String fn = getExistedClassName(name);
         if (fn == null) {
             this.reportError("Unknown class:" + name, tree);
             return DEFAULT_VAR_TYPE;
@@ -819,7 +822,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return fn;
     }
 
-    private String getFullClassName(String name) {
+    private String getExistedClassName(String name) {
         String postfix = "";
         if (name.endsWith("[]")) {
             name = name.substring(0, name.length() - 2);
@@ -828,9 +831,11 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         if (fullNames.containsKey(name)) {
             return fullNames.get(name) + postfix;
         } else {
+            ClassNode cls = astLoader.getAst(name);
+            if(cls!=null) return name + postfix;
             for (String p : this.importPaths) {
                 String clsName = p + "." + name;
-                ClassNode cls = astLoader.getAst(clsName);
+                cls = astLoader.getAst(clsName);
                 if (cls != null) {
                     return clsName + postfix;
                 }
@@ -863,8 +868,8 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
                     }
                 }
             }
-            String clsName = this.getFullClassName(name);
-            if (clsName != null) {
+            String clsName = this.getExistedClassName(name);
+            if (clsName!=null) {
                 return new ClassExpr(clsName);
             }
         }

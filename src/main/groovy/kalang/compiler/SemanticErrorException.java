@@ -9,6 +9,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.antlr.KalangParser;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 /**
@@ -20,11 +21,13 @@ public class SemanticErrorException extends RuntimeException{
     ParseTree tree;
     
     Token token;
+    private final SourceParser sourceParser;
 
-    public SemanticErrorException(String msg, Token token,ParseTree tree) {
+    public SemanticErrorException(String msg, Token token,ParseTree tree,SourceParser sourceParser) {
         super(msg);
         this.tree = tree;
         this.token = token;
+        this.sourceParser = sourceParser;
     }
 
     public ParseTree getTree() {
@@ -33,6 +36,10 @@ public class SemanticErrorException extends RuntimeException{
 
     public Token getToken() {
         return token;
+    }
+
+    public SourceParser getSourceParser() {
+        return sourceParser;
     }
 
 }

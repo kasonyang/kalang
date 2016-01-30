@@ -36,7 +36,7 @@ import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
 import jast.ast.VarObject;
-import kalang.compiler.AstError;
+import kalang.compiler.AstSemanticReporter;
 
 @groovy.transform.TypeChecked
 class TypeChecker extends AstVisitor<String> {
@@ -70,9 +70,9 @@ class TypeChecker extends AstVisitor<String> {
 
     boolean returned;
 
-    private AstError err;
+    private AstSemanticReporter err;
 
-    private ErrorHandler errHandler;
+    private AstSemanticErrorHandler errHandler;
 
     private Stack<List<String>> exceptionStack = new Stack();
 
@@ -80,9 +80,15 @@ class TypeChecker extends AstVisitor<String> {
         this.astLoader = astLoader;
         this.typeSystem = new TypeSystem(astLoader);
         this.astParser = new AstParser(astLoader);
+        errHandler = new AstSemanticErrorHandler() {
+            @Override
+            public void handleAstSemanticError(AstSemanticError error) {
+                System.err.println(error.toString());
+            }
+        };
     }
 
-    public void setErrorHandler(ErrorHandler handler) {
+    public void setAstSemanticErrorHandler(AstSemanticErrorHandler handler) {
         errHandler = handler;
     }
 
@@ -91,7 +97,10 @@ class TypeChecker extends AstVisitor<String> {
             expr = typeSystem.cast(expr, from, to);
         } catch (AstNotFoundException e) {
             err.classNotFound(node, e.getMessage());
-            throw new RuntimeException(e);
+            return null;
+            //throw new RuntimeException(e);
+        }catch(TypeCastException ex){
+            expr =null;
         }
         if (expr == null) {
             err.failedToCast(node, from, to);
@@ -108,9 +117,12 @@ class TypeChecker extends AstVisitor<String> {
     }
 
     public void check(ClassNode clz) {
-        if (this.errHandler != null) {
-            err = new AstError(clz, this.errHandler);
-        }
+        err = new AstSemanticReporter(clz, new AstSemanticReporter.AstSemanticReporterCallback() {
+            @Override
+            public void handleAstSemanticError(AstSemanticError error) {
+                errHandler.handleAstSemanticError(error);
+            }
+        });
         this.fields = new HashMap();
         this.methodDeclared = new LinkedList();
         for (VarObject f : clz.fields) {
@@ -120,6 +132,7 @@ class TypeChecker extends AstVisitor<String> {
         visit(clazz);
         if (clazz.interfaces.size() > 0) {
             for (String itfName : clazz.interfaces) {
+                assert itfName!=null;
                 ClassNode itfNode = this.loadAst(itfName, clazz);
                 if (itfNode == null) {
                     continue;
@@ -138,7 +151,7 @@ class TypeChecker extends AstVisitor<String> {
     @Override
     public String visit(AstNode node) {
         if (node instanceof Statement && returned) {
-            err.fail("unabled to reach statement", AstError.LACKS_OF_STATEMENT, node);
+            err.fail("unabled to reach statement", AstSemanticError.LACKS_OF_STATEMENT, node);
             return null;
         }
         Object ret = super.visit(node);
@@ -245,8 +258,8 @@ class TypeChecker extends AstVisitor<String> {
                 t = typeSystem.getHigherType(t1, t2);
                 break;
             default:
-                err.fail("unsupport operation:" + op, AstError.UNSUPPORTED, node);
-            //throw new TypeError();
+                err.fail("unsupport operation:" + op, AstSemanticError.UNSUPPORTED, node);
+            //throw new TypeError();            //throw new TypeError();            //throw new TypeError();            //throw new TypeError();
         }
         return t;
     }
@@ -298,6 +311,7 @@ class TypeChecker extends AstVisitor<String> {
         String target = node.target != null ? visit(node.target) : this.clazz.name;
         String methodName = node.methodName;
         ClassNode ast = loadAst(target, node);
+        if(ast==null) return typeSystem.getRootClass();
         MethodNode method = selectMethod(node, ast, methodName, types.toArray(new String[0]));
         if (method == null) {
             return typeSystem.ROOT_CLASS;
@@ -453,7 +467,7 @@ class TypeChecker extends AstVisitor<String> {
         this.exceptionStack.pop();
         boolean needReturn = (node.type != "void" && node.type != null);
         if (node.body != null && needReturn && !returned) {
-            err.fail("Missing return statement in method:" + mStr, AstError.LACKS_OF_STATEMENT, node);
+            err.fail("Missing return statement in method:" + mStr, AstSemanticError.LACKS_OF_STATEMENT, node);
         }
         return null;
     }
@@ -504,7 +518,7 @@ class TypeChecker extends AstVisitor<String> {
     void requireStatic(Integer modifier, AstNode node) {
         boolean isStatic = isStatic(modifier);
         if (!isStatic) {
-            err.fail("couldn't refer non-static member in static context", AstError.UNSUPPORTED, node);
+            err.fail("couldn't refer non-static member in static context", AstSemanticError.UNSUPPORTED, node);
         }
     }
 
@@ -535,7 +549,7 @@ class TypeChecker extends AstVisitor<String> {
             return null;
         }
         if (matches.length > 1) {
-            err.fail("the method " + methodName + " is ambiguous", AstError.METHOD_NOT_FOUND, node);
+            err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, node);
             return null;
         }
         return matches[0];
