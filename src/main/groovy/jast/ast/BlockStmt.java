@@ -52,7 +52,9 @@ public class BlockStmt extends Statement{
     public String toString(){
         String str = "BlockStmt{\r\n";
         
-        str += "  statements:" + statements.toString()+"\r\n";
+        if(statements!=null){
+            str += "  statements:" + statements.toString()+"\r\n";
+        }
         
         return str+"}";
     }

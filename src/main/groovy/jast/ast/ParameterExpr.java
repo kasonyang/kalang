@@ -44,7 +44,9 @@ public class ParameterExpr extends ExprNode{
     public String toString(){
         String str = "ParameterExpr{\r\n";
         
-        str += "  parameter:" + parameter.toString()+"\r\n";
+        if(parameter!=null){
+            str += "  parameter:" + parameter.toString()+"\r\n";
+        }
         
         return str+"}";
     }

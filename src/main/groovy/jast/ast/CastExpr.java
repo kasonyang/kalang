@@ -48,9 +48,13 @@ public class CastExpr extends ExprNode{
     public String toString(){
         String str = "CastExpr{\r\n";
         
-        str += "  type:" + type.toString()+"\r\n";
+        if(type!=null){
+            str += "  type:" + type.toString()+"\r\n";
+        }
         
-        str += "  expr:" + expr.toString()+"\r\n";
+        if(expr!=null){
+            str += "  expr:" + expr.toString()+"\r\n";
+        }
         
         return str+"}";
     }

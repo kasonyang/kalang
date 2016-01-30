@@ -58,13 +58,21 @@ public class VarObject extends AstNode{
     public String toString(){
         String str = "VarObject{\r\n";
         
-        str += "  modifier:" + modifier.toString()+"\r\n";
+        if(modifier!=null){
+            str += "  modifier:" + modifier.toString()+"\r\n";
+        }
         
-        str += "  type:" + type.toString()+"\r\n";
+        if(type!=null){
+            str += "  type:" + type.toString()+"\r\n";
+        }
         
-        str += "  name:" + name.toString()+"\r\n";
+        if(name!=null){
+            str += "  name:" + name.toString()+"\r\n";
+        }
         
-        str += "  initExpr:" + initExpr.toString()+"\r\n";
+        if(initExpr!=null){
+            str += "  initExpr:" + initExpr.toString()+"\r\n";
+        }
         
         return str+"}";
     }

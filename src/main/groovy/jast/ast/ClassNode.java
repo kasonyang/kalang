@@ -90,19 +90,33 @@ public class ClassNode extends AstNode{
     public String toString(){
         String str = "ClassNode{\r\n";
         
-        str += "  modifier:" + modifier.toString()+"\r\n";
+        if(modifier!=null){
+            str += "  modifier:" + modifier.toString()+"\r\n";
+        }
         
-        str += "  name:" + name.toString()+"\r\n";
+        if(name!=null){
+            str += "  name:" + name.toString()+"\r\n";
+        }
         
-        str += "  parentName:" + parentName.toString()+"\r\n";
+        if(parentName!=null){
+            str += "  parentName:" + parentName.toString()+"\r\n";
+        }
         
-        str += "  fields:" + fields.toString()+"\r\n";
+        if(fields!=null){
+            str += "  fields:" + fields.toString()+"\r\n";
+        }
         
-        str += "  methods:" + methods.toString()+"\r\n";
+        if(methods!=null){
+            str += "  methods:" + methods.toString()+"\r\n";
+        }
         
-        str += "  interfaces:" + interfaces.toString()+"\r\n";
+        if(interfaces!=null){
+            str += "  interfaces:" + interfaces.toString()+"\r\n";
+        }
         
-        str += "  isInterface:" + isInterface.toString()+"\r\n";
+        if(isInterface!=null){
+            str += "  isInterface:" + isInterface.toString()+"\r\n";
+        }
         
         return str+"}";
     }

@@ -145,7 +145,12 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     }
     
     public AstNode getAstNode(ParseTree tree){
-        return a2p.getKey(tree);
+        AstNode node = null;
+        while(node==null && tree!=null){
+            node = a2p.getKey(tree);
+            tree = tree.getParent();
+        }
+        return node;
     }
     
     public ParseTree getParseTree(AstNode node){

@@ -52,7 +52,9 @@ public class {{name}} extends {{parent}}{
     public String toString(){
         String str = "{{name}}{\r\n";
         {{#each fields}}
-        str += "  {{name}}:" + {{name}}.toString()+"\r\n";
+        if({{name}}!=null){
+            str += "  {{name}}:" + {{name}}.toString()+"\r\n";
+        }
         {{/each}}
         return str+"}";
     }

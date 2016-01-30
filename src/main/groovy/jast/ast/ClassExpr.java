@@ -44,7 +44,9 @@ public class ClassExpr extends ExprNode{
     public String toString(){
         String str = "ClassExpr{\r\n";
         
-        str += "  name:" + name.toString()+"\r\n";
+        if(name!=null){
+            str += "  name:" + name.toString()+"\r\n";
+        }
         
         return str+"}";
     }

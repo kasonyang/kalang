@@ -56,11 +56,17 @@ public class BinaryExpr extends ExprNode{
     public String toString(){
         String str = "BinaryExpr{\r\n";
         
-        str += "  expr1:" + expr1.toString()+"\r\n";
+        if(expr1!=null){
+            str += "  expr1:" + expr1.toString()+"\r\n";
+        }
         
-        str += "  expr2:" + expr2.toString()+"\r\n";
+        if(expr2!=null){
+            str += "  expr2:" + expr2.toString()+"\r\n";
+        }
         
-        str += "  operation:" + operation.toString()+"\r\n";
+        if(operation!=null){
+            str += "  operation:" + operation.toString()+"\r\n";
+        }
         
         return str+"}";
     }

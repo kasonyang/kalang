@@ -48,9 +48,13 @@ public class NewArrayExpr extends ExprNode{
     public String toString(){
         String str = "NewArrayExpr{\r\n";
         
-        str += "  type:" + type.toString()+"\r\n";
+        if(type!=null){
+            str += "  type:" + type.toString()+"\r\n";
+        }
         
-        str += "  size:" + size.toString()+"\r\n";
+        if(size!=null){
+            str += "  size:" + size.toString()+"\r\n";
+        }
         
         return str+"}";
     }

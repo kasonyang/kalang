@@ -58,11 +58,17 @@ public class IfStmt extends Statement{
     public String toString(){
         String str = "IfStmt{\r\n";
         
-        str += "  conditionExpr:" + conditionExpr.toString()+"\r\n";
+        if(conditionExpr!=null){
+            str += "  conditionExpr:" + conditionExpr.toString()+"\r\n";
+        }
         
-        str += "  trueBody:" + trueBody.toString()+"\r\n";
+        if(trueBody!=null){
+            str += "  trueBody:" + trueBody.toString()+"\r\n";
+        }
         
-        str += "  falseBody:" + falseBody.toString()+"\r\n";
+        if(falseBody!=null){
+            str += "  falseBody:" + falseBody.toString()+"\r\n";
+        }
         
         return str+"}";
     }

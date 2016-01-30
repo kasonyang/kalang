@@ -44,7 +44,9 @@ public class VarExpr extends ExprNode{
     public String toString(){
         String str = "VarExpr{\r\n";
         
-        str += "  var:" + var.toString()+"\r\n";
+        if(var!=null){
+            str += "  var:" + var.toString()+"\r\n";
+        }
         
         return str+"}";
     }

@@ -62,11 +62,17 @@ public class InvocationExpr extends ExprNode{
     public String toString(){
         String str = "InvocationExpr{\r\n";
         
-        str += "  target:" + target.toString()+"\r\n";
+        if(target!=null){
+            str += "  target:" + target.toString()+"\r\n";
+        }
         
-        str += "  methodName:" + methodName.toString()+"\r\n";
+        if(methodName!=null){
+            str += "  methodName:" + methodName.toString()+"\r\n";
+        }
         
-        str += "  arguments:" + arguments.toString()+"\r\n";
+        if(arguments!=null){
+            str += "  arguments:" + arguments.toString()+"\r\n";
+        }
         
         return str+"}";
     }

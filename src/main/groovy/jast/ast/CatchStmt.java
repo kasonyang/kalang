@@ -52,9 +52,13 @@ public class CatchStmt extends Statement{
     public String toString(){
         String str = "CatchStmt{\r\n";
         
-        str += "  catchVarDecl:" + catchVarDecl.toString()+"\r\n";
+        if(catchVarDecl!=null){
+            str += "  catchVarDecl:" + catchVarDecl.toString()+"\r\n";
+        }
         
-        str += "  execStmt:" + execStmt.toString()+"\r\n";
+        if(execStmt!=null){
+            str += "  execStmt:" + execStmt.toString()+"\r\n";
+        }
         
         return str+"}";
     }

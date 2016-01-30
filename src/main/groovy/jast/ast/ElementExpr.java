@@ -52,9 +52,13 @@ public class ElementExpr extends ExprNode{
     public String toString(){
         String str = "ElementExpr{\r\n";
         
-        str += "  target:" + target.toString()+"\r\n";
+        if(target!=null){
+            str += "  target:" + target.toString()+"\r\n";
+        }
         
-        str += "  key:" + key.toString()+"\r\n";
+        if(key!=null){
+            str += "  key:" + key.toString()+"\r\n";
+        }
         
         return str+"}";
     }

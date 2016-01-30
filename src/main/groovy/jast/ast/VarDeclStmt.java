@@ -44,7 +44,9 @@ public class VarDeclStmt extends Statement{
     public String toString(){
         String str = "VarDeclStmt{\r\n";
         
-        str += "  var:" + var.toString()+"\r\n";
+        if(var!=null){
+            str += "  var:" + var.toString()+"\r\n";
+        }
         
         return str+"}";
     }

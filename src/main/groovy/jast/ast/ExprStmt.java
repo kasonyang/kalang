@@ -46,7 +46,9 @@ public class ExprStmt extends Statement{
     public String toString(){
         String str = "ExprStmt{\r\n";
         
-        str += "  expr:" + expr.toString()+"\r\n";
+        if(expr!=null){
+            str += "  expr:" + expr.toString()+"\r\n";
+        }
         
         return str+"}";
     }

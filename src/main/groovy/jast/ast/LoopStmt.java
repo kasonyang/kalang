@@ -70,13 +70,21 @@ public class LoopStmt extends Statement{
     public String toString(){
         String str = "LoopStmt{\r\n";
         
-        str += "  initStmts:" + initStmts.toString()+"\r\n";
+        if(initStmts!=null){
+            str += "  initStmts:" + initStmts.toString()+"\r\n";
+        }
         
-        str += "  loopBody:" + loopBody.toString()+"\r\n";
+        if(loopBody!=null){
+            str += "  loopBody:" + loopBody.toString()+"\r\n";
+        }
         
-        str += "  preConditionExpr:" + preConditionExpr.toString()+"\r\n";
+        if(preConditionExpr!=null){
+            str += "  preConditionExpr:" + preConditionExpr.toString()+"\r\n";
+        }
         
-        str += "  postConditionExpr:" + postConditionExpr.toString()+"\r\n";
+        if(postConditionExpr!=null){
+            str += "  postConditionExpr:" + postConditionExpr.toString()+"\r\n";
+        }
         
         return str+"}";
     }

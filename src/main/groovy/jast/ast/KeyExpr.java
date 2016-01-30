@@ -44,7 +44,9 @@ public class KeyExpr extends ExprNode{
     public String toString(){
         String str = "KeyExpr{\r\n";
         
-        str += "  key:" + key.toString()+"\r\n";
+        if(key!=null){
+            str += "  key:" + key.toString()+"\r\n";
+        }
         
         return str+"}";
     }

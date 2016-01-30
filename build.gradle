@@ -13,6 +13,7 @@ dependencies{
     compile 'org.codehaus.groovy:groovy-all:2.3.10'
 	compile 'org.apache.commons:commons-collections4:4.1'
 	testCompile 'junit:junit:4.12'
+        compile fileTree("libs")
 }
 buildscript {
     repositories {

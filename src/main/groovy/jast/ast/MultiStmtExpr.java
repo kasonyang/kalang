@@ -56,9 +56,13 @@ public class MultiStmtExpr extends ExprNode{
     public String toString(){
         String str = "MultiStmtExpr{\r\n";
         
-        str += "  stmts:" + stmts.toString()+"\r\n";
+        if(stmts!=null){
+            str += "  stmts:" + stmts.toString()+"\r\n";
+        }
         
-        str += "  reference:" + reference.toString()+"\r\n";
+        if(reference!=null){
+            str += "  reference:" + reference.toString()+"\r\n";
+        }
         
         return str+"}";
     }

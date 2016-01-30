@@ -36,10 +36,10 @@ import jast.ast.UnaryExpr;
 import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
 import jast.ast.VarObject;
+import java.util.Map;
 import kalang.compiler.AstSemanticReporter;
 
-@groovy.transform.TypeChecked
-class TypeChecker extends AstVisitor<String> {
+public class TypeChecker extends AstVisitor<String> {
 
     static class TypeError extends Exception {
 
@@ -76,6 +76,8 @@ class TypeChecker extends AstVisitor<String> {
 
     private Stack<List<String>> exceptionStack = new Stack();
 
+    private Map<AstNode, String> types = new HashMap<>();
+
     TypeChecker(AstLoader astLoader) {
         this.astLoader = astLoader;
         this.typeSystem = new TypeSystem(astLoader);
@@ -99,8 +101,8 @@ class TypeChecker extends AstVisitor<String> {
             err.classNotFound(node, e.getMessage());
             return null;
             //throw new RuntimeException(e);
-        }catch(TypeCastException ex){
-            expr =null;
+        } catch (TypeCastException ex) {
+            expr = null;
         }
         if (expr == null) {
             err.failedToCast(node, from, to);
@@ -132,7 +134,7 @@ class TypeChecker extends AstVisitor<String> {
         visit(clazz);
         if (clazz.interfaces.size() > 0) {
             for (String itfName : clazz.interfaces) {
-                assert itfName!=null;
+                assert itfName != null;
                 ClassNode itfNode = this.loadAst(itfName, clazz);
                 if (itfNode == null) {
                     continue;
@@ -156,6 +158,7 @@ class TypeChecker extends AstVisitor<String> {
         }
         Object ret = super.visit(node);
         if (ret instanceof String) {
+            types.put(node, (String) ret);
             return (String) ret;
         }
         return null;
@@ -219,7 +222,7 @@ class TypeChecker extends AstVisitor<String> {
             case "==":
                 if (typeSystem.isNumber(t1)) {
                     if (!typeSystem.isNumber(t2)) {
-                        err.failedToCast(node, t2,typeSystem.getIntClass());
+                        err.failedToCast(node, t2, typeSystem.getIntClass());
                     }
                     //fail("Number required",node);
                 } else {
@@ -311,7 +314,9 @@ class TypeChecker extends AstVisitor<String> {
         String target = node.target != null ? visit(node.target) : this.clazz.name;
         String methodName = node.methodName;
         ClassNode ast = loadAst(target, node);
-        if(ast==null) return typeSystem.getRootClass();
+        if (ast == null) {
+            return typeSystem.getRootClass();
+        }
         MethodNode method = selectMethod(node, ast, methodName, types.toArray(new String[0]));
         if (method == null) {
             return typeSystem.ROOT_CLASS;
@@ -339,7 +344,7 @@ class TypeChecker extends AstVisitor<String> {
         if (preOp != null && preOp.equals("!")) {
             requireBoolean(node, et);
         } else {
-			//TODO unary type check
+            //TODO unary type check
             //requireNumber(node,et)
         }
         return et;
@@ -523,9 +528,9 @@ class TypeChecker extends AstVisitor<String> {
     }
 
     void requireNoneVoid(String type, AstNode node) {
-        if (type == null 
-        		|| type.equals(typeSystem.getVoidPrimitiveType())
-        		|| type.equals(typeSystem.getVoidClass())) {
+        if (type == null
+                || type.equals(typeSystem.getVoidPrimitiveType())
+                || type.equals(typeSystem.getVoidClass())) {
             err.unsupported("use void type as value", node);
         }
     }
@@ -586,10 +591,14 @@ class TypeChecker extends AstVisitor<String> {
         }
     }
 
-	@Override
-	public String visitMultiStmtExpr(MultiStmtExpr node) {
-		visitAll(node.stmts);
-		return visit(node.reference);
-	}
+    @Override
+    public String visitMultiStmtExpr(MultiStmtExpr node) {
+        visitAll(node.stmts);
+        return visit(node.reference);
+    }
+
+    public Map<AstNode, String> getTypes() {
+        return types;
+    }
 
 }

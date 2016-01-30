@@ -50,9 +50,13 @@ public class FieldExpr extends ExprNode{
     public String toString(){
         String str = "FieldExpr{\r\n";
         
-        str += "  target:" + target.toString()+"\r\n";
+        if(target!=null){
+            str += "  target:" + target.toString()+"\r\n";
+        }
         
-        str += "  fieldName:" + fieldName.toString()+"\r\n";
+        if(fieldName!=null){
+            str += "  fieldName:" + fieldName.toString()+"\r\n";
+        }
         
         return str+"}";
     }

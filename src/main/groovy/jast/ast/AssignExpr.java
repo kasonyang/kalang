@@ -52,9 +52,13 @@ public class AssignExpr extends ExprNode{
     public String toString(){
         String str = "AssignExpr{\r\n";
         
-        str += "  to:" + to.toString()+"\r\n";
+        if(to!=null){
+            str += "  to:" + to.toString()+"\r\n";
+        }
         
-        str += "  from:" + from.toString()+"\r\n";
+        if(from!=null){
+            str += "  from:" + from.toString()+"\r\n";
+        }
         
         return str+"}";
     }

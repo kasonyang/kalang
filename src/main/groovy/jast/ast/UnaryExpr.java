@@ -54,11 +54,17 @@ public class UnaryExpr extends ExprNode{
     public String toString(){
         String str = "UnaryExpr{\r\n";
         
-        str += "  expr:" + expr.toString()+"\r\n";
+        if(expr!=null){
+            str += "  expr:" + expr.toString()+"\r\n";
+        }
         
-        str += "  preOperation:" + preOperation.toString()+"\r\n";
+        if(preOperation!=null){
+            str += "  preOperation:" + preOperation.toString()+"\r\n";
+        }
         
-        str += "  postOperation:" + postOperation.toString()+"\r\n";
+        if(postOperation!=null){
+            str += "  postOperation:" + postOperation.toString()+"\r\n";
+        }
         
         return str+"}";
     }

@@ -56,9 +56,13 @@ public class NewExpr extends ExprNode{
     public String toString(){
         String str = "NewExpr{\r\n";
         
-        str += "  type:" + type.toString()+"\r\n";
+        if(type!=null){
+            str += "  type:" + type.toString()+"\r\n";
+        }
         
-        str += "  arguments:" + arguments.toString()+"\r\n";
+        if(arguments!=null){
+            str += "  arguments:" + arguments.toString()+"\r\n";
+        }
         
         return str+"}";
     }

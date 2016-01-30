@@ -48,9 +48,13 @@ public class ConstExpr extends ExprNode{
     public String toString(){
         String str = "ConstExpr{\r\n";
         
-        str += "  value:" + value.toString()+"\r\n";
+        if(value!=null){
+            str += "  value:" + value.toString()+"\r\n";
+        }
         
-        str += "  type:" + type.toString()+"\r\n";
+        if(type!=null){
+            str += "  type:" + type.toString()+"\r\n";
+        }
         
         return str+"}";
     }

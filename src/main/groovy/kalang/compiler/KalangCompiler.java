@@ -25,6 +25,8 @@ public class KalangCompiler extends AstLoader {
     HashMap<String, SourceParser> units = new HashMap();
 
     HashMap<String, String> javaCodes = new HashMap();
+    
+    HashMap<String, TypeChecker> typeCheckers = new HashMap<>();
 
     AstLoader astLoader;
 
@@ -72,6 +74,10 @@ public class KalangCompiler extends AstLoader {
     }
 
     protected void init() {
+        units.clear();
+        typeCheckers.clear();
+        asts.clear();
+        javaCodes.clear();
         Set<String> ks = sources.keySet();
         for (String k : ks) {
             String src = sources.get(k);
@@ -105,10 +111,11 @@ public class KalangCompiler extends AstLoader {
     
 
     protected void typeCheck() {
-        TypeChecker typeChecker = new TypeChecker(this);
-        typeChecker.setAstSemanticErrorHandler(astSemanticErrorHandler);
         Set<String> cnames = this.asts.keySet();
         for (String c : cnames) {
+            TypeChecker typeChecker = new TypeChecker(this);
+            typeChecker.setAstSemanticErrorHandler(astSemanticErrorHandler);
+            typeCheckers.put(c, typeChecker);
             ClassNode cls = asts.get(c);
             typeChecker.check(cls);
         }
@@ -194,6 +201,18 @@ public class KalangCompiler extends AstLoader {
 
     public void setCompileErrorHandlerrrorHandler(CompileErrorHandler compileErrorHandlerrrorHandler) {
         this.compileErrorHandlerrrorHandler = compileErrorHandlerrrorHandler;
+    }
+    
+    public TypeChecker getTypeChecker(String className){
+        return typeCheckers.get(className);
+    }
+    
+    public SourceParser getParser(String clsName){
+        return units.get(clsName);
+    }
+    
+    public ClassNode getClassNode(String clsName){
+        return asts.get(clsName);
     }
 
 }

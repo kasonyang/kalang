@@ -64,11 +64,17 @@ public class TryStmt extends Statement{
     public String toString(){
         String str = "TryStmt{\r\n";
         
-        str += "  execStmt:" + execStmt.toString()+"\r\n";
+        if(execStmt!=null){
+            str += "  execStmt:" + execStmt.toString()+"\r\n";
+        }
         
-        str += "  catchStmts:" + catchStmts.toString()+"\r\n";
+        if(catchStmts!=null){
+            str += "  catchStmts:" + catchStmts.toString()+"\r\n";
+        }
         
-        str += "  finallyStmt:" + finallyStmt.toString()+"\r\n";
+        if(finallyStmt!=null){
+            str += "  finallyStmt:" + finallyStmt.toString()+"\r\n";
+        }
         
         return str+"}";
     }

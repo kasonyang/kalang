@@ -80,17 +80,29 @@ public class MethodNode extends AstNode{
     public String toString(){
         String str = "MethodNode{\r\n";
         
-        str += "  modifier:" + modifier.toString()+"\r\n";
+        if(modifier!=null){
+            str += "  modifier:" + modifier.toString()+"\r\n";
+        }
         
-        str += "  type:" + type.toString()+"\r\n";
+        if(type!=null){
+            str += "  type:" + type.toString()+"\r\n";
+        }
         
-        str += "  name:" + name.toString()+"\r\n";
+        if(name!=null){
+            str += "  name:" + name.toString()+"\r\n";
+        }
         
-        str += "  parameters:" + parameters.toString()+"\r\n";
+        if(parameters!=null){
+            str += "  parameters:" + parameters.toString()+"\r\n";
+        }
         
-        str += "  body:" + body.toString()+"\r\n";
+        if(body!=null){
+            str += "  body:" + body.toString()+"\r\n";
+        }
         
-        str += "  exceptionTypes:" + exceptionTypes.toString()+"\r\n";
+        if(exceptionTypes!=null){
+            str += "  exceptionTypes:" + exceptionTypes.toString()+"\r\n";
+        }
         
         return str+"}";
     }
