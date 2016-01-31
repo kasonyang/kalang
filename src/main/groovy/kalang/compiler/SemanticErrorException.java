@@ -42,4 +42,11 @@ public class SemanticErrorException extends RuntimeException{
         return sourceParser;
     }
 
+    @Override
+    public String toString() {
+        return "SemanticErrorException{" + "tree=" + tree + ", token=" + token + ", sourceParser=" + sourceParser + '}';
+    }
+    
+    
+
 }

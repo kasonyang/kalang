@@ -20,6 +20,11 @@ public class CompileError  extends java.lang.RuntimeException  {
          return this.source.substring(this.start,this.stop);
          
     }
+
+    @Override
+    public String toString() {
+        return "CompileError{" + "start=" + start + ", stop=" + stop + ", className=" + className + '}';
+    }
      
 }
  

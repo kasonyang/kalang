@@ -45,10 +45,7 @@ public class KalangCompiler extends AstLoader {
             ParseTree tree = see.getTree();
             SourceParser parser = see.getSourceParser();
             SourceParser.Position loc = parser.getLocation(token);
-            reportError(see.getMessage(),parser.getAst().name , loc);
-            //TODO 
-            //reportError(see.getMessage(),, loc);
-            System.err.println(see.toString());
+            reportError(see.getMessage(),parser.getClassName() , loc);
         }
     };
     private CompileErrorHandler compileErrorHandlerrrorHandler = new CompileErrorHandler() {

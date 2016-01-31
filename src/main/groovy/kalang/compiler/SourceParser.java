@@ -171,6 +171,10 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return ts;
     }
 
+    String getClassName() {
+        return className;
+    }
+
     public static class Position {
 
         int offset;
@@ -207,11 +211,11 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
                 RuleContext ctx = e.getCtx();
                 if (ctx == null) {
                     Token tk = e.getOffendingToken();
-                    sp.reportError("syntax error!", tk);
+                    sp.reportError(e.getMessage(), tk);
                 } else {
-                    sp.reportError("syntax error!", ctx);
+                    sp.reportError(e.getMessage(), ctx);
                 }
-                super.reportError(recognizer, e);
+                //super.reportError(recognizer, e);
             }
         });
         return sp;
@@ -1091,6 +1095,10 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         KeyExpr expr = new KeyExpr(ctx.ref.getText());
         a2p.put(expr, ctx);
         return expr;
+    }
+    
+    public String toString(){
+        return "SourceParser:" + className;
     }
 
 }
