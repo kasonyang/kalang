@@ -6,6 +6,7 @@
 +methods:MethodNode*
 -interfaces:String*
 -isInterface:Boolean
+-isArray:Boolean
 //+imports:ImportNode*
 
 //#ImportNode

@@ -19,6 +19,8 @@ public class ClassNode extends AstNode{
     
     public Boolean isInterface;
     
+    public Boolean isArray;
+    
     
     public ClassNode(){
         
@@ -31,7 +33,7 @@ public class ClassNode extends AstNode{
     }
     
     
-    public ClassNode(Integer modifier,String name,String parentName,List<VarObject> fields,List<MethodNode> methods,List<String> interfaces,Boolean isInterface){
+    public ClassNode(Integer modifier,String name,String parentName,List<VarObject> fields,List<MethodNode> methods,List<String> interfaces,Boolean isInterface,Boolean isArray){
         
             if(fields == null) fields = new LinkedList();
         
@@ -53,6 +55,8 @@ public class ClassNode extends AstNode{
             this.interfaces = interfaces;
         
             this.isInterface = isInterface;
+        
+            this.isArray = isArray;
         
     }
     
@@ -116,6 +120,10 @@ public class ClassNode extends AstNode{
         
         if(isInterface!=null){
             str += "  isInterface:" + isInterface.toString()+"\r\n";
+        }
+        
+        if(isArray!=null){
+            str += "  isArray:" + isArray.toString()+"\r\n";
         }
         
         return str+"}";
