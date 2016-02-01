@@ -4,6 +4,10 @@ class{
     public int f3;
     static int f4;
     static protected int f5 = 2;
+    void stringAutoCast(){
+        Object a = "a";
+        String ab = a + "b";
+    }
     constructor(){
         super();
         this.method1();

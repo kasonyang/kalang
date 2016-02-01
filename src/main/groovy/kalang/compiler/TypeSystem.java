@@ -181,18 +181,29 @@ public class TypeSystem {
         return false;
     }
 
+    /**
+     * try to cast type if needed
+     * @param expr
+     * @param fromType
+     * @param toType
+     * @return
+     * @throws AstNotFoundException 
+     */
     ExprNode cast(ExprNode expr, String fromType, String toType) throws AstNotFoundException {
         int t = this.getCastMethod(fromType, toType);
-        if (t == CAST_NOTHING) {
-            return this.castNothing(expr, fromType, toType);
-        } else if (t == this.CAST_OBJECT_TO_PRIMITIVE) {
-            return this.castObject2Primitive(expr, fromType, toType);
-        } else if (t == this.CAST_PRIMITIVE) {
-            return this.castPrimitive(expr, fromType, toType);
-        } else if (t == this.CAST_PRIMITIVE_TO_OBJECT) {
-            return this.castPrimitive2Object(expr, fromType, toType);
-        } else {
-            throw new TypeCastException("unknown cast type:" + fromType + "=>" + toType);
+        switch (t) {
+            case CAST_NOTHING:
+                return this.castNothing(expr, fromType, toType);
+            case CAST_OBJECT_TO_PRIMITIVE:
+                return this.castObject2Primitive(expr, fromType, toType);
+            case CAST_PRIMITIVE:
+                return this.castPrimitive(expr, fromType, toType);
+            case CAST_PRIMITIVE_TO_OBJECT:
+                return this.castPrimitive2Object(expr, fromType, toType);
+            case CAST_OBJECT_TO_STRING:
+                return castObject2String(expr);
+            default:
+                throw new TypeCastException("unknown cast type:" + fromType + "=>" + toType);
         }
     }
 
@@ -228,6 +239,8 @@ public class TypeSystem {
             }
         } else if (isSubclass(fromType, toType)) {
             return this.CAST_NOTHING;
+        } else if(toType.equals(STRING_CLASS)){
+            return CAST_OBJECT_TO_STRING;
         }
         return -1;
     }
@@ -235,7 +248,8 @@ public class TypeSystem {
     final int CAST_PRIMITIVE = 1,
             CAST_PRIMITIVE_TO_OBJECT = 2,
             CAST_OBJECT_TO_PRIMITIVE = 3,
-            CAST_NOTHING = 4;
+            CAST_NOTHING = 4,
+            CAST_OBJECT_TO_STRING = 5;
 
     private ExprNode castPrimitive(ExprNode expr, String fromType, String toType) {
         return new CastExpr(toType, expr);
@@ -244,6 +258,10 @@ public class TypeSystem {
     private ExprNode castPrimitive2Object(ExprNode expr, String fromType, String toType) {
         String classType = this.classifyType(fromType);
         return new InvocationExpr(new ClassExpr(classType), "valueOf", Arrays.asList(new ExprNode[]{expr}));
+    }
+    
+    private ExprNode castObject2String(ExprNode expr){
+        return new InvocationExpr(expr, "toString", null);
     }
 
     private ExprNode castObject2Primitive(ExprNode expr, String fromType, String toType) {

@@ -162,8 +162,9 @@ public class TypeChecker extends AstVisitor<String> {
     @Override
     public String visitAssignExpr(AssignExpr node) {
         String ft = visit(node.from);
-        requireNoneVoid(ft, node);
         String tt = visit(node.to);
+        if(!requireNoneVoid(ft, node)) return getDefaultType();
+        if(!requireNoneVoid(tt, node)) return getDefaultType();
         node.from = cast(node.from, ft, tt, node);
         //checkCastable(ft,tt,node);
         return tt;
@@ -222,6 +223,14 @@ public class TypeChecker extends AstVisitor<String> {
                 t = "boolean";
                 break;
             case "+":
+                if(isNumber(t1) && isNumber(t2)){
+                    t = getMathType(t1, t2, op);
+                }else{
+                    node.expr1 = cast(node.expr1,t1,typeSystem.getStringClass(), node);
+                    node.expr2 = cast(node.expr2, t2, typeSystem.getStringClass(), node);
+                    t = typeSystem.getStringClass();
+                }
+                break;
             case "-":
             case "*":
             case "/":
@@ -485,7 +494,7 @@ public class TypeChecker extends AstVisitor<String> {
     }
 
     boolean requireNumber(AstNode node, String t) {
-        if (!typeSystem.isNumber(t)) {
+        if (!isNumber(t)) {
             err.failedToCast(node, t, typeSystem.getIntClass());
             return false;
         }
@@ -604,6 +613,10 @@ public class TypeChecker extends AstVisitor<String> {
 
     public Map<AstNode, String> getTypes() {
         return types;
+    }
+
+    private boolean isNumber(String t1) {
+        return typeSystem.isNumber(t1);
     }
 
 }
