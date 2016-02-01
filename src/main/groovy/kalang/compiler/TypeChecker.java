@@ -40,20 +40,7 @@ import java.util.Map;
 import kalang.compiler.AstSemanticReporter;
 
 public class TypeChecker extends AstVisitor<String> {
-
-    static class TypeError extends Exception {
-
-        AstNode node;
-
-        int errorCode;
-
-        public TypeError(int errorCode, String msg, AstNode node) {
-            super(msg);
-            this.node = node;
-            this.errorCode = errorCode;
-        }
-    }
-
+   
     HashMap<String, VarObject> fields;
 
     AstLoader astLoader;
@@ -66,7 +53,7 @@ public class TypeChecker extends AstVisitor<String> {
 
     MethodNode method;
 
-    List<MethodNode> methodDeclared;
+    List<String> methodDeclared;
 
     boolean returned;
 
@@ -89,6 +76,10 @@ public class TypeChecker extends AstVisitor<String> {
             }
         };
     }
+    
+    private String getDefaultType(){
+        return typeSystem.getRootClass();
+    }
 
     public void setAstSemanticErrorHandler(AstSemanticErrorHandler handler) {
         errHandler = handler;
@@ -106,6 +97,7 @@ public class TypeChecker extends AstVisitor<String> {
         }
         if (expr == null) {
             err.failedToCast(node, from, to);
+            return null;
         }
         return expr;
     }
@@ -114,6 +106,7 @@ public class TypeChecker extends AstVisitor<String> {
         ClassNode ast = this.astLoader.getAst(name);
         if (ast == null) {
             err.classNotFound(node, name);
+            return null;
         }
         return ast;
     }
@@ -141,7 +134,6 @@ public class TypeChecker extends AstVisitor<String> {
                 }
                 List<MethodNode> unImps = astParser.getUnimplementedMethod(clazz, itfNode);
                 if (unImps.size() > 0) {
-                    String mStr = astParser.getMethodDescriptor(unImps.get(0), null);
                     err.notImplementedMethods(clazz, itfNode, unImps);
                     //fail(CE"unimplemented method:${mStr}",clazz);
                 }
@@ -214,15 +206,16 @@ public class TypeChecker extends AstVisitor<String> {
      }*/
     @Override
     public String visitBinaryExpr(BinaryExpr node) {
-        String t1 = (visit(node.expr1).toString());
-        String t2 = (visit(node.expr2).toString());
+        String t1 = (visit(node.expr1));
+        String t2 = (visit(node.expr2));
         String op = node.operation;
-        String t = this.typeSystem.getRootClass();// this.DEFAULT_CLASS;
+        String t = getDefaultType();
         switch (op) {
             case "==":
                 if (typeSystem.isNumber(t1)) {
                     if (!typeSystem.isNumber(t2)) {
                         err.failedToCast(node, t2, typeSystem.getIntClass());
+                        return getDefaultType();
                     }
                     //fail("Number required",node);
                 } else {
@@ -235,34 +228,34 @@ public class TypeChecker extends AstVisitor<String> {
             case "*":
             case "/":
             case "%":
-                requireNumber(node, t1);
-                requireNumber(node, t2);
+                if(!requireNumber(node, t1)) return getDefaultType();
+                if(!requireNumber(node, t2)) return getDefaultType();
                 t = getMathType(t1, t2, op);
                 break;
             case ">=":
             case "<=":
             case ">":
             case "<":
-                requireNumber(node, t1);
-                requireNumber(node, t2);
+                if(!requireNumber(node, t1)) return getDefaultType();
+                if(!requireNumber(node, t2)) return getDefaultType();
                 t = "boolean";
                 break;
             case "&&":
             case "||":
-                requireBoolean(node, t1);
-                requireBoolean(node, t2);
+                if(!requireBoolean(node, t1)) return getDefaultType();
+                if(!requireBoolean(node, t2)) return getDefaultType();
                 t = "boolean";
                 break;
             case "&":
             case "|":
             case "^":
-                requireNumber(node, t1);
-                requireNumber(node, t2);
+                if(!requireNumber(node, t1)) return getDefaultType();
+                if(!requireNumber(node, t2)) return getDefaultType();
                 t = typeSystem.getHigherType(t1, t2);
                 break;
             default:
                 err.fail("unsupport operation:" + op, AstSemanticError.UNSUPPORTED, node);
-            //throw new TypeError();            //throw new TypeError();            //throw new TypeError();            //throw new TypeError();
+                return getDefaultType();
         }
         return t;
     }
@@ -276,7 +269,7 @@ public class TypeChecker extends AstVisitor<String> {
     public String visitElementExpr(ElementExpr node) {
         String type = visit(node.target);
         //if(!type.endsWith("[]")){
-        requireArray(node, type);
+        if(!requireArray(node, type)) return getDefaultType();
         //fail("Array type required",node)
         //}
         return type.substring(0, type.length() - 2);
@@ -287,7 +280,7 @@ public class TypeChecker extends AstVisitor<String> {
         if (null == node.target) {
             VarObject field = fields.get(node.fieldName);
             if (isStatic(method.modifier)) {
-                requireStatic(field.modifier, node);
+                if(!requireStatic(field.modifier, node)) return getDefaultType();
             }
             return field.type;
         }
@@ -295,15 +288,16 @@ public class TypeChecker extends AstVisitor<String> {
         ClassNode target = this.astLoader.getAst(t);
         if (target == null) {
             err.fieldNotFound(node, t);
-            return this.typeSystem.ROOT_CLASS;
+            return getDefaultType();
         }
         String fname = node.fieldName;
         VarObject field = this.astParser.getField(target, fname);
         if (field == null) {
             err.fieldNotFound(node, fname);
+            return getDefaultType();
         }
         if (node.target instanceof ClassExpr) {
-            requireStatic(field.modifier, node);
+            if(!requireStatic(field.modifier, node)) return getDefaultType();
         }
         return field.type;
     }
@@ -324,7 +318,7 @@ public class TypeChecker extends AstVisitor<String> {
         boolean inStaticMethod = node.target == null && Modifier.isStatic(this.method.modifier);
         boolean isClassExpr = node.target instanceof ClassExpr;
         if (inStaticMethod || isClassExpr) {
-            requireStatic(method.modifier, node);
+            if(!requireStatic(method.modifier, node)) return getDefaultType();
         }
         castInvocationParams(node, method);
         //TODO here could be optim
@@ -342,10 +336,10 @@ public class TypeChecker extends AstVisitor<String> {
         String preOp = node.preOperation;
         String et = visit(node.expr);
         if (preOp != null && preOp.equals("!")) {
-            requireBoolean(node, et);
+            if(!requireBoolean(node, et)) return getDefaultType();
         } else {
             //TODO unary type check
-            //requireNumber(node,et)
+            //if(!requireNumber(node,et)) return getDefaultType()
         }
         return et;
     }
@@ -383,6 +377,7 @@ public class TypeChecker extends AstVisitor<String> {
         List<String> uncaught = this.exceptionStack.pop();
         if (uncaught.size() > 0) {
             err.uncaughtException(node, uncaught);
+            return null;
         }
         return null;
     }
@@ -410,7 +405,7 @@ public class TypeChecker extends AstVisitor<String> {
         if (var.type == null) {
             if (var.initExpr != null) {
                 var.type = visit(var.initExpr);
-                requireNoneVoid(var.type, node);
+                if(!requireNoneVoid(var.type, node)) return getDefaultType();
             } else {
                 var.type = typeSystem.getRootClass();
             }
@@ -427,7 +422,7 @@ public class TypeChecker extends AstVisitor<String> {
     @Override
     public String visitIfStmt(IfStmt node) {
         //node.conditionExpr = this.checkAndCastToBoolean(node.conditionExpr);
-        this.requireBoolean(node, visit(node.conditionExpr));
+        if(!requireBoolean(node, visit(node.conditionExpr))) return getDefaultType();
         if (node.trueBody != null) {
             visit(node.trueBody);
         }
@@ -464,7 +459,9 @@ public class TypeChecker extends AstVisitor<String> {
         String mStr = this.astParser.getMethodDescriptor(node, this.clazz.name);
         if (methodDeclared.contains(mStr)) {
             err.unsupported("declare method duplicately", node);
+            return getDefaultType();
         }
+        methodDeclared.add(mStr);
         method = node;
         returned = false;
         this.exceptionStack.push(new LinkedList());
@@ -489,50 +486,60 @@ public class TypeChecker extends AstVisitor<String> {
         return null;
     }
 
-    void requireNumber(AstNode node, String t) {
+    boolean requireNumber(AstNode node, String t) {
         if (!typeSystem.isNumber(t)) {
             err.failedToCast(node, t, typeSystem.getIntClass());
+            return false;
         }
+        return true;
     }
 
-    void requireBoolean(AstNode node) {
+    boolean requireBoolean(AstNode node) {
         String t = visit(node);
-        requireBoolean(node, t);
+        return requireBoolean(node, t);
     }
 
-    void requireBoolean(AstNode node, String t) {
+    boolean requireBoolean(AstNode node, String t) {
         if (!typeSystem.isBoolean(t)) {
             err.failedToCast(node, t, typeSystem.getBooleanClass());
+            return false;
         }
+        return true;
     }
 
     boolean isArray(String t) {
         return t.endsWith("[]");
     }
 
-    void requireArray(AstNode node, String t) {
+    boolean requireArray(AstNode node, String t) {
         if (!isArray(t)) {
             err.failedToCast(node, t, "array");
+            return false;
         }
+        return true;
     }
 
     boolean isStatic(Integer modifier) {
         return modifier != null ? Modifier.isStatic(modifier) : false;
     }
 
-    void requireStatic(Integer modifier, AstNode node) {
+    boolean requireStatic(Integer modifier, AstNode node) {
         boolean isStatic = isStatic(modifier);
         if (!isStatic) {
             err.fail("couldn't refer non-static member in static context", AstSemanticError.UNSUPPORTED, node);
+            return false;
         }
+        return true;
     }
 
-    void requireNoneVoid(String type, AstNode node) {
+    boolean requireNoneVoid(String type, AstNode node) {
         if (type == null
                 || type.equals(typeSystem.getVoidPrimitiveType())
                 || type.equals(typeSystem.getVoidClass())) {
             err.unsupported("use void type as value", node);
+            return false;
         }
+        return true;
     }
 
     MethodNode selectMethod(AstNode node, ClassNode cls, String methodName, String[] types) {
@@ -587,7 +594,7 @@ public class TypeChecker extends AstVisitor<String> {
             return this.clazz.parentName;
         } else {
             System.err.println("Unknown key:" + key);
-            return null;
+            return getDefaultType();
         }
     }
 
