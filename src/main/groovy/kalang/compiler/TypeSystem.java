@@ -15,8 +15,7 @@ import java.util.List;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 
-@groovy.transform.TypeChecked
-class TypeSystem {
+public class TypeSystem {
 
     private static final String SHORT_PRIMITIVE_TYPE = "short",
             INT_PRIMITIVE_TYPE = "int",

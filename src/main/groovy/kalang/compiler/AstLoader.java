@@ -6,7 +6,7 @@ import jast.ast.ClassNode;
 import jast.ast.VarObject;
 import java.lang.reflect.Modifier;
 
-class AstLoader {
+public class AstLoader {
 
     HashMap<String, ClassNode> asts = new HashMap();
 

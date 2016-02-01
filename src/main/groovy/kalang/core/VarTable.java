@@ -1,5 +1,6 @@
 package kalang.core;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class VarTable<T,V> {
@@ -44,9 +45,10 @@ public class VarTable<T,V> {
         return (V[]) vars.values().toArray();
     }
 	
+    @Override
     public String toString(){
         V[] vos = toArray();
-        return vos.toString();
+        return Arrays.toString(vos);
     }
 
 	public VarTable<T, V> getParent() {

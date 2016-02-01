@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,16 +23,12 @@ public class JavaAstLoader extends AstLoader {
         Class superClass = clz.getSuperclass();
         if (superClass != null) {
             cn.parentName = superClass.getName();
-        } else if (cn.name != ROOT_CLASS) {
+        } else if (!cn.name.equals(ROOT_CLASS)) {
             cn.parentName = ROOT_CLASS;
         }
         List<Executable> methods = new LinkedList();
-        for (Executable m : clz.getMethods()) {
-            methods.add(m);
-        }
-        for (Constructor c : clz.getConstructors()) {
-            methods.add(c);
-        }
+        methods.addAll(Arrays.asList(clz.getMethods()));
+        methods.addAll(Arrays.asList(clz.getConstructors()));
         for (Executable m : methods) {
             MethodNode methodNode = MethodNode.create();
             for (Parameter p : m.getParameters()) {

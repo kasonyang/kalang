@@ -81,11 +81,11 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
 
     //short name to full name
-    private final Map<String, String> fullNames = new HashMap<String, String>();
-    private final List<String> importPaths = new LinkedList<String>();
+    private final Map<String, String> fullNames = new HashMap<>();
+    private final List<String> importPaths = new LinkedList<>();
     ClassNode cls = new ClassNode();
     MethodNode method;
-    private final BidiMap<AstNode, ParseTree> a2p = new DualHashBidiMap<AstNode, ParseTree>();
+    private final BidiMap<AstNode, ParseTree> a2p = new DualHashBidiMap<>();
 
     private AstLoader astLoader;
 
