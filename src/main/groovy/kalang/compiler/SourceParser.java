@@ -208,6 +208,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
 
             @Override
             public void reportError(Parser recognizer, RecognitionException e) {
+                //TODO e.getMessage is null
                 RuleContext ctx = e.getCtx();
                 if (ctx == null) {
                     Token tk = e.getOffendingToken();
