@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-import jast.ast.AbstractAstVisitor;
 import jast.ast.AssignExpr;
 import jast.ast.AstNode;
 import jast.ast.AstVisitor;
@@ -37,7 +36,6 @@ import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
 import jast.ast.VarObject;
 import java.util.Map;
-import kalang.compiler.AstSemanticReporter;
 
 public class TypeChecker extends AstVisitor<String> {
    
@@ -209,7 +207,7 @@ public class TypeChecker extends AstVisitor<String> {
         String t1 = (visit(node.expr1));
         String t2 = (visit(node.expr2));
         String op = node.operation;
-        String t = getDefaultType();
+        String t;
         switch (op) {
             case "==":
                 if (typeSystem.isNumber(t1)) {
@@ -313,7 +311,7 @@ public class TypeChecker extends AstVisitor<String> {
         }
         MethodNode method = selectMethod(node, ast, methodName, types.toArray(new String[0]));
         if (method == null) {
-            return typeSystem.ROOT_CLASS;
+            return getDefaultType();
         }
         boolean inStaticMethod = node.target == null && Modifier.isStatic(this.method.modifier);
         boolean isClassExpr = node.target instanceof ClassExpr;
@@ -467,7 +465,7 @@ public class TypeChecker extends AstVisitor<String> {
         this.exceptionStack.push(new LinkedList());
         super.visitMethodNode(node);
         this.exceptionStack.pop();
-        boolean needReturn = (node.type != "void" && node.type != null);
+        boolean needReturn = (node.type != null && !node.type.equals("void"));
         if (node.body != null && needReturn && !returned) {
             err.fail("Missing return statement in method:" + mStr, AstSemanticError.LACKS_OF_STATEMENT, node);
         }
@@ -589,7 +587,7 @@ public class TypeChecker extends AstVisitor<String> {
             return this.clazz.name;
         } else if (key.equals("super")) {
             if (clazz.parentName == null) {
-                return typeSystem.ROOT_CLASS;
+                return getDefaultType();
             }
             return this.clazz.parentName;
         } else {
