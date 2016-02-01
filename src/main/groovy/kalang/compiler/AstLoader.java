@@ -53,7 +53,7 @@ public class AstLoader {
 
     public ClassNode getAst(String className) {
         try {
-            return findAst(className);
+            return loadAst(className);
         } catch (AstNotFoundException e) {
             return null;
         }
