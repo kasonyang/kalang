@@ -474,7 +474,13 @@ public class TypeChecker extends AstVisitor<String> {
         this.exceptionStack.push(new LinkedList());
         super.visitMethodNode(node);
         this.exceptionStack.pop();
-        boolean needReturn = (node.type != null && !node.type.equals("void"));
+        boolean needReturn;
+        if(isSpecialMethod(node)){
+            needReturn = isSpecialMethodNeedReturn(node);
+        }else{
+            needReturn = (node.type != null && !node.type.equals("void"));
+        }
+       
         if (node.body != null && needReturn && !returned) {
             err.fail("Missing return statement in method:" + mStr, AstSemanticError.LACKS_OF_STATEMENT, node);
         }
@@ -617,6 +623,18 @@ public class TypeChecker extends AstVisitor<String> {
 
     private boolean isNumber(String t1) {
         return typeSystem.isNumber(t1);
+    }
+
+    private boolean isSpecialMethod(MethodNode node) {
+        return node.name.startsWith("<");
+    }
+
+    private boolean isSpecialMethodNeedReturn(MethodNode node) {
+        if(node.name.equals("<init>")) return false;
+        else{
+            System.err.println("unknown method:" + node.name);
+            return false;
+        }
     }
 
 }

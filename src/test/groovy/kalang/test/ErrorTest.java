@@ -79,8 +79,8 @@ public class ErrorTest {
     }
 	
     @Test
-    public void toolTest(){
-        //TC.main(this.errSrcDir,outDir)
+    public void toolTest() throws IOException{
+        kalang.tool.Compiler.main(new String[]{this.errSrcDir,outDir});
     }
 	
 

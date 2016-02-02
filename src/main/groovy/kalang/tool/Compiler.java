@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 public class Compiler {
 
@@ -24,16 +25,23 @@ public class Compiler {
     }
 
     public static void main(String[] args) throws IOException {
-        String srcDir = ".";
-        String outDir = ".";
-        if (args.length == 1) {
-            srcDir = outDir = args[0];
+        File srcDir = null;
+        File outDir = null;
+        if(args.length==0){
+            outDir = srcDir = new File(".");
+        }else if (args.length == 1) {
+            srcDir = new File(args[0]);
+            if(srcDir.isFile()){
+                outDir = new File(".");
+            }else{
+                outDir = srcDir;
+            }
         } else if (args.length >= 2) {
-            srcDir = args[0];
-            outDir = args[1];
+            srcDir =new File(args[0]);
+            outDir =new File( args[1]);
         }
-        File src = new File(srcDir);
-        File dest = new File(outDir);
+        File src = srcDir;
+        File dest = outDir;
         if (!src.exists()) {
             throw new RuntimeException("source directory not exist!");
         }
@@ -73,9 +81,14 @@ public class Compiler {
         compile(sources, null);
     }
 
-    public static void compile(List<SourceUnit> sources, File outDir) throws IOException {
+    public static void compile(List<SourceUnit> sources, File outDir) throws IOException{
+        File srcRoot = null;
+        compile(sources,srcRoot,outDir);
+    }
+    
+    public static void compile(List<SourceUnit> sources,File srcDir, File outDir) throws IOException {
         JavaAstLoader astLoader = new JavaAstLoader();
-        KalangCompiler cpl = new KalangCompiler(astLoader);
+        KalangCompiler cpl = new KalangCompiler(astLoader,new FileSystemSourceLoader(srcDir));
         int size = sources.size();
         HashMap<String, SourceUnit> sourcesMap = new HashMap<>();
         for (int i = 0; i < size; i++) {
@@ -104,15 +117,24 @@ public class Compiler {
     }
 
     public static void compile(File srcDir, File outDir) throws IOException {
-        List<File> srcs = getFiles(srcDir);
-        String abSrcPath = srcDir.getAbsolutePath();
+        List<File> srcs =  new LinkedList();
+        String abSrcPath;
+        if(srcDir.isDirectory()){
+            srcs.addAll(getFiles(srcDir));
+            abSrcPath = srcDir.getAbsolutePath();
+        }else{
+            srcs.add(srcDir);
+            abSrcPath = new File(".").getAbsolutePath();
+        }
+        abSrcPath = FilenameUtils.normalizeNoEndSeparator(abSrcPath);
         List srcUnits = new LinkedList();
         for (File s : srcs) {
-            String fname = s.getAbsolutePath();
+            String fname =FilenameUtils.normalizeNoEndSeparator(s.getAbsolutePath());
             if (!fname.endsWith(".kl")) {
                 continue;
             }
             String clsName = fname.substring(abSrcPath.length() + 1, fname.length() - 3).replace(File.separator, ".");
+            System.out.println("add class:" + clsName);
             String txt = FileUtils.readFileToString(s);
             SourceUnit sUnit = new SourceUnit();
             sUnit.className = clsName;
@@ -120,6 +142,6 @@ public class Compiler {
             sUnit.source = txt;
             srcUnits.add(sUnit);
         }
-        compile(srcUnits, outDir);
+        compile(srcUnits, new File(abSrcPath),outDir);
     }
 }

@@ -4,6 +4,7 @@ import jast.ast.AstNode;
 import jast.ast.ClassNode;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -23,12 +24,16 @@ public class KalangCompiler extends AstLoader {
     HashMap<String, ClassNode> asts = new HashMap();
 
     HashMap<String, SourceParser> units = new HashMap();
+    
+    List<String> parseTasks = new LinkedList<>();
 
     HashMap<String, String> javaCodes = new HashMap();
     
     HashMap<String, TypeChecker> typeCheckers = new HashMap<>();
 
     AstLoader astLoader;
+    
+    SourceLoader sourceLoader;
 
     AstSemanticReporter astError;
 
@@ -58,6 +63,22 @@ public class KalangCompiler extends AstLoader {
     public KalangCompiler() {
     }
 
+    public KalangCompiler(AstLoader astLoader, SourceLoader sourceLoader) {
+        this.astLoader = astLoader;
+        this.sourceLoader = sourceLoader;
+    }
+    
+    public KalangCompiler(SourceLoader sourceLoader,AstLoader astLoader) {
+        this.astLoader = astLoader;
+        this.sourceLoader = sourceLoader;
+    }
+
+    public KalangCompiler(SourceLoader sourceLoader) {
+        this.sourceLoader = sourceLoader;
+    }
+    
+    
+
     public KalangCompiler(AstLoader astLoader) {
         this.astLoader = astLoader;
     }
@@ -78,22 +99,16 @@ public class KalangCompiler extends AstLoader {
         Set<String> ks = sources.keySet();
         for (String k : ks) {
             String src = sources.get(k);
-            SourceParser cunit = SourceParser.create(k, src);
-            cunit.setSemanticErrorHandler(semanticErrorHandler);
-            //SourceParser cunit = new SourceParser(k,p);
-            cunit.importPackage("java.lang");
-            cunit.importPackage("java.util");
-            ClassNode cls = cunit.getAst();
-            this.asts.put(k, cls);
-            this.units.put(k, cunit);
+            createAst(k,src);
         }
     }
 
     protected void buildAst() {
-        Set<String> ks = this.units.keySet();
-        for (String k : ks) {
+        while(parseTasks.size()>0){
+            String k = parseTasks.get(0);
             SourceParser cunit = units.get(k);
             cunit.compile(this);
+            parseTasks.remove(k);
         }
     }
 
@@ -165,7 +180,14 @@ public class KalangCompiler extends AstLoader {
     protected ClassNode findAst(String className) throws AstNotFoundException {
         if (this.asts.containsKey(className)) {
             return this.asts.get(className);
-        } else if (this.astLoader != null) {
+        }
+        if(this.sourceLoader!=null){
+            String source = sourceLoader.loadSource(className);
+            if(source!=null){
+                return createAst(className,source);
+            }
+        }
+        if (this.astLoader != null) {
             return astLoader.findAst(className);
         } else {
             return null;
@@ -210,6 +232,19 @@ public class KalangCompiler extends AstLoader {
     
     public ClassNode getClassNode(String clsName){
         return asts.get(clsName);
+    }
+
+    private ClassNode createAst(String className,String src) {
+        SourceParser cunit = SourceParser.create(className, src);
+            cunit.setSemanticErrorHandler(semanticErrorHandler);
+            //SourceParser cunit = new SourceParser(k,p);
+            cunit.importPackage("java.lang");
+            cunit.importPackage("java.util");
+            ClassNode cls = cunit.getAst();
+            this.parseTasks.add(className);
+            this.asts.put(className, cls);
+            this.units.put(className, cunit);
+            return cls;
     }
 
 }
