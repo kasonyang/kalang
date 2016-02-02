@@ -4,6 +4,9 @@ class{
     public int f3;
     static int f4;
     static protected int f5 = 2;
+    static void main(String[] args){
+        System.out.println(args.length);
+    }
     void stringAutoCast(){
         Object a = "a";
         String ab = a + "b";

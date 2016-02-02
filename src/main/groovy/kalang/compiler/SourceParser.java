@@ -56,6 +56,9 @@ import jast.ast.*;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
+import org.antlr.v4.runtime.FailedPredicateException;
+import org.antlr.v4.runtime.InputMismatchException;
+import org.antlr.v4.runtime.NoViableAltException;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
@@ -208,15 +211,14 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
 
             @Override
             public void reportError(Parser recognizer, RecognitionException e) {
-                //TODO e.getMessage is null
+                String msg = AntlrErrorString.exceptionString(recognizer, e);
                 RuleContext ctx = e.getCtx();
                 if (ctx == null) {
                     Token tk = e.getOffendingToken();
-                    sp.reportError(e.getMessage(), tk);
+                    sp.reportError(msg, tk);
                 } else {
-                    sp.reportError(e.getMessage(), ctx);
+                    sp.reportError(msg, ctx);
                 }
-                //super.reportError(recognizer, e);
             }
         });
         return sp;
@@ -492,9 +494,11 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         this.newVarStack();
         String name;
         String type;
+        int mdf = parseModifier(ctx.varModifier());
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
             type = "void";
             name = "<init>";
+            mdf = mdf | Modifier.STATIC;
         } else {
             if (ctx.type() == null) {
                 type = "void";
@@ -503,7 +507,6 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
             }
             name = ctx.name.getText();
         }
-        int mdf = parseModifier(ctx.varModifier());
         method.modifier = mdf;
         method.type = type;
         method.name = name;

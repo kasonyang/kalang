@@ -216,7 +216,9 @@ class Ast2Java extends AbstractAstVisitor<String>{
         }
         String mname = node.name
         String typeStr = ""
+        int mdf = node.modifier;
         if(mname=="<init>"){
+            mdf = mdf & (~Modifier.STATIC)
             int lastIdx = cls.name.lastIndexOf(".");
             if(lastIdx<0){
                 mname = cls.name
@@ -226,7 +228,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
         }else{
             typeStr = node.type
         }
-        c "${visitModifier(node.modifier)} ${typeStr} ${mname}(${ps}) ${exStr}"
+        c "${visitModifier(mdf)} ${typeStr} ${mname}(${ps}) ${exStr}"
         if(node.body){
             c visit(node.body)
         }else{
