@@ -496,7 +496,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         String type;
         int mdf = parseModifier(ctx.varModifier());
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
-            type = "void";
+            type = this.className;
             name = "<init>";
             mdf = mdf | Modifier.STATIC;
         } else {
