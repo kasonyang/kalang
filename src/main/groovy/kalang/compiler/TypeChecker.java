@@ -137,10 +137,6 @@ public class TypeChecker extends AstVisitor<String> {
                 }
             }
         }
-        //auto create empty constructor
-        if(astParser.getMethodsByName(clazz, "<init>").length==0){
-            astParser.createEmptyConstructor(clazz);
-        }
     }
 
     @Override

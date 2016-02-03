@@ -231,6 +231,10 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         this.context = parser.compiliantUnit();
         visit(context);
         parser.removeParseListener(parseTreeListener);
+        AstMetaParser metaParser = new AstMetaParser(astLoader,typeSystem);
+        if(metaParser.getMethodsByName(cls, "<init>").length<1){
+            metaParser.createEmptyConstructor(cls);
+        }
     }
 
     public SourceParser(String className, KalangParser parser) {

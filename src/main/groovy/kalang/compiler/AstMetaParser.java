@@ -87,7 +87,7 @@ public class AstMetaParser {
         MethodNode initMethod = MethodNode.create();
         initMethod.modifier = Modifier.PUBLIC | Modifier.STATIC;
         initMethod.name = "<init>";
-        initMethod.type = "void";
+        initMethod.type = clazzNode.name;
         initMethod.body = BlockStmt.create();
         clazzNode.methods.add(initMethod);
     }
