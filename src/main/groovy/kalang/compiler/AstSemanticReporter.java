@@ -42,7 +42,7 @@ public class AstSemanticReporter{
     }
 
     public void methodNotFound(AstNode node, String className, String name, List<String> types) {
-        String method = AstParser.getMethodDescriptor(name, types, className);
+        String method = AstMetaParser.getMethodDescriptor(name, types, className);
         fail("Method Missing:" + method, METHOD_NOT_FOUND, node);
     }
 
@@ -59,7 +59,7 @@ public class AstSemanticReporter{
     }
 
     public void notImplementedMethods(AstNode node, ClassNode theInterface, List<MethodNode> method) {
-        String methodStr = AstParser.getMethodDescriptor(method.get(0), theInterface.name);
+        String methodStr = AstMetaParser.getMethodDescriptor(method.get(0), theInterface.name);
         fail("The method isn't implemented:" + methodStr, METHOD_NOT_IMPLEMENTED, node);
     }
 }

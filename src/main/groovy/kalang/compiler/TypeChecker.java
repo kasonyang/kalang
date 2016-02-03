@@ -47,7 +47,7 @@ public class TypeChecker extends AstVisitor<String> {
 
     TypeSystem typeSystem;
 
-    AstParser astParser;
+    AstMetaParser astParser;
 
     MethodNode method;
 
@@ -66,7 +66,7 @@ public class TypeChecker extends AstVisitor<String> {
     TypeChecker(AstLoader astLoader) {
         this.astLoader = astLoader;
         this.typeSystem = new TypeSystem(astLoader);
-        this.astParser = new AstParser(astLoader);
+        this.astParser = new AstMetaParser(astLoader);
         errHandler = new AstSemanticErrorHandler() {
             @Override
             public void handleAstSemanticError(AstSemanticError error) {
@@ -137,7 +137,10 @@ public class TypeChecker extends AstVisitor<String> {
                 }
             }
         }
-        //if(implemented(clazz))
+        //auto create empty constructor
+        if(astParser.getMethodsByName(clazz, "<init>").length==0){
+            astParser.createEmptyConstructor(clazz);
+        }
     }
 
     @Override
