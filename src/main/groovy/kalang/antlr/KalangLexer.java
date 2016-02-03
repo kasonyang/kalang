@@ -134,6 +134,10 @@ public class KalangLexer extends Lexer {
 	}
 
 
+	    public static final int WHITESPACE = 3;
+	    public static final int COMMENTS =    4; 
+
+
 	public KalangLexer(CharStream input) {
 		super(input);
 		_interp = new LexerATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
@@ -154,6 +158,41 @@ public class KalangLexer extends Lexer {
 	@Override
 	public ATN getATN() { return _ATN; }
 
+	@Override
+	public void action(RuleContext _localctx, int ruleIndex, int actionIndex) {
+		switch (ruleIndex) {
+		case 150:
+			WS_action((RuleContext)_localctx, actionIndex);
+			break;
+		case 151:
+			COMMENT_action((RuleContext)_localctx, actionIndex);
+			break;
+		case 152:
+			LINE_COMMENT_action((RuleContext)_localctx, actionIndex);
+			break;
+		}
+	}
+	private void WS_action(RuleContext _localctx, int actionIndex) {
+		switch (actionIndex) {
+		case 0:
+			_channel = WHITESPACE;
+			break;
+		}
+	}
+	private void COMMENT_action(RuleContext _localctx, int actionIndex) {
+		switch (actionIndex) {
+		case 1:
+			_channel = COMMENTS;
+			break;
+		}
+	}
+	private void LINE_COMMENT_action(RuleContext _localctx, int actionIndex) {
+		switch (actionIndex) {
+		case 2:
+			_channel = COMMENTS;
+			break;
+		}
+	}
 	@Override
 	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
 		switch (ruleIndex) {
@@ -568,15 +607,15 @@ public class KalangLexer extends Lexer {
 		"\u043e\u043f\7,\2\2\u043f\u0443\3\2\2\2\u0440\u0442\13\2\2\2\u0441\u0440"+
 		"\3\2\2\2\u0442\u0445\3\2\2\2\u0443\u0444\3\2\2\2\u0443\u0441\3\2\2\2\u0444"+
 		"\u0446\3\2\2\2\u0445\u0443\3\2\2\2\u0446\u0447\7,\2\2\u0447\u0448\7\61"+
-		"\2\2\u0448\u0449\3\2\2\2\u0449\u044a\b\u0099\2\2\u044a\u0132\3\2\2\2\u044b"+
+		"\2\2\u0448\u0449\3\2\2\2\u0449\u044a\b\u0099\3\2\u044a\u0132\3\2\2\2\u044b"+
 		"\u044c\7\61\2\2\u044c\u044d\7\61\2\2\u044d\u0451\3\2\2\2\u044e\u0450\n"+
 		"\27\2\2\u044f\u044e\3\2\2\2\u0450\u0453\3\2\2\2\u0451\u044f\3\2\2\2\u0451"+
 		"\u0452\3\2\2\2\u0452\u0454\3\2\2\2\u0453\u0451\3\2\2\2\u0454\u0455\b\u009a"+
-		"\2\2\u0455\u0134\3\2\2\2\64\2\u02a8\u02ac\u02b0\u02b4\u02b8\u02bf\u02c4"+
+		"\4\2\u0455\u0134\3\2\2\2\64\2\u02a8\u02ac\u02b0\u02b4\u02b8\u02bf\u02c4"+
 		"\u02c6\u02cc\u02d0\u02d4\u02da\u02df\u02e9\u02ed\u02f3\u02f7\u02ff\u0303"+
 		"\u0309\u0313\u0317\u031d\u0321\u0326\u0329\u032c\u0331\u0334\u0339\u033e"+
 		"\u0346\u0351\u0355\u035a\u035e\u036e\u0378\u037e\u0385\u0389\u038f\u039c"+
-		"\u041d\u0426\u042e\u0439\u0443\u0451\3\b\2\2";
+		"\u041d\u0426\u042e\u0439\u0443\u0451\5\3\u0098\2\3\u0099\3\3\u009a\4";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

@@ -1,4 +1,5 @@
 class{
+	//comment
     private int f1;
     protected int f2;
     public int f3;

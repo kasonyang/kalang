@@ -1,5 +1,10 @@
 grammar Kalang;
 
+@lexer::members {
+    public static final int WHITESPACE = 3;
+    public static final int COMMENTS =    4; 
+} 
+
 compiliantUnit:
     importDecl*
     varModifier?
@@ -609,13 +614,13 @@ ELLIPSIS : '...';
 // Whitespace and comments
 //
 
-WS  :  [ \t\r\n\u000C]+ -> skip
+WS  :  [ \t\r\n\u000C]+ -> channel(WHITESPACE)
     ;
 
 COMMENT
-    :   '/*' .*? '*/' -> skip
+    :   '/*' .*? '*/' -> channel(COMMENTS)
     ;
 
 LINE_COMMENT
-    :   '//' ~[\r\n]* -> skip
+    :   '//' ~[\r\n]* ->  channel(COMMENTS)
     ;
