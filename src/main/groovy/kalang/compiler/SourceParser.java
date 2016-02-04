@@ -113,8 +113,6 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     
     private ParseTreeListener parseTreeListener = new ParseTreeListener() {
         
-        Stack<Integer> treeStartToken = new Stack<Integer>();
-        
         @Override
         public void visitTerminal(TerminalNode tn) {}
 
@@ -123,13 +121,12 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
 
         @Override
         public void enterEveryRule(ParserRuleContext prc) {
-            treeStartToken.push(parser.getCurrentToken().getTokenIndex());
         }
 
         @Override
         public void exitEveryRule(ParserRuleContext prc) {
-            int stopIndex = parser.getCurrentToken().getTokenIndex();
-            int startIndex = treeStartToken.pop();
+            int stopIndex = prc.getStop().getTokenIndex();
+            int startIndex = prc.getStart().getTokenIndex();
             for(int i=startIndex;i<=stopIndex;i++){
                 Token tk = tokenStream.get(i);
                 if(!token2tree.containsKey(tk)) token2tree.put(tk, prc);

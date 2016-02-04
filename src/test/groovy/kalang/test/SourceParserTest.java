@@ -24,10 +24,16 @@ public class SourceParserTest {
     
     @Test
     public void test(){
-        SourceParser sp = SourceParserFactory.createSourceParser("Test", "class{}");
+        SourceParser sp = SourceParserFactory.createSourceParser("Test", "class{"
+                + "void main(){"
+                + "}"
+                + "}");
         sp.compile(new JavaAstLoader());
         ParseTree tree = sp.getParseTreeByTokenIndex(0);
         assertNotNull(tree);
+        ParseTree treeMd = sp.getParseTreeByTokenIndex(2);
+        ParseTree treeMdEnd = sp.getParseTreeByTokenIndex(7);
+        assertEquals(treeMd, treeMdEnd.getParent().getParent());
         AstNode ast = sp.getAstNode(tree);
         assertNotNull(ast);
     }
