@@ -5,6 +5,7 @@ import java.util.List;
 
 import jast.ast.*;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 public class AstMetaParser {
 
@@ -158,6 +159,20 @@ public class AstMetaParser {
 
     public TypeSystem getTypeSystem() {
         return typeSystem;
+    }
+    
+    
+    public MethodNode[] selectMethod(ClassNode cls, String methodName, String[] types) {
+        MethodNode[] methods = getMethodsByName(cls, methodName);
+        MethodNode[] matches;
+        matches = matchMethodsByType(methods, types, false, false);
+        if (matches == null || matches.length == 0) {
+            matches = matchMethodsByType(methods, types, true, false);
+        }
+        if (matches == null || matches.length == 0) {
+            matches = matchMethodsByType(methods, types, true, true);
+        }
+        return matches;
     }
     
 }

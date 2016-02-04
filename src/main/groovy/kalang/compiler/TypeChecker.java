@@ -555,28 +555,20 @@ public class TypeChecker extends AstVisitor<String> {
     }
 
     MethodNode selectMethod(AstNode node, ClassNode cls, String methodName, String[] types) {
-        MethodNode[] methods = this.astParser.getMethodsByName(cls, methodName);
-        MethodNode[] matches;
-        matches = this.astParser.matchMethodsByType(methods, types, false, false);
-        if (matches == null || matches.length == 0) {
-            matches = this.astParser.matchMethodsByType(methods, types, true, false);
-        }
-        if (matches == null || matches.length == 0) {
-            matches = this.astParser.matchMethodsByType(methods, types, true, true);
-        }
+        MethodNode[] methods = astParser.selectMethod(cls, methodName, types);
         List typeList = new LinkedList();
         if (types != null) {
             typeList.addAll(Arrays.asList(types));
         }
-        if (matches == null || matches.length == 0) {
+        if (methods == null || methods.length == 0) {
             err.methodNotFound(node, cls.name, methodName, typeList);
             return null;
         }
-        if (matches.length > 1) {
+        if (methods.length > 1) {
             err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, node);
             return null;
         }
-        return matches[0];
+        return methods[0];
     }
 
     private void castInvocationParams(InvocationExpr expr, MethodNode method) {
