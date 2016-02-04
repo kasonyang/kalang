@@ -531,7 +531,7 @@ public class TypeChecker extends AstVisitor<String> {
         return true;
     }
 
-    boolean isStatic(Integer modifier) {
+    public boolean isStatic(Integer modifier) {
         return modifier != null ? Modifier.isStatic(modifier) : false;
     }
 
@@ -624,11 +624,11 @@ public class TypeChecker extends AstVisitor<String> {
         return typeSystem.isNumber(t1);
     }
 
-    private boolean isSpecialMethod(MethodNode node) {
+    public boolean isSpecialMethod(MethodNode node) {
         return node.name.startsWith("<");
     }
 
-    private boolean isSpecialMethodNeedReturn(MethodNode node) {
+    public boolean isSpecialMethodNeedReturn(MethodNode node) {
         if(node.name.equals("<init>")) return false;
         else{
             System.err.println("unknown method:" + node.name);

@@ -8,9 +8,9 @@ import java.lang.reflect.Modifier;
 
 public class AstMetaParser {
 
-    AstLoader astLoader;
+    private AstLoader astLoader;
 
-    TypeSystem typeSystem;
+    private TypeSystem typeSystem;
 
     public AstMetaParser(AstLoader astLoader, TypeSystem typeSystem) {
         this.astLoader = astLoader;
@@ -21,7 +21,7 @@ public class AstMetaParser {
         this(astLoader, new TypeSystem(astLoader));
     }
 
-    static String getMethodDescriptor(String name, List<String> types, String className) {
+   public static String getMethodDescriptor(String name, List<String> types, String className) {
         String typeStr = String.join(",", types);
         String str = String.format("%s(%s)", name, typeStr);
         if (className != null) {
@@ -30,11 +30,11 @@ public class AstMetaParser {
         return str;
     }
 
-    static String getMethodDescriptor(MethodNode node, String className) {
+    public static String getMethodDescriptor(MethodNode node, String className) {
         return getMethodDescriptor(node.name, getParameterTypes(node), className);
     }
 
-    VarObject getField(ClassNode ast, String name) {
+    public VarObject getField(ClassNode ast, String name) {
         for (VarObject f : ast.fields) {
             if (f.name.equals(name)) {
                 return f;
@@ -58,7 +58,7 @@ public class AstMetaParser {
 		}
 		return null
 	}*/
-    static List<String> getParameterTypes(MethodNode mn) {
+    public static List<String> getParameterTypes(MethodNode mn) {
         List<String> types = new LinkedList();
         if (mn.parameters == null) {
             return types;
@@ -69,7 +69,7 @@ public class AstMetaParser {
         return types;
     }
 
-    List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassNode theInterface) {
+    public List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassNode theInterface) {
         List<MethodNode> list = new LinkedList();
         for (MethodNode m : theInterface.methods) {
             String name = m.name;
@@ -92,7 +92,7 @@ public class AstMetaParser {
         clazzNode.methods.add(initMethod);
     }
 
-    MethodNode[] getMethodsByName(ClassNode cls, String methodName) {
+    public MethodNode[] getMethodsByName(ClassNode cls, String methodName) {
         List<MethodNode> methods = new LinkedList();
         for (MethodNode m : cls.methods) {
             if (m.name.equals(methodName)) {
@@ -102,7 +102,7 @@ public class AstMetaParser {
         return methods.toArray(new MethodNode[0]);
     }
 
-    boolean matchType(String from, String target, boolean matchSubclass, boolean autoCast) {
+    public boolean matchType(String from, String target, boolean matchSubclass, boolean autoCast) {
         if (from.equals(target)) {
             return true;
         }
@@ -119,7 +119,7 @@ public class AstMetaParser {
         return false;
     }
 
-    boolean matchTypes(String[] from, String[] target, boolean matchSubclass, boolean autoCast) {
+    public boolean matchTypes(String[] from, String[] target, boolean matchSubclass, boolean autoCast) {
         if (from.length != target.length) {
             return false;
         }
@@ -133,15 +133,15 @@ public class AstMetaParser {
         return true;
     }
 
-    MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types) {
+    public MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types) {
         return matchMethodsByType(methods, types, false, false);
     }
 
-    MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types, boolean matchSubclass) {
+    public MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types, boolean matchSubclass) {
         return matchMethodsByType(methods, types, matchSubclass, false);
     }
 
-    MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types, boolean matchSubclass, boolean autoCast) {
+    public MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types, boolean matchSubclass, boolean autoCast) {
         List<MethodNode> list = new LinkedList();
         for (MethodNode m : methods) {
             String[] mTypes = getParameterTypes(m).toArray(new String[0]);
@@ -151,4 +151,13 @@ public class AstMetaParser {
         }
         return list.toArray(new MethodNode[0]);
     }
+
+    public AstLoader getAstLoader() {
+        return astLoader;
+    }
+
+    public TypeSystem getTypeSystem() {
+        return typeSystem;
+    }
+    
 }
