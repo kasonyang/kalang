@@ -10,16 +10,21 @@ import java.util.List;
 import java.util.Set;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
+import kalang.util.SourceParserFactory;
+import kalang.util.TokenStreamFactory;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 //import SourceParser.Position
 public class KalangCompiler extends AstLoader {
 
     HashMap<String, String> sources = new HashMap();
+    
+    HashMap<String, CommonTokenStream> tokenStreams = new HashMap<>();
 
     HashMap<String, ClassNode> asts = new HashMap();
 
@@ -40,7 +45,7 @@ public class KalangCompiler extends AstLoader {
     private AstSemanticErrorHandler astSemanticErrorHandler = new AstSemanticErrorHandler() {
         @Override
         public void handleAstSemanticError(AstSemanticError error) {
-            reportError(error.getMsg(),error.classNode.name,error.node);
+            reportError(error.getDescription(),error.classNode.name,error.node);
         }
     };
     private SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler() {
@@ -235,7 +240,9 @@ public class KalangCompiler extends AstLoader {
     }
 
     private ClassNode createAst(String className,String src) {
-        SourceParser cunit = SourceParser.create(className, src);
+        CommonTokenStream tokens = TokenStreamFactory.createTokenStream(src);
+        tokenStreams.put(className, tokens);
+        SourceParser cunit = SourceParserFactory.createSourceParser(className, tokens);
             cunit.setSemanticErrorHandler(semanticErrorHandler);
             //SourceParser cunit = new SourceParser(k,p);
             cunit.importPackage("java.lang");
@@ -245,6 +252,14 @@ public class KalangCompiler extends AstLoader {
             this.asts.put(className, cls);
             this.units.put(className, cunit);
             return cls;
+    }
+    
+    public CommonTokenStream getTokenStream(String clsName){
+        return tokenStreams.get(clsName);
+    }
+    
+    public HashMap<String, CommonTokenStream> getTokenStream(){
+        return tokenStreams;
     }
 
 }

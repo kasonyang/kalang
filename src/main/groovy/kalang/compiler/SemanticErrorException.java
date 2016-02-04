@@ -22,12 +22,14 @@ public class SemanticErrorException extends RuntimeException{
     
     Token token;
     private final SourceParser sourceParser;
+    private String description;
 
-    public SemanticErrorException(String msg, Token token,ParseTree tree,SourceParser sourceParser) {
-        super(msg);
+    public SemanticErrorException(String description, Token token,ParseTree tree,SourceParser sourceParser) {
+        super(description);
         this.tree = tree;
         this.token = token;
         this.sourceParser = sourceParser;
+        this.description = description;
     }
 
     public ParseTree getTree() {
@@ -44,9 +46,11 @@ public class SemanticErrorException extends RuntimeException{
 
     @Override
     public String toString() {
-        return "SemanticErrorException{" + "tree=" + tree + ", token=" + token + ", sourceParser=" + sourceParser + '}';
+        return "SemanticErrorException{" + "tree=" + tree + ", token=" + token + ", sourceParser=" + sourceParser + ", description=" + description + '}';
     }
-    
-    
+
+    public String getDescription() {
+        return description;
+    }
 
 }

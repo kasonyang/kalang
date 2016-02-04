@@ -153,10 +153,13 @@ expression
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
-    |     expression '.' Identifier arguments  #exprInvocation
-    |     (Identifier|key='this'|key='super') arguments  #exprMemberInvocation
+    |    target=expression '.' Identifier 
+        '(' (params+=expression (',' params+=expression)*)? ')'  #exprInvocation
+    |     (Identifier|key='this'|key='super') 
+        '(' (params+=expression (',' params+=expression)*)? ')'   #exprMemberInvocation
     |  expression '[' expression ']' #exprGetArrayElement    
-    |   NEW Identifier  arguments     #newExpr
+    |   NEW Identifier 
+         '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
     |   NEW noArrayType '[' expression ']'     #exprNewArray
     |   '(' type ')' expression #castExpr
     |   expression ('++' | '--') #exprSelfOp
@@ -206,9 +209,6 @@ literal
     |   'null' 
     ;
 
-arguments
-    :  '(' (expression (',' expression)*)? ')'
-    ;
 // LEXER
 
 varModifier:('static'|'final'|'private'|'public'|'protected')+;

@@ -30,13 +30,13 @@ public class AstSemanticError {
 
     ClassNode classNode;
     AstNode node;
-    String msg;
+    String description;
     int errorCode;
 
-    AstSemanticError(String msg, int errorCode, AstNode node, ClassNode clazz) {
+    AstSemanticError(String description, int errorCode, AstNode node, ClassNode clazz) {
         this.classNode = clazz;
         this.node = node;
-        this.msg = msg;
+        this.description = description;
         this.errorCode = errorCode;
     }
 
@@ -48,8 +48,8 @@ public class AstSemanticError {
         return node;
     }
 
-    public String getMsg() {
-        return msg;
+    public String getDescription() {
+        return description;
     }
 
     public int getErrorCode() {

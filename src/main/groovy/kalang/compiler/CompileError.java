@@ -5,8 +5,10 @@ public class CompileError  extends java.lang.RuntimeException  {
      public int stop=0;
      public java.lang.String className;
      public java.lang.String source;
-     public  CompileError(java.lang.String msg,java.lang.String className,java.lang.String src,int start,int stop) {
-         super(msg);
+     public String description;
+     public  CompileError(java.lang.String description,java.lang.String className,java.lang.String src,int start,int stop) {
+         super(description);
+         this.description = description;
          this.start=start;
          this.stop=stop;
          this.className=className;
@@ -23,7 +25,7 @@ public class CompileError  extends java.lang.RuntimeException  {
 
     @Override
     public String toString() {
-        return "CompileError{" + "start=" + start + ", stop=" + stop + ", className=" + className + '}';
+        return "CompileError{" + "start=" + start + ", stop=" + stop + ", className=" + className + ", description=" + description + '}';
     }
      
 }

@@ -8,6 +8,7 @@ package kalang.test;
 import jast.ast.AstNode;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.SourceParser;
+import kalang.util.SourceParserFactory;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -23,7 +24,7 @@ public class SourceParserTest {
     
     @Test
     public void test(){
-        SourceParser sp = SourceParser.create("Test", "class{}");
+        SourceParser sp = SourceParserFactory.createSourceParser("Test", "class{}");
         sp.compile(new JavaAstLoader());
         ParseTree tree = sp.getParseTreeByTokenIndex(0);
         assertNotNull(tree);
