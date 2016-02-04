@@ -636,4 +636,16 @@ public class TypeChecker extends AstVisitor<String> {
         }
     }
 
+    public AstLoader getAstLoader() {
+        return astLoader;
+    }
+
+    public TypeSystem getTypeSystem() {
+        return typeSystem;
+    }
+
+    public AstMetaParser getAstMetaParser() {
+        return astParser;
+    }
+
 }
