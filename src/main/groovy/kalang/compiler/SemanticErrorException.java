@@ -10,21 +10,22 @@ import java.nio.*;
 import java.net.*;
 import java.util.*;
 import kalang.antlr.KalangParser;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ParseTree;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
  */
 public class SemanticErrorException extends RuntimeException{
     
-    ParseTree tree;
+    RuleContext tree;
     
     Token token;
     private final SourceParser sourceParser;
     private String description;
 
-    public SemanticErrorException(String description, Token token,ParseTree tree,SourceParser sourceParser) {
+    public SemanticErrorException(String description, Token token,RuleContext tree,SourceParser sourceParser) {
         super(description);
         this.tree = tree;
         this.token = token;
@@ -32,7 +33,7 @@ public class SemanticErrorException extends RuntimeException{
         this.description = description;
     }
 
-    public ParseTree getTree() {
+    public RuleContext getTree() {
         return tree;
     }
 

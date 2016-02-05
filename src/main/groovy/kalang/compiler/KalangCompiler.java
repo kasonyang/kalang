@@ -10,16 +10,19 @@ import java.util.List;
 import java.util.Set;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
+import kalang.util.OffsetRangeHelper;
 import kalang.util.SourceParserFactory;
 import kalang.util.TokenStreamFactory;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-//import SourceParser.Position
+//import SourceParser.OffsetRange
 public class KalangCompiler extends AstLoader {
 
     HashMap<String, String> sources = new HashMap();
@@ -45,17 +48,22 @@ public class KalangCompiler extends AstLoader {
     private AstSemanticErrorHandler astSemanticErrorHandler = new AstSemanticErrorHandler() {
         @Override
         public void handleAstSemanticError(AstSemanticError error) {
-            reportError(error.getDescription(),error.classNode.name,error.node);
+            reportAstNodeError(error.getDescription(),error.classNode.name,error.node);
         }
     };
     private SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler() {
         @Override
         public void handleSemanticError(SemanticErrorException see) {
             Token token = see.getToken();
-            ParseTree tree = see.getTree();
+            RuleContext tree = see.getTree();
             SourceParser parser = see.getSourceParser();
-            SourceParser.Position loc = parser.getLocation(token);
-            reportError(see.getMessage(),parser.getClassName() , loc);
+            OffsetRange offsetRange;
+            if(token!=null){
+                offsetRange = OffsetRangeHelper.getOffsetRange(token);
+            }else{
+                offsetRange = new OffsetRange(0, 0);
+            }
+            reportError(see.getDescription(), parser.getClassName(),offsetRange);
         }
     };
     private CompileErrorHandler compileErrorHandlerrrorHandler = new CompileErrorHandler() {
@@ -147,32 +155,27 @@ public class KalangCompiler extends AstLoader {
         }
     }
 
-    protected void reportError(String msg, String className) {
-        reportError(msg, className, sources.get(className), 0, 0);
-    }
-
-    protected void reportError(String msg, String className, String src, int start, int stop) {
-        CompileError ce = new CompileError(msg, className, src, start, stop);
-        compileErrorHandlerrrorHandler.handleCompileError(ce);
-    }
-
-    protected void reportError(String msg, String className, SourceParser.Position loc) {
+    protected void reportError(String msg, String className, OffsetRange loc) {
         String src = sources.get(className);
         int offset = loc.offset;
         int len = loc.length;
-        reportError(msg, className, src, offset, offset + len);
+        CompileError ce = new CompileError(msg, className, src,loc.offset, offset+len);
+        compileErrorHandlerrrorHandler.handleCompileError(ce);
     }
 
-    protected void reportError(String msg, String className, AstNode node) {
+    public void reportAstNodeError(String msg, String className, AstNode node) {
         SourceParser unit = this.units.get(className);
-        SourceParser.Position loc = unit.getLocation(node);
-        if (loc != null) {
-            reportError(msg, className, loc);
-        } else {
-            reportError(msg, className);
+        RuleContext treeOfAstNode = unit.getParseTree(node);
+        RuleContext tree = treeOfAstNode;
+        while(tree!=null && !(tree instanceof ParserRuleContext)){
+            tree = tree.getParent();
         }
+        if(tree==null){
+            System.err.println("a wrong tree:" + treeOfAstNode);
+            return ;
+        }
+        reportError(msg, className, OffsetRangeHelper.getOffsetRange((ParserRuleContext)tree));
     }
-
 
     public void compile() {
         init();

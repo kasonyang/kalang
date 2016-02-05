@@ -51,6 +51,7 @@ import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
 import jast.ast.*;
+import kalang.util.OffsetRangeHelper;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -87,11 +88,11 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     private final List<String> importPaths = new LinkedList<>();
     ClassNode cls = new ClassNode();
     MethodNode method;
-    private final BidiMap<AstNode, ParseTree> a2p = new DualHashBidiMap<>();
+    private final BidiMap<AstNode, RuleContext> a2p = new DualHashBidiMap<>();
 
     private AstLoader astLoader;
 
-    private ParseTree context;
+    private ParserRuleContext context;
 
     private TokenStream tokenStream;
 
@@ -100,9 +101,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
 
     TypeSystem typeSystem;
     private VarTable<String, VarDeclStmt> vtb;
-    private KalangParser parser;
-    
-    private HashMap<Token,ParseTree> token2tree = new HashMap<>();
+    private KalangParser parser;    
     
     private SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler() {
         @Override
@@ -111,30 +110,6 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         }
     };
     
-    private ParseTreeListener parseTreeListener = new ParseTreeListener() {
-        
-        @Override
-        public void visitTerminal(TerminalNode tn) {}
-
-        @Override
-        public void visitErrorNode(ErrorNode en) {}
-
-        @Override
-        public void enterEveryRule(ParserRuleContext prc) {
-        }
-
-        @Override
-        public void exitEveryRule(ParserRuleContext prc) {
-            int stopIndex = prc.getStop().getTokenIndex();
-            int startIndex = prc.getStart().getTokenIndex();
-            for(int i=startIndex;i<=stopIndex;i++){
-                Token tk = tokenStream.get(i);
-                if(!token2tree.containsKey(tk)) token2tree.put(tk, prc);
-            }
-        }
-            
-    };
-
     public SemanticErrorHandler getSemanticErrorHandler() {
         return semanticErrorHandler;
     }
@@ -152,14 +127,12 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return node;
     }
     
-    public ParseTree getParseTree(AstNode node){
-        return a2p.get(node);
+    public RuleContext getParseTree(){
+        return context;
     }
     
-    public ParseTree getParseTreeByTokenIndex(int tokenIndex){
-        Token t = tokenStream.get(tokenIndex);
-        ParseTree tree = token2tree.get(t);
-        return tree;
+    public RuleContext getParseTree(AstNode node){
+        return a2p.get(node);
     }
   
     @Override
@@ -174,37 +147,11 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return className;
     }
 
-    public static class Position {
-
-        int offset;
-        int length;
-    }
-
-    public static class ParseError extends RuntimeException {
-
-        /**
-         *
-         */
-        private static final long serialVersionUID = -4496606055942267965L;
-        Position position;
-
-        public ParseError(String msg, Position position) {
-            super(msg);
-            this.position = position;
-        }
-
-        public Position getPosition() {
-            return position;
-        }
-    }
-
     public void compile(AstLoader astLoader) {
         this.astLoader = astLoader;
         this.typeSystem = new TypeSystem(astLoader);
-        parser.addParseListener(parseTreeListener);
         this.context = parser.compiliantUnit();
         visit(context);
-        parser.removeParseListener(parseTreeListener);
         AstMetaParser metaParser = new AstMetaParser(astLoader,typeSystem);
         if(metaParser.getMethodsByName(cls, "<init>").length<1){
             metaParser.createEmptyConstructor(cls);
@@ -235,37 +182,6 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         this.importPaths.add(packageName);
     }
 
-    public Position getLocation(Token token) {
-        return getLocation(token, token);
-    }
-
-    public Position getLocation(Token token, Token token2) {
-        Position loc = new Position();
-        loc.offset = token.getStartIndex();
-        loc.length = token2.getStopIndex() - loc.offset + 1;
-        return loc;
-    }
-
-    public Position getLocation(ParseTree tree) {
-        Interval itv = tree.getSourceInterval();
-        int a = itv.a;
-        int b = itv.b;
-        if (a > b) {
-            b = a;
-        }
-        Token t = tokenStream.get(a);
-        Token tt = tokenStream.get(b);
-        return getLocation(t, tt);
-    }
-
-    public Position getLocation(AstNode node) {
-        ParseTree tree = this.a2p.get(node);
-        if (tree != null) {
-            return getLocation(tree);
-        }
-        return null;
-    }
-
     void newVarStack() {
         if (vtb != null) {
             vtb = new VarTable<String, VarDeclStmt>(vtb);
@@ -278,7 +194,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         vtb = vtb.getParent();
     }
 
-    public Map<AstNode, ParseTree> getParseTreeMap() {
+    public Map<AstNode, RuleContext> getParseTreeMap() {
         return this.a2p;
     }
 
@@ -286,7 +202,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return this.cls;
     }
     
-    private void map(AstNode node,ParseTree tree){
+    private void map(AstNode node,ParserRuleContext tree){
         a2p.put(node,tree);
     }
 
@@ -513,8 +429,8 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return null;
     }
 
-    public void visitAll(List<? extends ParseTree> list) {
-        for (ParseTree i : list) {
+    public void visitAll(List<? extends ParserRuleContext> list) {
+        for (ParserRuleContext i : list) {
             visit(i);
         }
     }
@@ -600,20 +516,16 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return vds;
     }
 
-    public void reportError(String msg, Token token,ParseTree tree) {
+    public void reportError(String msg, Token token,RuleContext tree) {
         SemanticErrorException see = new SemanticErrorException(msg, token,tree,this);
         semanticErrorHandler.handleSemanticError(see);
 //        ParseError error = new ParseError(msg, this.getLocation(token));
 //        System.err.println(error.getMessage());
     }
-
-    public void reportError(String string, ParseTree tree) {
+    
+    public void reportError(String string, RuleContext tree) {
         int a = tree.getSourceInterval().a;
         reportError(string, tokenStream.get(a),tree);
-    }
-    
-    public void reportError(String string, Token token) {
-        reportError(string, token,token2tree.get(token));
     }
 
     @Override
@@ -803,11 +715,11 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return ee;
     }
 
-    private String checkFullType(String name, ParseTree tree) {
+    private String checkFullType(String name, ParserRuleContext tree) {
         if (this.typeSystem.isPrimitiveType(name)) {
             return name;
         }
-        String fn = getExistedClassName(name);
+        String fn = getFullClassName(name);
         if (fn == null) {
             this.reportError("Unknown class:" + name, tree);
             return DEFAULT_VAR_TYPE;
@@ -815,19 +727,19 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return fn;
     }
 
-    private String getExistedClassName(String name) {
+    public String getFullClassName(String simpleName) {
         String postfix = "";
-        if (name.endsWith("[]")) {
-            name = name.substring(0, name.length() - 2);
+        if (simpleName.endsWith("[]")) {
+            simpleName = simpleName.substring(0, simpleName.length() - 2);
             postfix = "[]";
         }
-        if (fullNames.containsKey(name)) {
-            return fullNames.get(name) + postfix;
+        if (fullNames.containsKey(simpleName)) {
+            return fullNames.get(simpleName) + postfix;
         } else {
-            ClassNode cls = astLoader.getAst(name);
-            if(cls!=null) return name + postfix;
+            ClassNode cls = astLoader.getAst(simpleName);
+            if(cls!=null) return simpleName + postfix;
             for (String p : this.importPaths) {
-                String clsName = p + "." + name;
+                String clsName = p + "." + simpleName;
                 cls = astLoader.getAst(clsName);
                 if (cls != null) {
                     return clsName + postfix;
@@ -861,7 +773,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
                     }
                 }
             }
-            String clsName = this.getExistedClassName(name);
+            String clsName = this.getFullClassName(name);
             if (clsName!=null) {
                 return new ClassExpr(clsName);
             }
