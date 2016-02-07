@@ -36,7 +36,7 @@ public class JavaAstLoader extends AstLoader {
             for (Parameter p : m.getParameters()) {
                 VarObject param = new VarObject();
                 param.name = p.getName();
-                param.type = p.getType().getName();
+                param.type = p.getType().getTypeName();
                 methodNode.parameters.add(param);
             }
             if (m instanceof Method) {
