@@ -64,6 +64,9 @@ public class AstLoader {
         clazz.fields.add(new VarObject(Modifier.PUBLIC, "int", "length", null));
         clazz.name = ast.name + "[]";
         clazz.isArray = true;
+        if(ast.parentName!=null){
+            clazz.parentName = ast.parentName + "[]";
+        }
         return clazz;
     }
 
