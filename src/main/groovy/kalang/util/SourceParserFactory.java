@@ -12,7 +12,9 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 /**
@@ -43,7 +45,15 @@ public class SourceParserFactory {
             @Override
             public void reportError(Parser recognizer, RecognitionException e) {
                 String msg = AntlrErrorString.exceptionString(recognizer, e);
-                sp.reportError(msg, e.getOffendingToken(),e.getCtx());
+                RuleContext ctx = e.getCtx();
+                while(ctx!=null && !(ctx instanceof ParserRuleContext)){
+                    ctx = ctx.getParent();
+                }
+                if(ctx!=null){
+                    sp.reportError(msg, e.getOffendingToken(), (ParserRuleContext) ctx);
+                }else{
+                    sp.reportError(msg, e.getOffendingToken(),null);
+                }
             }
         });
         return sp;

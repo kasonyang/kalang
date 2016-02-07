@@ -16,6 +16,8 @@ import java.util.List;
 public class JavaAstLoader extends AstLoader {
 
     static String ROOT_CLASS = "java.lang.Object";
+    
+    private ClassLoader javaClassLoader;
 
     public static ClassNode buildFromClass(Class clz) {
         ClassNode cn = ClassNode.create();
@@ -62,6 +64,16 @@ public class JavaAstLoader extends AstLoader {
         return cn;
     }
 
+    public JavaAstLoader(ClassLoader javaClassLoader) {
+        this.javaClassLoader = javaClassLoader;
+    }
+
+    public JavaAstLoader() {
+        javaClassLoader = this.getClass().getClassLoader();
+    }
+    
+    
+
     @Override
     protected ClassNode findAst(String className) throws AstNotFoundException {
         if(className==null){
@@ -72,7 +84,7 @@ public class JavaAstLoader extends AstLoader {
             return super.findAst(className);
         } catch (AstNotFoundException e) {
             try {
-                Class clz = Class.forName(className);
+                Class clz = javaClassLoader.loadClass(className);
                 return buildFromClass(clz);
             } catch (ClassNotFoundException ex) {
                 throw e;

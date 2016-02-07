@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
-
-import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
@@ -51,29 +48,14 @@ import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
 import jast.ast.*;
-import kalang.util.OffsetRangeHelper;
-
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.DefaultErrorStrategy;
-import org.antlr.v4.runtime.FailedPredicateException;
-import org.antlr.v4.runtime.InputMismatchException;
-import org.antlr.v4.runtime.NoViableAltException;
-import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
-import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
-import org.apache.commons.collections4.bidimap.TreeBidiMap;
 
 public class SourceParser extends AbstractParseTreeVisitor implements KalangVisitor {
 
@@ -88,7 +70,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     private final List<String> importPaths = new LinkedList<>();
     ClassNode cls = new ClassNode();
     MethodNode method;
-    private final BidiMap<AstNode, RuleContext> a2p = new DualHashBidiMap<>();
+    private final BidiMap<AstNode, ParserRuleContext> a2p = new DualHashBidiMap<>();
 
     private AstLoader astLoader;
 
@@ -127,11 +109,11 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return node;
     }
     
-    public RuleContext getParseTree(){
+    public ParserRuleContext getParseTree(){
         return context;
     }
     
-    public RuleContext getParseTree(AstNode node){
+    public ParserRuleContext getParseTree(AstNode node){
         return a2p.get(node);
     }
   
@@ -194,7 +176,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         vtb = vtb.getParent();
     }
 
-    public Map<AstNode, RuleContext> getParseTreeMap() {
+    public Map<AstNode, ParserRuleContext> getParseTreeMap() {
         return this.a2p;
     }
 
@@ -516,14 +498,12 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         return vds;
     }
 
-    public void reportError(String msg, Token token,RuleContext tree) {
+    public void reportError(String msg, Token token,ParserRuleContext tree) {
         SemanticErrorException see = new SemanticErrorException(msg, token,tree,this);
         semanticErrorHandler.handleSemanticError(see);
-//        ParseError error = new ParseError(msg, this.getLocation(token));
-//        System.err.println(error.getMessage());
     }
     
-    public void reportError(String string, RuleContext tree) {
+    public void reportError(String string, ParserRuleContext tree) {
         int a = tree.getSourceInterval().a;
         reportError(string, tokenStream.get(a),tree);
     }

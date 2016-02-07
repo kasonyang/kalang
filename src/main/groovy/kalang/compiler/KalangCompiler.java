@@ -155,7 +155,7 @@ public class KalangCompiler extends AstLoader {
         }
     }
 
-    protected void reportError(String msg, String className, OffsetRange loc) {
+    public void reportError(String msg, String className, OffsetRange loc) {
         String src = sources.get(className);
         int offset = loc.offset;
         int len = loc.length;

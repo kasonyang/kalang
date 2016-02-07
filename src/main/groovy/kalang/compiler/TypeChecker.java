@@ -607,6 +607,10 @@ public class TypeChecker extends AstVisitor<String> {
         visitAll(node.stmts);
         return visit(node.reference);
     }
+    
+    public String getType(AstNode node){
+        return types.get(node);
+    }
 
     public Map<AstNode, String> getTypes() {
         return types;
