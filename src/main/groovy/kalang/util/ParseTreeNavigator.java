@@ -50,6 +50,7 @@ public class ParseTreeNavigator {
         return token2tree.get(token);
     }
     
+    @Deprecated
     public ParseTree getParseTree(int tokenIndex){
         return token2tree.get(index2token.get(tokenIndex));
     }
