@@ -364,7 +364,10 @@ public class TypeChecker extends AstVisitor<String> {
         Map<String, AstNode> exceptions = this.exceptionStack.peek();
         for (String e : exceptions.keySet()) {
             try {
-                if (this.typeSystem.isSubclass(e, type)) {
+                if (
+                        e.equals(type)
+                        || this.typeSystem.isSubclass(e, type)
+                        ) {
                     exceptions.remove(e);
                 }
             } catch (AstNotFoundException e1) {
