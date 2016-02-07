@@ -59,7 +59,7 @@ public class TypeChecker extends AstVisitor<String> {
 
     private AstSemanticErrorHandler errHandler;
 
-    private Stack<List<String>> exceptionStack = new Stack();
+    private Stack<Map<String,AstNode>> exceptionStack = new Stack();
 
     private Map<AstNode, String> types = new HashMap<>();
 
@@ -328,7 +328,9 @@ public class TypeChecker extends AstVisitor<String> {
         }
         castInvocationParams(node, method);
         //TODO here could be optim
-        this.exceptionStack.peek().addAll(method.exceptionTypes);
+        for(String et:method.exceptionTypes){
+            this.exceptionStack.peek().put(et,node);
+        }
         return method.type;
     }
 
@@ -359,8 +361,8 @@ public class TypeChecker extends AstVisitor<String> {
     }
 
     private void caughException(String type, AstNode node) {
-        List<String> exceptions = this.exceptionStack.peek();
-        for (String e : exceptions) {
+        Map<String, AstNode> exceptions = this.exceptionStack.peek();
+        for (String e : exceptions.keySet()) {
             try {
                 if (this.typeSystem.isSubclass(e, type)) {
                     exceptions.remove(e);
@@ -374,17 +376,14 @@ public class TypeChecker extends AstVisitor<String> {
 
     @Override
     public String visitTryStmt(TryStmt node) {
-        this.exceptionStack.add(new LinkedList());
-        if (method.exceptionTypes != null) {
-            for (String e : method.exceptionTypes) {
-                this.caughException(e, node);
-            }
-        }
-        List<String> uncaught = this.exceptionStack.pop();
+        this.exceptionStack.add(new HashMap<>());
+        visit(node.execStmt);
+        visitAll(node.catchStmts);
+        Map<String, AstNode> uncaught = this.exceptionStack.pop();
         if (uncaught.size() > 0) {
-            err.uncaughtException(node, uncaught);
-            return null;
+            this.exceptionStack.peek().putAll(uncaught);
         }
+        visit(node.finallyStmt);
         return null;
     }
 
@@ -470,9 +469,17 @@ public class TypeChecker extends AstVisitor<String> {
         methodDeclared.add(mStr);
         method = node;
         returned = false;
-        this.exceptionStack.push(new LinkedList());
+        this.exceptionStack.push(new HashMap<>());
         super.visitMethodNode(node);
-        this.exceptionStack.pop();
+        if (method.exceptionTypes != null) {
+            for (String e : method.exceptionTypes) {
+                this.caughException(e, node);
+            }
+        }
+        Map<String, AstNode> uncaught = this.exceptionStack.pop();
+        for(String k:uncaught.keySet()){
+            err.uncaughtException(uncaught.get(k),k);
+        }
         boolean needReturn;
         if(isSpecialMethod(node)){
             needReturn = isSpecialMethodNeedReturn(node);

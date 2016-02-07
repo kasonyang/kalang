@@ -8,12 +8,17 @@ package kalang.compiler;
 import java.util.List;
 
 import jast.ast.*;
+import java.util.Map;
 import static kalang.compiler.AstSemanticError.*;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
  */
 public class AstSemanticReporter{
+
+    void uncaughtException(AstNode expr, String exType) {
+        fail("Uncaught exception:" + exType, UNCAUGHT_EXCEPTION, expr);
+    }
 
     public static interface AstSemanticReporterCallback{
         void handleAstSemanticError(AstSemanticError error);
@@ -52,10 +57,6 @@ public class AstSemanticReporter{
 
     public void failedToCast(AstNode node, String fromType, String toType) {
         fail("Unable to cast " + fromType + " to " + toType, UNABLE_TO_CAST, node);
-    }
-
-    public void uncaughtException(AstNode node, List<String> exType) {
-        fail("Uncaught exception:" + exType, UNCAUGHT_EXCEPTION, node);
     }
 
     public void notImplementedMethods(AstNode node, ClassNode theInterface, List<MethodNode> method) {

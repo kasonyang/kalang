@@ -171,10 +171,10 @@ public class KalangCompiler extends AstLoader {
             tree = tree.getParent();
         }
         if(tree==null){
-            System.err.println("a wrong tree:" + treeOfAstNode);
-            return ;
+            reportError(msg, className, new OffsetRange(0, 0));
+        }else{
+            reportError(msg, className, OffsetRangeHelper.getOffsetRange((ParserRuleContext)tree));
         }
-        reportError(msg, className, OffsetRangeHelper.getOffsetRange((ParserRuleContext)tree));
     }
 
     public void compile() {
