@@ -406,17 +406,17 @@ public class TypeChecker extends AstVisitor<String> {
 
     @Override
     public String visitVarDeclStmt(VarDeclStmt node) {
-        //Type infer
         VarObject var = node.var;
-        if (var.type == null) {
-            if (var.initExpr != null) {
-                var.type = visit(var.initExpr);
-                if(!requireNoneVoid(var.type, node)) return getDefaultType();
-            } else {
-                var.type = typeSystem.getRootClass();
-            }
+        String retType = null;
+        if(var.initExpr!=null){
+            retType = visit(var.initExpr);
+            if(!requireNoneVoid(retType, node)) return getDefaultType();
         }
-        //this.varDeclStmts.put(node.varId,node)
+        if (var.type == null) {
+                var.type = retType;                
+        } else {
+            var.type = typeSystem.getRootClass();
+        }
         return null;
     }
 
