@@ -331,7 +331,7 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitBinaryExpr(BinaryExpr node) {
-		"(${visit(node.expr1)}${node.operation}${visit(node.expr2)})"
+		"( (${visit(node.expr1)}) ${node.operation} (${visit(node.expr2)}) )"
     }
 
     @Override

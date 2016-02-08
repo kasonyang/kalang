@@ -872,7 +872,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
     public AstNode visitCastExpr(CastExprContext ctx) {
         CastExpr ce = new CastExpr();
         ce.expr = visitExpression(ctx.expression());
-        ce.type = ctx.type().getText();
+        ce.type = checkFullType(ctx.type().getText(),ctx);
         map(ce,ctx);
         return ce;
     }
