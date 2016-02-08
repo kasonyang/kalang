@@ -415,9 +415,11 @@ public class TypeChecker extends AstVisitor<String> {
             if(!requireNoneVoid(retType, node)) return getDefaultType();
         }
         if (var.type == null) {
-                var.type = retType;                
-        } else {
-            var.type = typeSystem.getRootClass();
+            if(retType!=null){
+                var.type = retType;
+            }else{
+                var.type = typeSystem.getRootClass();
+            }
         }
         return null;
     }
