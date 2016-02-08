@@ -362,7 +362,8 @@ public class TypeChecker extends AstVisitor<String> {
 
     private void caughException(String type, AstNode node) {
         Map<String, AstNode> exceptions = this.exceptionStack.peek();
-        for (String e : exceptions.keySet()) {
+        String[] exTypes = exceptions.keySet().toArray(new String[0]);
+        for (String e : exTypes) {
             try {
                 if (
                         e.equals(type)
