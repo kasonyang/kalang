@@ -37,6 +37,11 @@ class{
         if(i==1){
             return;
         }
+        if(i==1){
+            i=1;
+        }else{
+            i=0;
+        }
     }
     void forStmt(){
         int s;
@@ -59,5 +64,9 @@ class{
     }
     void throwStmt() throws Exception{
         throws new Exception("Test");
+    }
+    void questionExpr(){
+        var q = true;
+        var s = q ? "true" : "false";
     }
 }

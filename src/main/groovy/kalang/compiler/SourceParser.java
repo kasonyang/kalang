@@ -283,6 +283,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         is.conditionExpr = (ExprNode) visit(ctx.expression(0));
         is.trueBody = new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(1))));
         is.falseBody = new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(2))));
+        mse.stmts.add(is);
         mse.reference = ve;
         //addCode(is, ctx);
         a2p.put(ve, ctx);
