@@ -36,6 +36,8 @@ import jast.ast.VarDeclStmt;
 import jast.ast.VarExpr;
 import jast.ast.VarObject;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TypeChecker extends AstVisitor<String> {
    
@@ -164,8 +166,10 @@ public class TypeChecker extends AstVisitor<String> {
         String tt = visit(node.to);
         if(!requireNoneVoid(ft, node)) return getDefaultType();
         if(!requireNoneVoid(tt, node)) return getDefaultType();
+        if(!checkCastable(ft, tt, node)){
+            return getDefaultType();
+        }
         node.from = cast(node.from, ft, tt, node);
-        //checkCastable(ft,tt,node);
         return tt;
     }
 
@@ -422,6 +426,7 @@ public class TypeChecker extends AstVisitor<String> {
                 var.type = typeSystem.getRootClass();
             }
         }
+        checkCastable(retType, var.type, node);
         return null;
     }
 
@@ -655,6 +660,18 @@ public class TypeChecker extends AstVisitor<String> {
 
     public AstMetaParser getAstMetaParser() {
         return astParser;
+    }
+
+    private boolean checkCastable(String ft, String tt,AstNode ast) {
+        try {
+            if(!typeSystem.castable(ft, tt)){
+                err.failedToCast(ast, ft, tt);
+                return false;
+            }
+        } catch (AstNotFoundException ex) {
+            return false;
+        }
+        return true;
     }
 
 }
