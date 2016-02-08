@@ -426,7 +426,9 @@ public class TypeChecker extends AstVisitor<String> {
                 var.type = typeSystem.getRootClass();
             }
         }
-        checkCastable(retType, var.type, node);
+        if(retType!=null){
+            checkCastable(retType, var.type, node);
+        }
         return null;
     }
 
