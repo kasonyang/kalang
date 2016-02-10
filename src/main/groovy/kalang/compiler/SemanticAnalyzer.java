@@ -126,9 +126,9 @@ public class SemanticAnalyzer extends AstVisitor<String> {
         this.clazz = clz;
         visit(clazz);
         if (clazz.interfaces.size() > 0) {
-            for (String itfName : clazz.interfaces) {
-                assert itfName != null;
-                ClassNode itfNode = this.loadAst(itfName, clazz);
+            for (ClassNode itf : clazz.interfaces) {
+                assert itf != null;
+                ClassNode itfNode = itf;
                 if (itfNode == null) {
                     continue;
                 }
@@ -612,10 +612,10 @@ public class SemanticAnalyzer extends AstVisitor<String> {
         if (key.equals("this")) {
             return this.clazz.name;
         } else if (key.equals("super")) {
-            if (clazz.parentName == null) {
+            if (clazz.parent == null) {
                 return getDefaultType();
             }
-            return this.clazz.parentName;
+            return this.clazz.parent.name;
         } else {
             System.err.println("Unknown key:" + key);
             return getDefaultType();

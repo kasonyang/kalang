@@ -169,14 +169,14 @@ public class TypeSystem {
         }
         ClassNode fromAst = astLoader.loadAst(type);
         while (fromAst != null) {
-            String parent = fromAst.parentName;
+            ClassNode parent = fromAst.parent;
             if (parent == null) {
                 return false;
             }
-            if (parent.equals(subclassType)) {
+            if (parent.name.equals(subclassType)) {
                 return true;
             }
-            fromAst = astLoader.loadAst(parent);
+            fromAst = parent;
         }
         return false;
     }

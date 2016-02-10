@@ -1,10 +1,11 @@
 #ClassNode
 -modifier:Integer
 -name:String
--parentName:String
+//-parentName:String
+-parent:ClassNode
 +fields:VarObject*
 +methods:MethodNode*
--interfaces:String*
+-interfaces:ClassNode*
 -isInterface:Boolean
 -isArray:Boolean
 //+imports:ImportNode*

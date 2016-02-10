@@ -9,13 +9,13 @@ public class ClassNode extends AstNode{
     
     public String name;
     
-    public String parentName;
+    public ClassNode parent;
     
     public List<VarObject> fields;
     
     public List<MethodNode> methods;
     
-    public List<String> interfaces;
+    public List<ClassNode> interfaces;
     
     public Boolean isInterface;
     
@@ -33,7 +33,7 @@ public class ClassNode extends AstNode{
     }
     
     
-    public ClassNode(Integer modifier,String name,String parentName,List<VarObject> fields,List<MethodNode> methods,List<String> interfaces,Boolean isInterface,Boolean isArray){
+    public ClassNode(Integer modifier,String name,ClassNode parent,List<VarObject> fields,List<MethodNode> methods,List<ClassNode> interfaces,Boolean isInterface,Boolean isArray){
         
             if(fields == null) fields = new LinkedList();
         
@@ -46,7 +46,7 @@ public class ClassNode extends AstNode{
         
             this.name = name;
         
-            this.parentName = parentName;
+            this.parent = parent;
         
             this.fields = fields;
         
@@ -102,8 +102,8 @@ public class ClassNode extends AstNode{
             str += "  name:" + name.toString()+"\r\n";
         }
         
-        if(parentName!=null){
-            str += "  parentName:" + parentName.toString()+"\r\n";
+        if(parent!=null){
+            str += "  parent:" + parent.toString()+"\r\n";
         }
         
         if(fields!=null){

@@ -9,8 +9,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @groovy.transform.TypeChecked
 public class JavaAstLoader extends AstLoader {
@@ -18,15 +20,17 @@ public class JavaAstLoader extends AstLoader {
     static String ROOT_CLASS = "java.lang.Object";
     
     private ClassLoader javaClassLoader;
+    
+    private Map<String,ClassNode> loadedClasses  =new HashMap<>();
 
-    public static ClassNode buildFromClass(Class clz) {
+    public ClassNode buildFromClass(Class clz) throws AstNotFoundException {
         ClassNode cn = ClassNode.create();
         cn.name = clz.getName();
         Class superClass = clz.getSuperclass();
         if (superClass != null) {
-            cn.parentName = superClass.getName();
+            cn.parent = findAst(superClass.getName());
         } else if (!cn.name.equals(ROOT_CLASS)) {
-            cn.parentName = ROOT_CLASS;
+            cn.parent = findAst(ROOT_CLASS);
         }
         List<Executable> methods = new LinkedList();
         methods.addAll(Arrays.asList(clz.getMethods()));
@@ -80,12 +84,18 @@ public class JavaAstLoader extends AstLoader {
             System.err.println("warning:trying to null class");
             throw new AstNotFoundException("null");
         }
+        ClassNode ast = loadedClasses.get(className);
+        if(ast!=null){
+            return ast;
+        }
         try {
             return super.findAst(className);
         } catch (AstNotFoundException e) {
             try {
                 Class clz = javaClassLoader.loadClass(className);
-                return buildFromClass(clz);
+                ast = buildFromClass(clz);
+                loadedClasses.put(className, ast);
+                return ast;
             } catch (ClassNotFoundException ex) {
                 throw e;
             }

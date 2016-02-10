@@ -188,10 +188,14 @@ class Ast2Java extends AbstractAstVisitor<String>{
             name = name.substring(dotIdx+1)
         }
         String pkgStr = pkg?"package ${pkg};":""
-        String parentStr = node.parentName ? " extends ${node.parentName}" :""
+        String parentStr = node.parent?.name ? " extends ${node.parent.name}" :""
         String impStr = ""
         if(node.interfaces && node.interfaces.size()>0){
-            impStr = "implements ${node.interfaces.join(",")}"
+            List<String> interfaces = new LinkedList();
+            for(ClassNode itf:node.interfaces){
+                interfaces.add(itf.name);
+            }
+            impStr = "implements " + String.join(",",interfaces);
         }
         String classType = node.isInterface ? "interface" : "class"
         c "${pkgStr}\r\n${imports}\r\n${mdf} ${classType} ${name} ${parentStr} ${impStr} {"

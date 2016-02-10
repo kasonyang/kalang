@@ -48,6 +48,8 @@ import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
 import jast.ast.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -327,13 +329,14 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             cls.isInterface = true;
         }
         if (ctx.parentClass != null) {
-            cls.parentName = this.checkFullType(ctx.parentClass.getText(), ctx);
+            String parentName = this.checkFullType(ctx.parentClass.getText(), ctx);
+            cls.parent =  requireAst(parentName,ctx.parentClass);
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (Token itf : ctx.interfaces) {
                 String iType = checkFullType(itf.getText(), ctx);
                 if(iType!=null){
-                    cls.interfaces.add(iType);
+                    cls.interfaces.add(requireAst(iType,itf));
                 }
             }
         }
@@ -497,6 +500,10 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         }
         map(vds,ctx);
         return vds;
+    }
+    
+    public void reportError(String msg, Token token) {
+        reportError(msg, token, null);
     }
 
     public void reportError(String msg, Token token,ParserRuleContext tree) {
@@ -982,6 +989,15 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
 
     public KalangParser getParser() {
         return parser;
+    }
+
+    private ClassNode requireAst(String name,Token token) {
+        try {
+            return astLoader.loadAst(name);
+        } catch (AstNotFoundException ex) {
+            reportError("ast not found:" + name, token);
+            return null;
+        }
     }
     
     
