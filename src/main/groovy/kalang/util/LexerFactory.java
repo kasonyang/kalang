@@ -11,7 +11,7 @@ import org.antlr.v4.runtime.CharStream;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class KalangLexerFactory {
+public class LexerFactory {
     
     public static KalangLexer createLexer(CharStream input){
         return new KalangLexer(input);

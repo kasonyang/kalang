@@ -1,4 +1,4 @@
-package kalang.compiler;
+package kalang.util;
 
 import java.io.*;
 import java.nio.*;

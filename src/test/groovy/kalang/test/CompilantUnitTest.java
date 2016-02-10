@@ -7,9 +7,9 @@ package kalang.test;
 
 import jast.ast.AstNode;
 import kalang.compiler.JavaAstLoader;
-import kalang.compiler.SourceParser;
+import kalang.compiler.CompilantUnit;
 import kalang.util.ParseTreeNavigator;
-import kalang.util.SourceParserFactory;
+import kalang.util.CompilantUnitFactory;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -20,14 +20,14 @@ import static org.junit.Assert.*;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class SourceParserTest {
+public class CompilantUnitTest {
     
-    public SourceParserTest() {
+    public CompilantUnitTest() {
     }
     
     @Test
     public void test(){
-        SourceParser sp = SourceParserFactory.createSourceParser("Test", "class{"
+        CompilantUnit sp = CompilantUnitFactory.createSourceParser("Test", "class{"
                 + "void main(){"
                 + "}"
                 + "}");

@@ -22,10 +22,10 @@ public class SemanticErrorException extends RuntimeException{
     RuleContext tree;
     
     Token token;
-    private final SourceParser sourceParser;
+    private final CompilantUnit sourceParser;
     private String description;
 
-    public SemanticErrorException(String description, Token token,RuleContext tree,SourceParser sourceParser) {
+    public SemanticErrorException(String description, Token token,RuleContext tree,CompilantUnit sourceParser) {
         super(description);
         this.tree = tree;
         this.token = token;
@@ -41,7 +41,7 @@ public class SemanticErrorException extends RuntimeException{
         return token;
     }
 
-    public SourceParser getSourceParser() {
+    public CompilantUnit getSourceParser() {
         return sourceParser;
     }
 

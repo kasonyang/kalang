@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class TypeChecker extends AstVisitor<String> {
+public class SemanticAnalyzer extends AstVisitor<String> {
    
     HashMap<String, VarObject> fields;
 
@@ -57,7 +57,7 @@ public class TypeChecker extends AstVisitor<String> {
 
     boolean returned;
 
-    private AstSemanticReporter err;
+    private AstSemanticErrorReporter err;
 
     private AstSemanticErrorHandler errHandler;
 
@@ -65,7 +65,7 @@ public class TypeChecker extends AstVisitor<String> {
 
     private Map<AstNode, String> types = new HashMap<>();
 
-    TypeChecker(AstLoader astLoader) {
+    SemanticAnalyzer(AstLoader astLoader) {
         this.astLoader = astLoader;
         this.typeSystem = new TypeSystem(astLoader);
         this.astParser = new AstMetaParser(astLoader);
@@ -112,7 +112,7 @@ public class TypeChecker extends AstVisitor<String> {
     }
 
     public void check(ClassNode clz) {
-        err = new AstSemanticReporter(clz, new AstSemanticReporter.AstSemanticReporterCallback() {
+        err = new AstSemanticErrorReporter(clz, new AstSemanticErrorReporter.AstSemanticReporterCallback() {
             @Override
             public void handleAstSemanticError(AstSemanticError error) {
                 errHandler.handleAstSemanticError(error);

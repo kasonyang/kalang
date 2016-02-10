@@ -26,7 +26,7 @@ public class KalangCompilerTest {
         kc.compile();
         CommonTokenStream ts = kc.getTokenStream("Test");
         List<Token> tokens = ts.getTokens();
-        testTokenNavigator(tokens.toArray(new Token[0]),kc.getParser("Test").getParseTree());
+        testTokenNavigator(tokens.toArray(new Token[0]),kc.getCompilantUnit("Test").getParseTree());
     }
     
     private void testTokenNavigator(Token[] tokens,ParseTree tree){

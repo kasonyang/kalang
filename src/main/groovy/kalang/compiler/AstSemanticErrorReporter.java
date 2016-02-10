@@ -14,7 +14,7 @@ import static kalang.compiler.AstSemanticError.*;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class AstSemanticReporter{
+public class AstSemanticErrorReporter{
 
     void uncaughtException(AstNode expr, String exType) {
         fail("Uncaught exception:" + exType, UNCAUGHT_EXCEPTION, expr);
@@ -28,7 +28,7 @@ public class AstSemanticReporter{
 
     ClassNode clazz;
 
-    public AstSemanticReporter(ClassNode clazz, AstSemanticReporterCallback handler) {
+    public AstSemanticErrorReporter(ClassNode clazz, AstSemanticReporterCallback handler) {
         this.handler = handler;
         this.clazz = clazz;
     }

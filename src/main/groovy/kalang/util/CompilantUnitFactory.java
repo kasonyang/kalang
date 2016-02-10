@@ -6,8 +6,7 @@ import java.net.*;
 import java.util.*;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
-import kalang.compiler.AntlrErrorString;
-import kalang.compiler.SourceParser;
+import kalang.compiler.CompilantUnit;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
@@ -21,25 +20,25 @@ import org.antlr.v4.runtime.TokenStream;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class SourceParserFactory {
+public class CompilantUnitFactory {
     
-    public static SourceParser createSourceParser(String clsName,KalangLexer lexer){
+    public static CompilantUnit createSourceParser(String clsName,KalangLexer lexer){
         return createSourceParser(
                 clsName
                 ,TokenStreamFactory.createTokenStream(lexer)
         );
     }
     
-    public static SourceParser createSourceParser(String clsName,String source){
+    public static CompilantUnit createSourceParser(String clsName,String source){
         return createSourceParser(
                 clsName
                 ,TokenStreamFactory.createTokenStream(source)
         );
     }
         
-    public static SourceParser createSourceParser(String clsName,TokenStream tokens){
+    public static CompilantUnit createSourceParser(String clsName,TokenStream tokens){
         KalangParser p = new KalangParser(tokens);
-        SourceParser sp = new SourceParser(clsName, p);
+        CompilantUnit sp = new CompilantUnit(clsName, p);
         p.setErrorHandler(new DefaultErrorStrategy() {
 
             @Override

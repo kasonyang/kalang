@@ -57,7 +57,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
-public class SourceParser extends AbstractParseTreeVisitor implements KalangVisitor {
+public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVisitor {
 
     private static final String MAP_CLASS = "java.util.HashMap";
     
@@ -140,7 +140,7 @@ public class SourceParser extends AbstractParseTreeVisitor implements KalangVisi
         }
     }
 
-    public SourceParser(String className, KalangParser parser) {
+    public CompilantUnit(String className, KalangParser parser) {
         this.className = className;
         this.classPath = "";
         this.parser = parser;
