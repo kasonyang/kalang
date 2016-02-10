@@ -9,17 +9,10 @@ import java.util.Arrays;
 
 public class AstMetaParser {
 
-    private AstLoader astLoader;
-
     private TypeSystem typeSystem;
 
-    public AstMetaParser(AstLoader astLoader, TypeSystem typeSystem) {
-        this.astLoader = astLoader;
+    public AstMetaParser(TypeSystem typeSystem) {
         this.typeSystem = typeSystem;
-    }
-
-    public AstMetaParser(AstLoader astLoader) {
-        this(astLoader, new TypeSystem(astLoader));
     }
 
    public static String getMethodDescriptor(String name, List<String> types, String className) {
@@ -151,10 +144,6 @@ public class AstMetaParser {
             }
         }
         return list.toArray(new MethodNode[0]);
-    }
-
-    public AstLoader getAstLoader() {
-        return astLoader;
     }
 
     public TypeSystem getTypeSystem() {

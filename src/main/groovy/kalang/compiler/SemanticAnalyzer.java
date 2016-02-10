@@ -68,7 +68,7 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     SemanticAnalyzer(AstLoader astLoader) {
         this.astLoader = astLoader;
         this.typeSystem = new TypeSystem(astLoader);
-        this.astParser = new AstMetaParser(astLoader);
+        this.astParser = new AstMetaParser(typeSystem);
         errHandler = new AstSemanticErrorHandler() {
             @Override
             public void handleAstSemanticError(AstSemanticError error) {
