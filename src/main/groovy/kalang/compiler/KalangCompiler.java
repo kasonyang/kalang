@@ -56,7 +56,7 @@ public class KalangCompiler extends AstLoader {
         public void handleSemanticError(SemanticErrorException see) {
             Token token = see.getToken();
             RuleContext tree = see.getTree();
-            CompilantUnit parser = see.getSourceParser();
+            CompilantUnit parser = see.getCompilantUnit();
             OffsetRange offsetRange;
             if(token!=null){
                 offsetRange = OffsetRangeHelper.getOffsetRange(token);
@@ -138,11 +138,11 @@ public class KalangCompiler extends AstLoader {
     protected void typeCheck() {
         Set<String> cnames = this.asts.keySet();
         for (String c : cnames) {
-            SemanticAnalyzer typeChecker = new SemanticAnalyzer(this);
-            typeChecker.setAstSemanticErrorHandler(astSemanticErrorHandler);
-            semanticAnalyzers.put(c, typeChecker);
+            SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(this);
+            semanticAnalyzer.setAstSemanticErrorHandler(astSemanticErrorHandler);
+            semanticAnalyzers.put(c, semanticAnalyzer);
             ClassNode cls = asts.get(c);
-            typeChecker.check(cls);
+            semanticAnalyzer.check(cls);
         }
     }
 
@@ -245,7 +245,7 @@ public class KalangCompiler extends AstLoader {
     private ClassNode createAst(String className,String src) {
         CommonTokenStream tokens = TokenStreamFactory.createTokenStream(src);
         tokenStreams.put(className, tokens);
-        CompilantUnit cunit = CompilantUnitFactory.createSourceParser(className, tokens);
+        CompilantUnit cunit = CompilantUnitFactory.createCompilantUnit(className, tokens);
             cunit.setSemanticErrorHandler(semanticErrorHandler);
             //SourceParser cunit = new CompilantUnit(k,p);
             cunit.importPackage("java.lang");

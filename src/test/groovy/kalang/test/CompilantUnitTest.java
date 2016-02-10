@@ -27,7 +27,7 @@ public class CompilantUnitTest {
     
     @Test
     public void test(){
-        CompilantUnit sp = CompilantUnitFactory.createSourceParser("Test", "class{"
+        CompilantUnit sp = CompilantUnitFactory.createCompilantUnit("Test", "class{"
                 + "void main(){"
                 + "}"
                 + "}");

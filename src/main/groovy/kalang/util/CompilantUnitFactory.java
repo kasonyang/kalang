@@ -22,21 +22,21 @@ import org.antlr.v4.runtime.TokenStream;
  */
 public class CompilantUnitFactory {
     
-    public static CompilantUnit createSourceParser(String clsName,KalangLexer lexer){
-        return createSourceParser(
+    public static CompilantUnit createCompilantUnit(String clsName,KalangLexer lexer){
+        return CompilantUnitFactory.createCompilantUnit(
                 clsName
                 ,TokenStreamFactory.createTokenStream(lexer)
         );
     }
     
-    public static CompilantUnit createSourceParser(String clsName,String source){
-        return createSourceParser(
+    public static CompilantUnit createCompilantUnit(String clsName,String source){
+        return CompilantUnitFactory.createCompilantUnit(
                 clsName
                 ,TokenStreamFactory.createTokenStream(source)
         );
     }
         
-    public static CompilantUnit createSourceParser(String clsName,TokenStream tokens){
+    public static CompilantUnit createCompilantUnit(String clsName,TokenStream tokens){
         KalangParser p = new KalangParser(tokens);
         CompilantUnit sp = new CompilantUnit(clsName, p);
         p.setErrorHandler(new DefaultErrorStrategy() {

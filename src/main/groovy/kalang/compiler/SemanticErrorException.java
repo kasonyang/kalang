@@ -22,14 +22,14 @@ public class SemanticErrorException extends RuntimeException{
     RuleContext tree;
     
     Token token;
-    private final CompilantUnit sourceParser;
+    private final CompilantUnit compilantUnit;
     private String description;
 
-    public SemanticErrorException(String description, Token token,RuleContext tree,CompilantUnit sourceParser) {
+    public SemanticErrorException(String description, Token token,RuleContext tree,CompilantUnit compilantUnit) {
         super(description);
         this.tree = tree;
         this.token = token;
-        this.sourceParser = sourceParser;
+        this.compilantUnit = compilantUnit;
         this.description = description;
     }
 
@@ -41,13 +41,13 @@ public class SemanticErrorException extends RuntimeException{
         return token;
     }
 
-    public CompilantUnit getSourceParser() {
-        return sourceParser;
+    public CompilantUnit getCompilantUnit() {
+        return compilantUnit;
     }
 
     @Override
     public String toString() {
-        return "SemanticErrorException{" + "tree=" + tree + ", token=" + token + ", sourceParser=" + sourceParser + ", description=" + description + '}';
+        return "SemanticErrorException{" + "tree=" + tree + ", token=" + token + ", compilant=" + compilantUnit + ", description=" + description + '}';
     }
 
     public String getDescription() {

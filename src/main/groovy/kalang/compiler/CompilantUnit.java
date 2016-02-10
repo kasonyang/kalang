@@ -965,7 +965,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     }
     
     public String toString(){
-        return "SourceParser:" + className;
+        return "CompilantUnit:" + className;
     }
 
     public AstLoader getAstLoader() {
