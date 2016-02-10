@@ -10,7 +10,7 @@ import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
 import kalang.antlr.KalangParser.CastExprContext;
 import kalang.antlr.KalangParser.ClassBodyContext;
-import kalang.antlr.KalangParser.CompiliantUnitContext;
+import kalang.antlr.KalangParser.CompilantUnitContext;
 import kalang.antlr.KalangParser.ContinueStatContext;
 import kalang.antlr.KalangParser.DoWhileStatContext;
 import kalang.antlr.KalangParser.ExprAssignContext;
@@ -132,7 +132,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     public void compile(AstLoader astLoader) {
         this.astLoader = astLoader;
         this.typeSystem = new TypeSystem(astLoader);
-        this.context = parser.compiliantUnit();
+        this.context = parser.compilantUnit();
         visit(context);
         AstMetaParser metaParser = new AstMetaParser(astLoader,typeSystem);
         if(metaParser.getMethodsByName(cls, "<init>").length<1){
@@ -318,7 +318,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     }
 
     @Override
-    public AstNode visitCompiliantUnit(CompiliantUnitContext ctx) {
+    public AstNode visitCompilantUnit(CompilantUnitContext ctx) {
         this.visitAll(ctx.importDecl());
         cls.name = this.className;
         cls.modifier = parseModifier(ctx.varModifier());

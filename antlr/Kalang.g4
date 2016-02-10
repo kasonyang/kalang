@@ -5,7 +5,7 @@ grammar Kalang;
     public static final int COMMENTS =    4; 
 } 
 
-compiliantUnit:
+compilantUnit:
     importDecl*
     varModifier?
     (

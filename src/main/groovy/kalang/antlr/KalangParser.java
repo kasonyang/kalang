@@ -35,16 +35,16 @@ public class KalangParser extends Parser {
 		LSHIFT_ASSIGN=103, RSHIFT_ASSIGN=104, URSHIFT_ASSIGN=105, Identifier=106, 
 		AT=107, ELLIPSIS=108, WS=109, COMMENT=110, LINE_COMMENT=111;
 	public static final int
-		RULE_compiliantUnit = 0, RULE_importDecl = 1, RULE_qualifiedName = 2, 
-		RULE_classBody = 3, RULE_fieldDecl = 4, RULE_methodDecl = 5, RULE_type = 6, 
-		RULE_noArrayType = 7, RULE_varDecls = 8, RULE_ifStat = 9, RULE_stat = 10, 
-		RULE_throwStat = 11, RULE_blockStmt = 12, RULE_tryStat = 13, RULE_returnStat = 14, 
-		RULE_postIfStmt = 15, RULE_varDeclStat = 16, RULE_varDecl = 17, RULE_breakStat = 18, 
-		RULE_continueStat = 19, RULE_whileStat = 20, RULE_doWhileStat = 21, RULE_forStat = 22, 
-		RULE_expressions = 23, RULE_exprStat = 24, RULE_expression = 25, RULE_map = 26, 
-		RULE_listOrArray = 27, RULE_literal = 28, RULE_varModifier = 29;
+		RULE_compilantUnit = 0, RULE_importDecl = 1, RULE_qualifiedName = 2, RULE_classBody = 3, 
+		RULE_fieldDecl = 4, RULE_methodDecl = 5, RULE_type = 6, RULE_noArrayType = 7, 
+		RULE_varDecls = 8, RULE_ifStat = 9, RULE_stat = 10, RULE_throwStat = 11, 
+		RULE_blockStmt = 12, RULE_tryStat = 13, RULE_returnStat = 14, RULE_postIfStmt = 15, 
+		RULE_varDeclStat = 16, RULE_varDecl = 17, RULE_breakStat = 18, RULE_continueStat = 19, 
+		RULE_whileStat = 20, RULE_doWhileStat = 21, RULE_forStat = 22, RULE_expressions = 23, 
+		RULE_exprStat = 24, RULE_expression = 25, RULE_map = 26, RULE_listOrArray = 27, 
+		RULE_literal = 28, RULE_varModifier = 29;
 	public static final String[] ruleNames = {
-		"compiliantUnit", "importDecl", "qualifiedName", "classBody", "fieldDecl", 
+		"compilantUnit", "importDecl", "qualifiedName", "classBody", "fieldDecl", 
 		"methodDecl", "type", "noArrayType", "varDecls", "ifStat", "stat", "throwStat", 
 		"blockStmt", "tryStat", "returnStat", "postIfStmt", "varDeclStat", "varDecl", 
 		"breakStat", "continueStat", "whileStat", "doWhileStat", "forStat", "expressions", 
@@ -134,7 +134,7 @@ public class KalangParser extends Parser {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
-	public static class CompiliantUnitContext extends ParserRuleContext {
+	public static class CompilantUnitContext extends ParserRuleContext {
 		public Token classType;
 		public Token parentClass;
 		public Token Identifier;
@@ -155,28 +155,28 @@ public class KalangParser extends Parser {
 		public TerminalNode Identifier(int i) {
 			return getToken(KalangParser.Identifier, i);
 		}
-		public CompiliantUnitContext(ParserRuleContext parent, int invokingState) {
+		public CompilantUnitContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_compiliantUnit; }
+		@Override public int getRuleIndex() { return RULE_compilantUnit; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterCompiliantUnit(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterCompilantUnit(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitCompiliantUnit(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitCompilantUnit(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitCompiliantUnit(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitCompilantUnit(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final CompiliantUnitContext compiliantUnit() throws RecognitionException {
-		CompiliantUnitContext _localctx = new CompiliantUnitContext(_ctx, getState());
-		enterRule(_localctx, 0, RULE_compiliantUnit);
+	public final CompilantUnitContext compilantUnit() throws RecognitionException {
+		CompilantUnitContext _localctx = new CompilantUnitContext(_ctx, getState());
+		enterRule(_localctx, 0, RULE_compilantUnit);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -209,13 +209,13 @@ public class KalangParser extends Parser {
 			case CLASS:
 				{
 				setState(69);
-				((CompiliantUnitContext)_localctx).classType = match(CLASS);
+				((CompilantUnitContext)_localctx).classType = match(CLASS);
 				}
 				break;
 			case INTERFACE:
 				{
 				setState(70);
-				((CompiliantUnitContext)_localctx).classType = match(INTERFACE);
+				((CompilantUnitContext)_localctx).classType = match(INTERFACE);
 				}
 				break;
 			default:
@@ -228,7 +228,7 @@ public class KalangParser extends Parser {
 				setState(73);
 				match(EXTENDS);
 				setState(74);
-				((CompiliantUnitContext)_localctx).parentClass = match(Identifier);
+				((CompilantUnitContext)_localctx).parentClass = match(Identifier);
 				}
 			}
 
@@ -239,8 +239,8 @@ public class KalangParser extends Parser {
 				setState(77);
 				match(IMPLEMENTS);
 				setState(78);
-				((CompiliantUnitContext)_localctx).Identifier = match(Identifier);
-				((CompiliantUnitContext)_localctx).interfaces.add(((CompiliantUnitContext)_localctx).Identifier);
+				((CompilantUnitContext)_localctx).Identifier = match(Identifier);
+				((CompilantUnitContext)_localctx).interfaces.add(((CompilantUnitContext)_localctx).Identifier);
 				setState(83);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
@@ -250,8 +250,8 @@ public class KalangParser extends Parser {
 					setState(79);
 					match(COMMA);
 					setState(80);
-					((CompiliantUnitContext)_localctx).Identifier = match(Identifier);
-					((CompiliantUnitContext)_localctx).interfaces.add(((CompiliantUnitContext)_localctx).Identifier);
+					((CompilantUnitContext)_localctx).Identifier = match(Identifier);
+					((CompilantUnitContext)_localctx).interfaces.add(((CompilantUnitContext)_localctx).Identifier);
 					}
 					}
 					setState(85);
