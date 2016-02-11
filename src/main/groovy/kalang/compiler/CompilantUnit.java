@@ -87,7 +87,6 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     private final String className;
     private String classPath;
 
-    TypeSystem typeSystem;
     private VarTable<String, VarDeclStmt> vtb;
     private KalangParser parser;    
     
@@ -145,10 +144,9 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
 
     public void compile(AstLoader astLoader) {
         this.astLoader = astLoader;
-        this.typeSystem = new TypeSystem(astLoader);
         this.context = parser.compilantUnit();
         visit(context);
-        AstMetaParser metaParser = new AstMetaParser(typeSystem);
+        AstMetaParser metaParser = new AstMetaParser(new TypeSystem(astLoader));
         if(metaParser.getMethodsByName(cls, "<init>").length<1){
             metaParser.createEmptyConstructor(cls);
         }
@@ -713,9 +711,6 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     }
 
     private String checkFullType(String name, ParserRuleContext tree) {
-        if (this.typeSystem.isPrimitiveType(name)) {
-            return name;
-        }
         String fn = getFullClassName(name);
         if (fn == null) {
             this.reportError("Unknown class:" + name, tree);
@@ -990,10 +985,6 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
 
     public TokenStream getTokenStream() {
         return tokenStream;
-    }
-
-    public TypeSystem getTypeSystem() {
-        return typeSystem;
     }
 
     public KalangParser getParser() {

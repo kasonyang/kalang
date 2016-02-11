@@ -4,13 +4,7 @@ import jast.ast.CastExpr;
 import jast.ast.ExprNode;
 import jast.ast.MethodNode;
 import jast.ast.VarObject;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
 import java.util.*;
-import static kalang.compiler.TypeSystem.DOUBLE_CLASS;
-import static kalang.compiler.TypeSystem.FLOAT_CLASS;
-import static kalang.compiler.TypeSystem.INT_CLASS;
 import static kalang.core.Types.*;
 /**
  *
