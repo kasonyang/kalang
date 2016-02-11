@@ -1,5 +1,6 @@
 package kalang.compiler;
 
+import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     ClassNode clazz;
 
 
-    AstMetaParser astParser;
+    //AstMetaParser astParser;
 
     MethodNode method;
 
@@ -71,7 +72,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     SemanticAnalyzer(AstLoader astLoader) {
         this.astLoader = astLoader;
         //this.typeSystem = new TypeSystem(astLoader);
-        this.astParser = new AstMetaParser();
+        //this.astParser = new AstUtil();
         errHandler = new AstSemanticErrorHandler() {
             @Override
             public void handleAstSemanticError(AstSemanticError error) {
@@ -127,7 +128,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if (itfNode == null) {
                     continue;
                 }
-                List<MethodNode> unImps = astParser.getUnimplementedMethod(clazz, itfNode);
+                List<MethodNode> unImps = AstUtil.getUnimplementedMethod(clazz, itfNode);
                 if (unImps.size() > 0) {
                     err.notImplementedMethods(clazz, itfNode, unImps);
                     //fail(CE"unimplemented method:${mStr}",clazz);
@@ -473,7 +474,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitMethodNode(MethodNode node) {
-        String mStr = this.astParser.getMethodDescriptor(node, this.clazz.name);
+        String mStr = AstUtil.getMethodDescriptor(node, this.clazz.name);
         if (methodDeclared.contains(mStr)) {
             err.unsupported("declare method duplicately", node);
             return getDefaultType();
@@ -575,7 +576,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     MethodNode selectMethod(AstNode node, ClassNode cls, String methodName, Type[] types) {
-        MethodNode[] methods = astParser.selectMethod(cls, methodName, types);
+        MethodNode[] methods = AstUtil.selectMethod(cls, methodName, types);
         List typeList = new LinkedList();
         if (types != null) {
             typeList.addAll(Arrays.asList(types));
@@ -592,7 +593,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     private void castInvocationParams(InvocationExpr expr, MethodNode method) {
-        List<Type> mTypes = this.astParser.getParameterTypes(method);
+        List<Type> mTypes = AstUtil.getParameterTypes(method);
         int i = 0;
         for ( Type mt : mTypes) {
             Type pt = visit(expr.arguments.get(i));
@@ -652,10 +653,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     public AstLoader getAstLoader() {
         return astLoader;
-    }
-
-    public AstMetaParser getAstMetaParser() {
-        return astParser;
     }
 
     private boolean checkCastable(Type ft, Type tt,AstNode ast) {

@@ -1,5 +1,6 @@
 package kalang.compiler;
 
+import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -146,9 +147,9 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         this.astLoader = astLoader;
         this.context = parser.compilantUnit();
         visit(context);
-        AstMetaParser metaParser = new AstMetaParser();
-        if(metaParser.getMethodsByName(cls, "<init>").length<1){
-            metaParser.createEmptyConstructor(cls);
+        //AstMetaParser metaParser = new AstAstMetaParser();
+        if(AstUtil.getMethodsByName(cls, "<init>").length<1){
+            AstUtil.createEmptyConstructor(cls);
         }
     }
 
