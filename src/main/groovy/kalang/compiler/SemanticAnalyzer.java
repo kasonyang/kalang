@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.core.ClassType;
+import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 
@@ -50,7 +51,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     ClassNode clazz;
 
-    TypeSystem typeSystem;
 
     AstMetaParser astParser;
 
@@ -70,8 +70,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     SemanticAnalyzer(AstLoader astLoader) {
         this.astLoader = astLoader;
-        this.typeSystem = new TypeSystem(astLoader);
-        this.astParser = new AstMetaParser(typeSystem);
+        //this.typeSystem = new TypeSystem(astLoader);
+        this.astParser = new AstMetaParser();
         errHandler = new AstSemanticErrorHandler() {
             @Override
             public void handleAstSemanticError(AstSemanticError error) {
@@ -167,19 +167,26 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         node.from = cast(node.from, ft, tt, node);
         return tt;
     }
+    
+    private PrimitiveType getPrimitiveType(Type t){
+        if(t instanceof PrimitiveType){
+            return (PrimitiveType) t;
+        }else if(t instanceof ClassType){
+            return Types.getPrimitiveType((ClassType)t);
+        }else{
+            return null;
+        }
+    }
 
-    private Type getMathType(String t1, String t2, String op) {
-        String pt1 = typeSystem.getPrimitiveType(t1);
-        String pt2 = typeSystem.getPrimitiveType(t2);
-        if (pt1 == null) {
-            pt1 = t1;
+    private Type getMathType(Type t1, Type t2, String op) {
+        PrimitiveType pt1= getPrimitiveType(t1);
+        PrimitiveType pt2 = getPrimitiveType(t2);
+        if(pt1==null){
+            throw new IllegalArgumentException(t1.getName());
         }
-        if (pt2 == null) {
-            pt2 = t2;
-        }
-        String ret = MathType.getType(pt1, pt2, op);
+        if(pt2==null) throw new IllegalArgumentException(t2.getName());
+        String ret = MathType.getType(pt1.getName(), pt2.getName(), op);
         return Types.getPrimitiveType(ret);
-        //return castSys.classifyType(ret)
     }
 
     /*  private ExprNode checkAndCastToBoolean(ExprNode expr){
@@ -209,9 +216,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         Type t;
         switch (op) {
             case "==":
-                if (typeSystem.isNumber(t1.getName())) {
-                    if (!typeSystem.isNumber(t2.getName())) {
-                        err.failedToCast(node, t2.getName(), typeSystem.getIntClass());
+                if (Types.isNumber(t1)) {
+                    if (!Types.isNumber(t2)) {
+                        err.failedToCast(node, t2.getName(), Types.INT_CLASS_TYPE.getName());
                         return getDefaultType();
                     }
                     //fail("Number required",node);
@@ -222,7 +229,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 break;
             case "+":
                 if(isNumber(t1) && isNumber(t2)){
-                    t = getMathType(t1.getName(), t2.getName(), op);
+                    t = getMathType(t1, t2, op);
                 }else{
                     node.expr1 = cast(node.expr1,t1,Types.STRING_CLASS_TYPE, node);
                     node.expr2 = cast(node.expr2, t2, Types.STRING_CLASS_TYPE, node);
@@ -235,7 +242,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             case "%":
                 if(!requireNumber(node, t1)) return getDefaultType();
                 if(!requireNumber(node, t2)) return getDefaultType();
-                t = (getMathType(t1.getName(), t2.getName(), op));
+                t = (getMathType(t1, t2, op));
                 break;
             case ">=":
             case "<=":
@@ -256,7 +263,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             case "^":
                 if(!requireNumber(node, t1)) return getDefaultType();
                 if(!requireNumber(node, t2)) return getDefaultType();
-                t =Types.getPrimitiveType(typeSystem.getHigherType(t1.getName(), t2.getName()));
+                t = getPrimitiveType(Types.getHigherType(t1, t2));
                 break;
             default:
                 err.fail("unsupport operation:" + op, AstSemanticError.UNSUPPORTED, node);
@@ -368,7 +375,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if (
                         e.equals(type)
                         || ((ClassType)e).isSubclassType(type)
-                        //|| this.typeSystem.isSubclass(e, type)
                         ) {
                     exceptions.remove(e);
                 }
@@ -513,7 +519,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     boolean requireNumber(AstNode node, Type t) {
         if (!isNumber(t)) {
-            err.failedToCast(node, t.getName(), typeSystem.getIntClass());
+            err.failedToCast(node, t.getName(),Types.INT_CLASS_TYPE.getName() );
             return false;
         }
         return true;
@@ -525,8 +531,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     boolean requireBoolean(AstNode node, Type t) {
-        if (!typeSystem.isBoolean(t.getName())) {
-            err.failedToCast(node, t.getName(), typeSystem.getBooleanClass());
+        if (!Types.isBoolean(t)) {
+            err.failedToCast(node, t.getName(), Types.BOOLEAN_CLASS_TYPE.getName());
             return false;
         }
         return true;
@@ -629,7 +635,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     private boolean isNumber(Type t1) {
-        return typeSystem.isNumber(t1.getName());
+        return Types.isNumber(t1);
     }
 
     public boolean isSpecialMethod(MethodNode node) {
@@ -648,17 +654,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return astLoader;
     }
 
-    public TypeSystem getTypeSystem() {
-        return typeSystem;
-    }
-
     public AstMetaParser getAstMetaParser() {
         return astParser;
     }
 
     private boolean checkCastable(Type ft, Type tt,AstNode ast) {
             if(!ft.castable(tt)){
-            //if(!typeSystem.castable(ft, tt)){
                 err.failedToCast(ast, ft.getName(), tt.getName());
                 return false;
             }

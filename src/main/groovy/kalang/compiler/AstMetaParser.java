@@ -13,11 +13,6 @@ import kalang.core.Types;
 
 public class AstMetaParser {
 
-    private TypeSystem typeSystem;
-
-    public AstMetaParser(TypeSystem typeSystem) {
-        this.typeSystem = typeSystem;
-    }
 
    public static String getMethodDescriptor(String name, List<Type> types, String className) {
        List<String> typeStrList = new ArrayList<>(types.size());
@@ -152,12 +147,7 @@ public class AstMetaParser {
             }
         }
         return list.toArray(new MethodNode[0]);
-    }
-
-    public TypeSystem getTypeSystem() {
-        return typeSystem;
-    }
-    
+    }    
     
     public MethodNode[] selectMethod(ClassNode cls, String methodName, Type[] types) {
         MethodNode[] methods = getMethodsByName(cls, methodName);

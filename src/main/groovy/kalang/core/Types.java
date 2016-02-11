@@ -9,6 +9,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.compiler.AstLoader;
 import kalang.compiler.AstNotFoundException;
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.commons.collections4.bidimap.TreeBidiMap;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -75,7 +78,9 @@ public class Types {
     public static final ClassType MAP_IMPL_TYPE;
     public static final String LIST_IMPL_CLASS_NAME = "java.util.LinkedList";
     public static final ClassType LIST_CLASS_TYPE ;
-    
+    private final static DualHashBidiMap<PrimitiveType,ClassType> primitive2class;
+    private final static PrimitiveType SHORT_TYPE = getPrimitiveType("short");
+    private final static ClassType BYTE_CLASS_TYPE ;
     
     static {
         try {
@@ -90,13 +95,33 @@ public class Types {
             BOOLEAN_CLASS_TYPE = getClassType(astLoader.loadAst(BOOLEAN_CLASS));
             CHAR_CLASS_TYPE = getClassType(astLoader.loadAst(CHAR_CLASS));
             SHORT_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS));
+            BYTE_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS));
             MAP_IMPL_TYPE = getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
             LIST_CLASS_TYPE = getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
         } catch (AstNotFoundException ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
+        primitive2class = new DualHashBidiMap<>();
+        primitive2class.put(INT_TYPE, INT_CLASS_TYPE);
+        primitive2class.put(LONG_TYPE, LONG_CLASS_TYPE);
+        primitive2class.put(FLOAT_TYPE, FLOAT_CLASS_TYPE);
+        primitive2class.put(DOUBLE_TYPE, DOUBLE_CLASS_TYPE);
+        primitive2class.put(CHAR_TYPE, CHAR_CLASS_TYPE);
+        primitive2class.put(BOOLEAN_TYPE, BOOLEAN_CLASS_TYPE);
+        primitive2class.put(VOID_TYPE, VOID_CLASS_TYPE);
+        primitive2class.put(SHORT_TYPE, SHORT_CLASS_TYPE);
+        primitive2class.put(BYTE_TYPE, BYTE_CLASS_TYPE);
+        //m.put(NULL_TYPE, "null");//TODO does null has class type?
     }
+    
+    private static ClassType[] numberClass = new ClassType[]{
+        INT_CLASS_TYPE, LONG_CLASS_TYPE, FLOAT_CLASS_TYPE, DOUBLE_CLASS_TYPE
+    };
+
+    private static PrimitiveType[] numberPrimitive = new PrimitiveType[]{
+        INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
+    };
     
     public static PrimitiveType getPrimitiveType(String name){
         PrimitiveType t = primitiveTypes.get(name);
@@ -124,5 +149,57 @@ public class Types {
         }
         return ct;
     }
+    
+    public static PrimitiveType getPrimitiveType(ClassType classType){
+        return primitive2class.getKey(classType);
+    }
+    
+    public static ClassType getClassType(PrimitiveType primitiveType){
+        return primitive2class.get(primitiveType);
+    }
+    
+     public static boolean isNumberPrimitive(Type type) {
+        return Arrays.asList(numberPrimitive).contains(type);
+    }
+
+    public static boolean isNumberClass(Type type) {
+        return Arrays.asList(numberClass).contains(type);
+    }
+
+    public static boolean isNumber(Type type) {
+        return isNumberPrimitive(type) || isNumberClass(type);
+    }
+
+    public static boolean isBoolean(Type type) {
+        return type.equals(BOOLEAN_CLASS_TYPE) || type.equals(BOOLEAN_TYPE);
+    }
+
+    public  static Type getHigherType(Type type1, Type type2) {
+        if (
+                type1.equals(DOUBLE_CLASS_TYPE) 
+                || type1.equals(DOUBLE_TYPE)
+                || type2.equals(DOUBLE_CLASS_TYPE)
+                || type2.equals(DOUBLE_TYPE)
+                ) {
+            return DOUBLE_TYPE;
+        }
+        if (
+                type1.equals(FLOAT_CLASS_TYPE)
+                || type1.equals(FLOAT_TYPE)
+                || type2.equals(FLOAT_CLASS_TYPE)
+                || type2.equals(FLOAT_TYPE)
+                ) {
+            return FLOAT_TYPE;
+        }
+        if (
+                type1.equals(LONG_CLASS_TYPE) 
+                || type1.equals(LONG_TYPE)
+                || type2.equals(LONG_CLASS_TYPE)
+                || type2.equals(LONG_TYPE)) {
+            return LONG_TYPE;
+        }
+        return INT_TYPE;
+    }
+
 
 }
