@@ -43,7 +43,7 @@ public class ClassType extends Type{
 
     @Override
     public boolean castable(Type targetType) {
-        return isSubclassType(targetType);
+        return isSubclassTypeOf(targetType);
     }
 
     @Override
@@ -51,13 +51,14 @@ public class ClassType extends Type{
         return new CastExpr(targetType, from);
     }
 
-    public boolean isSubclassType(Type targetType){
+    public boolean isSubclassTypeOf(Type targetType){
         if(targetType instanceof ClassType){
             ClassType tt = (ClassType) targetType;
-            ClassNode tc = tt.getClassNode();
-            while(tc!=null){
-                if(tc==clazz) return true;
-                tc = tc.parent;
+            ClassNode targetClass = tt.getClassNode();
+            ClassNode mc = clazz;
+            while(mc!=null){
+                if(mc==targetClass) return true;
+                mc = mc.parent;
             }
             return false;
         }

@@ -31,7 +31,7 @@ public class CompilantUnitTest {
                 + "void main(){"
                 + "}"
                 + "}");
-        sp.compile(new JavaAstLoader());
+        sp.compile();
         ParseTreeNavigator treeNav = new ParseTreeNavigator(sp.getParseTree());
         ParseTree tree = treeNav.getParseTree(0);
         assertNotNull(tree);

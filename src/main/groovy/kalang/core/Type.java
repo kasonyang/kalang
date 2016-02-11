@@ -31,13 +31,18 @@ public abstract class Type {
     public abstract MethodNode[] getMethods();
     
     public VarObject getField(String name){
-        List<VarObject> list = Arrays.asList(getFields());
-        int idx = list.indexOf(name);
-        if(idx>=0){
-            return list.get(idx);
-        }else{
-            return null;
+        //TODO low performance
+        for(VarObject f:getFields()){
+            if(f.name.equals(name)) return f;
         }
+        return null;
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+    
+    
 
 }

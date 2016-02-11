@@ -19,13 +19,13 @@ public class OffsetRangeHelper {
     public static OffsetRange getOffsetRange(ParserRuleContext tree){
         int start = tree.getStart().getStartIndex();
         int stop = tree.getStop().getStopIndex();
-        return new OffsetRange(start,stop+1);
+        return new OffsetRange(start,stop-start+1);
     }
     
     public static OffsetRange getOffsetRange(Token token){
         int start = token.getStartIndex();
         int stop = token.getStopIndex();
-        return new OffsetRange(start, stop+1);
+        return new OffsetRange(start, stop - start +1);
     }
 
 }

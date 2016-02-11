@@ -105,7 +105,7 @@ public class AstUtil {
         }
             if (matchSubclass
                     && (from instanceof ClassType)
-                    &&((ClassType)from).isSubclassType(target)
+                    &&((ClassType)from).isSubclassTypeOf(target)
                     //&& typeSystem.isSubclass(from, target)
                     ) {
                 return true;

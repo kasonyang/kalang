@@ -27,6 +27,7 @@ public class ErrorTest {
     AstSemanticErrorHandler astSemanticErrorHandler = new AstSemanticErrorHandler() {
         @Override
         public void handleAstSemanticError(AstSemanticError error) {
+            //kc.reportAstNodeError(error.getDescription(), error.getClassNode().name, error.getNode());
             System.out.println("on error:" + error.getDescription());
                   eCode = error.getErrorCode();
             errMsg =error.getDescription();

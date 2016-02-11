@@ -123,7 +123,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         visit(clazz);
         if (clazz.interfaces.size() > 0) {
             for (ClassNode itf : clazz.interfaces) {
-                assert itf != null;
+                //assert itf != null;
                 ClassNode itfNode = itf;
                 if (itfNode == null) {
                     continue;
@@ -162,10 +162,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         Type tt = visit(node.to);
         if(!requireNoneVoid(ft, node)) return getDefaultType();
         if(!requireNoneVoid(tt, node)) return getDefaultType();
-        if(!checkCastable(ft, tt, node)){
-            return getDefaultType();
+        if(!ft.equals(tt)){
+            if(!checkCastable(ft, tt, node)){
+                return getDefaultType();
+            }
+            node.from = cast(node.from, ft, tt, node);
         }
-        node.from = cast(node.from, ft, tt, node);
         return tt;
     }
     
@@ -375,7 +377,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         for (Type e : exTypes) {
                 if (
                         e.equals(type)
-                        || ((ClassType)e).isSubclassType(type)
+                        || ((ClassType)e).isSubclassTypeOf(type)
                         ) {
                     exceptions.remove(e);
                 }
@@ -497,7 +499,10 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if(isSpecialMethod(node)){
             needReturn = isSpecialMethodNeedReturn(node);
         }else{
-            needReturn = (node.type != null && !node.type.equals("void"));
+            needReturn = (
+                    node.type != null
+                    && !node.type.equals(Types.VOID_TYPE)
+                    );
         }
        
         if (node.body != null && needReturn && !returned) {
@@ -656,6 +661,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     private boolean checkCastable(Type ft, Type tt,AstNode ast) {
+        if(ft.equals(tt)) return true;
             if(!ft.castable(tt)){
                 err.failedToCast(ast, ft.getName(), tt.getName());
                 return false;

@@ -143,8 +143,16 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         return Types.getClassType(ast);
     }
 
+    public void compile(){
+        compile(null);
+    }
+    
     public void compile(AstLoader astLoader) {
-        this.astLoader = astLoader;
+        if(astLoader==null){
+            this.astLoader = new AstLoader();
+        }else{
+            this.astLoader = astLoader;
+        }
         this.context = parser.compilantUnit();
         visit(context);
         //AstMetaParser metaParser = new AstAstMetaParser();

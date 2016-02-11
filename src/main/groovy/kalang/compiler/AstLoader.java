@@ -29,6 +29,9 @@ public class AstLoader {
 
     protected ClassNode findAst(String className) throws AstNotFoundException {
         ClassNode ast = asts.get(className);
+        if(ast==null && this!=BASE_AST_LOADER){
+            ast = BASE_AST_LOADER.findAst(className);
+        }
         if (ast == null) {
             if (parent != null) {
                 return parent.findAst(className);
