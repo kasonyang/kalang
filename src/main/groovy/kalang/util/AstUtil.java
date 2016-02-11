@@ -110,10 +110,7 @@ public class AstUtil {
                     ) {
                 return true;
             }
-            if (autoCast && from.castable(target)) {
-                return true;
-            }
-        return false;
+        return autoCast && from.castable(target);
     }
 
     public static boolean matchTypes(Type[] from, Type[] target, boolean matchSubclass, boolean autoCast) {

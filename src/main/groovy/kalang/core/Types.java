@@ -99,7 +99,7 @@ public class Types {
             MAP_IMPL_TYPE = getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
             LIST_CLASS_TYPE = getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
         } catch (AstNotFoundException ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new RuntimeException(ex);
         }
         primitive2class = new DualHashBidiMap<>();
@@ -159,11 +159,15 @@ public class Types {
     }
     
      public static boolean isNumberPrimitive(Type type) {
-        return Arrays.asList(numberPrimitive).contains(type);
+         if(type instanceof PrimitiveType)
+            return Arrays.asList(numberPrimitive).contains((PrimitiveType)type);
+         else return false;
     }
 
     public static boolean isNumberClass(Type type) {
-        return Arrays.asList(numberClass).contains(type);
+        if(type instanceof ClassType)
+            return Arrays.asList(numberClass).contains((ClassType)type);
+        else return false;
     }
 
     public static boolean isNumber(Type type) {
