@@ -3,11 +3,12 @@ Don't modify!This file is generated automately.
 */
 package jast.ast;
 import java.util.*;
+import kalang.core.*;
 public class VarObject extends AstNode{
     
     public Integer modifier;
     
-    public String type;
+    public Type type;
     
     public String name;
     
@@ -19,7 +20,7 @@ public class VarObject extends AstNode{
     }
     
     
-    public VarObject(Integer modifier,String type,String name,ExprNode initExpr){
+    public VarObject(Integer modifier,Type type,String name,ExprNode initExpr){
         
         
             this.modifier = modifier;

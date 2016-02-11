@@ -254,12 +254,13 @@ public class Ast2Class extends AstVisitor<Object>{
     }
     
     private String getMethodDescriptor(MethodNode node) {
-        String desc = "";
-        String retTyp = getTypeDescriptor(node.type);
-        for(VarObject p:node.parameters){
-            desc += getTypeDescriptor(p.type);
-        }
-        return "(" + desc + ")" + retTyp;
+//        String desc = "";
+//        String retTyp = getTypeDescriptor(node.type);
+//        for(VarObject p:node.parameters){
+//            desc += getTypeDescriptor(p.type);
+//        }
+//        return "(" + desc + ")" + retTyp;
+        return null;
     }
 
 }

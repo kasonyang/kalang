@@ -3,11 +3,12 @@ Don't modify!This file is generated automately.
 */
 package jast.ast;
 import java.util.*;
+import kalang.core.*;
 public class MethodNode extends AstNode{
     
     public Integer modifier;
     
-    public String type;
+    public Type type;
     
     public String name;
     
@@ -15,7 +16,7 @@ public class MethodNode extends AstNode{
     
     public Statement body;
     
-    public List<String> exceptionTypes;
+    public List<Type> exceptionTypes;
     
     
     public MethodNode(){
@@ -27,7 +28,7 @@ public class MethodNode extends AstNode{
     }
     
     
-    public MethodNode(Integer modifier,String type,String name,List<VarObject> parameters,Statement body,List<String> exceptionTypes){
+    public MethodNode(Integer modifier,Type type,String name,List<VarObject> parameters,Statement body,List<Type> exceptionTypes){
         
             if(parameters == null) parameters = new LinkedList();
         

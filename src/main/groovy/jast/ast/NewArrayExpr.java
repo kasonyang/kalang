@@ -3,9 +3,10 @@ Don't modify!This file is generated automately.
 */
 package jast.ast;
 import java.util.*;
+import kalang.core.*;
 public class NewArrayExpr extends ExprNode{
     
-    public String type;
+    public Type type;
     
     public ExprNode size;
     
@@ -15,7 +16,7 @@ public class NewArrayExpr extends ExprNode{
     }
     
     
-    public NewArrayExpr(String type,ExprNode size){
+    public NewArrayExpr(Type type,ExprNode size){
         
         
             this.type = type;

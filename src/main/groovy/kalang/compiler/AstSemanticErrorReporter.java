@@ -10,6 +10,7 @@ import java.util.List;
 import jast.ast.*;
 import java.util.Map;
 import static kalang.compiler.AstSemanticError.*;
+import kalang.core.Type;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -46,7 +47,7 @@ public class AstSemanticErrorReporter{
         fail("Class not found:" + className, CLASS_NOT_FOUND, node);
     }
 
-    public void methodNotFound(AstNode node, String className, String name, List<String> types) {
+    public void methodNotFound(AstNode node, String className, String name, List<Type> types) {
         String method = AstMetaParser.getMethodDescriptor(name, types, className);
         fail("Method Missing:" + method, METHOD_NOT_FOUND, node);
     }

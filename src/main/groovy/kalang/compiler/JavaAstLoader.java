@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import kalang.core.Type;
+import kalang.core.Types;
 
 @groovy.transform.TypeChecked
 public class JavaAstLoader extends AstLoader {
@@ -26,6 +28,7 @@ public class JavaAstLoader extends AstLoader {
     public ClassNode buildFromClass(Class clz) throws AstNotFoundException {
         ClassNode cn = ClassNode.create();
         cn.name = clz.getName();
+        loadedClasses.put(clz.getName(), cn);
         Class superClass = clz.getSuperclass();
         if (superClass != null) {
             cn.parent = findAst(superClass.getName());
@@ -40,28 +43,28 @@ public class JavaAstLoader extends AstLoader {
             for (Parameter p : m.getParameters()) {
                 VarObject param = new VarObject();
                 param.name = p.getName();
-                param.type = p.getType().getTypeName();
+                param.type = getType(p.getType());
                 methodNode.parameters.add(param);
             }
             if (m instanceof Method) {
-                methodNode.type = ((Method) m).getReturnType().getName();
+                methodNode.type =getType(((Method) m).getReturnType());
                 methodNode.name = m.getName();
                 methodNode.modifier = m.getModifiers();
             } else if (m instanceof Constructor) {
                 methodNode.name = "<init>";
-                methodNode.type = clz.getName();
+                methodNode.type = getType(clz);
                 methodNode.modifier = m.getModifiers() | Modifier.STATIC;
             }
             cn.methods.add(methodNode);
             methodNode.body = null;
             for (Class e : m.getExceptionTypes()) {
-                methodNode.exceptionTypes.add(e.getName());
+                methodNode.exceptionTypes.add(getType(e));
             }
         }
         for (Field f : clz.getFields()) {
             VarObject fn = new VarObject();
             fn.name = f.getName();
-            fn.type = f.getType().getName();
+            fn.type =getType(f.getType());
             fn.modifier = f.getModifiers();
             cn.fields.add(fn);
         }
@@ -94,11 +97,20 @@ public class JavaAstLoader extends AstLoader {
             try {
                 Class clz = javaClassLoader.loadClass(className);
                 ast = buildFromClass(clz);
-                loadedClasses.put(className, ast);
                 return ast;
             } catch (ClassNotFoundException ex) {
                 throw e;
             }
+        }
+    }
+
+    private Type getType(Class<?> type) throws AstNotFoundException {
+        if(type.isPrimitive()){
+            return Types.getPrimitiveType(type.getTypeName());
+        }else if(type.isArray()){
+            return Types.getArrayType(getType(type.getComponentType()));
+        }else{
+            return Types.getClassType(findAst(type.getName()));
         }
     }
 

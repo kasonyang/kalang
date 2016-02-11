@@ -78,15 +78,25 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitType(KalangParser.TypeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link KalangParser#noArrayType}.
+	 * Enter a parse tree produced by {@link KalangParser#singleType}.
 	 * @param ctx the parse tree
 	 */
-	void enterNoArrayType(KalangParser.NoArrayTypeContext ctx);
+	void enterSingleType(KalangParser.SingleTypeContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link KalangParser#noArrayType}.
+	 * Exit a parse tree produced by {@link KalangParser#singleType}.
 	 * @param ctx the parse tree
 	 */
-	void exitNoArrayType(KalangParser.NoArrayTypeContext ctx);
+	void exitSingleType(KalangParser.SingleTypeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KalangParser#primitiveType}.
+	 * @param ctx the parse tree
+	 */
+	void enterPrimitiveType(KalangParser.PrimitiveTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#primitiveType}.
+	 * @param ctx the parse tree
+	 */
+	void exitPrimitiveType(KalangParser.PrimitiveTypeContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#varDecls}.
 	 * @param ctx the parse tree

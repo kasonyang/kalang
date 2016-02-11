@@ -48,8 +48,12 @@ import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
 import jast.ast.*;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.core.ClassType;
+import kalang.core.Type;
+import kalang.core.Types;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -93,6 +97,9 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             System.err.println(see);
         }
     };
+    private final ClassType mapType;
+    private ClassType stringType;
+    private ClassType listType;
     
     public SemanticErrorHandler getSemanticErrorHandler() {
         return semanticErrorHandler;
@@ -130,6 +137,11 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     String getClassName() {
         return className;
     }
+    
+    private ClassType requireClassType(String name,Token token){
+        ClassNode ast = requireAst(name, token);
+        return Types.getClassType(ast);
+    }
 
     public void compile(AstLoader astLoader) {
         this.astLoader = astLoader;
@@ -151,6 +163,9 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             classPath = className.substring(0, className.lastIndexOf('.'));
         }
         cls = ClassNode.create();
+            mapType = Types.MAP_IMPL_TYPE;
+            stringType = Types.STRING_CLASS_TYPE;
+            listType = Types.LIST_CLASS_TYPE;
     }
 
     @Override
@@ -205,7 +220,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         MultiStmtExpr mse = MultiStmtExpr.create();
         VarObject vo = new VarObject();
         VarDeclStmt vds = new VarDeclStmt(vo);
-        vo.type = MAP_CLASS;
+        vo.type = mapType;
         NewExpr initExpr = new NewExpr();
         initExpr.type = vo.type;
         vo.initExpr = initExpr;
@@ -219,7 +234,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             iv.target = ve;
             iv.methodName = "put";
             ConstExpr k = new ConstExpr();
-            k.type = this.typeSystem.getStringClass();// STRING_CLASS;
+            k.type = stringType;// STRING_CLASS;
             k.value = ctx.Identifier(i).getText();
             iv.arguments.add(k);
             iv.arguments.add(v);
@@ -235,10 +250,9 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     @Override
     public MultiStmtExpr visitListOrArray(KalangParser.ListOrArrayContext ctx) {
         MultiStmtExpr mse = MultiStmtExpr.create();
-        String clsName = DEFAULT_LIST_CLASS;
         VarObject vo = new VarObject();
         VarDeclStmt vds = new VarDeclStmt(vo);
-        vo.type = clsName;
+        vo.type = listType;
         NewExpr initExpr = new NewExpr();
         initExpr.type = vo.type;
         vo.initExpr = initExpr;
@@ -262,15 +276,9 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     public AstNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
         NewArrayExpr nae = new NewArrayExpr();
         nae.size = (ExprNode) visit(ctx.expression());
-        nae.type = checkFullType(ctx.noArrayType().getText(), ctx);
+        nae.type = parseSingleType(ctx.singleType());
         a2p.put(nae, ctx);
         return nae;
-    }
-
-    @Override
-    public AstNode visitNoArrayType(KalangParser.NoArrayTypeContext ctx) {
-        //do nothing
-        return null;
     }
 
     @Override
@@ -373,17 +381,17 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         method = MethodNode.create();
         this.newVarStack();
         String name;
-        String type;
+        Type type;
         int mdf = parseModifier(ctx.varModifier());
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
-            type = this.className;
+            type = Types.getClassType(cls);
             name = "<init>";
             mdf = mdf | Modifier.STATIC;
         } else {
             if (ctx.type() == null) {
-                type = "void";
+                type = Types.VOID_TYPE;
             } else {
-                type = checkFullType(ctx.type().getText(), ctx);
+                type = parseType(ctx.type());
             }
             name = ctx.name.getText();
         }
@@ -400,7 +408,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {
                 String eFullType = this.checkFullType(et.getText(), ctx);
-                method.exceptionTypes.add(eFullType);
+                method.exceptionTypes.add(requireClassType(eFullType,et));
             }
         }
         this.popVarStack();
@@ -469,14 +477,15 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     @Override
     public VarObject visitVarDecl(VarDeclContext ctx) {
         String name = ctx.name.getText();
-        String type = DEFAULT_VAR_TYPE;
+        TypeContext type = null;
         if (ctx.varType != null) {
-            type = ctx.varType.getText();
+            type = ctx.varType;
         } else if (ctx.type() != null) {
-            type = ctx.type().getText();
+            type = ctx.type();
         }
+        Type returnType =null;
         if (type != null) {
-            type = checkFullType(type, ctx);
+            returnType = parseType(type);
         }
         ExprNode namedNode = this.getNodeByName(name);
         if (namedNode != null) {
@@ -494,7 +503,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         }
         VarObject vds = new VarObject();
         vds.name = name;
-        vds.type = type;
+        vds.type = returnType;
         if (ctx.expression() != null) {
             vds.initExpr = (ExprNode) visit(ctx.expression());
         }
@@ -774,24 +783,24 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         ConstExpr ce = new ConstExpr();
         String t = ctx.getText();
         if (ctx.IntegerLiteral() != null) {
-            ce.type = typeSystem.getIntPrimitiveType();
+            ce.type = Types.INT_TYPE;
             ce.value = Integer.parseInt(t);
         } else if (ctx.FloatingPointLiteral() != null) {
-            ce.type = typeSystem.getFloatPrimitiveType();
+            ce.type = Types.FLOAT_TYPE;
             ce.value = Float.parseFloat(t);
         } else if (ctx.BooleanLiteral() != null) {
-            ce.type = typeSystem.getBooleanPrimitiveType();
+            ce.type = Types.BOOLEAN_TYPE;
             ce.value = Boolean.parseBoolean(t);
         } else if (ctx.CharacterLiteral() != null) {
-            ce.type = typeSystem.getCharPrimitiveType();
+            ce.type = Types.CHAR_TYPE;
             char[] chars = t.toCharArray();
             ce.value = chars[1];
         } else if (ctx.StringLiteral() != null) {
-            ce.type = typeSystem.getStringClass();
+            ce.type = stringType;
             //TODO parse string
             ce.value = t.substring(1, t.length() - 1);
         } else {
-            ce.type = typeSystem.getNullPrimitiveType();
+            ce.type = Types.NULL_TYPE;
         }
         map(ce,ctx);
         return ce;
@@ -879,7 +888,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     public AstNode visitCastExpr(CastExprContext ctx) {
         CastExpr ce = new CastExpr();
         ce.expr = visitExpression(ctx.expression());
-        ce.type = checkFullType(ctx.type().getText(),ctx);
+        ce.type = parseType(ctx.type());
         map(ce,ctx);
         return ce;
     }
@@ -898,7 +907,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
                 this.newVarStack();
                 VarObject vo = new VarObject();
                 vo.name = vName;
-                vo.type = vType;
+                vo.type = requireClassType(checkFullType(vType, ctx), ctx.catchTypes.get(i).start);
                 VarDeclStmt declStmt = new VarDeclStmt(vo);
                 catchStmt.execStmt = visitStat(ctx.catchStmts.get(i));
                 this.popVarStack();
@@ -998,6 +1007,35 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             reportError("ast not found:" + name, token);
             return null;
         }
+    }
+
+    private Type parseSingleType(KalangParser.SingleTypeContext singleTypeContext){
+        if(singleTypeContext.Identifier()!=null){
+            String fn = checkFullType(singleTypeContext.getText(), singleTypeContext);
+            if(fn==null) return null;
+            return requireClassType(fn,singleTypeContext.Identifier().getSymbol());
+        }else{
+            return Types.getPrimitiveType(singleTypeContext.getText());
+        }
+    }
+    
+    private Type parseType(TypeContext typeContext) {
+        if(typeContext.singleType()!=null){
+            return parseSingleType(typeContext.singleType());
+        }else{
+            return Types.getArrayType(parseType(typeContext.type()));
+        }
+    }
+
+    @Override
+    public Object visitSingleType(KalangParser.SingleTypeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public Object visitPrimitiveType(KalangParser.PrimitiveTypeContext ctx) {
+        //TODO support needed
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     

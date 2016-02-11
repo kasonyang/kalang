@@ -53,11 +53,17 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitType(KalangParser.TypeContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link KalangParser#noArrayType}.
+	 * Visit a parse tree produced by {@link KalangParser#singleType}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitNoArrayType(KalangParser.NoArrayTypeContext ctx);
+	T visitSingleType(KalangParser.SingleTypeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KalangParser#primitiveType}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrimitiveType(KalangParser.PrimitiveTypeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link KalangParser#varDecls}.
 	 * @param ctx the parse tree

@@ -38,7 +38,7 @@ fieldDecl:
 methodDecl:
    varModifier? 
    (
-     ((type|'void') name=Identifier )
+     (type name=Identifier )
      |(prefix='constructor')
    )
    '(' varDecls? ')'
@@ -46,10 +46,15 @@ methodDecl:
    ( stat | ';')
 ;
 type:
-  noArrayType  ( '[]' )?
+    singleType
+    | type  (arraySuffix= '[]' )
 ;
-noArrayType:
-  (Identifier|DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN|BYTE)
+singleType:
+    Identifier
+    | primitiveType
+;
+primitiveType:
+  DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN|BYTE|VOID
 ;
 
 varDecls:
@@ -89,7 +94,7 @@ blockStmt:
 ;
 tryStat:
     'try' '{' tryStmtList=stat* '}'
-    ('catch' '(' catchTypes+=noArrayType catchVarNames+=Identifier ')'
+    ('catch' '(' catchTypes+=singleType catchVarNames+=Identifier ')'
         '{' catchStmts+=stat* '}'
     )*
     ('finally' '{' finalStmtList = stat* '}')?
@@ -160,7 +165,7 @@ expression
     |  expression '[' expression ']' #exprGetArrayElement    
     |   NEW Identifier 
          '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
-    |   NEW noArrayType '[' expression ']'     #exprNewArray
+    |   NEW singleType '[' expression ']'     #exprNewArray
     |   '(' type ')' expression #castExpr
     |   expression ('++' | '--') #exprSelfOp
     |   ('+'|'-'|'++'|'--') expression #exprSelfOpPre
@@ -193,11 +198,11 @@ expression
         expression #exprAssign
 ;
 map:
-noArrayType? '{' ( Identifier ':' expression ( ',' Identifier ':' expression)*)? '}'
+singleType? '{' ( Identifier ':' expression ( ',' Identifier ':' expression)*)? '}'
 ;
 listOrArray:
 '[]'
-| noArrayType? '[' ( expression ( ',' expression )* ) ']'
+| singleType? '[' ( expression ( ',' expression )* ) ']'
 ;
 
 literal

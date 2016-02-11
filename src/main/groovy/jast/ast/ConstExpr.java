@@ -3,11 +3,12 @@ Don't modify!This file is generated automately.
 */
 package jast.ast;
 import java.util.*;
+import kalang.core.*;
 public class ConstExpr extends ExprNode{
     
     public Object value;
     
-    public String type;
+    public Type type;
     
     
     public ConstExpr(){
@@ -15,7 +16,7 @@ public class ConstExpr extends ExprNode{
     }
     
     
-    public ConstExpr(Object value,String type){
+    public ConstExpr(Object value,Type type){
         
         
             this.value = value;

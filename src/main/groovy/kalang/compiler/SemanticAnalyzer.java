@@ -38,8 +38,11 @@ import jast.ast.VarObject;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.core.ClassType;
+import kalang.core.Type;
+import kalang.core.Types;
 
-public class SemanticAnalyzer extends AstVisitor<String> {
+public class SemanticAnalyzer extends AstVisitor<Type> {
    
     HashMap<String, VarObject> fields;
 
@@ -61,9 +64,9 @@ public class SemanticAnalyzer extends AstVisitor<String> {
 
     private AstSemanticErrorHandler errHandler;
 
-    private Stack<Map<String,AstNode>> exceptionStack = new Stack();
+    private Stack<Map<Type,AstNode>> exceptionStack = new Stack();
 
-    private Map<AstNode, String> types = new HashMap<>();
+    private Map<AstNode, Type> types = new HashMap<>();
 
     SemanticAnalyzer(AstLoader astLoader) {
         this.astLoader = astLoader;
@@ -77,26 +80,18 @@ public class SemanticAnalyzer extends AstVisitor<String> {
         };
     }
     
-    private String getDefaultType(){
-        return typeSystem.getRootClass();
+    private Type getDefaultType(){
+        return Types.ROOT_TYPE;
     }
 
     public void setAstSemanticErrorHandler(AstSemanticErrorHandler handler) {
         errHandler = handler;
     }
 
-    private ExprNode cast(ExprNode expr, String from, String to, AstNode node) {
-        try {
-            expr = typeSystem.cast(expr, from, to);
-        } catch (AstNotFoundException e) {
-            err.classNotFound(node, e.getMessage());
-            return null;
-            //throw new RuntimeException(e);
-        } catch (TypeCastException ex) {
-            expr = null;
-        }
+    private ExprNode cast(ExprNode expr, Type from, Type to, AstNode node) {
+            expr = from.cast(to, expr);
         if (expr == null) {
-            err.failedToCast(node, from, to);
+            err.failedToCast(node, from.getName(), to.getName());
             return null;
         }
         return expr;
@@ -142,28 +137,28 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visit(AstNode node) {
+    public Type visit(AstNode node) {
         if (node instanceof Statement && returned) {
             err.fail("unabled to reach statement", AstSemanticError.LACKS_OF_STATEMENT, node);
             return null;
         }
         Object ret = super.visit(node);
-        if (ret instanceof String) {
-            types.put(node, (String) ret);
-            return (String) ret;
+        if (ret instanceof Type) {
+            types.put(node,(Type) ret);
+            return  (Type) ret;
         }
         return null;
     }
 
     @Override
-    public String visitCastExpr(CastExpr node) {
+    public Type visitCastExpr(CastExpr node) {
         return node.type;
     }
 
     @Override
-    public String visitAssignExpr(AssignExpr node) {
-        String ft = visit(node.from);
-        String tt = visit(node.to);
+    public Type visitAssignExpr(AssignExpr node) {
+        Type ft = visit(node.from);
+        Type tt = visit(node.to);
         if(!requireNoneVoid(ft, node)) return getDefaultType();
         if(!requireNoneVoid(tt, node)) return getDefaultType();
         if(!checkCastable(ft, tt, node)){
@@ -173,7 +168,7 @@ public class SemanticAnalyzer extends AstVisitor<String> {
         return tt;
     }
 
-    private String getMathType(String t1, String t2, String op) {
+    private Type getMathType(String t1, String t2, String op) {
         String pt1 = typeSystem.getPrimitiveType(t1);
         String pt2 = typeSystem.getPrimitiveType(t2);
         if (pt1 == null) {
@@ -183,7 +178,7 @@ public class SemanticAnalyzer extends AstVisitor<String> {
             pt2 = t2;
         }
         String ret = MathType.getType(pt1, pt2, op);
-        return ret;
+        return Types.getPrimitiveType(ret);
         //return castSys.classifyType(ret)
     }
 
@@ -207,31 +202,31 @@ public class SemanticAnalyzer extends AstVisitor<String> {
      return expr;
      }*/
     @Override
-    public String visitBinaryExpr(BinaryExpr node) {
-        String t1 = (visit(node.expr1));
-        String t2 = (visit(node.expr2));
+    public Type visitBinaryExpr(BinaryExpr node) {
+        Type t1 = visit(node.expr1);
+        Type t2 = visit(node.expr2);
         String op = node.operation;
-        String t;
+        Type t;
         switch (op) {
             case "==":
-                if (typeSystem.isNumber(t1)) {
-                    if (!typeSystem.isNumber(t2)) {
-                        err.failedToCast(node, t2, typeSystem.getIntClass());
+                if (typeSystem.isNumber(t1.getName())) {
+                    if (!typeSystem.isNumber(t2.getName())) {
+                        err.failedToCast(node, t2.getName(), typeSystem.getIntClass());
                         return getDefaultType();
                     }
                     //fail("Number required",node);
                 } else {
                     //TODO pass anything.may be Object needed?
                 }
-                t = "boolean";
+                t = Types.BOOLEAN_TYPE;
                 break;
             case "+":
                 if(isNumber(t1) && isNumber(t2)){
-                    t = getMathType(t1, t2, op);
+                    t = getMathType(t1.getName(), t2.getName(), op);
                 }else{
-                    node.expr1 = cast(node.expr1,t1,typeSystem.getStringClass(), node);
-                    node.expr2 = cast(node.expr2, t2, typeSystem.getStringClass(), node);
-                    t = typeSystem.getStringClass();
+                    node.expr1 = cast(node.expr1,t1,Types.STRING_CLASS_TYPE, node);
+                    node.expr2 = cast(node.expr2, t2, Types.STRING_CLASS_TYPE, node);
+                    t =Types.STRING_CLASS_TYPE;
                 }
                 break;
             case "-":
@@ -240,7 +235,7 @@ public class SemanticAnalyzer extends AstVisitor<String> {
             case "%":
                 if(!requireNumber(node, t1)) return getDefaultType();
                 if(!requireNumber(node, t2)) return getDefaultType();
-                t = getMathType(t1, t2, op);
+                t = (getMathType(t1.getName(), t2.getName(), op));
                 break;
             case ">=":
             case "<=":
@@ -248,20 +243,20 @@ public class SemanticAnalyzer extends AstVisitor<String> {
             case "<":
                 if(!requireNumber(node, t1)) return getDefaultType();
                 if(!requireNumber(node, t2)) return getDefaultType();
-                t = "boolean";
+                t = Types.BOOLEAN_TYPE;
                 break;
             case "&&":
             case "||":
                 if(!requireBoolean(node, t1)) return getDefaultType();
                 if(!requireBoolean(node, t2)) return getDefaultType();
-                t = "boolean";
+                t = Types.BOOLEAN_TYPE;
                 break;
             case "&":
             case "|":
             case "^":
                 if(!requireNumber(node, t1)) return getDefaultType();
                 if(!requireNumber(node, t2)) return getDefaultType();
-                t = typeSystem.getHigherType(t1, t2);
+                t =Types.getPrimitiveType(typeSystem.getHigherType(t1.getName(), t2.getName()));
                 break;
             default:
                 err.fail("unsupport operation:" + op, AstSemanticError.UNSUPPORTED, node);
@@ -271,22 +266,22 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitConstExpr(ConstExpr node) {
+    public Type visitConstExpr(ConstExpr node) {
         return node.type;
     }
 
     @Override
-    public String visitElementExpr(ElementExpr node) {
-        String type = visit(node.target);
+    public Type visitElementExpr(ElementExpr node) {
+        Type type = visit(node.target);
         //if(!type.endsWith("[]")){
         if(!requireArray(node, type)) return getDefaultType();
         //fail("Array type required",node)
         //}
-        return type.substring(0, type.length() - 2);
+        return type.getComponentType();
     }
 
     @Override
-    public String visitFieldExpr(FieldExpr node) {
+    public Type visitFieldExpr(FieldExpr node) {
         if (null == node.target) {
             VarObject field = fields.get(node.fieldName);
             if (isStatic(method.modifier)) {
@@ -294,14 +289,16 @@ public class SemanticAnalyzer extends AstVisitor<String> {
             }
             return field.type;
         }
-        String t = visit(node.target);
-        ClassNode target = this.astLoader.getAst(t);
-        if (target == null) {
-            err.fieldNotFound(node, t);
-            return getDefaultType();
-        }
+        Type t = visit(node.target);
+        
+//        ClassNode target = ((ClassType) t).getClassNode();
+//        if (target == null) {
+//            err.fieldNotFound(node, t.getName());
+//            return getDefaultType();
+//        }
         String fname = node.fieldName;
-        VarObject field = this.astParser.getField(target, fname);
+        //VarObject field = this.astParser.getField(target, fname);
+        VarObject field = t.getField(fname);
         if (field == null) {
             err.fieldNotFound(node, fname);
             return getDefaultType();
@@ -313,15 +310,15 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitInvocationExpr(InvocationExpr node) {
-        List<String> types = visitAll(node.arguments);
-        String target = node.target != null ? visit(node.target) : this.clazz.name;
+    public Type visitInvocationExpr(InvocationExpr node) {
+        List<Type> types = visitAll(node.arguments);
+        ClassType target = node.target != null ?(ClassType) visit(node.target) : Types.getClassType(this.clazz);
         String methodName = node.methodName;
-        ClassNode ast = loadAst(target, node);
+        ClassNode ast = target.getClassNode();
         if (ast == null) {
-            return typeSystem.getRootClass();
+            return Types.ROOT_TYPE;
         }
-        MethodNode method = selectMethod(node, ast, methodName, types.toArray(new String[0]));
+        MethodNode method = selectMethod(node, ast, methodName, types.toArray(new Type[0]));
         if (method == null) {
             return getDefaultType();
         }
@@ -332,21 +329,21 @@ public class SemanticAnalyzer extends AstVisitor<String> {
         }
         castInvocationParams(node, method);
         //TODO here could be optim
-        for(String et:method.exceptionTypes){
+        for(Type et:method.exceptionTypes){
             this.exceptionStack.peek().put(et,node);
         }
         return method.type;
     }
 
     @Override
-    public String visitParameterExpr(ParameterExpr node) {
+    public Type visitParameterExpr(ParameterExpr node) {
         return node.parameter.type;
     }
 
     @Override
-    public String visitUnaryExpr(UnaryExpr node) {
+    public Type visitUnaryExpr(UnaryExpr node) {
         String preOp = node.preOperation;
-        String et = visit(node.expr);
+        Type et = visit(node.expr);
         if (preOp != null && preOp.equals("!")) {
             if(!requireBoolean(node, et)) return getDefaultType();
         } else {
@@ -357,37 +354,33 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitVarExpr(VarExpr node) {
+    public Type visitVarExpr(VarExpr node) {
         //Integer vid = node.varId;
         //def declStmt = this.varDeclStmts.get(vid);
         //declStmt.type
         return node.var.type;
     }
 
-    private void caughException(String type, AstNode node) {
-        Map<String, AstNode> exceptions = this.exceptionStack.peek();
-        String[] exTypes = exceptions.keySet().toArray(new String[0]);
-        for (String e : exTypes) {
-            try {
+    private void caughException(Type type, AstNode node) {
+        Map<Type, AstNode> exceptions = this.exceptionStack.peek();
+        Type[] exTypes = exceptions.keySet().toArray(new Type[0]);
+        for (Type e : exTypes) {
                 if (
                         e.equals(type)
-                        || this.typeSystem.isSubclass(e, type)
+                        || ((ClassType)e).isSubclassType(type)
+                        //|| this.typeSystem.isSubclass(e, type)
                         ) {
                     exceptions.remove(e);
                 }
-            } catch (AstNotFoundException e1) {
-                err.classNotFound(node, e);
-                throw new RuntimeException(e1);
-            }
         }
     }
 
     @Override
-    public String visitTryStmt(TryStmt node) {
+    public Type visitTryStmt(TryStmt node) {
         this.exceptionStack.add(new HashMap<>());
         visit(node.execStmt);
         visitAll(node.catchStmts);
-        Map<String, AstNode> uncaught = this.exceptionStack.pop();
+        Map<Type, AstNode> uncaught = this.exceptionStack.pop();
         if (uncaught.size() > 0) {
             this.exceptionStack.peek().putAll(uncaught);
         }
@@ -396,25 +389,25 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitCatchStmt(CatchStmt node) {
+    public Type visitCatchStmt(CatchStmt node) {
         this.caughException(node.catchVarDecl.var.type, node);
         return null;
     }
 
     @Override
-    public String visitClassExpr(ClassExpr node) {
-        return node.name;
+    public Type visitClassExpr(ClassExpr node) {
+        return Types.getClassType(loadAst(node.name, node));
     }
 
     @Override
-    public String visitNewExpr(NewExpr node) {
+    public Type visitNewExpr(NewExpr node) {
         return node.type;
     }
 
     @Override
-    public String visitVarDeclStmt(VarDeclStmt node) {
+    public Type visitVarDeclStmt(VarDeclStmt node) {
         VarObject var = node.var;
-        String retType = null;
+        Type retType = null;
         if(var.initExpr!=null){
             retType = visit(var.initExpr);
             if(!requireNoneVoid(retType, node)) return getDefaultType();
@@ -423,7 +416,7 @@ public class SemanticAnalyzer extends AstVisitor<String> {
             if(retType!=null){
                 var.type = retType;
             }else{
-                var.type = typeSystem.getRootClass();
+                var.type = Types.ROOT_TYPE;
             }
         }
         if(retType!=null){
@@ -433,12 +426,12 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitNewArrayExpr(NewArrayExpr node) {
-        return node.type + "[]";
+    public Type visitNewArrayExpr(NewArrayExpr node) {
+        return Types.getArrayType(node.type);
     }
 
     @Override
-    public String visitIfStmt(IfStmt node) {
+    public Type visitIfStmt(IfStmt node) {
         //node.conditionExpr = this.checkAndCastToBoolean(node.conditionExpr);
         if(!requireBoolean(node, visit(node.conditionExpr))) return getDefaultType();
         if (node.trueBody != null) {
@@ -456,7 +449,7 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitLoopStmt(LoopStmt node) {
+    public Type visitLoopStmt(LoopStmt node) {
         if (node.preConditionExpr != null) {
             requireBoolean(node.preConditionExpr);
         }
@@ -473,7 +466,7 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitMethodNode(MethodNode node) {
+    public Type visitMethodNode(MethodNode node) {
         String mStr = this.astParser.getMethodDescriptor(node, this.clazz.name);
         if (methodDeclared.contains(mStr)) {
             err.unsupported("declare method duplicately", node);
@@ -485,13 +478,13 @@ public class SemanticAnalyzer extends AstVisitor<String> {
         this.exceptionStack.push(new HashMap<>());
         super.visitMethodNode(node);
         if (method.exceptionTypes != null) {
-            for (String e : method.exceptionTypes) {
+            for (Type e : method.exceptionTypes) {
                 this.caughException(e, node);
             }
         }
-        Map<String, AstNode> uncaught = this.exceptionStack.pop();
-        for(String k:uncaught.keySet()){
-            err.uncaughtException(uncaught.get(k),k);
+        Map<Type, AstNode> uncaught = this.exceptionStack.pop();
+        for(Type k:uncaught.keySet()){
+            err.uncaughtException(uncaught.get(k),k.getName());
         }
         boolean needReturn;
         if(isSpecialMethod(node)){
@@ -507,45 +500,45 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitReturnStmt(ReturnStmt node) {
-        String retType = method.type;
+    public Type visitReturnStmt(ReturnStmt node) {
+        Type retType = method.type;
         //this.checkCastable(visit(node.expr),retType,node)
         if (node.expr != null) {
-            String exType = visit(node.expr);
+            Type exType = visit(node.expr);
             node.expr = this.cast(node.expr, exType, retType, node);
         }
         returned = true;
         return null;
     }
 
-    boolean requireNumber(AstNode node, String t) {
+    boolean requireNumber(AstNode node, Type t) {
         if (!isNumber(t)) {
-            err.failedToCast(node, t, typeSystem.getIntClass());
+            err.failedToCast(node, t.getName(), typeSystem.getIntClass());
             return false;
         }
         return true;
     }
 
     boolean requireBoolean(AstNode node) {
-        String t = visit(node);
+        Type t = visit(node);
         return requireBoolean(node, t);
     }
 
-    boolean requireBoolean(AstNode node, String t) {
-        if (!typeSystem.isBoolean(t)) {
-            err.failedToCast(node, t, typeSystem.getBooleanClass());
+    boolean requireBoolean(AstNode node, Type t) {
+        if (!typeSystem.isBoolean(t.getName())) {
+            err.failedToCast(node, t.getName(), typeSystem.getBooleanClass());
             return false;
         }
         return true;
     }
 
-    boolean isArray(String t) {
-        return t.endsWith("[]");
+    boolean isArray(Type t) {
+        return t.isArray();
     }
 
-    boolean requireArray(AstNode node, String t) {
+    boolean requireArray(AstNode node, Type t) {
         if (!isArray(t)) {
-            err.failedToCast(node, t, "array");
+            err.failedToCast(node, t.getName(), "array");
             return false;
         }
         return true;
@@ -564,17 +557,18 @@ public class SemanticAnalyzer extends AstVisitor<String> {
         return true;
     }
 
-    boolean requireNoneVoid(String type, AstNode node) {
+    boolean requireNoneVoid(Type type, AstNode node) {
         if (type == null
-                || type.equals(typeSystem.getVoidPrimitiveType())
-                || type.equals(typeSystem.getVoidClass())) {
+                || type == Types.VOID_TYPE
+                || type == Types.VOID_CLASS_TYPE
+                ){
             err.unsupported("use void type as value", node);
             return false;
         }
         return true;
     }
 
-    MethodNode selectMethod(AstNode node, ClassNode cls, String methodName, String[] types) {
+    MethodNode selectMethod(AstNode node, ClassNode cls, String methodName, Type[] types) {
         MethodNode[] methods = astParser.selectMethod(cls, methodName, types);
         List typeList = new LinkedList();
         if (types != null) {
@@ -592,30 +586,28 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     private void castInvocationParams(InvocationExpr expr, MethodNode method) {
-        List<String> mTypes = this.astParser.getParameterTypes(method);
+        List<Type> mTypes = this.astParser.getParameterTypes(method);
         int i = 0;
-        for (String mt : mTypes) {
-            String pt = visit(expr.arguments.get(i));
-            try {
-                expr.arguments.set(i, this.typeSystem.cast(expr.arguments.get(i), pt, mt));
-            } catch (AstNotFoundException e) {
-                err.classNotFound(expr, e.getMessage());
-                throw new RuntimeException(e);
-            }
+        for ( Type mt : mTypes) {
+            Type pt = visit(expr.arguments.get(i));
+                expr.arguments.set(i,
+                        pt.cast(mt, expr.arguments.get(i))
+                        //this.typeSystem.cast(expr.arguments.get(i), pt, mt)
+                );
             i++;
         }
     }
 
     @Override
-    public String visitKeyExpr(KeyExpr node) {
+    public Type visitKeyExpr(KeyExpr node) {
         String key = node.key;
         if (key.equals("this")) {
-            return this.clazz.name;
+            return Types.getClassType(this.clazz);
         } else if (key.equals("super")) {
             if (clazz.parent == null) {
                 return getDefaultType();
             }
-            return this.clazz.parent.name;
+            return Types.getClassType(clazz.parent);
         } else {
             System.err.println("Unknown key:" + key);
             return getDefaultType();
@@ -623,21 +615,21 @@ public class SemanticAnalyzer extends AstVisitor<String> {
     }
 
     @Override
-    public String visitMultiStmtExpr(MultiStmtExpr node) {
+    public Type visitMultiStmtExpr(MultiStmtExpr node) {
         visitAll(node.stmts);
         return visit(node.reference);
     }
     
-    public String getType(AstNode node){
+    public Type getType(AstNode node){
         return types.get(node);
     }
 
-    public Map<AstNode, String> getTypes() {
+    public Map<AstNode, Type> getTypes() {
         return types;
     }
 
-    private boolean isNumber(String t1) {
-        return typeSystem.isNumber(t1);
+    private boolean isNumber(Type t1) {
+        return typeSystem.isNumber(t1.getName());
     }
 
     public boolean isSpecialMethod(MethodNode node) {
@@ -664,15 +656,12 @@ public class SemanticAnalyzer extends AstVisitor<String> {
         return astParser;
     }
 
-    private boolean checkCastable(String ft, String tt,AstNode ast) {
-        try {
-            if(!typeSystem.castable(ft, tt)){
-                err.failedToCast(ast, ft, tt);
+    private boolean checkCastable(Type ft, Type tt,AstNode ast) {
+            if(!ft.castable(tt)){
+            //if(!typeSystem.castable(ft, tt)){
+                err.failedToCast(ast, ft.getName(), tt.getName());
                 return false;
             }
-        } catch (AstNotFoundException ex) {
-            return false;
-        }
         return true;
     }
 

@@ -3,9 +3,10 @@ Don't modify!This file is generated automately.
 */
 package jast.ast;
 import java.util.*;
+import kalang.core.*;
 public class CastExpr extends ExprNode{
     
-    public String type;
+    public Type type;
     
     public ExprNode expr;
     
@@ -15,7 +16,7 @@ public class CastExpr extends ExprNode{
     }
     
     
-    public CastExpr(String type,ExprNode expr){
+    public CastExpr(Type type,ExprNode expr){
         
         
             this.type = type;

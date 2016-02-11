@@ -3,6 +3,7 @@ Don't modify!This file is generated automately.
 */
 package {{package}};
 import java.util.*;
+import kalang.core.*;
 public class {{name}} extends {{parent}}{
     {{#each fields}}
     public {{&type}} {{name}};

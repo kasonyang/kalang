@@ -21,19 +21,19 @@
 
 #MethodNode
 -modifier:Integer
--type:String
+-type:Type
 -name:String
 //-isStatic:boolean
 +parameters:VarObject*
 +body:Statement
--exceptionTypes:String*
+-exceptionTypes:Type*
 
 //#ParameterNode
 //-type:String
 //-name:String
 @VarObject
 -modifier:Integer
--type:String
+-type:Type
 -name:String
 +initExpr:ExprNode
 
@@ -87,7 +87,7 @@
 -operation:String
 ##ConstExpr
 -value:Object
--type:String
+-type:Type
 ##ElementExpr
 +target:ExprNode
 +key:ExprNode
@@ -110,15 +110,15 @@
 ##ClassExpr
 -name:String
 ##NewExpr
--type:String
+-type:Type
 +arguments:ExprNode*
 ##ParameterExpr
 -parameter:VarObject
 ##CastExpr
--type:String
+-type:Type
 -expr:ExprNode
 ##NewArrayExpr
--type:String
+-type:Type
 -size:ExprNode
 ##KeyExpr
 -key:String

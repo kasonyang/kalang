@@ -5,7 +5,11 @@ import java.util.List;
 
 import jast.ast.*;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import kalang.core.ClassType;
+import kalang.core.Type;
+import kalang.core.Types;
 
 public class AstMetaParser {
 
@@ -15,8 +19,12 @@ public class AstMetaParser {
         this.typeSystem = typeSystem;
     }
 
-   public static String getMethodDescriptor(String name, List<String> types, String className) {
-        String typeStr = String.join(",", types);
+   public static String getMethodDescriptor(String name, List<Type> types, String className) {
+       List<String> typeStrList = new ArrayList<>(types.size());
+       for(Type t:types){
+           typeStrList.add(t.getName());
+       }
+        String typeStr = String.join(",", typeStrList);
         String str = String.format("%s(%s)", name, typeStr);
         if (className != null) {
             str = String.format("%s#%s", className, str);
@@ -52,8 +60,8 @@ public class AstMetaParser {
 		}
 		return null
 	}*/
-    public static List<String> getParameterTypes(MethodNode mn) {
-        List<String> types = new LinkedList();
+    public static List<Type> getParameterTypes(MethodNode mn) {
+        List<Type> types = new LinkedList();
         if (mn.parameters == null) {
             return types;
         }
@@ -67,7 +75,7 @@ public class AstMetaParser {
         List<MethodNode> list = new LinkedList();
         for (MethodNode m : theInterface.methods) {
             String name = m.name;
-            String[] types = getParameterTypes(m).toArray(new String[0]);
+            Type[] types = getParameterTypes(m).toArray(new Type[0]);
             MethodNode[] methods = this.getMethodsByName(theClass, name);
             MethodNode[] matches = this.matchMethodsByType(methods, types);
             if (matches == null || matches.length == 0) {
@@ -81,7 +89,7 @@ public class AstMetaParser {
         MethodNode initMethod = MethodNode.create();
         initMethod.modifier = Modifier.PUBLIC | Modifier.STATIC;
         initMethod.name = "<init>";
-        initMethod.type = clazzNode.name;
+        initMethod.type = Types.getClassType(clazzNode);
         initMethod.body = BlockStmt.create();
         clazzNode.methods.add(initMethod);
     }
@@ -96,30 +104,30 @@ public class AstMetaParser {
         return methods.toArray(new MethodNode[0]);
     }
 
-    public boolean matchType(String from, String target, boolean matchSubclass, boolean autoCast) {
+    public boolean matchType(Type from, Type target, boolean matchSubclass, boolean autoCast) {
         if (from.equals(target)) {
             return true;
         }
-        try {
-            if (matchSubclass && typeSystem.isSubclass(from, target)) {
+            if (matchSubclass
+                    && (from instanceof ClassType)
+                    &&((ClassType)from).isSubclassType(target)
+                    //&& typeSystem.isSubclass(from, target)
+                    ) {
                 return true;
             }
-            if (autoCast && this.typeSystem.castable(from, target)) {
+            if (autoCast && from.castable(target)) {
                 return true;
             }
-        } catch (AstNotFoundException e) {
-            throw new RuntimeException(e);
-        }
         return false;
     }
 
-    public boolean matchTypes(String[] from, String[] target, boolean matchSubclass, boolean autoCast) {
+    public boolean matchTypes(Type[] from, Type[] target, boolean matchSubclass, boolean autoCast) {
         if (from.length != target.length) {
             return false;
         }
         for (int i = 0; i < from.length; i++) {
-            String f = from[i];
-            String t = target[i];
+            Type f = from[i];
+            Type t = target[i];
             if (!matchType(f, t, matchSubclass, autoCast)) {
                 return false;
             }
@@ -127,18 +135,18 @@ public class AstMetaParser {
         return true;
     }
 
-    public MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types) {
+    public MethodNode[] matchMethodsByType(MethodNode[] methods, Type[] types) {
         return matchMethodsByType(methods, types, false, false);
     }
 
-    public MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types, boolean matchSubclass) {
+    public MethodNode[] matchMethodsByType(MethodNode[] methods, Type[] types, boolean matchSubclass) {
         return matchMethodsByType(methods, types, matchSubclass, false);
     }
 
-    public MethodNode[] matchMethodsByType(MethodNode[] methods, String[] types, boolean matchSubclass, boolean autoCast) {
+    public MethodNode[] matchMethodsByType(MethodNode[] methods, Type[] types, boolean matchSubclass, boolean autoCast) {
         List<MethodNode> list = new LinkedList();
         for (MethodNode m : methods) {
-            String[] mTypes = getParameterTypes(m).toArray(new String[0]);
+            Type[] mTypes = getParameterTypes(m).toArray(new Type[0]);
             if (matchTypes(types, mTypes, matchSubclass, autoCast)) {
                 list.add(m);
             }
@@ -151,7 +159,7 @@ public class AstMetaParser {
     }
     
     
-    public MethodNode[] selectMethod(ClassNode cls, String methodName, String[] types) {
+    public MethodNode[] selectMethod(ClassNode cls, String methodName, Type[] types) {
         MethodNode[] methods = getMethodsByName(cls, methodName);
         MethodNode[] matches;
         matches = matchMethodsByType(methods, types, false, false);

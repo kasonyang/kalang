@@ -3,9 +3,10 @@ Don't modify!This file is generated automately.
 */
 package jast.ast;
 import java.util.*;
+import kalang.core.*;
 public class NewExpr extends ExprNode{
     
-    public String type;
+    public Type type;
     
     public List<ExprNode> arguments;
     
@@ -17,7 +18,7 @@ public class NewExpr extends ExprNode{
     }
     
     
-    public NewExpr(String type,List<ExprNode> arguments){
+    public NewExpr(Type type,List<ExprNode> arguments){
         
             if(arguments == null) arguments = new LinkedList();
         

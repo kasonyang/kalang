@@ -3,6 +3,7 @@ Don't modify!This file is generated automately.
 */
 package jast.ast;
 import java.util.*;
+import kalang.core.*;
 public class ElementExpr extends ExprNode{
     
     public ExprNode target;

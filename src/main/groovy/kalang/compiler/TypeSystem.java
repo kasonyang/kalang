@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import kalang.core.Types;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
@@ -151,16 +152,30 @@ public class TypeSystem {
     }
 
     String getHigherType(String type1, String type2) {
-        if (type1.equals(DOUBLE_CLASS) || type2.equals(DOUBLE_CLASS)) {
-            return DOUBLE_CLASS;
+        if (
+                type1.equals(DOUBLE_CLASS) 
+                || type1.equals(DOUBLE_PRIMITIVE_TYPE)
+                || type2.equals(DOUBLE_CLASS)
+                || type2.equals(DOUBLE_PRIMITIVE_TYPE)
+                ) {
+            return DOUBLE_PRIMITIVE_TYPE;
         }
-        if (type1.equals(FLOAT_CLASS) || type2.equals(FLOAT_CLASS)) {
-            return FLOAT_CLASS;
+        if (
+                type1.equals(FLOAT_CLASS)
+                || type1.equals(FLOAT_PRIMITIVE_TYPE)
+                || type2.equals(FLOAT_CLASS)
+                || type2.equals(FLOAT_PRIMITIVE_TYPE)
+                ) {
+            return FLOAT_PRIMITIVE_TYPE;
         }
-        if (type1.equals(LONG_CLASS) || type2.equals(LONG_CLASS)) {
-            return LONG_CLASS;
+        if (
+                type1.equals(LONG_CLASS) 
+                || type1.equals(LONG_PRIMITIVE_TYPE)
+                || type2.equals(LONG_CLASS)
+                || type2.equals(LONG_PRIMITIVE_TYPE)) {
+            return LONG_PRIMITIVE_TYPE;
         }
-        return INT_CLASS;
+        return INT_PRIMITIVE_TYPE;
     }
 
     boolean isSubclass(String type, String subclassType) throws AstNotFoundException {
@@ -252,7 +267,7 @@ public class TypeSystem {
             CAST_OBJECT_TO_STRING = 5;
 
     private ExprNode castPrimitive(ExprNode expr, String fromType, String toType) {
-        return new CastExpr(toType, expr);
+        return new CastExpr(Types.getPrimitiveType(toType), expr);
     }
 
     private ExprNode castPrimitive2Object(ExprNode expr, String fromType, String toType) {
