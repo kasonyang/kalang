@@ -14,6 +14,16 @@ clone the source,and run
 
     >gradle installDist
 
+# Helloworld Example
+
+    //Helloworld.kl
+    class {
+        static void main(String[] args){
+            var s = "Hello,world!";
+            System.out.println(s);
+        }
+    }
+
 # Usage
 
 add the path`build/install/kalang/bin` to your `PATH` environment variable,and run
