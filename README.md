@@ -22,4 +22,4 @@ add the path`build/install/kalang/bin` to your `PATH` environment variable,and r
 
 # IDE support
 
-    Netbeans [Kalang-support](https://github.com/kasonyang/kalang-support)
+Netbeans [Kalang-support](https://github.com/kasonyang/kalang-support)
