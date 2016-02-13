@@ -45,9 +45,9 @@ public class ArrayType extends Type{
     }
 
     @Override
-    public boolean castable(Type targetType) {
+    public boolean isCastableTo(Type targetType) {
         if(targetType instanceof ArrayType){
-            return componentType.castable(((ArrayType)targetType).getComponentType());
+            return componentType.isCastableTo(((ArrayType)targetType).getComponentType());
         }
         return false;
     }

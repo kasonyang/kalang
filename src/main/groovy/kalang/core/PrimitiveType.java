@@ -29,7 +29,7 @@ public class PrimitiveType extends Type{
     }
 
     @Override
-    public boolean castable(Type targetType) {
+    public boolean isCastableTo(Type targetType) {
         if (this.equals(targetType)) {
             return true;
         }

@@ -42,8 +42,13 @@ public class ClassType extends Type{
     }
 
     @Override
-    public boolean castable(Type targetType) {
-        return isSubclassTypeOf(targetType);
+    public boolean isCastableTo(Type targetType) {
+        if(Types.isNumber(this)){
+            PrimitiveType pt = Types.getPrimitiveType(this);
+            return pt.isCastableTo(targetType);
+        }else{
+            return isSubclassTypeOf(targetType);
+        }
     }
 
     @Override

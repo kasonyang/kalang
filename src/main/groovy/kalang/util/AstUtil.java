@@ -49,7 +49,7 @@ public class AstUtil {
 			for(def p in ps){
 				mtypes.add(p.type)
 			}
-			if(castSystem.castable(types,mtypes)){
+			if(castSystem.isCastableTo(types,mtypes)){
 				return m
 			}
 		}
@@ -110,7 +110,7 @@ public class AstUtil {
                     ) {
                 return true;
             }
-        return autoCast && from.castable(target);
+        return autoCast && from.isCastableTo(target);
     }
 
     public static boolean matchTypes(Type[] from, Type[] target, boolean matchSubclass, boolean autoCast) {
