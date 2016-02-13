@@ -200,7 +200,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
      be.operation = "!="
      def zero = new ConstExpr();
      if(castSys.isNumber(type)){
-     zero.type = INT_CLASS;
+     zero.type = INT_CLASS_NAME;
      zero.value = 0;
      }else{
      zero.type = NULL_CLASS;

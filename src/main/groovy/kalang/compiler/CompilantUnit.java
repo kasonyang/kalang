@@ -65,11 +65,7 @@ import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVisitor {
-
-    private static final String MAP_CLASS = "java.util.HashMap";
-    
-    static String DEFAULT_METHOD_TYPE = "java.lang.Object";
-    static String DEFAULT_LIST_CLASS = "java.util.LinkedList";
+   
     static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
 
     //short name to full name
@@ -241,7 +237,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             iv.target = ve;
             iv.methodName = "put";
             ConstExpr k = new ConstExpr();
-            k.type = stringType;// STRING_CLASS;
+            k.type = stringType;// STRING_CLASS_NAME;
             k.value = ctx.Identifier(i).getText();
             iv.arguments.add(k);
             iv.arguments.add(v);

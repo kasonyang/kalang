@@ -23,86 +23,83 @@ public class Types {
     
     private static Map<ClassNode,ClassType> classTypes  = new HashMap<>();
     
+    private final static DualHashBidiMap<PrimitiveType,ClassType> primitive2class = new DualHashBidiMap<>();;
+    
     public static final PrimitiveType 
-            INT_TYPE = getPrimitiveType("int")
+            BOOLEAN_TYPE = getPrimitiveType("boolean")
+            ,BYTE_TYPE = getPrimitiveType("byte")
+            ,CHAR_TYPE = getPrimitiveType("char")
+            ,SHORT_TYPE = getPrimitiveType("short")
+            ,INT_TYPE = getPrimitiveType("int")
            , LONG_TYPE = getPrimitiveType("long")
             ,FLOAT_TYPE = getPrimitiveType("float")
             ,DOUBLE_TYPE = getPrimitiveType("double")
-            ,BYTE_TYPE = getPrimitiveType("byte")
-            ,BOOLEAN_TYPE = getPrimitiveType("boolean")
-            ,CHAR_TYPE = getPrimitiveType("char")
             ,NULL_TYPE = getPrimitiveType("null")
             ,VOID_TYPE = getPrimitiveType("void")
     ;
-    
-        private static final String SHORT_PRIMITIVE_TYPE = "short",
-            INT_PRIMITIVE_TYPE = "int",
-            LONG_PRIMITIVE_TYPE = "long",
-            FLOAT_PRIMITIVE_TYPE = "float",
-            DOUBLE_PRIMITIVE_TYPE = "double",
-            BOOLEAN_PRIMITIVE_TYPE = "boolean",
-            BYTE_PRIMITIVE_TYPE = "byte",
-            CHAR_PRIMITIVE_TYPE = "char",
-            NULL_PRIMITIVE_TYPE = "null",
-            VOID_PRIMITIVE_TYPE = "void";
 
     public static final String FLOAT_CLASS_NAME = "java.lang.Float";
     public static final String DOUBLE_CLASS_NAME = "java.lang.Double";
 
-    public static final String INT_CLASS = "java.lang.Integer";
-    public static final String LONG_CLASS = "java.lang.Long";
+    public static final String INT_CLASS_NAME = "java.lang.Integer";
+    public static final String LONG_CLASS_NAME = "java.lang.Long";
 
-    public static final String BOOLEAN_CLASS = "java.lang.Boolean";
+    public static final String BOOLEAN_CLASS_NAME = "java.lang.Boolean";
 
-    public static final String CHAR_CLASS = "java.lang.Character";
+    public static final String CHAR_CLASS_NAME = "java.lang.Character";
 
-    public static final String STRING_CLASS = "java.lang.String";
+    public static final String STRING_CLASS_NAME = "java.lang.String";
 
-    public static final String VOID_CLASS = "java.lang.Void";
+    public static final String VOID_CLASS_NAME = "java.lang.Void";
 
-    public static final String SHORT_CLASS = "java.lang.Short";
+    public static final String SHORT_CLASS_NAME = "java.lang.Short";
 
-    public static final String BYTE_CLASS = "java.lang.Byte";
+    public static final String BYTE_CLASS_NAME = "java.lang.Byte";
 
-    public static final String ROOT_CLASS = "java.lang.Object";
-
+    public static final String ROOT_CLASS_NAME = "java.lang.Object";
     
-    public static final ClassType INT_CLASS_TYPE
-            ,LONG_CLASS_TYPE,FLOAT_CLASS_TYPE
-                    ,DOUBLE_CLASS_TYPE,ROOT_TYPE,VOID_CLASS_TYPE;
-    public static final ClassType STRING_CLASS_TYPE;
-    public static final ClassType BOOLEAN_CLASS_TYPE;
-    public static final ClassType CHAR_CLASS_TYPE;
-    public static final ClassType SHORT_CLASS_TYPE;
-    public static final String MAP_IMPL_CLASS_NAME = "java.util.Map";
-    public static final ClassType MAP_IMPL_TYPE;
+    public static final String MAP_IMPL_CLASS_NAME = "java.util.HashMap";
+    
     public static final String LIST_IMPL_CLASS_NAME = "java.util.LinkedList";
-    public static final ClassType LIST_CLASS_TYPE ;
-    private final static DualHashBidiMap<PrimitiveType,ClassType> primitive2class;
-    private final static PrimitiveType SHORT_TYPE = getPrimitiveType("short");
-    private final static ClassType BYTE_CLASS_TYPE ;
+
     
+    public static final ClassType 
+            VOID_CLASS_TYPE
+            ,BOOLEAN_CLASS_TYPE
+            ,BYTE_CLASS_TYPE
+            ,CHAR_CLASS_TYPE
+            ,SHORT_CLASS_TYPE
+            ,INT_CLASS_TYPE
+            ,LONG_CLASS_TYPE
+            ,FLOAT_CLASS_TYPE
+            ,DOUBLE_CLASS_TYPE
+            ,ROOT_TYPE
+            ,STRING_CLASS_TYPE
+            ,MAP_IMPL_TYPE
+            ,LIST_CLASS_TYPE
+            ;
+            
     static {
         try {
             AstLoader astLoader = AstLoader.BASE_AST_LOADER;
-            INT_CLASS_TYPE = getClassType(astLoader.loadAst(INT_CLASS));
-            LONG_CLASS_TYPE = getClassType(astLoader.loadAst(LONG_CLASS));
+            INT_CLASS_TYPE = getClassType(astLoader.loadAst(INT_CLASS_NAME));
+            LONG_CLASS_TYPE = getClassType(astLoader.loadAst(LONG_CLASS_NAME));
             FLOAT_CLASS_TYPE = getClassType(astLoader.loadAst(FLOAT_CLASS_NAME));
             DOUBLE_CLASS_TYPE = getClassType(astLoader.loadAst(DOUBLE_CLASS_NAME));
-            ROOT_TYPE = getClassType(astLoader.loadAst(ROOT_CLASS));
-            VOID_CLASS_TYPE = getClassType(astLoader.loadAst(VOID_CLASS));
-            STRING_CLASS_TYPE = getClassType(astLoader.loadAst(STRING_CLASS));
-            BOOLEAN_CLASS_TYPE = getClassType(astLoader.loadAst(BOOLEAN_CLASS));
-            CHAR_CLASS_TYPE = getClassType(astLoader.loadAst(CHAR_CLASS));
-            SHORT_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS));
-            BYTE_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS));
+            ROOT_TYPE = getClassType(astLoader.loadAst(ROOT_CLASS_NAME));
+            VOID_CLASS_TYPE = getClassType(astLoader.loadAst(VOID_CLASS_NAME));
+            STRING_CLASS_TYPE = getClassType(astLoader.loadAst(STRING_CLASS_NAME));
+            BOOLEAN_CLASS_TYPE = getClassType(astLoader.loadAst(BOOLEAN_CLASS_NAME));
+            CHAR_CLASS_TYPE = getClassType(astLoader.loadAst(CHAR_CLASS_NAME));
+            SHORT_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
+            BYTE_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
             MAP_IMPL_TYPE = getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
             LIST_CLASS_TYPE = getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
         } catch (AstNotFoundException ex) {
             //ex.printStackTrace();
             throw new RuntimeException(ex);
         }
-        primitive2class = new DualHashBidiMap<>();
+        
         primitive2class.put(INT_TYPE, INT_CLASS_TYPE);
         primitive2class.put(LONG_TYPE, LONG_CLASS_TYPE);
         primitive2class.put(FLOAT_TYPE, FLOAT_CLASS_TYPE);
