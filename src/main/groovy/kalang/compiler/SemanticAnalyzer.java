@@ -46,6 +46,7 @@ import kalang.core.Types;
 import static kalang.util.AstUtil.getMethodsByName;
 import static kalang.util.AstUtil.getParameterTypes;
 import static kalang.util.AstUtil.matchTypes;
+import kalang.util.BoxUtil;
 
 public class SemanticAnalyzer extends AstVisitor<Type> {
    
@@ -92,8 +93,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         errHandler = handler;
     }
 
-    private ExprNode cast(ExprNode expr, Type from, Type to, AstNode node) {
-            expr = from.cast(to, expr);
+    private ExprNode checkAssign(ExprNode expr, Type from, Type to, AstNode node) {
+        //expr = from.cast(to, expr);
+        expr = BoxUtil.assign(expr, from, to);
         if (expr == null) {
             err.failedToCast(node, from.getName(), to.getName());
             return null;
@@ -166,10 +168,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if(!requireNoneVoid(ft, node)) return getDefaultType();
         if(!requireNoneVoid(tt, node)) return getDefaultType();
         if(!ft.equals(tt)){
-            if(!checkCastable(ft, tt, node)){
-                return getDefaultType();
-            }
-            node.from = cast(node.from, ft, tt, node);
+            node.from = checkAssign(node.from, ft, tt, node);
+            if(node.from==null) return getDefaultType();            
         }
         return tt;
     }
@@ -237,8 +237,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if(isNumber(t1) && isNumber(t2)){
                     t = getMathType(t1, t2, op);
                 }else{
-                    node.expr1 = cast(node.expr1,t1,Types.STRING_CLASS_TYPE, node);
-                    node.expr2 = cast(node.expr2, t2, Types.STRING_CLASS_TYPE, node);
+                    node.expr1 = checkAssign(node.expr1,t1,Types.STRING_CLASS_TYPE, node);
+                    node.expr2 = checkAssign(node.expr2, t2, Types.STRING_CLASS_TYPE, node);
                     t =Types.STRING_CLASS_TYPE;
                 }
                 break;
@@ -340,7 +340,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (inStaticMethod || isClassExpr) {
             if(!requireStatic(method.modifier, node)) return getDefaultType();
         }
-        castInvocationParams(node, method);
+        //castInvocationParams(node, method);
         //TODO here could be optim
         for(Type et:method.exceptionTypes){
             this.exceptionStack.peek().put(et,node);
@@ -432,7 +432,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             }
         }
         if(retType!=null){
-            checkCastable(retType, var.type, node);
+            var.initExpr = checkAssign(var.initExpr, retType, var.type, node);
         }
         return null;
     }
@@ -520,7 +520,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         //this.checkCastable(visit(node.expr),retType,node)
         if (node.expr != null) {
             Type exType = visit(node.expr);
-            node.expr = this.cast(node.expr, exType, retType, node);
+            node.expr = this.checkAssign(node.expr, exType, retType, node);
         }
         returned = true;
         return null;
@@ -583,18 +583,18 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return true;
     }
 
-    private void castInvocationParams(InvocationExpr expr, MethodNode method) {
-        List<Type> mTypes = AstUtil.getParameterTypes(method);
-        int i = 0;
-        for ( Type mt : mTypes) {
-            Type pt = visit(expr.arguments.get(i));
-                expr.arguments.set(i,
-                        pt.cast(mt, expr.arguments.get(i))
-                        //this.typeSystem.cast(expr.arguments.get(i), pt, mt)
-                );
-            i++;
-        }
-    }
+//    private void castInvocationParams(InvocationExpr expr, MethodNode method) {
+//        List<Type> mTypes = AstUtil.getParameterTypes(method);
+//        int i = 0;
+//        for ( Type mt : mTypes) {
+//            Type pt = visit(expr.arguments.get(i));
+//                expr.arguments.set(i,
+//                        pt.cast(mt, expr.arguments.get(i))
+//                        //this.typeSystem.cast(expr.arguments.get(i), pt, mt)
+//                );
+//            i++;
+//        }
+//    }
 
     @Override
     public Type visitKeyExpr(KeyExpr node) {
