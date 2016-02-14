@@ -4,6 +4,7 @@ import jast.ast.CastExpr;
 import jast.ast.ClassExpr;
 import jast.ast.ExprNode;
 import jast.ast.InvocationExpr;
+import jast.ast.PrimitiveCastExpr;
 import java.io.*;
 import java.nio.*;
 import java.net.*;
@@ -38,7 +39,7 @@ public class BoxUtil {
             case CAST_OBJECT_TO_PRIMITIVE:
                 return castObject2Primitive(expr, fromType, toType);
             case CAST_PRIMITIVE:
-                return castPrimitive(expr, fromType, toType);
+                return castPrimitive(expr,(PrimitiveType) fromType, (PrimitiveType)toType);
             case CAST_PRIMITIVE_TO_OBJECT:
                 return castPrimitive2Object(expr, (PrimitiveType) fromType);
             case CAST_PRIMITIVE_TO_STRING:
@@ -99,8 +100,8 @@ public class BoxUtil {
         return CAST_UNSUPPORTED;
     }
 
-    private static ExprNode castPrimitive(ExprNode expr,Type fromType,Type toType) {
-        return new CastExpr(toType, expr);
+    private static ExprNode castPrimitive(ExprNode expr,PrimitiveType fromType,PrimitiveType toType) {
+        return new PrimitiveCastExpr(fromType, toType, expr);
     }
 
     private static ExprNode castPrimitive2Object(ExprNode expr, PrimitiveType fromType) {

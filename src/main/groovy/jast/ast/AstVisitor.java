@@ -153,6 +153,12 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
     }
     
     @Override
+    public T visitPrimitiveCastExpr(PrimitiveCastExpr node){
+        this.visitChildren(node);
+        return null;
+    }
+    
+    @Override
     public T visitNewArrayExpr(NewArrayExpr node){
         this.visitChildren(node);
         return null;

@@ -51,6 +51,8 @@ public interface IAstVisitor<T>{
     
     public T visitCastExpr(CastExpr node);
     
+    public T visitPrimitiveCastExpr(PrimitiveCastExpr node);
+    
     public T visitNewArrayExpr(NewArrayExpr node);
     
     public T visitKeyExpr(KeyExpr node);

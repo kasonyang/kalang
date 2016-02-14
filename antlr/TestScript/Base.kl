@@ -8,6 +8,12 @@ class{
     static void main(String[] args){
         System.out.println(args.length);
     }
+    void autoPrimitiveType(){
+        int i = 0;
+        long l = i;
+        float f = l;
+        double d = f;
+    }
     void autoBox(Integer i){
         autoBox(3);
     }

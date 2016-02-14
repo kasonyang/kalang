@@ -4,30 +4,34 @@ Don't modify!This file is generated automately.
 package jast.ast;
 import java.util.*;
 import kalang.core.*;
-public class CastExpr extends ExprNode{
+public class PrimitiveCastExpr extends ExprNode{
     
-    public Type type;
+    public PrimitiveType fromType;
+    
+    public PrimitiveType toType;
     
     public ExprNode expr;
     
     
-    public CastExpr(){
+    public PrimitiveCastExpr(){
         
     }
     
     
-    public CastExpr(Type type,ExprNode expr){
+    public PrimitiveCastExpr(PrimitiveType fromType,PrimitiveType toType,ExprNode expr){
         
         
-            this.type = type;
+            this.fromType = fromType;
+        
+            this.toType = toType;
         
             this.expr = expr;
         
     }
     
     
-    public static CastExpr create(){
-        CastExpr node = new CastExpr();
+    public static PrimitiveCastExpr create(){
+        PrimitiveCastExpr node = new PrimitiveCastExpr();
         
         return node;
     }
@@ -49,10 +53,14 @@ public class CastExpr extends ExprNode{
     }
     
     public String toString(){
-        String str = "CastExpr{\r\n";
+        String str = "PrimitiveCastExpr{\r\n";
         
-        if(type!=null){
-            str += "  type:" + type.toString()+"\r\n";
+        if(fromType!=null){
+            str += "  fromType:" + fromType.toString()+"\r\n";
+        }
+        
+        if(toType!=null){
+            str += "  toType:" + toType.toString()+"\r\n";
         }
         
         if(expr!=null){

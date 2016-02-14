@@ -116,7 +116,11 @@
 -parameter:VarObject
 ##CastExpr
 -type:Type
--expr:ExprNode
++expr:ExprNode
+##PrimitiveCastExpr
+-fromType:PrimitiveType
+-toType:PrimitiveType
++expr:ExprNode
 ##NewArrayExpr
 -type:Type
 -size:ExprNode

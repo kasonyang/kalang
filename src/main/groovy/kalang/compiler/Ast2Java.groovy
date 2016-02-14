@@ -26,6 +26,7 @@ import jast.ast.MultiStmtExpr;
 import jast.ast.NewArrayExpr
 import jast.ast.NewExpr;
 import jast.ast.ParameterExpr;
+import jast.ast.PrimitiveCastExpr
 import jast.ast.ReturnStmt;
 import jast.ast.Statement;
 import jast.ast.ThrowStmt;
@@ -43,9 +44,9 @@ class Ast2Java extends AbstractAstVisitor<String>{
     List<VarObject> varList = []
     
     protected String code = "";
-	private String indent = "";
+    private String indent = "";
 	
-	private trim = false;
+    private trim = false;
 	
     private ClassNode cls;
 	
@@ -71,29 +72,29 @@ class Ast2Java extends AbstractAstVisitor<String>{
         return retList
     }
 	
-	private void p(String code){
-		this.code += code;
-	}
+    private void p(String code){
+        this.code += code;
+    }
 	
     private void c(String code){
         addCode(code)
     }
     private void addCode(String code){
-		if(code==null) return
-		code = code.trim();
+        if(code==null) return
+        code = code.trim();
         if(code.endsWith("}")){
             if(indent.length()>=4){
                 indent = indent.substring(4)
             }
-			code = "\r\n" + indent + code + "\r\n"
-			code += indent
+            code = "\r\n" + indent + code + "\r\n"
+            code += indent
         }
         if(code.endsWith("{")){
             indent += "    ";
-			code += "\r\n" + indent
+            code += "\r\n" + indent
         }
         if(code.endsWith(";")){
-			if(trim) code = code.substring(0,code.length()-1);
+            if(trim) code = code.substring(0,code.length()-1);
             else code += "\r\n" + indent
         }
         this.code += code + " "
@@ -285,10 +286,10 @@ class Ast2Java extends AbstractAstVisitor<String>{
         def post = node.postConditionExpr;
         if(pre){
             c "for("
-			trim = true;
+            trim = true;
             visitAll(node.initStmts)
             trim = false;
-			p ";"
+            p ";"
             c visit(pre)
             p ";"
             c ")"
@@ -393,14 +394,14 @@ class Ast2Java extends AbstractAstVisitor<String>{
 
     @Override
     public String visitTryStmt(TryStmt node) {
-		c 'try'
+        c 'try'
         visit(node.execStmt);
         for(def c:node.catchStmts){
             visit(c)
         }
         if(node.finallyStmt){
             c "finally "
-			visit(node.finallyStmt);
+            visit(node.finallyStmt);
         }
     }
 
@@ -408,10 +409,10 @@ class Ast2Java extends AbstractAstVisitor<String>{
     @Override
     public String visitCatchStmt(CatchStmt node) {
         c 'catch('
-		this.trim = true;
-		visit(node.catchVarDecl);
-		this.trim = false;
-		c ')'
+        this.trim = true;
+        visit(node.catchVarDecl);
+        this.trim = false;
+        c ')'
         visit(node.execStmt);
     }
 
@@ -426,11 +427,18 @@ class Ast2Java extends AbstractAstVisitor<String>{
         return visit(node.reference);
     }
 
-	@Override
-	public String visitThrowStmt(ThrowStmt node) {
-		String expr = visit(node.expr);
-		c "throws " + expr + ";";
-		return null;
-	}
+    @Override
+    public String visitThrowStmt(ThrowStmt node) {
+        String expr = visit(node.expr);
+        c "throws " + expr + ";";
+        return null;
+    }
+    
+    @Override
+    public String visitPrimitiveCastExpr(PrimitiveCastExpr node){
+        String expr = visit(node.expr);
+        return "(" + node.toType + "/*" + node.fromType +  "*/" + ")" + expr ;
+    }
+        
 
 }
