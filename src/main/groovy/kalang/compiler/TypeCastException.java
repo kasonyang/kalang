@@ -15,7 +15,7 @@ import java.util.*;
  */
 public class TypeCastException extends RuntimeException{
 
-    TypeCastException(String msg) {
+    public TypeCastException(String msg) {
         super(msg);
     }
 

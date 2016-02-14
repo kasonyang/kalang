@@ -67,5 +67,13 @@ public class ArrayType extends Type{
         return null;
     }
 
+    @Override
+    public boolean isSubclassTypeOf(Type targetType) {
+        if(targetType instanceof ArrayType){
+            return componentType.isSubclassTypeOf(targetType);
+        }
+        return false;
+    }
+
 
 }

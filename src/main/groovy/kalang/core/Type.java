@@ -22,6 +22,8 @@ public abstract class Type {
     
     public abstract Type getComponentType();
     
+    public abstract boolean isSubclassTypeOf(Type targetType);
+    
     public abstract boolean isCastableTo(Type targetType);
     
     public abstract ExprNode cast(Type targetType,ExprNode from);

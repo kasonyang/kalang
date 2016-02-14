@@ -69,4 +69,9 @@ public class PrimitiveType extends Type{
         return null;
     }
 
+    @Override
+    public boolean isSubclassTypeOf(Type targetType) {
+        return false;
+    }
+
 }

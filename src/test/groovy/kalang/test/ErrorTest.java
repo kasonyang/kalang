@@ -24,7 +24,7 @@ public class ErrorTest {
 	
     KalangCompiler kc;
 
-    AstSemanticErrorHandler astSemanticErrorHandler = new AstSemanticErrorHandler() {
+    AstSemanticErrorHandler allowErrorHandler = new AstSemanticErrorHandler() {
         @Override
         public void handleAstSemanticError(AstSemanticError error) {
             //kc.reportAstNodeError(error.getDescription(), error.getClassNode().name, error.getNode());
@@ -33,11 +33,19 @@ public class ErrorTest {
             errMsg =error.getDescription();
         }
     };
+    
+    AstSemanticErrorHandler strictErrorHandler = new AstSemanticErrorHandler() {
+        @Override
+        public void handleAstSemanticError(AstSemanticError error) {
+            throw new RuntimeException(error.getDescription());
+        }
+    };
 	
-    private void compile(String dir,String...name) throws IOException{
+    private void compile(AstSemanticErrorHandler errorHandler,String dir,String...name) throws IOException{
         eCode = -1;
         kc = new KalangCompiler(new JavaAstLoader());
-        kc.setAstSemanticErrorHandler(astSemanticErrorHandler);
+        if(errorHandler!=null)
+            kc.setAstSemanticErrorHandler(errorHandler);
         for(String n : name){
             File src = new File(dir,n+".kl");//.readLines().join("\r\n");
             String source = FileUtils.readFileToString(src);
@@ -49,11 +57,11 @@ public class ErrorTest {
 	
     private void cp(String... name) throws IOException{
         this.errMsg = null;
-        compile(srcDir,name);
+        compile(strictErrorHandler,srcDir,name);
     }
 	
     private void ecp(String... name) throws IOException{
-        compile(errSrcDir,name);
+        compile(allowErrorHandler,errSrcDir,name);
     }
 	
     @Test

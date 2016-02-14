@@ -56,6 +56,7 @@ public class ClassType extends Type{
         return new CastExpr(targetType, from);
     }
 
+    @Override
     public boolean isSubclassTypeOf(Type targetType){
         if(targetType instanceof ClassType){
             ClassType tt = (ClassType) targetType;

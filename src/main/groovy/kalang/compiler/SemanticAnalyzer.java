@@ -43,6 +43,9 @@ import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
+import static kalang.util.AstUtil.getMethodsByName;
+import static kalang.util.AstUtil.getParameterTypes;
+import static kalang.util.AstUtil.matchTypes;
 
 public class SemanticAnalyzer extends AstVisitor<Type> {
    
@@ -328,8 +331,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (ast == null) {
             return Types.ROOT_TYPE;
         }
-        MethodNode method = selectMethod(node, ast, methodName, types.toArray(new Type[0]));
-        if (method == null) {
+        boolean matched = applyMethod(ast,node,types.toArray(new Type[0]));
+        if (!matched) {
             return getDefaultType();
         }
         boolean inStaticMethod = node.target == null && Modifier.isStatic(this.method.modifier);
@@ -377,7 +380,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         for (Type e : exTypes) {
                 if (
                         e.equals(type)
-                        || ((ClassType)e).isSubclassTypeOf(type)
+                        || e.isSubclassTypeOf(type)
                         ) {
                     exceptions.remove(e);
                 }
@@ -580,23 +583,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return true;
     }
 
-    MethodNode selectMethod(AstNode node, ClassNode cls, String methodName, Type[] types) {
-        MethodNode[] methods = AstUtil.selectMethod(cls, methodName, types);
-        List typeList = new LinkedList();
-        if (types != null) {
-            typeList.addAll(Arrays.asList(types));
-        }
-        if (methods == null || methods.length == 0) {
-            err.methodNotFound(node, cls.name, methodName, typeList);
-            return null;
-        }
-        if (methods.length > 1) {
-            err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, node);
-            return null;
-        }
-        return methods[0];
-    }
-
     private void castInvocationParams(InvocationExpr expr, MethodNode method) {
         List<Type> mTypes = AstUtil.getParameterTypes(method);
         int i = 0;
@@ -667,6 +653,48 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 return false;
             }
         return true;
+    }
+    
+    public static List<ExprNode[]> matchMethodByType(ExprNode[] args,MethodNode[] methods, Type[] types) {
+        List<ExprNode[]> list = new LinkedList();
+        for (MethodNode m : methods) {
+            Type[] mTypes = getParameterTypes(m).toArray(new Type[0]);
+            ExprNode[] matchedArgs = matchTypes(args,types, mTypes);
+            if(matchedArgs!=null) list.add(args);
+        }
+        return list;
+    }    
+    
+    
+    public boolean applyMethod(ClassNode cls, InvocationExpr invocationExpr, Type[] types) {
+        String methodName = invocationExpr.methodName;
+        MethodNode md = AstUtil.getMethod(cls, methodName, types);
+        if (md != null) {
+            return false;
+        } else {
+            MethodNode[] methods = getMethodsByName(cls, methodName);
+            ExprNode[] args = invocationExpr.arguments.toArray(new ExprNode[0]);
+            int matchedCount = 0;
+            ExprNode[] matchedParams=null;
+            for (MethodNode m : methods) {
+                Type[] mTypes = AstUtil.getParameterTypes(m).toArray(new Type[0]);
+                ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
+                if (mp != null) {
+                    matchedCount++;
+                    matchedParams = mp;
+                }
+            }
+            if (matchedCount < 1) {
+                err.methodNotFound(invocationExpr, cls.name, methodName, Arrays.asList(types));
+                return false;
+            } else if (matchedCount > 1) {
+                err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, invocationExpr);
+                return false;
+            }
+            invocationExpr.arguments.clear();
+            invocationExpr.arguments.addAll(Arrays.asList(matchedParams));
+            return true;
+        }
     }
 
 }

@@ -8,6 +8,9 @@ class{
     static void main(String[] args){
         System.out.println(args.length);
     }
+    void autoBox(Integer i){
+        autoBox(3);
+    }
     void stringAutoCast(){
         Object a = "a";
         String ab = a + "b";

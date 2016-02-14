@@ -71,9 +71,9 @@ public class AstUtil {
         for (MethodNode m : theInterface.methods) {
             String name = m.name;
             Type[] types = getParameterTypes(m).toArray(new Type[0]);
-            MethodNode[] methods = getMethodsByName(theClass, name);
-            MethodNode[] matches = matchMethodsByType(methods, types);
-            if (matches == null || matches.length == 0) {
+            //MethodNode[] methods = getMethodsByName(theClass, name);
+            MethodNode matches = getMethod(theClass,name, types);
+            if (matches == null) {
                 list.add(m);
             }
         }
@@ -99,64 +99,42 @@ public class AstUtil {
         return methods.toArray(new MethodNode[0]);
     }
 
-    public static boolean matchType(Type from, Type target, boolean matchSubclass, boolean autoCast) {
+    public static ExprNode matchType(Type from, Type target, ExprNode expr) {
         if (from.equals(target)) {
-            return true;
+            return expr;
         }
-            if (matchSubclass
-                    && (from instanceof ClassType)
-                    &&((ClassType)from).isSubclassTypeOf(target)
-                    //&& typeSystem.isSubclass(from, target)
-                    ) {
-                return true;
-            }
-        return autoCast && from.isCastableTo(target);
+        return BoxUtil.assign(expr, from, target);
     }
 
-    public static boolean matchTypes(Type[] from, Type[] target, boolean matchSubclass, boolean autoCast) {
-        if (from.length != target.length) {
-            return false;
+    /**
+     * 
+     * @param args
+     * @param from
+     * @param target
+     * @return array when matched,null when not
+     */
+    public static ExprNode[] matchTypes(ExprNode[] args,Type[] from, Type[] target) {
+        if (from.length != target.length || from.length!=args.length) {
+            return null;
         }
+        if(from.length==0) return new ExprNode[0];
+       ExprNode[] newParams = new ExprNode[from.length];
         for (int i = 0; i < from.length; i++) {
             Type f = from[i];
             Type t = target[i];
-            if (!matchType(f, t, matchSubclass, autoCast)) {
-                return false;
-            }
+            newParams[i] = matchType(f, t, args[i]);
+            if(newParams[i]==null) return null;
         }
-        return true;
+        return newParams;
     }
 
-    public static MethodNode[] matchMethodsByType(MethodNode[] methods, Type[] types) {
-        return matchMethodsByType(methods, types, false, false);
-    }
-
-    public static MethodNode[] matchMethodsByType(MethodNode[] methods, Type[] types, boolean matchSubclass) {
-        return matchMethodsByType(methods, types, matchSubclass, false);
-    }
-
-    public static MethodNode[] matchMethodsByType(MethodNode[] methods, Type[] types, boolean matchSubclass, boolean autoCast) {
-        List<MethodNode> list = new LinkedList();
-        for (MethodNode m : methods) {
-            Type[] mTypes = getParameterTypes(m).toArray(new Type[0]);
-            if (matchTypes(types, mTypes, matchSubclass, autoCast)) {
-                list.add(m);
-            }
+    public static MethodNode getMethod(ClassNode cls, String methodName, Type[] types) {
+       MethodNode[] methods = getMethodsByName(cls, methodName);
+        for(MethodNode m:methods){
+           Type[] mdTypes = getParameterTypes(m).toArray(new Type[0]);
+           if(Arrays.equals(mdTypes, types)) return m;
         }
-        return list.toArray(new MethodNode[0]);
-    }    
-    
-    public static MethodNode[] selectMethod(ClassNode cls, String methodName, Type[] types) {
-        MethodNode[] methods = getMethodsByName(cls, methodName);
-        MethodNode[] matches;
-        matches = matchMethodsByType(methods, types, false, false);
-        if (matches == null || matches.length == 0) {
-            matches = matchMethodsByType(methods, types, true, false);
-        }
-        if (matches == null || matches.length == 0) {
-            matches = matchMethodsByType(methods, types, true, true);
-        }
-        return matches;
+        return null;
     }
     
 }

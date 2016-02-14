@@ -1,5 +1,10 @@
 package kalang.compiler;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
 public class MathType   {
      public static final int INT=1;
      public static final int LONG=2;
@@ -135,6 +140,22 @@ public class MathType   {
          return kalang.compiler.MathType.INT;
          
     }
+     
+    public static boolean castable(int fromType,int toType){
+        if (fromType==toType) {
+            return true;
+        }
+        HashMap<Integer, List> baseMap = new HashMap();
+        baseMap.put(INT, Arrays.asList(new Integer[]{LONG, FLOAT, DOUBLE}));
+        baseMap.put(LONG, Arrays.asList(new Integer[]{FLOAT, DOUBLE}));
+        baseMap.put(FLOAT, Arrays.asList(new Integer[]{DOUBLE}));
+        baseMap.put(DOUBLE, new LinkedList());
+        if (baseMap.containsKey(fromType)) {
+            return baseMap.get(fromType).contains(toType);
+        }
+        return false;
+    }
+
      
 }
  

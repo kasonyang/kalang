@@ -151,6 +151,11 @@ public class Types {
         return primitive2class.getKey(classType);
     }
     
+    public static ClassType getClassType(String className) throws AstNotFoundException{
+        ClassNode ast = AstLoader.BASE_AST_LOADER.loadAst(className);
+        return getClassType(ast);
+    }
+    
     public static ClassType getClassType(PrimitiveType primitiveType){
         return primitive2class.get(primitiveType);
     }
