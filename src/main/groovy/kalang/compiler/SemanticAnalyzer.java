@@ -331,21 +331,21 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (ast == null) {
             return Types.ROOT_TYPE;
         }
-        boolean matched = applyMethod(ast,node,types.toArray(new Type[0]));
-        if (!matched) {
+        MethodNode matched = applyMethod(ast,node,types.toArray(new Type[0]));
+        if (matched==null) {
             return getDefaultType();
         }
         boolean inStaticMethod = node.target == null && Modifier.isStatic(this.method.modifier);
         boolean isClassExpr = node.target instanceof ClassExpr;
         if (inStaticMethod || isClassExpr) {
-            if(!requireStatic(method.modifier, node)) return getDefaultType();
+            if(!requireStatic(matched.modifier, node)) return getDefaultType();
         }
         //castInvocationParams(node, method);
         //TODO here could be optim
-        for(Type et:method.exceptionTypes){
+        for(Type et:matched.exceptionTypes){
             this.exceptionStack.peek().put(et,node);
         }
-        return method.type;
+        return matched.type;
     }
 
     @Override
@@ -666,34 +666,36 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }    
     
     
-    public boolean applyMethod(ClassNode cls, InvocationExpr invocationExpr, Type[] types) {
+    public MethodNode applyMethod(ClassNode cls, InvocationExpr invocationExpr, Type[] types) {
         String methodName = invocationExpr.methodName;
         MethodNode md = AstUtil.getMethod(cls, methodName, types);
         if (md != null) {
-            return false;
+            return md;
         } else {
             MethodNode[] methods = getMethodsByName(cls, methodName);
             ExprNode[] args = invocationExpr.arguments.toArray(new ExprNode[0]);
             int matchedCount = 0;
             ExprNode[] matchedParams=null;
+            MethodNode matchedMethod = null;
             for (MethodNode m : methods) {
                 Type[] mTypes = AstUtil.getParameterTypes(m).toArray(new Type[0]);
                 ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
                 if (mp != null) {
                     matchedCount++;
                     matchedParams = mp;
+                    matchedMethod = m;
                 }
             }
             if (matchedCount < 1) {
                 err.methodNotFound(invocationExpr, cls.name, methodName, Arrays.asList(types));
-                return false;
+                return null;
             } else if (matchedCount > 1) {
                 err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, invocationExpr);
-                return false;
+                return null;
             }
             invocationExpr.arguments.clear();
             invocationExpr.arguments.addAll(Arrays.asList(matchedParams));
-            return true;
+            return matchedMethod;
         }
     }
 

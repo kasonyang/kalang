@@ -8,6 +8,10 @@ class{
     static void main(String[] args){
         System.out.println(args.length);
     }
+    void newExpr(){
+        var s = new String("test");
+        s.chars();
+    }
     void autoPrimitiveType(){
         int i = 0;
         long l = i;
@@ -16,6 +20,7 @@ class{
     }
     void autoBox(Integer i){
         autoBox(3);
+        int j = i;
     }
     void stringAutoCast(){
         Object a = "a";
