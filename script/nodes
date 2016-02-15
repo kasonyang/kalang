@@ -98,6 +98,7 @@
 +target:ExprNode
 -methodName:String
 +arguments:ExprNode*
+-matchedMethod:MethodNode
 ##UnaryExpr
 +expr:ExprNode
 -preOperation:String

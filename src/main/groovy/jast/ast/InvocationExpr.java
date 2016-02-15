@@ -12,6 +12,8 @@ public class InvocationExpr extends ExprNode{
     
     public List<ExprNode> arguments;
     
+    public MethodNode matchedMethod;
+    
     
     public InvocationExpr(){
         
@@ -20,7 +22,7 @@ public class InvocationExpr extends ExprNode{
     }
     
     
-    public InvocationExpr(ExprNode target,String methodName,List<ExprNode> arguments){
+    public InvocationExpr(ExprNode target,String methodName,List<ExprNode> arguments,MethodNode matchedMethod){
         
             if(arguments == null) arguments = new LinkedList();
         
@@ -30,6 +32,8 @@ public class InvocationExpr extends ExprNode{
             this.methodName = methodName;
         
             this.arguments = arguments;
+        
+            this.matchedMethod = matchedMethod;
         
     }
     
@@ -73,6 +77,10 @@ public class InvocationExpr extends ExprNode{
         
         if(arguments!=null){
             str += "  arguments:" + arguments.toString()+"\r\n";
+        }
+        
+        if(matchedMethod!=null){
+            str += "  matchedMethod:" + matchedMethod.toString()+"\r\n";
         }
         
         return str+"}";
