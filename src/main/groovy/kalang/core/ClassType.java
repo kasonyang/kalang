@@ -52,10 +52,10 @@ public class ClassType extends Type{
 //        }
 //    }
 
-    @Override
-    public ExprNode cast(Type targetType, ExprNode from) {
-        return new CastExpr(targetType, from);
-    }
+//    @Override
+//    public ExprNode cast(Type targetType, ExprNode from) {
+//        return new CastExpr(targetType, from);
+//    }
 
 //    @Override
 //    public boolean isSubclassTypeOf(Type targetType){

@@ -53,10 +53,10 @@ public class ArrayType extends Type{
 //        return false;
 //    }
 
-    @Override
-    public ExprNode cast(Type targetType, ExprNode from) {
-        return from;
-    }
+//    @Override
+//    public ExprNode cast(Type targetType, ExprNode from) {
+//        return from;
+//    }
 
     @Override
     public VarObject[] getFields() {

@@ -42,10 +42,10 @@ public class PrimitiveType extends Type{
 //        return false;
 //    }
 
-    @Override
-    public ExprNode cast(Type targetType, ExprNode from) {
-        return new CastExpr(targetType, from);
-    }
+//    @Override
+//    public ExprNode cast(Type targetType, ExprNode from) {
+//        return new CastExpr(targetType, from);
+//    }
 
     @Override
     public boolean isArray() {

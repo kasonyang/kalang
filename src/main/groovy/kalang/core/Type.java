@@ -44,7 +44,7 @@ public abstract class Type {
     
     //public abstract boolean isCastableTo(Type targetType);
     
-    public abstract ExprNode cast(Type targetType,ExprNode from);
+    //public abstract ExprNode cast(Type targetType,ExprNode from);
     
     public abstract VarObject[] getFields();
     
