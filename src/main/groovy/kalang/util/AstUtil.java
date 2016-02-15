@@ -1,9 +1,13 @@
 package kalang.util;
 
+import kalang.ast.ExprNode;
+import kalang.ast.MethodNode;
+import kalang.ast.ClassNode;
+import kalang.ast.BlockStmt;
+import kalang.ast.VarObject;
 import java.util.LinkedList;
 import java.util.List;
 
-import jast.ast.*;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +72,7 @@ public class AstUtil {
 
     public static List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassNode theInterface) {
         List<MethodNode> list = new LinkedList();
-        for (MethodNode m : theInterface.methods) {
+        for (MethodNode m : theInterface.getMethodNodes()) {
             String name = m.name;
             Type[] types = getParameterTypes(m).toArray(new Type[0]);
             //MethodNode[] methods = getMethodsByName(theClass, name);
@@ -81,17 +85,16 @@ public class AstUtil {
     }
     
     public static void createEmptyConstructor(ClassNode clazzNode){
-        MethodNode initMethod = MethodNode.create();
+        MethodNode initMethod = clazzNode.createMethodNode();
         initMethod.modifier = Modifier.PUBLIC | Modifier.STATIC;
         initMethod.name = "<init>";
         initMethod.type = Types.getClassType(clazzNode);
         initMethod.body = BlockStmt.create();
-        clazzNode.methods.add(initMethod);
     }
 
     public static MethodNode[] getMethodsByName(ClassNode cls, String methodName) {
         List<MethodNode> methods = new LinkedList();
-        for (MethodNode m : cls.methods) {
+        for (MethodNode m : cls.getMethodNodes()) {
             if (m.name.equals(methodName)) {
                 methods.add(m);
             }

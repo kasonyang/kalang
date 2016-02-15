@@ -5,7 +5,7 @@
  */
 package kalang.test;
 
-import jast.ast.AstNode;
+import kalang.ast.AstNode;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.CompilantUnit;
 import kalang.util.ParseTreeNavigator;

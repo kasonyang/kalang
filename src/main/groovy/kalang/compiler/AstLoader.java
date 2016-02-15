@@ -2,8 +2,8 @@ package kalang.compiler;
 
 import java.util.HashMap;
 
-import jast.ast.ClassNode;
-import jast.ast.VarObject;
+import kalang.ast.ClassNode;
+import kalang.ast.VarObject;
 import java.lang.reflect.Modifier;
 import kalang.core.Types;
 

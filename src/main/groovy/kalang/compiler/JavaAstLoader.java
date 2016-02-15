@@ -1,6 +1,8 @@
 package kalang.compiler;
 
-import jast.ast.*;
+import kalang.ast.ClassNode;
+import kalang.ast.VarObject;
+import kalang.ast.MethodNode;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
@@ -39,7 +41,7 @@ public class JavaAstLoader extends AstLoader {
         methods.addAll(Arrays.asList(clz.getMethods()));
         methods.addAll(Arrays.asList(clz.getConstructors()));
         for (Executable m : methods) {
-            MethodNode methodNode = MethodNode.create();
+            MethodNode methodNode = cn.createMethodNode();
             for (Parameter p : m.getParameters()) {
                 VarObject param = new VarObject();
                 param.name = p.getName();
@@ -55,7 +57,6 @@ public class JavaAstLoader extends AstLoader {
                 methodNode.type = getType(clz);
                 methodNode.modifier = m.getModifiers() | Modifier.STATIC;
             }
-            cn.methods.add(methodNode);
             methodNode.body = null;
             for (Class e : m.getExceptionTypes()) {
                 methodNode.exceptionTypes.add(getType(e));

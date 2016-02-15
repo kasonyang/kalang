@@ -5,8 +5,8 @@
  */
 package kalang.compiler;
 
-import jast.ast.AstNode;
-import jast.ast.ClassNode;
+import kalang.ast.AstNode;
+import kalang.ast.ClassNode;
 import java.io.*;
 import java.nio.*;
 import java.net.*;

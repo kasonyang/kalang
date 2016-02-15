@@ -1,10 +1,10 @@
 package kalang.util;
 
-import jast.ast.CastExpr;
-import jast.ast.ClassExpr;
-import jast.ast.ExprNode;
-import jast.ast.InvocationExpr;
-import jast.ast.PrimitiveCastExpr;
+import kalang.ast.CastExpr;
+import kalang.ast.ClassExpr;
+import kalang.ast.ExprNode;
+import kalang.ast.InvocationExpr;
+import kalang.ast.PrimitiveCastExpr;
 import java.io.*;
 import java.nio.*;
 import java.net.*;

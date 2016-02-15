@@ -1,9 +1,9 @@
 
 package kalang.core;
-import jast.ast.AstNode;
-import jast.ast.ExprNode;
-import jast.ast.MethodNode;
-import jast.ast.VarObject;
+import kalang.ast.AstNode;
+import kalang.ast.ExprNode;
+import kalang.ast.MethodNode;
+import kalang.ast.VarObject;
 import java.io.*;
 import java.nio.*;
 import java.net.*;

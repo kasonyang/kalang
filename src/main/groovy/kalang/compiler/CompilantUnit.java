@@ -1,5 +1,37 @@
 package kalang.compiler;
 
+import kalang.ast.ClassNode;
+import kalang.ast.ElementExpr;
+import kalang.ast.AssignExpr;
+import kalang.ast.Statement;
+import kalang.ast.MultiStmtExpr;
+import kalang.ast.MethodNode;
+import kalang.ast.ContinueStmt;
+import kalang.ast.VarObject;
+import kalang.ast.ExprNode;
+import kalang.ast.AstNode;
+import kalang.ast.LoopStmt;
+import kalang.ast.InvocationExpr;
+import kalang.ast.ExprStmt;
+import kalang.ast.BinaryExpr;
+import kalang.ast.VarExpr;
+import kalang.ast.KeyExpr;
+import kalang.ast.ConstExpr;
+import kalang.ast.TryStmt;
+import kalang.ast.ThrowStmt;
+import kalang.ast.VarDeclStmt;
+import kalang.ast.CatchStmt;
+import kalang.ast.CastExpr;
+import kalang.ast.BlockStmt;
+import kalang.ast.BreakStmt;
+import kalang.ast.UnaryExpr;
+import kalang.ast.NewArrayExpr;
+import kalang.ast.ClassExpr;
+import kalang.ast.NewExpr;
+import kalang.ast.IfStmt;
+import kalang.ast.FieldExpr;
+import kalang.ast.ReturnStmt;
+import kalang.ast.ParameterExpr;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -48,7 +80,6 @@ import kalang.antlr.KalangParser.VarModifierContext;
 import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
-import jast.ast.*;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -381,7 +412,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
 
     @Override
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
-        method = MethodNode.create();
+        method = cls.createMethodNode();
         this.newVarStack();
         String name;
         Type type;
@@ -415,7 +446,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             }
         }
         this.popVarStack();
-        cls.methods.add(method);
+        //cls.methods.add(method);
         a2p.put(method, ctx);
         return method;
     }

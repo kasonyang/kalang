@@ -1,8 +1,8 @@
 
 package kalang.core;
-import jast.ast.ExprNode;
-import jast.ast.MethodNode;
-import jast.ast.VarObject;
+import kalang.ast.ExprNode;
+import kalang.ast.MethodNode;
+import kalang.ast.VarObject;
 import java.io.*;
 import java.lang.reflect.Modifier;
 import java.nio.*;

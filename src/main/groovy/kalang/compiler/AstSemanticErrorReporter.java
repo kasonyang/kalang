@@ -5,10 +5,12 @@
  */
 package kalang.compiler;
 
+import kalang.ast.ClassNode;
+import kalang.ast.MethodNode;
+import kalang.ast.AstNode;
 import kalang.util.AstUtil;
 import java.util.List;
 
-import jast.ast.*;
 import java.util.Map;
 import static kalang.compiler.AstSemanticError.*;
 import kalang.core.Type;

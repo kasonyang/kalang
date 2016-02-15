@@ -1,7 +1,6 @@
 package kalang.tool;
 
 import kalang.compiler.*;
-import jast.ast.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;

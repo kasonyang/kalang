@@ -17,6 +17,7 @@ dependencies{
 
     compile fileTree("libs")
 }
+/*
 buildscript {
     repositories {
         mavenCentral()  
@@ -165,3 +166,4 @@ def createVisitor(List<String> nodes,String packageName,String srcDir){
     vd.name = "AstVisitor"
     templateFile("Visitor.tpl",vd,path,vd.name+".java")
 }
+*/

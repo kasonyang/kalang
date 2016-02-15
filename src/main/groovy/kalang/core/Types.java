@@ -1,6 +1,6 @@
 
 package kalang.core;
-import jast.ast.ClassNode;
+import kalang.ast.ClassNode;
 import java.io.*;
 import java.nio.*;
 import java.net.*;

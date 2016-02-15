@@ -1,10 +1,10 @@
 
 package kalang.core;
-import jast.ast.CastExpr;
-import jast.ast.ClassNode;
-import jast.ast.ExprNode;
-import jast.ast.MethodNode;
-import jast.ast.VarObject;
+import kalang.ast.CastExpr;
+import kalang.ast.ClassNode;
+import kalang.ast.ExprNode;
+import kalang.ast.MethodNode;
+import kalang.ast.VarObject;
 import java.io.*;
 import java.nio.*;
 import java.net.*;
@@ -82,7 +82,7 @@ public class ClassType extends Type{
 
     @Override
     public MethodNode[] getMethods() {
-        return clazz.methods.toArray(new MethodNode[0]);
+        return clazz.getMethodNodes();
     }
     
 }

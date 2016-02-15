@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import kalang.compiler.*;
 //import kalang.Compiler as KC
-import jast.ast.*;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;

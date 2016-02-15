@@ -1,7 +1,7 @@
 package kalang.compiler;
 
-import jast.ast.AstNode;
-import jast.ast.ClassNode;
+import kalang.ast.AstNode;
+import kalang.ast.ClassNode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;

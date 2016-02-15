@@ -1,9 +1,6 @@
 
 package kalang.core;
-import jast.ast.CastExpr;
-import jast.ast.ExprNode;
-import jast.ast.MethodNode;
-import jast.ast.VarObject;
+import kalang.ast.*;
 import java.util.*;
 import static kalang.core.Types.*;
 /**
