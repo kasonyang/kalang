@@ -11,6 +11,7 @@ import java.net.*;
 import java.util.*;
 import kalang.compiler.MathType;
 import kalang.compiler.TypeCastException;
+import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -58,44 +59,52 @@ public class BoxUtil {
     }
 
     private static int getCastMethod(Type fromType, Type toType) {
-        if (fromType.equals(toType)
-                || fromType.isSubclassTypeOf(toType)) {
+        if (toType.isAssignedFrom(fromType)) {
             return CAST_NOTHING;
         }
-        if (fromType instanceof PrimitiveType) {
-            if ((toType) instanceof PrimitiveType) {
-                if (MathType.castable(MathType.getType(fromType.getName()), MathType.getType(toType.getName()))) {
-                    return CAST_PRIMITIVE;
-                }
-            } else if (toType instanceof ClassType) {
-                if (toType.equals(Types.ROOT_TYPE)) {
-                    return CAST_PRIMITIVE_TO_OBJECT;
-                }
-                if (fromType.equals(Types.NULL_TYPE)) {
-                    return CAST_NOTHING;
-                }
-                if(fromType.equals(Types.STRING_CLASS_TYPE)){
-                    return CAST_PRIMITIVE_TO_STRING;
-                }
-                PrimitiveType toPriType = Types.getPrimitiveType((ClassType) toType);
-                if(toPriType==null) return CAST_UNSUPPORTED;
-                if (toPriType.equals(fromType)) {
-                    return CAST_PRIMITIVE_TO_OBJECT;
-                }
+        if (fromType instanceof PrimitiveType
+                && toType instanceof PrimitiveType) {
+            //if ((toType) instanceof PrimitiveType) {
+            if (MathType.castable(MathType.getType(fromType.getName()), MathType.getType(toType.getName()))) {
+                return CAST_PRIMITIVE;
             }
-        } else if(fromType instanceof ClassType) {
-            if(toType instanceof PrimitiveType) {
-                ClassType fromClassType = (ClassType) fromType;
-                PrimitiveType fromPrimitive = Types.getPrimitiveType(fromClassType);
-                if(fromPrimitive==null) return CAST_UNSUPPORTED;
-                if (fromPrimitive.equals(toType)) {
-                    return CAST_OBJECT_TO_PRIMITIVE;
-                }
-            } else if(toType instanceof ClassType) {
-                if(toType.equals(Types.STRING_CLASS_TYPE)){
-                    return CAST_OBJECT_TO_STRING;
-                }
+        } else if (fromType instanceof PrimitiveType
+                && toType instanceof ClassType) {
+            if (toType.equals(Types.ROOT_TYPE)) {
+                return CAST_PRIMITIVE_TO_OBJECT;
             }
+            if (fromType.equals(Types.NULL_TYPE)) {
+                return CAST_NOTHING;
+            }
+            if (toType.equals(Types.STRING_CLASS_TYPE)) {
+                return CAST_PRIMITIVE_TO_STRING;
+            }
+            PrimitiveType toPriType = Types.getPrimitiveType((ClassType) toType);
+            if (toPriType == null) {
+                return CAST_UNSUPPORTED;
+            }
+            if (toPriType.equals(fromType)) {
+                return CAST_PRIMITIVE_TO_OBJECT;
+            }
+        } else if (fromType instanceof ClassType
+                && toType instanceof PrimitiveType) {
+//            if() {
+            ClassType fromClassType = (ClassType) fromType;
+            PrimitiveType fromPrimitive = Types.getPrimitiveType(fromClassType);
+            if (fromPrimitive == null) {
+                return CAST_UNSUPPORTED;
+            }
+            if (fromPrimitive.equals(toType)) {
+                return CAST_OBJECT_TO_PRIMITIVE;
+            }
+        } else if (
+                (
+                fromType instanceof ClassType
+                || fromType instanceof ArrayType
+                )
+                && toType.equals(Types.STRING_CLASS_TYPE)
+                ) {
+            return CAST_OBJECT_TO_STRING;
         }
         return CAST_UNSUPPORTED;
     }

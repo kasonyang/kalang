@@ -14,6 +14,12 @@ import java.util.*;
  */
 public abstract class Type {
     
+    protected Type superType;
+
+    public Type(Type superType) {
+        this.superType = superType;
+    }
+    
     public abstract String getName();
     
     public abstract boolean isPrimitiveType();
@@ -22,9 +28,21 @@ public abstract class Type {
     
     public abstract Type getComponentType();
     
-    public abstract boolean isSubclassTypeOf(Type targetType);
+    public final boolean isSubclassTypeOf(Type targetType){
+        Type t = this;
+        while(t!=null){
+            if(t.equals(targetType)) return true;
+            t = t.getSuperType();
+        }
+        return false;
+    }
     
-    public abstract boolean isCastableTo(Type targetType);
+    public boolean isAssignedFrom(Type type){
+        if(equals(type)) return true;
+        return type.isSubclassTypeOf(this);
+    }
+    
+    //public abstract boolean isCastableTo(Type targetType);
     
     public abstract ExprNode cast(Type targetType,ExprNode from);
     
@@ -44,7 +62,9 @@ public abstract class Type {
     public String toString() {
         return getName();
     }
-    
-    
+
+    public Type getSuperType() {
+        return superType;
+    }
 
 }

@@ -645,15 +645,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public AstLoader getAstLoader() {
         return astLoader;
     }
-
-    private boolean checkCastable(Type ft, Type tt,AstNode ast) {
-        if(ft.equals(tt)) return true;
-            if(!ft.isCastableTo(tt)){
-                err.failedToCast(ast, ft.getName(), tt.getName());
-                return false;
-            }
-        return true;
-    }
     
     public static List<ExprNode[]> matchMethodByType(ExprNode[] args,MethodNode[] methods, Type[] types) {
         List<ExprNode[]> list = new LinkedList();

@@ -12,6 +12,7 @@ public class PrimitiveType extends Type{
     private String name;
 
     public PrimitiveType(String name) {
+        super(null);
         this.name = name;
     }
 
@@ -25,21 +26,21 @@ public class PrimitiveType extends Type{
         return true;
     }
 
-    @Override
-    public boolean isCastableTo(Type targetType) {
-        if (this.equals(targetType)) {
-            return true;
-        }
-        HashMap<Type, List> baseMap = new HashMap();
-        baseMap.put(Types.INT_TYPE, Arrays.asList(new Type[]{Types.LONG_TYPE, Types.FLOAT_TYPE, Types.DOUBLE_TYPE}));
-        baseMap.put(LONG_TYPE, Arrays.asList(new Type[]{FLOAT_TYPE, DOUBLE_TYPE}));
-        baseMap.put(FLOAT_TYPE, Arrays.asList(new Type[]{DOUBLE_TYPE}));
-        baseMap.put(DOUBLE_TYPE, new LinkedList());
-        if (baseMap.containsKey(this)) {
-            return baseMap.get(this).contains(targetType);
-        }
-        return false;
-    }
+//    @Override
+//    public boolean isCastableTo(Type targetType) {
+//        if (this.equals(targetType)) {
+//            return true;
+//        }
+//        HashMap<Type, List> baseMap = new HashMap();
+//        baseMap.put(Types.INT_TYPE, Arrays.asList(new Type[]{Types.LONG_TYPE, Types.FLOAT_TYPE, Types.DOUBLE_TYPE}));
+//        baseMap.put(LONG_TYPE, Arrays.asList(new Type[]{FLOAT_TYPE, DOUBLE_TYPE}));
+//        baseMap.put(FLOAT_TYPE, Arrays.asList(new Type[]{DOUBLE_TYPE}));
+//        baseMap.put(DOUBLE_TYPE, new LinkedList());
+//        if (baseMap.containsKey(this)) {
+//            return baseMap.get(this).contains(targetType);
+//        }
+//        return false;
+//    }
 
     @Override
     public ExprNode cast(Type targetType, ExprNode from) {
@@ -66,9 +67,14 @@ public class PrimitiveType extends Type{
         return null;
     }
 
-    @Override
-    public boolean isSubclassTypeOf(Type targetType) {
-        return false;
-    }
+//    @Override
+//    public boolean isSubclassTypeOf(Type targetType) {
+//        return false;
+//    }
+
+//    @Override
+//    public boolean isAssignedFrom(Type type) {
+//        return equals(type);
+//    }
 
 }
