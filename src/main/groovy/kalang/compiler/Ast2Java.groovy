@@ -406,5 +406,9 @@ class Ast2Java extends AbstractAstVisitor<String>{
         return "(" + node.toType + "/*" + node.fromType +  "*/" + ")" + expr ;
     }
         
+    @Override
+    public String visitVarObject(VarObject node){
+        return "";
+    }
 
 }

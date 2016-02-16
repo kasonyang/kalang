@@ -60,7 +60,11 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
     abstract public T visitMultiStmtExpr(MultiStmtExpr node);
     
+    abstract public T visitVarObject(VarObject node);
+    
     public T visit(AstNode node){
+        
+        if(node==null) return null;
         
         if(node instanceof ClassNode){
             return visitClassNode((ClassNode)node);
@@ -178,7 +182,11 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
             return visitMultiStmtExpr((MultiStmtExpr)node);
         }
         
-        return null;
+        if(node instanceof VarObject){
+            return visitVarObject((VarObject) node);
+        }
+        
+        throw new IllegalArgumentException("Unknown node type:"+node.getClass());
     }
     
     public List<T> visitAll(List<?  extends AstNode> nodes){
@@ -198,4 +206,5 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         }
         return result;
     }
+
 }

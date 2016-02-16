@@ -144,6 +144,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visit(AstNode node) {
+        if(node==null) return null;
         if (node instanceof Statement && returned) {
             err.fail("unabled to reach statement", AstSemanticError.LACKS_OF_STATEMENT, node);
             return null;
