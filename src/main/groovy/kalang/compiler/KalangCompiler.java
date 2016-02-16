@@ -54,7 +54,7 @@ public class KalangCompiler extends AstLoader {
     private SourceParsingErrorHandler semanticErrorHandler = new SourceParsingErrorHandler() {
         @Override
         public void handleSemanticError(SourceParsingException see) {
-            SourceUnit parser = see.getCompilantUnit();
+            SourceUnit parser = see.getSourceUnit();
             OffsetRange offsetRange = see.getOffset();
             reportError(see.getDescription(), parser.getClassName(),offsetRange);
         }
@@ -215,7 +215,7 @@ public class KalangCompiler extends AstLoader {
         return semanticAnalyzers.get(className);
     }
     
-    public SourceUnit getCompilantUnit(String clsName){
+    public SourceUnit getSourceUnit(String clsName){
         return units.get(clsName);
     }
     

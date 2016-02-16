@@ -33,7 +33,7 @@ public class SourceParsingException extends RuntimeException{
     }
 
 
-    public SourceUnit getCompilantUnit() {
+    public SourceUnit getSourceUnit() {
         return compilantUnit;
     }
 
