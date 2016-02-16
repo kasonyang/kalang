@@ -67,7 +67,7 @@ public class AstLoader {
 
     private ClassNode createArrayAst(ClassNode ast) {
         ClassNode clazz = ClassNode.create();
-        clazz.fields.add(new VarObject(Modifier.PUBLIC,Types.INT_TYPE, "length", null));
+        clazz.createField(new VarObject(Modifier.PUBLIC,Types.INT_TYPE, "length", null));
         clazz.name = ast.name + "[]";
         clazz.isArray = true;
         if(ast.parent!=null){

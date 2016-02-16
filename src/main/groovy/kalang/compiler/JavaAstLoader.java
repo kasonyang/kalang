@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import kalang.ast.ParameterNode;
 import kalang.core.Type;
 import kalang.core.Types;
 
@@ -46,7 +47,7 @@ public class JavaAstLoader extends AstLoader {
                 VarObject param = new VarObject();
                 param.name = p.getName();
                 param.type = getType(p.getType());
-                methodNode.parameters.add(param);
+                methodNode.parameters.add(ParameterNode.create(methodNode, param));
             }
             if (m instanceof Method) {
                 methodNode.type =getType(((Method) m).getReturnType());
@@ -67,7 +68,7 @@ public class JavaAstLoader extends AstLoader {
             fn.name = f.getName();
             fn.type =getType(f.getType());
             fn.modifier = f.getModifiers();
-            cn.fields.add(fn);
+            cn.createField(fn);
         }
         return cn;
     }

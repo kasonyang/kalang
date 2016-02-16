@@ -83,6 +83,8 @@ import kalang.core.VarTable;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.ast.FieldNode;
+import kalang.ast.ParameterNode;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -402,12 +404,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public List<VarObject> visitFieldDecl(FieldDeclContext ctx) {
         List<VarObject> list = visitVarDecls(ctx.varDecls());
         int mdf = this.parseModifier(ctx.varModifier());
-        if(cls.fields==null){
-        	cls.fields = new LinkedList();
-        }
         for (VarObject v : list) {
             v.modifier = mdf;
-            cls.fields.add(v);
+            cls.createField(v);
         }
         return list;
     }
@@ -436,7 +435,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         method.name = name;
         if (ctx.varDecls() != null) {
             List<VarObject> vars = visitVarDecls(ctx.varDecls());
-            method.parameters.addAll(vars);
+            for(VarObject v:vars){
+                method.parameters.add(ParameterNode.create(method, v));
+            }
         }
         if (ctx.stat() != null) {
             method.body = visitStat(ctx.stat());
@@ -784,14 +785,14 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         } else {
             //find parameters
             if (method != null && method.parameters != null) {
-                for (VarObject p : method.parameters) {
+                for (ParameterNode p : method.parameters) {
                     if (p.name.equals(name)) {
                         return new VarExpr(p);
                     }
                 }
             }
             if (cls.fields != null) {
-                for (VarObject f : cls.fields) {
+                for (FieldNode f : cls.fields) {
                     if (f.name.equals(name)) {
                         FieldExpr fe = new FieldExpr();
                         fe.fieldName = name;

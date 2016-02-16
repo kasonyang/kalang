@@ -11,6 +11,8 @@ import java.util.List;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import kalang.ast.FieldNode;
+import kalang.ast.ParameterNode;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -35,8 +37,8 @@ public class AstUtil {
         return getMethodDescriptor(node.name, getParameterTypes(node), className);
     }
 
-    public static VarObject getField(ClassNode ast, String name) {
-        for (VarObject f : ast.fields) {
+    public static FieldNode getField(ClassNode ast, String name) {
+        for (FieldNode f : ast.fields) {
             if (f.name.equals(name)) {
                 return f;
             }
@@ -64,7 +66,7 @@ public class AstUtil {
         if (mn.parameters == null) {
             return types;
         }
-        for (VarObject p : mn.parameters) {
+        for (ParameterNode p : mn.parameters) {
             types.add(p.type);
         }
         return types;

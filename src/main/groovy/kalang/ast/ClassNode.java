@@ -12,7 +12,7 @@ public class ClassNode extends AstNode{
     
     public ClassNode parent;
     
-    public List<VarObject> fields;
+    public final List<FieldNode> fields = new ArrayList<>();
     
     protected List<MethodNode> methods;
     
@@ -25,8 +25,6 @@ public class ClassNode extends AstNode{
     
     public ClassNode(){
         
-            if(fields == null) fields = new LinkedList();
-        
             if(methods == null) methods = new LinkedList();
         
             if(interfaces == null) interfaces = new LinkedList();
@@ -34,9 +32,8 @@ public class ClassNode extends AstNode{
     }
     
     
-    public ClassNode(Integer modifier,String name,ClassNode parent,List<VarObject> fields,List<MethodNode> methods,List<ClassNode> interfaces,Boolean isInterface,Boolean isArray){
+    public ClassNode(Integer modifier,String name,ClassNode parent,List<MethodNode> methods,List<ClassNode> interfaces,Boolean isInterface,Boolean isArray){
         
-            if(fields == null) fields = new LinkedList();
         
             if(methods == null) methods = new LinkedList();
         
@@ -49,7 +46,7 @@ public class ClassNode extends AstNode{
         
             this.parent = parent;
         
-            this.fields = fields;
+            //this.fields = fields;
         
             this.methods = methods;
         
@@ -64,8 +61,6 @@ public class ClassNode extends AstNode{
     
     public static ClassNode create(){
         ClassNode node = new ClassNode();
-        
-        node.fields = new LinkedList();
         
         node.methods = new LinkedList();
         
@@ -91,7 +86,13 @@ public class ClassNode extends AstNode{
         
         return ls;
     }
-    
+
+
+    public FieldNode createField(VarObject vo){
+        FieldNode fieldNode = FieldNode.create(this,vo);
+        fields.add(fieldNode);
+        return fieldNode;
+    }
     public String toString(){
         String str = "ClassNode{\r\n";
         

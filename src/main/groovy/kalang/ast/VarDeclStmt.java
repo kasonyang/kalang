@@ -38,7 +38,7 @@ public class VarDeclStmt extends Statement{
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
+        ls.add(var);
         return ls;
     }
     

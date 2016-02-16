@@ -12,7 +12,7 @@ public class MethodNode extends AstNode{
     
     public String name;
     
-    public List<VarObject> parameters;
+    public List<ParameterNode> parameters;
     
     public Statement body;
     
@@ -30,7 +30,7 @@ public class MethodNode extends AstNode{
     }
     
     
-    protected MethodNode(ClassNode classNode,Integer modifier,Type type,String name,List<VarObject> parameters,Statement body,List<Type> exceptionTypes){
+    protected MethodNode(ClassNode classNode,Integer modifier,Type type,String name,List<ParameterNode> parameters,Statement body,List<Type> exceptionTypes){
         this.classNode = classNode;
             if(parameters == null) parameters = new LinkedList();
         
@@ -80,33 +80,4 @@ public class MethodNode extends AstNode{
         return ls;
     }
     
-    public String toString(){
-        String str = "MethodNode{\r\n";
-        
-        if(modifier!=null){
-            str += "  modifier:" + modifier.toString()+"\r\n";
-        }
-        
-        if(type!=null){
-            str += "  type:" + type.toString()+"\r\n";
-        }
-        
-        if(name!=null){
-            str += "  name:" + name.toString()+"\r\n";
-        }
-        
-        if(parameters!=null){
-            str += "  parameters:" + parameters.toString()+"\r\n";
-        }
-        
-        if(body!=null){
-            str += "  body:" + body.toString()+"\r\n";
-        }
-        
-        if(exceptionTypes!=null){
-            str += "  exceptionTypes:" + exceptionTypes.toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
 }
