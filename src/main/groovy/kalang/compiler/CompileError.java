@@ -1,31 +1,25 @@
 package kalang.compiler;
 
 public class CompileError  extends java.lang.RuntimeException  {
-     public int start=0;
-     public int stop=0;
+     public OffsetRange offset;
      public java.lang.String className;
      public java.lang.String source;
      public String description;
-     public  CompileError(java.lang.String description,java.lang.String className,java.lang.String src,int start,int stop) {
+     public  CompileError(java.lang.String description,java.lang.String className,java.lang.String src,OffsetRange offset) {
          super(description);
          this.description = description;
-         this.start=start;
-         this.stop=stop;
+         this.offset = offset;
          this.className=className;
          this.source=src;
          
     }
      public java.lang.String getErrorSource() {
-         if((this.stop<0)) return null;
-         if((this.start<0)) return null;
-         if((this.stop<this.start)) return null;
-         return this.source.substring(this.start,this.stop);
-         
+         throw new UnsupportedOperationException();         
     }
 
     @Override
     public String toString() {
-        return "CompileError{" + "start=" + start + ", stop=" + stop + ", className=" + className + ", description=" + description + '}';
+        return String.format("CompileError: %s(%d:%d):%s", className,offset.startLine,offset.startLineColumn,description);
     }
      
 }

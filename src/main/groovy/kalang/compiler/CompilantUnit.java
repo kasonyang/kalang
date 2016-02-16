@@ -86,6 +86,7 @@ import java.util.logging.Logger;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.util.OffsetRangeHelper;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -120,7 +121,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     
     private SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler() {
         @Override
-        public void handleSemanticError(SemanticErrorException see) {
+        public void handleSemanticError(SourceParsingException see) {
             System.err.println(see);
         }
     };
@@ -236,14 +237,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     }
     
     private void mapAst(AstNode node,ParserRuleContext tree){
-        Token start = tree.getStart();
-        Token stop = tree.getStop();
-        node.startOffset = start.getStartIndex();
-        node.stopOffset = stop.getStopIndex();
-        node.startLine = start.getLine();
-        node.startLineColumn = start.getCharPositionInLine();
-        node.stopLine = stop.getLine();
-        node.stopLineColumn = stop.getCharPositionInLine();
+         node.offset = OffsetRangeHelper.getOffsetRange(tree);
         //a2p.put(node,tree);
     }
 
@@ -554,17 +548,13 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     }
     
     public void reportError(String msg, Token token) {
-        reportError(msg, token, null);
+        SourceParsingException ex = new SourceParsingException(msg, OffsetRangeHelper.getOffsetRange(token), this);
+        semanticErrorHandler.handleSemanticError(ex);
     }
 
-    public void reportError(String msg, Token token,ParserRuleContext tree) {
-        SemanticErrorException see = new SemanticErrorException(msg, token,tree,this);
-        semanticErrorHandler.handleSemanticError(see);
-    }
-    
-    public void reportError(String string, ParserRuleContext tree) {
-        int a = tree.getSourceInterval().a;
-        reportError(string, tokenStream.get(a),tree);
+    public void reportError(String msg,ParserRuleContext tree) {
+        SourceParsingException ex = new SourceParsingException(msg, OffsetRangeHelper.getOffsetRange(tree), this);
+        semanticErrorHandler.handleSemanticError(ex);
     }
 
     @Override

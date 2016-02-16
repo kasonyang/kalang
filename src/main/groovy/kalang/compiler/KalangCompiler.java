@@ -53,16 +53,9 @@ public class KalangCompiler extends AstLoader {
     };
     private SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler() {
         @Override
-        public void handleSemanticError(SemanticErrorException see) {
-            Token token = see.getToken();
-            RuleContext tree = see.getTree();
+        public void handleSemanticError(SourceParsingException see) {
             CompilantUnit parser = see.getCompilantUnit();
-            OffsetRange offsetRange;
-            if(token!=null){
-                offsetRange = OffsetRangeHelper.getOffsetRange(token);
-            }else{
-                offsetRange = new OffsetRange(0, 0);
-            }
+            OffsetRange offsetRange = see.getOffset();
             reportError(see.getDescription(), parser.getClassName(),offsetRange);
         }
     };
@@ -157,14 +150,12 @@ public class KalangCompiler extends AstLoader {
 
     public void reportError(String msg, String className, OffsetRange loc) {
         String src = sources.get(className);
-        int offset = loc.offset;
-        int len = loc.length;
-        CompileError ce = new CompileError(msg, className, src,loc.offset, offset+len);
+        CompileError ce = new CompileError(msg, className, src,loc);
         compileErrorHandlerrrorHandler.handleCompileError(ce);
     }
 
     public void reportAstNodeError(String msg, String className, AstNode node) {
-        reportError(msg, className, new OffsetRange(node.startOffset, node.stopOffset));
+        reportError(msg, className,node.offset);
     }
 
     public void compile() {

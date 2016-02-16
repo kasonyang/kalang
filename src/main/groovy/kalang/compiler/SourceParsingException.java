@@ -17,41 +17,37 @@ import org.antlr.v4.runtime.Token;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class SemanticErrorException extends RuntimeException{
+public class SourceParsingException extends RuntimeException{
     
-    RuleContext tree;
+    private OffsetRange offset;
     
-    Token token;
     private final CompilantUnit compilantUnit;
+    
     private String description;
 
-    public SemanticErrorException(String description, Token token,RuleContext tree,CompilantUnit compilantUnit) {
+    public SourceParsingException(String description,OffsetRange offset,CompilantUnit compilantUnit) {
         super(description);
-        this.tree = tree;
-        this.token = token;
+        this.offset = offset;
         this.compilantUnit = compilantUnit;
         this.description = description;
     }
 
-    public RuleContext getTree() {
-        return tree;
-    }
-
-    public Token getToken() {
-        return token;
-    }
 
     public CompilantUnit getCompilantUnit() {
         return compilantUnit;
     }
 
-    @Override
-    public String toString() {
-        return "SemanticErrorException{" + "tree=" + tree + ", token=" + token + ", compilant=" + compilantUnit + ", description=" + description + '}';
-    }
-
     public String getDescription() {
         return description;
+    }
+
+    public OffsetRange getOffset() {
+        return offset;
+    }
+
+    @Override
+    public String toString() {
+        return "SourceParsingException{" + "offset=" + offset + ", compilantUnit=" + compilantUnit + ", description=" + description + '}';
     }
 
 }

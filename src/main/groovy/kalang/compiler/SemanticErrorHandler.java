@@ -14,5 +14,5 @@ import java.util.*;
  * @author Kason Yang <i@kasonyang.com>
  */
 public interface SemanticErrorHandler {
-    void handleSemanticError(SemanticErrorException see);
+    void handleSemanticError(SourceParsingException see);
 }
