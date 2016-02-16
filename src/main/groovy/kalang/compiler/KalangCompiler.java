@@ -99,6 +99,7 @@ public class KalangCompiler extends AstLoader {
             String k = parseTasks.get(0);
             CompilationUnit cunit = compilationUnits.get(k);
             cunit.parse(semanticErrorHandler);
+            parseTasks.remove(0);
         }
     }
 
