@@ -1,6 +1,7 @@
 package kalang.test;
 
 import java.util.List;
+import kalang.compiler.CompilationUnit;
 import kalang.compiler.KalangCompiler;
 import kalang.util.ParseTreeNavigator;
 import kalang.util.TokenNavigator;
@@ -24,9 +25,10 @@ public class KalangCompilerTest {
         KalangCompiler kc = new KalangCompiler();
         kc.addSource("Test", "class{  }");
         kc.compile();
-        CommonTokenStream ts = kc.getTokenStream("Test");
+        CompilationUnit unit = kc.getCompilationUnit("Test");
+        CommonTokenStream ts = unit.getTokenStream();
         List<Token> tokens = ts.getTokens();
-        testTokenNavigator(tokens.toArray(new Token[0]),kc.getSourceUnit("Test").getParseTree());
+        testTokenNavigator(tokens.toArray(new Token[0]),unit.getSourceUnit().getParseTree());
     }
     
     private void testTokenNavigator(Token[] tokens,ParseTree tree){

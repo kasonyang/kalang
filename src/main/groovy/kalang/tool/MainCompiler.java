@@ -1,6 +1,7 @@
 package kalang.tool;
 
 import kalang.compiler.*;
+import kalang.compiler.KalangCompiler;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-public class Compiler {
+public class MainCompiler {
 
     static void printUsage() {
         System.out.println("kac src dest");
@@ -102,9 +103,9 @@ public class Compiler {
             System.err.println(fn + ":" + error);
         });
         cpl.compile();
-        HashMap<String, String> javaCodes = cpl.getJavaCodes();
-        for (String cls : javaCodes.keySet()) {
-            String code = javaCodes.get(cls);
+        HashMap<String, CompilationUnit> units = cpl.getAllCompilationUnit();
+        for (String cls : units.keySet()) {
+            String code = units.get(cls).getJavaCode();
             if (outDir != null) {
                 String fname = cls.replace(".", "/") + ".java";
                 File destFile = new File(outDir, fname);

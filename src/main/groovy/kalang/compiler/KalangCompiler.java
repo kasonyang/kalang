@@ -25,30 +25,22 @@ import org.antlr.v4.runtime.tree.ParseTree;
 //import SourceUnit.OffsetRange
 public class KalangCompiler extends AstLoader {
 
-    HashMap<String, String> sources = new HashMap();
-    
-    HashMap<String, CommonTokenStream> tokenStreams = new HashMap<>();
+    private HashMap<String, CompilationUnit> compilationUnits = new HashMap<>();
 
-    HashMap<String, ClassNode> asts = new HashMap();
+    private HashMap<String, String> sources = new HashMap();
 
-    HashMap<String, SourceUnit> units = new HashMap();
-    
-    List<String> parseTasks = new LinkedList<>();
+    private List<String> parseTasks = new LinkedList<>();
 
-    HashMap<String, String> javaCodes = new HashMap();
-    
-    HashMap<String, SemanticAnalyzer> semanticAnalyzers = new HashMap<>();
+    private AstLoader astLoader;
 
-    AstLoader astLoader;
-    
-    SourceLoader sourceLoader;
+    private SourceLoader sourceLoader;
 
-    AstSemanticErrorReporter semanticErrorReporter;
+    private AstSemanticErrorReporter semanticErrorReporter;
 
     private AstSemanticErrorHandler astSemanticErrorHandler = new AstSemanticErrorHandler() {
         @Override
         public void handleAstSemanticError(AstSemanticError error) {
-            reportAstNodeError(error.getDescription(),error.classNode.name,error.node);
+            reportAstNodeError(error.getDescription(), error.classNode.name, error.node);
         }
     };
     private SourceParsingErrorHandler semanticErrorHandler = new SourceParsingErrorHandler() {
@@ -56,7 +48,7 @@ public class KalangCompiler extends AstLoader {
         public void handleSemanticError(SourceParsingException see) {
             SourceUnit parser = see.getSourceUnit();
             OffsetRange offsetRange = see.getOffset();
-            reportError(see.getDescription(), parser.getClassName(),offsetRange);
+            reportError(see.getDescription(), parser.getClassName(), offsetRange);
         }
     };
     private CompileErrorHandler compileErrorHandlerrrorHandler = new CompileErrorHandler() {
@@ -73,8 +65,8 @@ public class KalangCompiler extends AstLoader {
         this.astLoader = astLoader;
         this.sourceLoader = sourceLoader;
     }
-    
-    public KalangCompiler(SourceLoader sourceLoader,AstLoader astLoader) {
+
+    public KalangCompiler(SourceLoader sourceLoader, AstLoader astLoader) {
         this.astLoader = astLoader;
         this.sourceLoader = sourceLoader;
     }
@@ -82,39 +74,31 @@ public class KalangCompiler extends AstLoader {
     public KalangCompiler(SourceLoader sourceLoader) {
         this.sourceLoader = sourceLoader;
     }
-    
-    
 
     public KalangCompiler(AstLoader astLoader) {
         this.astLoader = astLoader;
     }
 
-    public ClassNode[] getCompiledClasses() {
-        return asts.values().toArray(new ClassNode[0]);
-    }
-
+//    public ClassNode[] getCompiledClasses() {
+//        return asts.values().toArray(new ClassNode[0]);
+//    }
     public void addSource(String cls, String text) {
         sources.put(cls, text);
     }
 
     protected void init() {
-        units.clear();
-        semanticAnalyzers.clear();
-        asts.clear();
-        javaCodes.clear();
         Set<String> ks = sources.keySet();
         for (String k : ks) {
             String src = sources.get(k);
-            createAst(k,src);
+            createCompilationUnit(k, src);
         }
     }
 
-    protected void buildAst() {
-        while(parseTasks.size()>0){
+    protected void parse() {
+        while (parseTasks.size() > 0) {
             String k = parseTasks.get(0);
-            SourceUnit cunit = units.get(k);
-            cunit.compile(this);
-            parseTasks.remove(k);
+            CompilationUnit cunit = compilationUnits.get(k);
+            cunit.parse(semanticErrorHandler);
         }
     }
 
@@ -125,55 +109,45 @@ public class KalangCompiler extends AstLoader {
     public void setAstSemanticErrorHandler(AstSemanticErrorHandler astSemanticErrorHandler) {
         this.astSemanticErrorHandler = astSemanticErrorHandler;
     }
-    
-    
 
-    protected void typeCheck() {
-        Set<String> cnames = this.asts.keySet();
-        for (String c : cnames) {
-            SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(this);
-            semanticAnalyzer.setAstSemanticErrorHandler(astSemanticErrorHandler);
-            semanticAnalyzers.put(c, semanticAnalyzer);
-            ClassNode cls = asts.get(c);
-            semanticAnalyzer.check(cls);
+    protected void semanticAnalysis() {
+        for (CompilationUnit cunit : compilationUnits.values()) {
+            cunit.semanticAnalysis(astSemanticErrorHandler);
         }
     }
 
     protected void codeGen() {
-        Collection<ClassNode> cls = this.asts.values();
-        for (ClassNode c : cls) {
-            Ast2Java a2j = new Ast2Java();
-            String source = a2j.generate(c);
-            this.javaCodes.put(c.name, source);
+        for (CompilationUnit cunit : compilationUnits.values()) {
+            cunit.generateJavaCode();
         }
     }
 
     public void reportError(String msg, String className, OffsetRange loc) {
         String src = sources.get(className);
-        CompileError ce = new CompileError(msg, className, src,loc);
+        CompileError ce = new CompileError(msg, className, src, loc);
         compileErrorHandlerrrorHandler.handleCompileError(ce);
     }
 
     public void reportAstNodeError(String msg, String className, AstNode node) {
-        reportError(msg, className,node.offset);
+        reportError(msg, className, node.offset);
     }
 
     public void compile() {
         init();
-        buildAst();
-        typeCheck();
+        parse();
+        semanticAnalysis();
         codeGen();
     }
 
     @Override
     protected ClassNode findAst(String className) throws AstNotFoundException {
-        if (this.asts.containsKey(className)) {
-            return this.asts.get(className);
+        if (compilationUnits.containsKey(className)) {
+            return compilationUnits.get(className).getAst();
         }
-        if(this.sourceLoader!=null){
+        if (this.sourceLoader != null) {
             String source = sourceLoader.loadSource(className);
-            if(source!=null){
-                return createAst(className,source);
+            if (source != null) {
+                return createCompilationUnit(className, source).getAst();
             }
         }
         if (this.astLoader != null) {
@@ -187,12 +161,12 @@ public class KalangCompiler extends AstLoader {
         return sources;
     }
 
-    public HashMap<String, SourceUnit> getAllUnit() {
-        return units;
+    public HashMap<String, CompilationUnit> getAllCompilationUnit() {
+        return compilationUnits;
     }
-
-    public HashMap<String, String> getJavaCodes() {
-        return javaCodes;
+    
+    public CompilationUnit getCompilationUnit(String className){
+        return compilationUnits.get(className);
     }
 
     public SourceParsingErrorHandler getSemanticErrorHandler() {
@@ -210,40 +184,20 @@ public class KalangCompiler extends AstLoader {
     public void setCompileErrorHandlerrrorHandler(CompileErrorHandler compileErrorHandlerrrorHandler) {
         this.compileErrorHandlerrrorHandler = compileErrorHandlerrrorHandler;
     }
-    
-    public SemanticAnalyzer getSemanticAnalyzer(String className){
-        return semanticAnalyzers.get(className);
-    }
-    
-    public SourceUnit getSourceUnit(String clsName){
-        return units.get(clsName);
-    }
-    
-    public ClassNode getClassNode(String clsName){
-        return asts.get(clsName);
+
+    private CompilationUnit createCompilationUnit(String className, String src) {
+        CompilationUnit unit = new CompilationUnit(className, src,this);
+        compilationUnits.put(className, unit);
+        this.parseTasks.add(className);
+        return unit;
     }
 
-    private ClassNode createAst(String className,String src) {
-        CommonTokenStream tokens = TokenStreamFactory.createTokenStream(src);
-        tokenStreams.put(className, tokens);
-        SourceUnit cunit = SourceUnitFactory.createSourceUnit(className, tokens);
-            cunit.setSemanticErrorHandler(semanticErrorHandler);
-            //SourceParser cunit = new SourceUnit(k,p);
-            cunit.importPackage("java.lang");
-            cunit.importPackage("java.util");
-            ClassNode cls = cunit.getAst();
-            this.parseTasks.add(className);
-            this.asts.put(className, cls);
-            this.units.put(className, cunit);
-            return cls;
+    public AstLoader getAstLoader() {
+        return astLoader;
     }
-    
-    public CommonTokenStream getTokenStream(String clsName){
-        return tokenStreams.get(clsName);
-    }
-    
-    public HashMap<String, CommonTokenStream> getTokenStream(){
-        return tokenStreams;
+
+    public SourceLoader getSourceLoader() {
+        return sourceLoader;
     }
 
 }

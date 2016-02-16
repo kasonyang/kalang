@@ -11,7 +11,7 @@ public class AstLoader {
     
     public static final AstLoader BASE_AST_LOADER = new JavaAstLoader();
 
-    HashMap<String, ClassNode> asts = new HashMap();
+    private HashMap<String, ClassNode> asts = new HashMap();
 
     private AstLoader parent;
 

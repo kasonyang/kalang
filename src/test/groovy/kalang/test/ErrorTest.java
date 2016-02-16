@@ -3,14 +3,14 @@ package kalang.test;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-
 import kalang.compiler.*;
-//import kalang.Compiler as KC
+import kalang.compiler.KalangCompiler;
+//import kalang.MainCompiler as KC
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import kalang.compiler.AstSemanticError;// as E;
-//import kalang.tool.Compiler as TC;
+//import kalang.tool.MainCompiler as TC;
 public class ErrorTest {
 	
     String outDir = "TestScript/generatedCode";
@@ -52,7 +52,10 @@ public class ErrorTest {
             kc.addSource(n,source);
         }
         kc.compile();
-        System.out.println(kc.getJavaCodes());
+        for(CompilationUnit unit:kc.getAllCompilationUnit().values()){
+            System.out.println(unit.getJavaCode());
+        }
+        //
     }
 	
     private void cp(String... name) throws IOException{
@@ -89,7 +92,7 @@ public class ErrorTest {
 	
     @Test
     public void toolTest() throws IOException{
-        kalang.tool.Compiler.main(new String[]{this.errSrcDir,outDir});
+        kalang.tool.MainCompiler.main(new String[]{this.errSrcDir,outDir});
     }
 	
 
