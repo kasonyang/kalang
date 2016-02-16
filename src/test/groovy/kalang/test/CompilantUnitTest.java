@@ -42,11 +42,11 @@ public class CompilantUnitTest {
         assertNotNull(treeMd);
         assertNotNull(treeMdEnd);
         //assertEquals(treeMd, treeMdEnd.getParent().getParent());
-        AstNode ast = sp.getAstNode(tree);
-        assertNotNull(ast);
-        System.out.println("ast:"+ast);
-        RuleContext treeOfAst = sp.getParseTree(ast);
-        assertNotNull(treeOfAst);
+//        AstNode ast = sp.getAstNode(tree);
+//        assertNotNull(ast);
+//        System.out.println("ast:"+ast);
+//        RuleContext treeOfAst = sp.getParseTree(ast);
+//        assertNotNull(treeOfAst);
     }
     
 }

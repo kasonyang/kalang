@@ -104,7 +104,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     private final List<String> importPaths = new LinkedList<>();
     ClassNode cls = new ClassNode();
     MethodNode method;
-    private final BidiMap<AstNode, ParserRuleContext> a2p = new DualHashBidiMap<>();
+    //private final BidiMap<AstNode, ParserRuleContext> a2p = new DualHashBidiMap<>();
 
     private AstLoader astLoader;
 
@@ -136,28 +136,28 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         this.semanticErrorHandler = semanticErrorHandler;
     }
     
-    public AstNode getAstNode(ParseTree tree){
-        AstNode node = null;
-        while(node==null && tree!=null){
-            node = a2p.getKey(tree);
-            tree = tree.getParent();
-        }
-        return node;
-    }
+//    public AstNode getAstNode(ParseTree tree){
+//        AstNode node = null;
+//        while(node==null && tree!=null){
+//            node = a2p.getKey(tree);
+//            tree = tree.getParent();
+//        }
+//        return node;
+//    }
     
     public ParserRuleContext getParseTree(){
         return context;
     }
     
-    public ParserRuleContext getParseTree(AstNode node){
-        return a2p.get(node);
-    }
+//    public ParserRuleContext getParseTree(AstNode node){
+//        return a2p.get(node);
+//    }
   
     @Override
     public Object visitThrowStat(KalangParser.ThrowStatContext ctx) {
         ExprNode expr = (ExprNode) visit(ctx.expression());
         ThrowStmt ts = new ThrowStmt(expr);
-        map(ts, ctx);
+        mapAst(ts, ctx);
         return ts;
     }
 
@@ -227,16 +227,24 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         vtb = vtb.getParent();
     }
 
-    public Map<AstNode, ParserRuleContext> getParseTreeMap() {
-        return this.a2p;
-    }
+//    public Map<AstNode, ParserRuleContext> getParseTreeMap() {
+//        return this.a2p;
+//    }
 
     public ClassNode getAst() {
         return this.cls;
     }
     
-    private void map(AstNode node,ParserRuleContext tree){
-        a2p.put(node,tree);
+    private void mapAst(AstNode node,ParserRuleContext tree){
+        Token start = tree.getStart();
+        Token stop = tree.getStop();
+        node.startOffset = start.getStartIndex();
+        node.stopOffset = stop.getStopIndex();
+        node.startLine = start.getLine();
+        node.startLineColumn = start.getCharPositionInLine();
+        node.stopLine = stop.getLine();
+        node.stopLineColumn = stop.getCharPositionInLine();
+        //a2p.put(node,tree);
     }
 
     @Override
@@ -276,7 +284,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             mse.stmts.add(es);
         }
         mse.reference = ve;
-        map(mse,ctx);
+        mapAst(mse,ctx);
         //TODO set generic type
         return mse;
     }
@@ -302,7 +310,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         }
         mse.reference = ve;
         //TODO set generic type
-        map(mse,ctx);
+        mapAst(mse,ctx);
         return mse;
     }
 
@@ -311,7 +319,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         NewArrayExpr nae = new NewArrayExpr();
         nae.size = (ExprNode) visit(ctx.expression());
         nae.type = parseSingleType(ctx.singleType());
-        a2p.put(nae, ctx);
+        mapAst(nae, ctx);
         return nae;
     }
 
@@ -330,7 +338,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         mse.stmts.add(is);
         mse.reference = ve;
         //addCode(is, ctx);
-        a2p.put(ve, ctx);
+        mapAst(ve, ctx);
         return mse;
     }
 
@@ -357,7 +365,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         is.conditionExpr = cond;
         is.trueBody = new ExprStmt(as);
         //addCode(is, ctx);
-        map(is,ctx);
+        mapAst(is,ctx);
         return is;
     }
 
@@ -383,7 +391,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             }
         }
         visitClassBody(ctx.classBody());
-        a2p.put(cls, ctx);
+        mapAst(cls, ctx);
         return null;
     }
 
@@ -392,7 +400,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         this.newVarStack();
         this.visitChildren(ctx);
         this.popVarStack();
-        a2p.put(cls, ctx);
+        mapAst(cls, ctx);
         return null;
     }
 
@@ -447,7 +455,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         }
         this.popVarStack();
         //cls.methods.add(method);
-        a2p.put(method, ctx);
+        mapAst(method, ctx);
         return method;
     }
 
@@ -474,7 +482,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         if (ctx.falseStmt != null) {
             ifStmt.falseBody = visitStat(ctx.falseStmt);
         }
-        map(ifStmt,ctx);
+        mapAst(ifStmt,ctx);
         return ifStmt;
     }
 
@@ -494,7 +502,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         if (ctx.expression() != null) {
             rs.expr = visitExpression(ctx.expression());
         }
-        map(rs,ctx);
+        mapAst(rs,ctx);
         return rs;
     }
 
@@ -504,7 +512,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         VarObject var = this.visitVarDecl(ctx.varDecl());
         VarDeclStmt vds = new VarDeclStmt(var);
         vtb.put(var.name, vds);
-        map(vds,ctx);
+        mapAst(vds,ctx);
         return vds;
     }
 
@@ -541,7 +549,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         if (ctx.expression() != null) {
             vds.initExpr = (ExprNode) visit(ctx.expression());
         }
-        map(vds,ctx);
+        mapAst(vds,ctx);
         return vds;
     }
     
@@ -562,14 +570,14 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     @Override
     public AstNode visitBreakStat(BreakStatContext ctx) {
         BreakStmt bs = new BreakStmt();
-        map(bs,ctx);
+        mapAst(bs,ctx);
         return bs;
     }
 
     @Override
     public AstNode visitContinueStat(ContinueStatContext ctx) {
         ContinueStmt cs = new ContinueStmt();
-        map(cs,ctx);
+        mapAst(cs,ctx);
         return cs;
     }
 
@@ -580,7 +588,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         if (ctx.stat() != null) {
             ws.loopBody = visitStat(ctx.stat());
         }
-        map(ws,ctx);
+        mapAst(ws,ctx);
         return ws;
     }
 
@@ -593,7 +601,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             this.popVarStack();
         }
         ls.postConditionExpr = (ExprNode) visit(ctx.expression());
-        map(ls,ctx);
+        mapAst(ls,ctx);
         return ls;
     }
 
@@ -621,7 +629,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         }
         ls.loopBody = bs;
         this.popVarStack();
-        map(ls,ctx);
+        mapAst(ls,ctx);
         return ls;
     }
 
@@ -641,7 +649,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         AstNode expr = visitExpression(ctx.expression());
         ExprStmt es = new ExprStmt();
         es.expr = (ExprNode) expr;
-        map(es,ctx);
+        mapAst(es,ctx);
         return es;
     }
 
@@ -658,7 +666,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         }
         InvocationExpr ie = this.getInvocationExpr(
                 target, methodName, ctx.params);
-        a2p.put(ie, ctx);
+        mapAst(ie, ctx);
         return ie;
     }
 
@@ -674,7 +682,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         AssignExpr aexpr = new AssignExpr();
         aexpr.from = (ExprNode) from;
         aexpr.to = (ExprNode) to;
-        a2p.put(aexpr, ctx);
+        mapAst(aexpr, ctx);
         return aexpr;
     }
 
@@ -685,7 +693,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
         be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
         be.operation = op;
-        a2p.put(be, ctx);
+        mapAst(be, ctx);
         return be;
     }
 
@@ -703,7 +711,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     public AstNode visitExprInvocation(ExprInvocationContext ctx) {
         InvocationExpr ei = this.getInvocationExpr(
                 visitExpression(ctx.target), ctx.Identifier().getText(), ctx.params);
-        a2p.put(ei, ctx);
+        mapAst(ei, ctx);
         return ei;
     }
 
@@ -714,7 +722,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         FieldExpr fe = new FieldExpr();
         fe.target = (ExprNode) expr;
         fe.fieldName = name;
-        a2p.put(fe, ctx);
+        mapAst(fe, ctx);
         return fe;
     }
 
@@ -723,7 +731,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         UnaryExpr ue = new UnaryExpr();
         ue.postOperation = ctx.getChild(1).getText();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
-        a2p.put(ue, ctx);
+        mapAst(ue, ctx);
         return ue;
     }
 
@@ -733,7 +741,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         UnaryExpr ue = new UnaryExpr();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
         ue.preOperation = op;
-        a2p.put(ue, ctx);
+        mapAst(ue, ctx);
         return ue;
     }
 
@@ -742,7 +750,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         ElementExpr ee = new ElementExpr();
         ee.target = (ExprNode) visitExpression(ctx.expression(0));
         ee.key = (ExprNode) visitExpression(ctx.expression(1));
-        a2p.put(ee, ctx);
+        mapAst(ee, ctx);
         return ee;
     }
 
@@ -833,7 +841,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         } else {
             ce.type = Types.NULL_TYPE;
         }
-        map(ce,ctx);
+        mapAst(ce,ctx);
         return ce;
     }
 
@@ -911,7 +919,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         ClassExpr expr = new ClassExpr();
         expr.name = checkFullType(type, ctx);
         InvocationExpr inv = this.getInvocationExpr(expr, "<init>", ctx.params);
-        map(inv,ctx);
+        mapAst(inv,ctx);
         return inv;
     }
 
@@ -920,7 +928,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         CastExpr ce = new CastExpr();
         ce.expr = visitExpression(ctx.expression());
         ce.type = parseType(ctx.type());
-        map(ce,ctx);
+        mapAst(ce,ctx);
         return ce;
     }
 
@@ -951,7 +959,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
             tryStmt.finallyStmt = visitStat(ctx.finalStmtList);
             this.popVarStack();
         }
-        map(tryStmt,ctx);
+        mapAst(tryStmt,ctx);
         return tryStmt;
     }
 
@@ -971,7 +979,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         if (expr == null) {
             this.reportError(name + " is undefined!", ctx);
         }
-        map(expr,ctx);
+        mapAst(expr,ctx);
         return expr;
     }
 
@@ -994,7 +1002,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         for (StatContext s : ctx.stat()) {
             bs.statements.add(visitStat(s));
         }
-        map(bs,ctx);
+        mapAst(bs,ctx);
         return bs;
     }
 
@@ -1007,7 +1015,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     @Override
     public AstNode visitExprSelfRef(ExprSelfRefContext ctx) {
         KeyExpr expr = new KeyExpr(ctx.ref.getText());
-        a2p.put(expr, ctx);
+        mapAst(expr, ctx);
         return expr;
     }
     

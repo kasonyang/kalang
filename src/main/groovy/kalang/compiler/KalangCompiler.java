@@ -164,17 +164,7 @@ public class KalangCompiler extends AstLoader {
     }
 
     public void reportAstNodeError(String msg, String className, AstNode node) {
-        CompilantUnit unit = this.units.get(className);
-        RuleContext treeOfAstNode = unit.getParseTree(node);
-        RuleContext tree = treeOfAstNode;
-        while(tree!=null && !(tree instanceof ParserRuleContext)){
-            tree = tree.getParent();
-        }
-        if(tree==null){
-            reportError(msg, className, new OffsetRange(0, 0));
-        }else{
-            reportError(msg, className, OffsetRangeHelper.getOffsetRange((ParserRuleContext)tree));
-        }
+        reportError(msg, className, new OffsetRange(node.startOffset, node.stopOffset));
     }
 
     public void compile() {
