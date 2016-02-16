@@ -21,11 +21,11 @@ public class SourceParsingException extends RuntimeException{
     
     private OffsetRange offset;
     
-    private final CompilantUnit compilantUnit;
+    private final SourceUnit compilantUnit;
     
     private String description;
 
-    public SourceParsingException(String description,OffsetRange offset,CompilantUnit compilantUnit) {
+    public SourceParsingException(String description,OffsetRange offset,SourceUnit compilantUnit) {
         super(description);
         this.offset = offset;
         this.compilantUnit = compilantUnit;
@@ -33,7 +33,7 @@ public class SourceParsingException extends RuntimeException{
     }
 
 
-    public CompilantUnit getCompilantUnit() {
+    public SourceUnit getCompilantUnit() {
         return compilantUnit;
     }
 

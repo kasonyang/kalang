@@ -11,7 +11,7 @@ import java.util.Set;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import kalang.util.OffsetRangeHelper;
-import kalang.util.CompilantUnitFactory;
+import kalang.util.SourceUnitFactory;
 import kalang.util.TokenStreamFactory;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -22,7 +22,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-//import CompilantUnit.OffsetRange
+//import SourceUnit.OffsetRange
 public class KalangCompiler extends AstLoader {
 
     HashMap<String, String> sources = new HashMap();
@@ -31,7 +31,7 @@ public class KalangCompiler extends AstLoader {
 
     HashMap<String, ClassNode> asts = new HashMap();
 
-    HashMap<String, CompilantUnit> units = new HashMap();
+    HashMap<String, SourceUnit> units = new HashMap();
     
     List<String> parseTasks = new LinkedList<>();
 
@@ -51,10 +51,10 @@ public class KalangCompiler extends AstLoader {
             reportAstNodeError(error.getDescription(),error.classNode.name,error.node);
         }
     };
-    private SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler() {
+    private SourceParsingErrorHandler semanticErrorHandler = new SourceParsingErrorHandler() {
         @Override
         public void handleSemanticError(SourceParsingException see) {
-            CompilantUnit parser = see.getCompilantUnit();
+            SourceUnit parser = see.getCompilantUnit();
             OffsetRange offsetRange = see.getOffset();
             reportError(see.getDescription(), parser.getClassName(),offsetRange);
         }
@@ -112,7 +112,7 @@ public class KalangCompiler extends AstLoader {
     protected void buildAst() {
         while(parseTasks.size()>0){
             String k = parseTasks.get(0);
-            CompilantUnit cunit = units.get(k);
+            SourceUnit cunit = units.get(k);
             cunit.compile(this);
             parseTasks.remove(k);
         }
@@ -187,7 +187,7 @@ public class KalangCompiler extends AstLoader {
         return sources;
     }
 
-    public HashMap<String, CompilantUnit> getAllUnit() {
+    public HashMap<String, SourceUnit> getAllUnit() {
         return units;
     }
 
@@ -195,11 +195,11 @@ public class KalangCompiler extends AstLoader {
         return javaCodes;
     }
 
-    public SemanticErrorHandler getSemanticErrorHandler() {
+    public SourceParsingErrorHandler getSemanticErrorHandler() {
         return semanticErrorHandler;
     }
 
-    public void setSemanticErrorHandler(SemanticErrorHandler semanticErrorHandler) {
+    public void setSemanticErrorHandler(SourceParsingErrorHandler semanticErrorHandler) {
         this.semanticErrorHandler = semanticErrorHandler;
     }
 
@@ -215,7 +215,7 @@ public class KalangCompiler extends AstLoader {
         return semanticAnalyzers.get(className);
     }
     
-    public CompilantUnit getCompilantUnit(String clsName){
+    public SourceUnit getCompilantUnit(String clsName){
         return units.get(clsName);
     }
     
@@ -226,9 +226,9 @@ public class KalangCompiler extends AstLoader {
     private ClassNode createAst(String className,String src) {
         CommonTokenStream tokens = TokenStreamFactory.createTokenStream(src);
         tokenStreams.put(className, tokens);
-        CompilantUnit cunit = CompilantUnitFactory.createCompilantUnit(className, tokens);
+        SourceUnit cunit = SourceUnitFactory.createSourceUnit(className, tokens);
             cunit.setSemanticErrorHandler(semanticErrorHandler);
-            //SourceParser cunit = new CompilantUnit(k,p);
+            //SourceParser cunit = new SourceUnit(k,p);
             cunit.importPackage("java.lang");
             cunit.importPackage("java.util");
             ClassNode cls = cunit.getAst();

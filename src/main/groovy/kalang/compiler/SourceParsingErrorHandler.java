@@ -13,6 +13,6 @@ import java.util.*;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public interface SemanticErrorHandler {
+public interface SourceParsingErrorHandler {
     void handleSemanticError(SourceParsingException see);
 }

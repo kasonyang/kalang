@@ -6,7 +6,7 @@ import java.net.*;
 import java.util.*;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
-import kalang.compiler.CompilantUnit;
+import kalang.compiler.SourceUnit;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
@@ -20,25 +20,25 @@ import org.antlr.v4.runtime.TokenStream;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class CompilantUnitFactory {
+public class SourceUnitFactory {
     
-    public static CompilantUnit createCompilantUnit(String clsName,KalangLexer lexer){
-        return CompilantUnitFactory.createCompilantUnit(
+    public static SourceUnit createSourceUnit(String clsName,KalangLexer lexer){
+        return SourceUnitFactory.createSourceUnit(
                 clsName
                 ,TokenStreamFactory.createTokenStream(lexer)
         );
     }
     
-    public static CompilantUnit createCompilantUnit(String clsName,String source){
-        return CompilantUnitFactory.createCompilantUnit(
+    public static SourceUnit createSourceUnit(String clsName,String source){
+        return SourceUnitFactory.createSourceUnit(
                 clsName
                 ,TokenStreamFactory.createTokenStream(source)
         );
     }
         
-    public static CompilantUnit createCompilantUnit(String clsName,TokenStream tokens){
+    public static SourceUnit createSourceUnit(String clsName,TokenStream tokens){
         KalangParser p = new KalangParser(tokens);
-        CompilantUnit sp = new CompilantUnit(clsName, p);
+        SourceUnit sp = new SourceUnit(clsName, p);
         p.setErrorHandler(new DefaultErrorStrategy() {
 
             @Override

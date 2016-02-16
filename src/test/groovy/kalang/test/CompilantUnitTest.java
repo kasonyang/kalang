@@ -7,9 +7,9 @@ package kalang.test;
 
 import kalang.ast.AstNode;
 import kalang.compiler.JavaAstLoader;
-import kalang.compiler.CompilantUnit;
+import kalang.compiler.SourceUnit;
 import kalang.util.ParseTreeNavigator;
-import kalang.util.CompilantUnitFactory;
+import kalang.util.SourceUnitFactory;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -27,7 +27,7 @@ public class CompilantUnitTest {
     
     @Test
     public void test(){
-        CompilantUnit sp = CompilantUnitFactory.createCompilantUnit("Test", "class{"
+        SourceUnit sp = SourceUnitFactory.createSourceUnit("Test", "class{"
                 + "void main(){"
                 + "}"
                 + "}");

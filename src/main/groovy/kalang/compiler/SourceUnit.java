@@ -96,7 +96,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
-public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVisitor {
+public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisitor {
    
     static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
 
@@ -119,7 +119,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     private VarTable<String, VarDeclStmt> vtb;
     private KalangParser parser;    
     
-    private SemanticErrorHandler semanticErrorHandler = new SemanticErrorHandler() {
+    private SourceParsingErrorHandler semanticErrorHandler = new SourceParsingErrorHandler() {
         @Override
         public void handleSemanticError(SourceParsingException see) {
             System.err.println(see);
@@ -129,11 +129,11 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
     private ClassType stringType;
     private ClassType listType;
     
-    public SemanticErrorHandler getSemanticErrorHandler() {
+    public SourceParsingErrorHandler getSemanticErrorHandler() {
         return semanticErrorHandler;
     }
 
-    public void setSemanticErrorHandler(SemanticErrorHandler semanticErrorHandler) {
+    public void setSemanticErrorHandler(SourceParsingErrorHandler semanticErrorHandler) {
         this.semanticErrorHandler = semanticErrorHandler;
     }
     
@@ -189,7 +189,7 @@ public class CompilantUnit extends AbstractParseTreeVisitor implements KalangVis
         }
     }
 
-    public CompilantUnit(String className, KalangParser parser) {
+    public SourceUnit(String className, KalangParser parser) {
         this.className = className;
         this.classPath = "";
         this.parser = parser;

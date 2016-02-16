@@ -68,30 +68,30 @@ public class Compiler {
     }
 
     public static void compile(String className, String src, File outDir) throws IOException {
-        SourceUnit su = new SourceUnit();
-        List<SourceUnit> list = new LinkedList();
+        Source su = new Source();
+        List<Source> list = new LinkedList();
         list.add(su);
         su.className = className;
         su.source = src;
         compile(list, outDir);
     }
 
-    public static void compile(List<SourceUnit> sources) throws IOException {
+    public static void compile(List<Source> sources) throws IOException {
         compile(sources, null);
     }
 
-    public static void compile(List<SourceUnit> sources, File outDir) throws IOException{
+    public static void compile(List<Source> sources, File outDir) throws IOException{
         File srcRoot = null;
         compile(sources,srcRoot,outDir);
     }
     
-    public static void compile(List<SourceUnit> sources,File srcDir, File outDir) throws IOException {
+    public static void compile(List<Source> sources,File srcDir, File outDir) throws IOException {
         JavaAstLoader astLoader = new JavaAstLoader();
         KalangCompiler cpl = new KalangCompiler(astLoader,new FileSystemSourceLoader(srcDir));
         int size = sources.size();
-        HashMap<String, SourceUnit> sourcesMap = new HashMap<>();
+        HashMap<String, Source> sourcesMap = new HashMap<>();
         for (int i = 0; i < size; i++) {
-            SourceUnit src = sources.get(i);
+            Source src = sources.get(i);
             String clsName = src.className;
             sourcesMap.put(clsName, src);
             cpl.addSource(clsName, src.source);
@@ -135,7 +135,7 @@ public class Compiler {
             String clsName = fname.substring(abSrcPath.length() + 1, fname.length() - 3).replace(File.separator, ".");
             System.out.println("add class:" + clsName);
             String txt = FileUtils.readFileToString(s);
-            SourceUnit sUnit = new SourceUnit();
+            Source sUnit = new Source();
             sUnit.className = clsName;
             sUnit.fileName = fname.substring(abSrcPath.length() + 1);
             sUnit.source = txt;

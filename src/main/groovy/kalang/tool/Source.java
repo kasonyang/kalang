@@ -1,10 +1,10 @@
 package kalang.tool;
 
-public class SourceUnit   {
+public class Source   {
      public java.lang.String fileName;
      public java.lang.String className;
      public java.lang.String source;
-     public  SourceUnit() {
+     public  Source() {
          
     }
      
