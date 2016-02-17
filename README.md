@@ -30,8 +30,19 @@ clone the source,and run
 
 add the path`build/install/kalang/bin` to your `PATH` environment variable,and run
 
-    >kalang SOURCE_DIR OUTPUT_DIR
+    >kalang [SOURCE_DIR [OUTPUT_DIR]]
+
+or
+
+    >kalang SOURCE_FILE [OUTPUT_DIR]
+
+for example:`kalang Helloworld.kl` would compile `Helloworld.kl` to `Helloworld.java` in current directory.
 
 # IDE support
 
 Netbeans [Kalang-support](https://github.com/kasonyang/kalang-support)
+
+#TODOs
+
+* add javadoc
+* add more test
