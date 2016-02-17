@@ -153,6 +153,11 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         Object ret = super.visit(node);
         if (ret instanceof Type) {
             types.put(node,(Type) ret);
+            if(node instanceof ExprNode){
+                ExprNode exprNode = ((ExprNode)node);                 if(exprNode.type==null){
+                    exprNode.type = (Type) ret;
+                }
+            }
             return  (Type) ret;
         }
         return null;
