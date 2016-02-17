@@ -20,8 +20,8 @@ import kalang.core.Types;
 public class AstUtil {
 
 
-   public static String getMethodDescriptor(String name, List<Type> types, String className) {
-       List<String> typeStrList = new ArrayList<>(types.size());
+   public static String getMethodDescriptor(String name, Type[] types, String className) {
+       List<String> typeStrList = new ArrayList<>(types.length);
        for(Type t:types){
            typeStrList.add(t.getName());
        }
@@ -61,13 +61,13 @@ public class AstUtil {
 		}
 		return null
 	}*/
-    public static List<Type> getParameterTypes(MethodNode mn) {
-        List<Type> types = new LinkedList();
+    public static Type[] getParameterTypes(MethodNode mn) {
         if (mn.parameters == null) {
-            return types;
+            return new Type[0];
         }
-        for (ParameterNode p : mn.parameters) {
-            types.add(p.type);
+        Type[] types = new Type[mn.parameters.size()];
+        for(int i=0;i<types.length;i++){
+            types[i] = mn.parameters.get(i).type;
         }
         return types;
     }
@@ -76,7 +76,7 @@ public class AstUtil {
         List<MethodNode> list = new LinkedList();
         for (MethodNode m : theInterface.getMethodNodes()) {
             String name = m.name;
-            Type[] types = getParameterTypes(m).toArray(new Type[0]);
+            Type[] types = getParameterTypes(m);
             //MethodNode[] methods = getMethodsByName(theClass, name);
             MethodNode matches = getMethod(theClass,name, types);
             if (matches == null) {
@@ -136,7 +136,7 @@ public class AstUtil {
     public static MethodNode getMethod(ClassNode cls, String methodName, Type[] types) {
        MethodNode[] methods = getMethodsByName(cls, methodName);
         for(MethodNode m:methods){
-           Type[] mdTypes = getParameterTypes(m).toArray(new Type[0]);
+           Type[] mdTypes = getParameterTypes(m);
            if(Arrays.equals(mdTypes, types)) return m;
         }
         return null;

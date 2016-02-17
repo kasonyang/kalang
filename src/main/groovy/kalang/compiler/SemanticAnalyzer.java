@@ -49,22 +49,24 @@ import static kalang.util.AstUtil.getParameterTypes;
 import static kalang.util.AstUtil.matchTypes;
 import kalang.util.BoxUtil;
 
+/**
+ *  The semantic analyzer class infers and checks the type of expressions. It may transform the abstract syntax tree.
+ * 
+ * @author Kason Yang <i@kasonyang.com>
+ */
 public class SemanticAnalyzer extends AstVisitor<Type> {
    
-    HashMap<String, VarObject> fields;
+    private HashMap<String, VarObject> fields;
 
-    AstLoader astLoader;
+    private AstLoader astLoader;
 
-    ClassNode clazz;
+    private ClassNode clazz;
 
+   private  MethodNode method;
 
-    //AstMetaParser astParser;
+    private List<String> methodDeclared;
 
-    MethodNode method;
-
-    List<String> methodDeclared;
-
-    boolean returned;
+    private boolean returned;
 
     private AstSemanticErrorReporter err;
 
@@ -76,8 +78,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     SemanticAnalyzer(AstLoader astLoader) {
         this.astLoader = astLoader;
-        //this.typeSystem = new TypeSystem(astLoader);
-        //this.astParser = new AstUtil();
         errHandler = new AstSemanticErrorHandler() {
             @Override
             public void handleAstSemanticError(AstSemanticError error) {
@@ -94,8 +94,16 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         errHandler = handler;
     }
 
+    /**
+     * checks whether an expression as assignable to another expression , and transform the expression if needed.
+     * 
+     * @param expr
+     * @param from
+     * @param to
+     * @param node
+     * @return the assignable expression when assignable ,or null
+     */
     private ExprNode checkAssign(ExprNode expr, Type from, Type to, AstNode node) {
-        //expr = from.cast(to, expr);
         expr = BoxUtil.assign(expr, from, to);
         if (expr == null) {
             err.failedToCast(node, from.getName(), to.getName());
@@ -137,7 +145,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 List<MethodNode> unImps = AstUtil.getUnimplementedMethod(clazz, itfNode);
                 if (unImps.size() > 0) {
                     err.notImplementedMethods(clazz, itfNode, unImps);
-                    //fail(CE"unimplemented method:${mStr}",clazz);
                 }
             }
         }
@@ -202,25 +209,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return Types.getPrimitiveType(ret);
     }
 
-    /*  private ExprNode checkAndCastToBoolean(ExprNode expr){
-     String type = visit(expr);
-     if(!castSys.isBoolean(type)){
-     def be = new BinaryExpr();
-     be.expr1 = expr;
-     be.operation = "!="
-     def zero = new ConstExpr();
-     if(castSys.isNumber(type)){
-     zero.type = INT_CLASS_NAME;
-     zero.value = 0;
-     }else{
-     zero.type = NULL_CLASS;
-     }
-     be.expr2 = zero;
-     return be;
-     }
-     //TODO cast string to boolean
-     return expr;
-     }*/
     @Override
     public Type visitBinaryExpr(BinaryExpr node) {
         Type t1 = visit(node.expr1);
@@ -234,7 +222,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                         err.failedToCast(node, t2.getName(), Types.INT_CLASS_TYPE.getName());
                         return getDefaultType();
                     }
-                    //fail("Number required",node);
                 } else {
                     //TODO pass anything.may be Object needed?
                 }
@@ -293,10 +280,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitElementExpr(ElementExpr node) {
         Type type = visit(node.target);
-        //if(!type.endsWith("[]")){
         if(!requireArray(node, type)) return getDefaultType();
-        //fail("Array type required",node)
-        //}
         return type.getComponentType();
     }
 
@@ -325,13 +309,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
-        List<Type> types = visitAll(node.arguments);
+        List<Type> argTypes = visitAll(node.arguments);
         ClassType target = node.target != null ?(ClassType) visit(node.target) : Types.getClassType(this.clazz);
         ClassNode ast = target.getClassNode();
         if (ast == null) {
-            return Types.ROOT_TYPE;
+            return getDefaultType();
         }
-        MethodNode matched = applyMethod(ast,node,types.toArray(new Type[0]));
+        MethodNode matched = applyMethod(ast,node,argTypes.toArray(new Type[0]));
         if (matched==null) {
             return getDefaultType();
         }
@@ -341,7 +325,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (inStaticMethod || isClassExpr) {
             if(!requireStatic(matched.modifier, node)) return getDefaultType();
         }
-        //castInvocationParams(node, method);
         //TODO here could be optim
         for(Type et:matched.exceptionTypes){
             this.exceptionStack.peek().put(et,node);
@@ -369,13 +352,10 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitVarExpr(VarExpr node) {
-        //Integer vid = node.varId;
-        //def declStmt = this.varDeclStmts.get(vid);
-        //declStmt.type
         return node.var.type;
     }
 
-    private void caughException(Type type, AstNode node) {
+    private void caughException(Type type) {
         Map<Type, AstNode> exceptions = this.exceptionStack.peek();
         Type[] exTypes = exceptions.keySet().toArray(new Type[0]);
         for (Type e : exTypes) {
@@ -403,7 +383,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitCatchStmt(CatchStmt node) {
-        this.caughException(node.catchVarDecl.var.type, node);
+        this.caughException(node.catchVarDecl.var.type);
         return null;
     }
 
@@ -492,7 +472,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         super.visitMethodNode(node);
         if (method.exceptionTypes != null) {
             for (Type e : method.exceptionTypes) {
-                this.caughException(e, node);
+                this.caughException(e);
             }
         }
         Map<Type, AstNode> uncaught = this.exceptionStack.pop();
@@ -584,19 +564,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return true;
     }
 
-//    private void castInvocationParams(InvocationExpr expr, MethodNode method) {
-//        List<Type> mTypes = AstUtil.getParameterTypes(method);
-//        int i = 0;
-//        for ( Type mt : mTypes) {
-//            Type pt = visit(expr.arguments.get(i));
-//                expr.arguments.set(i,
-//                        pt.cast(mt, expr.arguments.get(i))
-//                        //this.typeSystem.cast(expr.arguments.get(i), pt, mt)
-//                );
-//            i++;
-//        }
-//    }
-
     @Override
     public Type visitKeyExpr(KeyExpr node) {
         String key = node.key;
@@ -647,18 +614,14 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return astLoader;
     }
     
-    public static List<ExprNode[]> matchMethodByType(ExprNode[] args,MethodNode[] methods, Type[] types) {
-        List<ExprNode[]> list = new LinkedList();
-        for (MethodNode m : methods) {
-            Type[] mTypes = getParameterTypes(m).toArray(new Type[0]);
-            ExprNode[] matchedArgs = matchTypes(args,types, mTypes);
-            if(matchedArgs!=null) list.add(args);
-        }
-        return list;
-    }    
-    
-    
-    public MethodNode applyMethod(ClassNode cls, InvocationExpr invocationExpr, Type[] types) {
+    /**
+     *  select the method for invocation expression,and apply ast transform if needed
+     * @param cls
+     * @param invocationExpr
+     * @param types
+     * @return the selected method,or null
+     */
+    private MethodNode applyMethod(ClassNode cls, InvocationExpr invocationExpr, Type[] types) {
         String methodName = invocationExpr.methodName;
         MethodNode md = AstUtil.getMethod(cls, methodName, types);
         if (md != null) {
@@ -670,7 +633,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             ExprNode[] matchedParams=null;
             MethodNode matchedMethod = null;
             for (MethodNode m : methods) {
-                Type[] mTypes = AstUtil.getParameterTypes(m).toArray(new Type[0]);
+                Type[] mTypes = AstUtil.getParameterTypes(m);
                 ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
                 if (mp != null) {
                     matchedCount++;
@@ -679,7 +642,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 }
             }
             if (matchedCount < 1) {
-                err.methodNotFound(invocationExpr, cls.name, methodName, Arrays.asList(types));
+                err.methodNotFound(invocationExpr, cls.name, methodName,types);
                 return null;
             } else if (matchedCount > 1) {
                 err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, invocationExpr);

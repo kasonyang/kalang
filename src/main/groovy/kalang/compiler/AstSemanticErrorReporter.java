@@ -50,7 +50,7 @@ public class AstSemanticErrorReporter{
         fail("Class not found:" + className, CLASS_NOT_FOUND, node);
     }
 
-    public void methodNotFound(AstNode node, String className, String name, List<Type> types) {
+    public void methodNotFound(AstNode node, String className, String name, Type[] types) {
         String method = AstUtil.getMethodDescriptor(name, types, className);
         fail("Method Missing:" + method, METHOD_NOT_FOUND, node);
     }
