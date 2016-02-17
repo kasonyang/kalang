@@ -10,6 +10,7 @@ public class FieldExpr extends ExprNode{
     
     public String fieldName;
     
+    public FieldNode matchedField;    
     
     public FieldExpr(){
         

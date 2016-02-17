@@ -39,6 +39,7 @@ import kalang.ast.VarObject;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.ast.FieldNode;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -304,15 +305,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             return field.type;
         }
         Type t = visit(node.target);
-        
-//        ClassNode target = ((ClassType) t).getClassNode();
-//        if (target == null) {
-//            err.fieldNotFound(node, t.getName());
-//            return getDefaultType();
-//        }
         String fname = node.fieldName;
-        //VarObject field = this.astParser.getField(target, fname);
-        VarObject field = t.getField(fname);
+        FieldNode field = t.getField(fname);
         if (field == null) {
             err.fieldNotFound(node, fname);
             return getDefaultType();
@@ -320,6 +314,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (node.target instanceof ClassExpr) {
             if(!requireStatic(field.modifier, node)) return getDefaultType();
         }
+        node.matchedField = field;
         return field.type;
     }
 

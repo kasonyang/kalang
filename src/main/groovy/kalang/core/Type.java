@@ -8,6 +8,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.ast.FieldNode;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -46,13 +47,13 @@ public abstract class Type {
     
     //public abstract ExprNode cast(Type targetType,ExprNode from);
     
-    public abstract VarObject[] getFields();
+    public abstract FieldNode[] getFields();
     
     public abstract MethodNode[] getMethods();
     
-    public VarObject getField(String name){
+    public FieldNode getField(String name){
         //TODO low performance
-        for(VarObject f:getFields()){
+        for(FieldNode f:getFields()){
             if(f.name.equals(name)) return f;
         }
         return null;

@@ -58,7 +58,7 @@ public class PrimitiveType extends Type{
     }
 
     @Override
-    public VarObject[] getFields() {
+    public FieldNode[] getFields() {
         return null;
     }
 
@@ -66,15 +66,5 @@ public class PrimitiveType extends Type{
     public MethodNode[] getMethods() {
         return null;
     }
-
-//    @Override
-//    public boolean isSubclassTypeOf(Type targetType) {
-//        return false;
-//    }
-
-//    @Override
-//    public boolean isAssignedFrom(Type type) {
-//        return equals(type);
-//    }
 
 }

@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.ast.FieldNode;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -15,13 +16,15 @@ import java.util.*;
 public class ArrayType extends Type{
 
     private Type componentType;
-    private VarObject[] fields;
+    private FieldNode[] fields;
 
     public ArrayType(Type componentType) {
         super(Types.ROOT_TYPE);
         this.componentType = componentType;
-        fields = new VarObject[]{
-            new VarObject(Modifier.PUBLIC, Types.INT_TYPE, "length", null)
+        VarObject fieldObject = new VarObject(Modifier.PUBLIC, Types.INT_TYPE, "length", null);
+        //TODO here may be bug
+        fields = new FieldNode[]{
+            FieldNode.create(null, fieldObject)
         };
     }
     
@@ -59,7 +62,7 @@ public class ArrayType extends Type{
 //    }
 
     @Override
-    public VarObject[] getFields() {
+    public FieldNode[] getFields() {
         return fields;
     }
 
