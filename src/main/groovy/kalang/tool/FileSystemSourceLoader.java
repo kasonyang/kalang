@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import kalang.compiler.SourceLoader;
 import org.apache.commons.io.FileUtils;
 /**
- *
+ *  The class load source from file system.
  * @author Kason Yang <i@kasonyang.com>
  */
 class FileSystemSourceLoader implements SourceLoader {

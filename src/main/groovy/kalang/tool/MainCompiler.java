@@ -17,10 +17,17 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
+/**
+ * The main class for executing compiler from shell
+ * 
+ * The compiler use file name as class name
+ * 
+ * @author Kason Yang <i@kasonyang.com>
+ */
 public class MainCompiler {
 
     static void printUsage() {
-        System.out.println("kac src dest");
+        System.out.println("kalang src dest");
 
     }
 
@@ -127,7 +134,7 @@ public class MainCompiler {
             abSrcPath = new File(".").getAbsolutePath();
         }
         abSrcPath = FilenameUtils.normalizeNoEndSeparator(abSrcPath);
-        List srcUnits = new LinkedList();
+        List<Source> srcUnits = new LinkedList();
         for (File s : srcs) {
             String fname =FilenameUtils.normalizeNoEndSeparator(s.getAbsolutePath());
             if (!fname.endsWith(".kl")) {

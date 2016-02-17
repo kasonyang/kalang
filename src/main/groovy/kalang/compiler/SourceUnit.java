@@ -98,6 +98,11 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
+/**
+ *  build ast from antlr parse tree
+ * 
+ * @author Kason Yang <i@kasonyang.com>
+ */
 public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisitor {
    
     static String DEFAULT_VAR_TYPE;// = "java.lang.Object";

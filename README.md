@@ -12,6 +12,11 @@ A toy compiler front-end
 
 # How to build
 
+requirements: 
+
+* jdk8
+* gradle
+
 clone the source,and run
 
     >gradle installDist

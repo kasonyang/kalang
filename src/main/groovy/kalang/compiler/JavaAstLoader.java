@@ -19,7 +19,11 @@ import kalang.ast.ParameterNode;
 import kalang.core.Type;
 import kalang.core.Types;
 
-@groovy.transform.TypeChecked
+/**
+ * The class loads ast from java class
+ * 
+ * @author Kason Yang <i@kasonyang.com>
+ */
 public class JavaAstLoader extends AstLoader {
 
     static String ROOT_CLASS = "java.lang.Object";
@@ -28,6 +32,12 @@ public class JavaAstLoader extends AstLoader {
     
     private Map<String,ClassNode> loadedClasses  =new HashMap<>();
 
+    /**
+     * build ast from java class
+     * @param clz the java class
+     * @return the ast built from java class
+     * @throws AstNotFoundException 
+     */
     public ClassNode buildFromClass(Class clz) throws AstNotFoundException {
         ClassNode cn = ClassNode.create();
         cn.name = clz.getName();
