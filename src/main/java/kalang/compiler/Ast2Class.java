@@ -34,11 +34,14 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.ast.AssignableExpr;
 import kalang.core.ArrayType;
 import kalang.core.Type;
 import kalang.core.Types;
 import static kalang.core.Types.*;
+import kalang.util.AstUtil;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import static org.objectweb.asm.Opcodes.*;
@@ -106,7 +109,7 @@ public class Ast2Class extends AstVisitor<Object>{
     public Object visitMethodNode(MethodNode node) {
         //TODO mdf => access
         int access = node.modifier;
-        md = classWriter.visitMethod(access, interClassName(node.name),getMethodDescriptor(node), null,interClassName(node.exceptionTypes.toArray(new String[0])));
+        md = classWriter.visitMethod(access, interClassName(node.name),getMethodDescriptor(node), null,internalName(node.exceptionTypes.toArray(new Type[0])) );
         super.visit(node);
         md.visitEnd();
         return null;
@@ -138,8 +141,20 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitIfStmt(IfStmt node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        Label stopLabel = new Label();
+        Label falseLabel = new Label();
+        visit(node.conditionExpr);
+        md.visitJumpInsn(IFEQ, falseLabel);
+        if(node.trueBody!=null){
+            visit(node.trueBody);
+        }
+        md.visitJumpInsn(GOTO, stopLabel);
+        md.visitLabel(falseLabel);
+        if(node.falseBody!=null){
+            visit(node.falseBody);
+        }
+        md.visitLabel(stopLabel);
+        return null;
     }
 
     @Override
@@ -180,10 +195,32 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitAssignExpr(AssignExpr node) {
-        visit(node.from);
-        //md.visitInsn(0);
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        AssignableExpr to = node.to;
+        org.objectweb.asm.Type type = asmType(node.from.type);
+        if(to instanceof FieldExpr){
+            FieldExpr toField = (FieldExpr) to;
+            int opc = PUTFIELD;
+            if(toField.target instanceof ClassExpr){
+                opc = PUTSTATIC;
+            }else{
+                visit(toField.target);
+            }
+            visit(node.from);
+            md.visitFieldInsn(
+                    opc, 
+                    asmType(toField.target.type).getInternalName()
+                    , toField.fieldName
+                    , getTypeDescriptor(toField.target.type)
+            );
+        }else if(to instanceof VarExpr){
+            visit(node.from);
+            VarExpr toVarExpr = (VarExpr) to;
+            int vid = getVarId(toVarExpr.var);
+            md.visitVarInsn(type.getOpcode(ISTORE), vid);
+        }else{
+            throw new UnknownError("unknown expression:" + to);
+        }
+        return null;
     }
 
     @Override
@@ -212,15 +249,23 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitElementExpr(ElementExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        visit(node.target);
+        visit(node.key);
+        org.objectweb.asm.Type t = asmType(((ArrayType)node.type).getComponentType());
+        md.visitInsn(t.getOpcode(IALOAD));
+        return null;
     }
 
     @Override
     public Object visitFieldExpr(FieldExpr node) {
-        visit(node.target);
+        int opc = GETFIELD;
+        if(node.target instanceof ClassExpr){
+            opc = GETSTATIC;
+        }else{
+            visit(node.target);
+        }
         md.visitFieldInsn(
-                GETFIELD
+                opc
                 ,asmType(node.target.type).getInternalName()
                 ,node.fieldName
                 , getTypeDescriptor(node.type));
@@ -229,8 +274,15 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitInvocationExpr(InvocationExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        int opc = INVOKEVIRTUAL;
+        if(node.target instanceof ClassExpr){
+            opc = INVOKESTATIC;
+        }else{
+            visit(node.target);
+        }
+        visitAll(node.arguments);
+        md.visitMethodInsn(opc, internalName(node.target.type), node.methodName, getTypeDescriptor(AstUtil.getParameterTypes(node.matchedMethod)), false);
+        return null;
     }
 
     @Override
@@ -241,26 +293,25 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitVarExpr(VarExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        visitVarObject(node.var);
+        return null;
     }
 
     @Override
     public Object visitClassExpr(ClassExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public Object visitNewExpr(NewExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        md.visitTypeInsn(NEW, asmType(node.type).getInternalName());
+        return null;
     }
 
     @Override
     public Object visitParameterExpr(ParameterExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        visitVarObject(node.parameter);
+        return null;
     }
 
     @Override
@@ -271,8 +322,36 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitNewArrayExpr(NewArrayExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        visit(node.size);
+        //org.objectweb.asm.Type t = asmType(node.type);
+        Type t = node.type;
+        int opr = -1;
+        int op = NEWARRAY;
+        if(t.equals(BOOLEAN_TYPE)){
+            opr = T_BOOLEAN;
+        }else if(t.equals(CHAR_TYPE)){
+            opr = T_CHAR;
+        }else if(t.equals(SHORT_TYPE)){
+            opr = T_SHORT;
+        }else if(t.equals(INT_TYPE)){
+            opr = T_INT;
+        }else if(t.equals(LONG_TYPE)){
+            opr = T_LONG;
+        }else if(t.equals(FLOAT_TYPE)){
+            opr = T_FLOAT;
+        }else if(t.equals(DOUBLE_TYPE)){
+            opr = T_DOUBLE;
+        }else if(t.equals(BYTE_TYPE)){
+            opr = T_BYTE;
+        }else{
+            op = ANEWARRAY;
+        }
+        if(op==NEWARRAY){
+            md.visitIntInsn(op, opr);
+        }else{
+            md.visitTypeInsn(ANEWARRAY, internalName(t));
+        }
+        return null;
     }
 
     @Override
@@ -285,6 +364,14 @@ public class Ast2Class extends AstVisitor<Object>{
     public Object visitMultiStmtExpr(MultiStmtExpr node) {
         //TODO support needed
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    private String getTypeDescriptor(Type[] types){
+        String ts = "";
+        for(Type t:types){
+            ts += getTypeDescriptor(t);
+        }
+        return ts;
     }
     
     private String getTypeDescriptor(Type t){
@@ -327,6 +414,29 @@ public class Ast2Class extends AstVisitor<Object>{
     
     private org.objectweb.asm.Type asmType(Type type){
         return org.objectweb.asm.Type.getType(getTypeDescriptor(type));
+    }
+
+    private int getVarId(VarObject var) {
+        //TODO support needed
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    private void visitVarObject(VarObject vo){
+        org.objectweb.asm.Type type = asmType(vo.type);
+        int vid = getVarId(vo);
+        md.visitVarInsn(type.getOpcode(ILOAD),vid);
+    }
+
+    private String internalName(Type t) {
+        return asmType(t).getInternalName();
+    }
+    
+    private String[] internalName(Type[] types){
+        String[] ts = new String[types.length];
+        for(int i=0;i<types.length;i++){
+            ts[i] = internalName(types[i]);
+        }
+        return ts;
     }
 
 }
