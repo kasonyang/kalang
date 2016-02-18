@@ -116,7 +116,7 @@ public class BoxUtil {
 
     private static ExprNode castPrimitive2Object(ExprNode expr, PrimitiveType fromType) {
         ClassType classType = Types.getClassType(fromType);
-        return new InvocationExpr(new ClassExpr(classType.getName()), "valueOf", Arrays.asList(new ExprNode[]{expr}),null);
+        return new InvocationExpr(new ClassExpr(classType.getName()), "valueOf", Arrays.asList(new ExprNode[]{expr}));
     }
 
     private static ExprNode castObject2Primitive(ExprNode expr, Type fromType, Type toType) {
@@ -131,7 +131,7 @@ public class BoxUtil {
     }
 
     private static ExprNode castObject2String(ExprNode expr) {
-        return new InvocationExpr(expr, "toString", Collections.emptyList(),null);
+        return new InvocationExpr(expr, "toString", Collections.emptyList());
     }
 
 }

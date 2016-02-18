@@ -753,8 +753,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public ElementExpr visitExprGetArrayElement(ExprGetArrayElementContext ctx) {
         ElementExpr ee = new ElementExpr();
-        ee.target = (ExprNode) visitExpression(ctx.expression(0));
-        ee.key = (ExprNode) visitExpression(ctx.expression(1));
+        ee.arrayExpr = (ExprNode) visitExpression(ctx.expression(0));
+        ee.index = (ExprNode) visitExpression(ctx.expression(1));
         mapAst(ee, ctx);
         return ee;
     }

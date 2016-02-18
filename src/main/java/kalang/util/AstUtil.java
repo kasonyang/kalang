@@ -141,5 +141,13 @@ public class AstUtil {
         }
         return null;
     }
+
+    public static Type[] getExprTypes(ExprNode[] exprs) {
+        Type[] types = new Type[exprs.length];
+        for(int i=0;i<types.length;i++){
+            types[i] = exprs[i].type;
+        }
+        return types;
+    }
     
 }

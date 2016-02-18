@@ -35,6 +35,7 @@ import java.nio.*;
 import java.net.*;
 import java.util.*;
 import kalang.ast.AssignableExpr;
+import kalang.ast.ExprNode;
 import kalang.core.ArrayType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -250,8 +251,8 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitElementExpr(ElementExpr node) {
-        visit(node.target);
-        visit(node.key);
+        visit(node.arrayExpr);
+        visit(node.index);
         org.objectweb.asm.Type t = asmType(((ArrayType)node.type).getComponentType());
         md.visitInsn(t.getOpcode(IALOAD));
         return null;
@@ -282,7 +283,13 @@ public class Ast2Class extends AstVisitor<Object>{
             visit(node.target);
         }
         visitAll(node.arguments);
-        md.visitMethodInsn(opc, internalName(node.target.type), node.methodName, getTypeDescriptor(AstUtil.getParameterTypes(node.matchedMethod)), false);
+        md.visitMethodInsn(
+                opc
+                , internalName(node.target.type)
+                , node.methodName
+                , getTypeDescriptor(
+                        AstUtil.getExprTypes(node.arguments.toArray(new ExprNode[0])) )
+                , false);
         return null;
     }
 

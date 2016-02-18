@@ -4,6 +4,10 @@ Don't modify!This file is generated automately.
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
+/**
+ * BinaryExpr presents a binary operation, such as add,sub,multiply and so on
+ * @author Kason Yang <i@kasonyang.com>
+ */
 public class BinaryExpr extends ExprNode{
     
     public ExprNode expr1;

@@ -370,9 +370,9 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitElementExpr(ElementExpr node) {
-        return visit(node.target)
+        return visit(node.arrayExpr)
                 + "["
-                + visit(node.key)
+                + visit(node.index)
                 + "]";
     }
 

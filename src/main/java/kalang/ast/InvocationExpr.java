@@ -1,19 +1,19 @@
-/*
-Don't modify!This file is generated automately.
-*/
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
 public class InvocationExpr extends ExprNode{
     
+    /**
+     * The target object to invoke
+     */
     public ExprNode target;
     
+    /**
+     * The method name of invocation
+     */
     public String methodName;
     
     public List<ExprNode> arguments;
-    
-    public MethodNode matchedMethod;
-    
     
     public InvocationExpr(){
         
@@ -22,7 +22,7 @@ public class InvocationExpr extends ExprNode{
     }
     
     
-    public InvocationExpr(ExprNode target,String methodName,List<ExprNode> arguments,MethodNode matchedMethod){
+    public InvocationExpr(ExprNode target,String methodName,List<ExprNode> arguments){
         
             if(arguments == null) arguments = new LinkedList();
         
@@ -32,8 +32,6 @@ public class InvocationExpr extends ExprNode{
             this.methodName = methodName;
         
             this.arguments = arguments;
-        
-            this.matchedMethod = matchedMethod;
         
     }
     
@@ -64,25 +62,4 @@ public class InvocationExpr extends ExprNode{
         return ls;
     }
     
-    public String toString(){
-        String str = "InvocationExpr{\r\n";
-        
-        if(target!=null){
-            str += "  target:" + target.toString()+"\r\n";
-        }
-        
-        if(methodName!=null){
-            str += "  methodName:" + methodName.toString()+"\r\n";
-        }
-        
-        if(arguments!=null){
-            str += "  arguments:" + arguments.toString()+"\r\n";
-        }
-        
-        if(matchedMethod!=null){
-            str += "  matchedMethod:" + matchedMethod.toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
 }

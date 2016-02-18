@@ -282,7 +282,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitElementExpr(ElementExpr node) {
-        Type type = visit(node.target);
+        Type type = visit(node.arrayExpr);
         if(!requireArray(node, type)) return getDefaultType();
         return type.getComponentType();
     }
@@ -332,7 +332,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (matched==null) {
             return getDefaultType();
         }
-        node.matchedMethod = matched;
+        //node.matchedMethod = matched;
         boolean inStaticMethod = node.target == null && Modifier.isStatic(this.method.modifier);
         boolean isClassExpr = node.target instanceof ClassExpr;
         if (inStaticMethod || isClassExpr) {

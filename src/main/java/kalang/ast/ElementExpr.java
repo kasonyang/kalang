@@ -1,14 +1,16 @@
-/*
-Don't modify!This file is generated automately.
-*/
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
+/**
+ * The ElementExpr presents a element of a array,for example <code>args[i]</code>
+ * 
+ * @author Kason Yang <i@kasonyang.com>
+ */
 public class ElementExpr extends ExprNode{
     
-    public ExprNode target;
+    public ExprNode arrayExpr;
     
-    public ExprNode key;
+    public ExprNode index;
     
     
     public ElementExpr(){
@@ -19,9 +21,9 @@ public class ElementExpr extends ExprNode{
     public ElementExpr(ExprNode target,ExprNode key){
         
         
-            this.target = target;
+            this.arrayExpr = target;
         
-            this.key = key;
+            this.index = key;
         
     }
     
@@ -43,24 +45,11 @@ public class ElementExpr extends ExprNode{
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
-        addChild(ls,target);
+        addChild(ls,arrayExpr);
         
-        addChild(ls,key);
+        addChild(ls,index);
         
         return ls;
     }
     
-    public String toString(){
-        String str = "ElementExpr{\r\n";
-        
-        if(target!=null){
-            str += "  target:" + target.toString()+"\r\n";
-        }
-        
-        if(key!=null){
-            str += "  key:" + key.toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
 }
