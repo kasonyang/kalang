@@ -18,7 +18,8 @@ import kalang.core.Type;
 import kalang.core.Types;
 
 /**
- *
+ * Helper for data conversion between primitive type and object type
+ * 
  * @author Kason Yang <i@kasonyang.com>
  */
 public class BoxUtil {

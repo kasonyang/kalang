@@ -10,6 +10,11 @@ import java.util.List;
 import kalang.core.Type;
 import kalang.core.Types;
 
+/**
+ * The class output the ast as java source
+ * 
+ * @author Kason Yang <i@kasonyang.com>
+ */
 public class Ast2Java extends AbstractAstVisitor<String> {
 
     private List<VarObject> varList = new LinkedList<>();

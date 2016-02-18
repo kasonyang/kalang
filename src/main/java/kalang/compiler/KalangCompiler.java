@@ -35,8 +35,6 @@ public class KalangCompiler extends AstLoader {
 
     private SourceLoader sourceLoader;
 
-    private AstSemanticErrorReporter semanticErrorReporter;
-
     private AstSemanticErrorHandler astSemanticErrorHandler = new AstSemanticErrorHandler() {
         @Override
         public void handleAstSemanticError(AstSemanticError error) {
@@ -79,11 +77,14 @@ public class KalangCompiler extends AstLoader {
         this.astLoader = astLoader;
     }
 
-//    public ClassNode[] getCompiledClasses() {
-//        return asts.values().toArray(new ClassNode[0]);
-//    }
-    public void addSource(String cls, String text) {
-        sources.put(cls, text);
+    /**
+     * add source,which will be compiled
+     * 
+     * @param className the name of class
+     * @param source the source of class
+     */
+    public void addSource(String className, String source) {
+        sources.put(className, source);
     }
 
     protected void init() {
@@ -133,6 +134,9 @@ public class KalangCompiler extends AstLoader {
         reportError(msg, className, node.offset);
     }
 
+    /**
+     * compile all sources
+     */
     public void compile() {
         init();
         parse();
