@@ -5,6 +5,7 @@ import java.util.HashMap;
 import kalang.ast.ClassNode;
 import kalang.ast.VarObject;
 import java.lang.reflect.Modifier;
+import kalang.ast.FieldNode;
 import kalang.core.Types;
 
 public class AstLoader {
@@ -67,7 +68,11 @@ public class AstLoader {
 
     private ClassNode createArrayAst(ClassNode ast) {
         ClassNode clazz = ClassNode.create();
-        clazz.createField(new VarObject(Modifier.PUBLIC,Types.INT_TYPE, "length", null));
+        FieldNode field = clazz.createField();
+        field.modifier = Modifier.PUBLIC;
+        field.type = Types.INT_TYPE;
+        field.name = "length";
+        field.initExpr = null;
         clazz.name = ast.name + "[]";
         clazz.isArray = true;
         if(ast.parent!=null){

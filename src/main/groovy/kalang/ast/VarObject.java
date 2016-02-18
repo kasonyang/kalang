@@ -4,7 +4,7 @@ Don't modify!This file is generated automately.
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
-public class VarObject extends AstNode{
+public abstract class VarObject extends AstNode{
     
     public Integer modifier;
     
@@ -34,11 +34,7 @@ public class VarObject extends AstNode{
     }
     
     
-    public static VarObject create(){
-        VarObject node = new VarObject();
-        
-        return node;
-    }
+    
     
     private void addChild(List<AstNode> list,List nodes){
         if(nodes!=null) list.addAll(nodes);
@@ -54,27 +50,5 @@ public class VarObject extends AstNode{
         addChild(ls,initExpr);
         
         return ls;
-    }
-    
-    public String toString(){
-        String str = "VarObject{\r\n";
-        
-        if(modifier!=null){
-            str += "  modifier:" + modifier.toString()+"\r\n";
-        }
-        
-        if(type!=null){
-            str += "  type:" + type.toString()+"\r\n";
-        }
-        
-        if(name!=null){
-            str += "  name:" + name.toString()+"\r\n";
-        }
-        
-        if(initExpr!=null){
-            str += "  initExpr:" + initExpr.toString()+"\r\n";
-        }
-        
-        return str+"}";
     }
 }

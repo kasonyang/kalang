@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.ast.FieldNode;
+import kalang.ast.LocalVarNode;
+import kalang.ast.ParameterNode;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -161,7 +163,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (ret instanceof Type) {
             types.put(node,(Type) ret);
             if(node instanceof ExprNode){
-                ExprNode exprNode = ((ExprNode)node);                 if(exprNode.type==null){
+                ExprNode exprNode = ((ExprNode)node);
+                if(exprNode.type==null){
                     exprNode.type = (Type) ret;
                 }
             }
@@ -310,7 +313,17 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
         List<Type> argTypes = visitAll(node.arguments);
-        ClassType target = node.target != null ?(ClassType) visit(node.target) : Types.getClassType(this.clazz);
+        ClassType target;
+        //TODO here may be bug
+        if(node.target!=null){
+            visit(node.target);
+            target = (ClassType) node.target.type;
+        }else{
+            target = Types.getClassType(this.clazz);
+        }
+        if(target==null){
+            throw new IllegalStateException("unknown return value");
+        }
         ClassNode ast = target.getClassNode();
         if (ast == null) {
             return getDefaultType();
@@ -383,7 +396,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitCatchStmt(CatchStmt node) {
-        this.caughException(node.catchVarDecl.var.type);
+        //TODO here may be bug
+        this.caughException(node.catchVarDecl.vars.get(0).type);
         return null;
     }
 
@@ -398,12 +412,20 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     @Override
-    public Type visitVarDeclStmt(VarDeclStmt node) {
-        VarObject var = node.var;
+    public Type visitFieldNode(FieldNode fieldNode) {
+        return checkVarDecl(fieldNode);
+    }
+
+    @Override
+    public Type visitLocalVarNode(LocalVarNode localVarNode) {
+        return checkVarDecl(localVarNode);
+    }
+
+    private Type checkVarDecl(VarObject var) {
         Type retType = null;
         if(var.initExpr!=null){
             retType = visit(var.initExpr);
-            if(!requireNoneVoid(retType, node)) return getDefaultType();
+            if(!requireNoneVoid(retType, var)) return getDefaultType();
         }
         if (var.type == null) {
             if(retType!=null){
@@ -413,9 +435,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             }
         }
         if(retType!=null){
-            var.initExpr = checkAssign(var.initExpr, retType, var.type, node);
+            var.initExpr = checkAssign(var.initExpr, retType, var.type, var);
         }
-        return null;
+        return var.type;
     }
 
     @Override
@@ -653,5 +675,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             return matchedMethod;
         }
     }
+
+    @Override
+    public Type visitParameterNode(ParameterNode parameterNode) {
+        return checkVarDecl(parameterNode);
+    }
+    
+    
 
 }

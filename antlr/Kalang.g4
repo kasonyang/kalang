@@ -64,7 +64,7 @@ classBody:
   methodDecl*
 ;
 fieldDecl:
-   varModifier? varDecls ';'
+   varModifier? varDecl (',' varDecl)* ';'
 ;
 methodDecl:
    varModifier? 
@@ -72,7 +72,7 @@ methodDecl:
      (type name=Identifier )
      |(prefix='constructor')
    )
-   '(' varDecls? ')'
+   '('    (     varDecl   (',' varDecl)*     )?      ')'
    ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
    ( stat | ';')
 ;
@@ -88,16 +88,9 @@ primitiveType:
   DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN|BYTE|VOID
 ;
 
-varDecls:
+localVarDecl:
    varDecl (',' varDecl)*
 ;
-
-/*
-statList:
-    stat*
-;
-* 
-*/
 
 ifStat:
     IF '(' expression ')' trueStmt=stat ( ELSE falseStmt=stat)?
@@ -145,7 +138,7 @@ postIfStmt:
      )? expression ';'
 ;
 varDeclStat:
-  varDecl ';'
+  localVarDecl ';'
 ;
 varDecl:
   (
@@ -164,7 +157,7 @@ doWhileStat:
 ;
 
 forStat:
-  FOR '(' varDecls? ';' expression? ';' expressions? ')'
+  FOR '(' localVarDecl? ';' expression? ';' expressions? ')'
   stat
 ;
 expressions:

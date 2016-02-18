@@ -98,15 +98,15 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitPrimitiveType(KalangParser.PrimitiveTypeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link KalangParser#varDecls}.
+	 * Enter a parse tree produced by {@link KalangParser#localVarDecl}.
 	 * @param ctx the parse tree
 	 */
-	void enterVarDecls(KalangParser.VarDeclsContext ctx);
+	void enterLocalVarDecl(KalangParser.LocalVarDeclContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link KalangParser#varDecls}.
+	 * Exit a parse tree produced by {@link KalangParser#localVarDecl}.
 	 * @param ctx the parse tree
 	 */
-	void exitVarDecls(KalangParser.VarDeclsContext ctx);
+	void exitLocalVarDecl(KalangParser.LocalVarDeclContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#ifStat}.
 	 * @param ctx the parse tree

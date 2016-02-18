@@ -19,7 +19,6 @@ import kalang.ast.KeyExpr;
 import kalang.ast.ConstExpr;
 import kalang.ast.TryStmt;
 import kalang.ast.ThrowStmt;
-import kalang.ast.VarDeclStmt;
 import kalang.ast.CatchStmt;
 import kalang.ast.CastExpr;
 import kalang.ast.BlockStmt;
@@ -75,7 +74,6 @@ import kalang.antlr.KalangParser.TryStatContext;
 import kalang.antlr.KalangParser.TypeContext;
 import kalang.antlr.KalangParser.VarDeclContext;
 import kalang.antlr.KalangParser.VarDeclStatContext;
-import kalang.antlr.KalangParser.VarDeclsContext;
 import kalang.antlr.KalangParser.VarModifierContext;
 import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
@@ -83,8 +81,11 @@ import kalang.core.VarTable;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.ast.FieldNode;
+import kalang.ast.LocalVarNode;
 import kalang.ast.ParameterNode;
+import kalang.ast.VarDeclStmt;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -123,8 +124,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     private final String className;
     private String classPath;
 
-    private VarTable<String, VarDeclStmt> vtb;
-    private KalangParser parser;    
+    private VarTable<String, LocalVarNode> vtb;
+    private KalangParser parser;
     
     private SourceParsingErrorHandler semanticErrorHandler = new SourceParsingErrorHandler() {
         @Override
@@ -225,9 +226,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 
     void newVarStack() {
         if (vtb != null) {
-            vtb = new VarTable<String, VarDeclStmt>(vtb);
+            vtb = new VarTable<>(vtb);
         } else {
-            vtb = new VarTable<String, VarDeclStmt>();
+            vtb = new VarTable<>();
         }
     }
 
@@ -261,7 +262,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public MultiStmtExpr visitMap(KalangParser.MapContext ctx) {
         MultiStmtExpr mse = MultiStmtExpr.create();
-        VarObject vo = new VarObject();
+        LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = mapType;
         NewExpr initExpr = new NewExpr();
@@ -293,7 +294,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public MultiStmtExpr visitListOrArray(KalangParser.ListOrArrayContext ctx) {
         MultiStmtExpr mse = MultiStmtExpr.create();
-        VarObject vo = new VarObject();
+        LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = listType;
         NewExpr initExpr = new NewExpr();
@@ -327,7 +328,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
         MultiStmtExpr mse = MultiStmtExpr.create();
-        VarObject vo = new VarObject();
+        LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         mse.stmts.add(vds);
         //addCode(vds, ctx);
@@ -406,14 +407,14 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public List<VarObject> visitFieldDecl(FieldDeclContext ctx) {
-        List<VarObject> list = visitVarDecls(ctx.varDecls());
+    public Void visitFieldDecl(FieldDeclContext ctx) {
         int mdf = this.parseModifier(ctx.varModifier());
-        for (VarObject v : list) {
-            v.modifier = mdf;
-            cls.createField(v);
+        for(VarDeclContext vd:ctx.varDecl()){
+            FieldNode fieldNode = cls.createField();
+            fieldNode.modifier = mdf;
+            varDecl(vd,fieldNode);
         }
-        return list;
+        return null;
     }
 
     @Override
@@ -438,10 +439,11 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         method.modifier = mdf;
         method.type = type;
         method.name = name;
-        if (ctx.varDecls() != null) {
-            List<VarObject> vars = visitVarDecls(ctx.varDecls());
-            for(VarObject v:vars){
-                method.parameters.add(ParameterNode.create(method, v));
+        if (ctx.varDecl() != null) {
+            for(VarDeclContext vd:ctx.varDecl()){
+                ParameterNode pn = ParameterNode.create(method);
+                varDecl(vd, pn);
+                method.parameters.add(pn);
             }
         }
         if (ctx.stat() != null) {
@@ -508,16 +510,23 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public VarDeclStmt visitVarDeclStat(VarDeclStatContext ctx) {
-        //List<VarDeclStmt> list = new LinkedList();
-        VarObject var = this.visitVarDecl(ctx.varDecl());
-        VarDeclStmt vds = new VarDeclStmt(var);
-        vtb.put(var.name, vds);
-        mapAst(vds,ctx);
+        List<VarDeclStmt> list = new LinkedList();
+        //VarObject var = this.visitVarDecl(ctx.varDecl());
+        List<LocalVarNode> vars = visitLocalVarDecl(ctx.localVarDecl());
+        VarDeclStmt vds = new VarDeclStmt(vars);
+        for(LocalVarNode v:vars){
+            vtb.put(v.name, v);
+        }
+        mapAst(vds,ctx);            
         return vds;
     }
 
     @Override
     public VarObject visitVarDecl(VarDeclContext ctx) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public void varDecl(VarDeclContext ctx,VarObject vds){
         String name = ctx.name.getText();
         TypeContext type = null;
         if (ctx.varType != null) {
@@ -543,14 +552,12 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 reportError(msg, ctx);
             }
         }
-        VarObject vds = new VarObject();
         vds.name = name;
         vds.type = returnType;
         if (ctx.expression() != null) {
             vds.initExpr = (ExprNode) visit(ctx.expression());
         }
         mapAst(vds,ctx);
-        return vds;
     }
     
     public void reportError(String msg, Token token) {
@@ -605,12 +612,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitForStat(ForStatContext ctx) {
         this.newVarStack();
         LoopStmt ls = LoopStmt.create();
-        List<VarObject> vars = visitVarDecls(ctx.varDecls());
-        for(VarObject v:vars){
-        	VarDeclStmt vds = new VarDeclStmt(v);
-        	vtb.put(v.name, vds);
-            ls.initStmts.add(vds);
-        }
+        List<LocalVarNode> vars = visitLocalVarDecl(ctx.localVarDecl());
+        VarDeclStmt vds = new VarDeclStmt(vars);
+        ls.initStmts.add(vds);
         ls.preConditionExpr = (ExprNode) visit(ctx.expression());
         //TODO fixme
         BlockStmt bs = BlockStmt.create();
@@ -784,8 +788,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     private ExprNode getNodeByName(String name) {
         if (vtb.exist(name)) {
             VarExpr ve = new VarExpr();
-            VarDeclStmt declStmt = (VarDeclStmt) vtb.get(name); //vars.indexOf(vo);
-            ve.var = declStmt.var;
+            LocalVarNode declStmt = vtb.get(name); //vars.indexOf(vo);
+            ve.var = declStmt;
             return ve;
         } else {
             //find parameters
@@ -798,7 +802,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             }
             if (cls.fields != null) {
                 for (FieldNode f : cls.fields) {
-                    if (f.name.equals(name)) {
+                    if (f.name!=null && f.name.equals(name)) {
                         FieldExpr fe = new FieldExpr();
                         fe.fieldName = name;
                         return fe;
@@ -940,7 +944,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 String vName = ctx.catchVarNames.get(i).getText();
                 String vType = ctx.catchTypes.get(i).getText();
                 this.newVarStack();
-                VarObject vo = new VarObject();
+                LocalVarNode vo = new LocalVarNode();
                 vo.name = vName;
                 vo.type = requireClassType(checkFullType(vType, ctx), ctx.catchTypes.get(i).start);
                 VarDeclStmt declStmt = new VarDeclStmt(vo);
@@ -960,10 +964,14 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public List<VarObject> visitVarDecls(VarDeclsContext ctx) {
-        List<VarObject> list = new LinkedList();
+    public List<LocalVarNode> visitLocalVarDecl(LocalVarDeclContext ctx) {
+        List<LocalVarNode> list = new LinkedList();
         for (VarDeclContext v : ctx.varDecl()) {
-            list.add(visitVarDecl(v));
+            LocalVarNode localVar = new LocalVarNode();
+            varDecl(v, localVar);
+            mapAst(localVar,ctx);
+            list.add(localVar);
+            vtb.put(localVar.name, localVar);
         }
         return list;
     }
@@ -1015,6 +1023,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         return expr;
     }
     
+    @Override
     public String toString(){
         return "CompilantUnit:" + className;
     }

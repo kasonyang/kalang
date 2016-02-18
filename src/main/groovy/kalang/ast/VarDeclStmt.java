@@ -6,18 +6,20 @@ import java.util.*;
 import kalang.core.*;
 public class VarDeclStmt extends Statement{
     
-    public VarObject var;
-    
+    public List<LocalVarNode> vars;
     
     public VarDeclStmt(){
         
     }
+    public VarDeclStmt(LocalVarNode var){
+        this(Collections.singletonList(var));
+    }
     
     
-    public VarDeclStmt(VarObject var){
+    public VarDeclStmt(List<LocalVarNode> var){
         
         
-            this.var = var;
+            this.vars = var;
         
     }
     
@@ -38,17 +40,8 @@ public class VarDeclStmt extends Statement{
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        ls.add(var);
+        ls.addAll(vars);
         return ls;
     }
     
-    public String toString(){
-        String str = "VarDeclStmt{\r\n";
-        
-        if(var!=null){
-            str += "  var:" + var.toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
 }

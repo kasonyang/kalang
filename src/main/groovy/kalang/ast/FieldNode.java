@@ -16,13 +16,8 @@ public class FieldNode extends VarObject{
         this.classNode = classNode;
     }
     
-    public static FieldNode create(ClassNode clazz,VarObject vo){
+    public static FieldNode create(ClassNode clazz){
         FieldNode fn = new FieldNode(clazz);
-        fn.initExpr = vo.initExpr;
-        fn.modifier = vo.modifier;
-        fn.name = vo.name;
-        fn.offset = vo.offset;
-        fn.type = vo.type;
         return fn;
     }
 

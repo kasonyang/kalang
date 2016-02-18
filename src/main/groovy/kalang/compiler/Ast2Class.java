@@ -28,13 +28,16 @@ import kalang.ast.ReturnStmt;
 import kalang.ast.ThrowStmt;
 import kalang.ast.TryStmt;
 import kalang.ast.UnaryExpr;
-import kalang.ast.VarDeclStmt;
 import kalang.ast.VarExpr;
 import kalang.ast.VarObject;
 import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.core.ArrayType;
+import kalang.core.Type;
+import kalang.core.Types;
+import static kalang.core.Types.*;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -47,6 +50,35 @@ public class Ast2Class extends AstVisitor<Object>{
 
     private ClassWriter classWriter;
     private MethodVisitor md;
+    
+    private final static int 
+            T_I = 0,
+            T_L = 1,
+            T_F = 2,
+            T_D = 3,
+            T_A = 4;
+    
+    private int getT(Type type){
+        int t;
+            if(
+                    type.equals(INT_TYPE)
+                    ||type.equals(BOOLEAN_TYPE)
+                    || type.equals(CHAR_TYPE)
+                    || type.equals(BYTE_TYPE)
+                    || type.equals(SHORT_TYPE)
+                    ){
+                t = T_I;
+            }else if(type.equals(LONG_TYPE)){
+                t = T_L;
+            }else if(type.equals(FLOAT_TYPE)){
+                t = T_F;
+            }else if(type.equals(DOUBLE_TYPE)){
+                t = T_D;
+            }else{
+                t = T_A;
+            }
+            return t;
+    }
 
     private String interClassName(String name){
         return name.replace(".", "/");
@@ -75,13 +107,15 @@ public class Ast2Class extends AstVisitor<Object>{
         //TODO mdf => access
         int access = node.modifier;
         md = classWriter.visitMethod(access, interClassName(node.name),getMethodDescriptor(node), null,interClassName(node.exceptionTypes.toArray(new String[0])));
-        return super.visit(node);
+        super.visit(node);
+        md.visitEnd();
+        return null;
     }
 
     @Override
     public Object visitBlockStmt(BlockStmt node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        visitChildren(node);
+        return null;
     }
 
     @Override
@@ -98,8 +132,8 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitExprStmt(ExprStmt node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        visitChildren(node);
+        return null;
     }
 
     @Override
@@ -116,14 +150,14 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitReturnStmt(ReturnStmt node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Object visitVarDeclStmt(VarDeclStmt node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        int lnsn = RETURN;
+        if(node.expr!=null){
+            visit(node.expr);
+            Type type = node.expr.type;
+            lnsn = asmType(type).getOpcode(IRETURN);
+        }
+        md.visitInsn(lnsn);
+        return null;
     }
 
     @Override
@@ -146,20 +180,34 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitAssignExpr(AssignExpr node) {
+        visit(node.from);
+        //md.visitInsn(0);
         //TODO support needed
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Object visitBinaryExpr(BinaryExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        visit(node.expr1);
+        visit(node.expr2);
+        int op = 0;
+        org.objectweb.asm.Type at = asmType(node.expr1.type);
+        switch(node.operation){
+            case "+": op = IADD;break;
+            case "-" : op = ISUB;break;
+            case "*" : op = IMUL;break;
+            case "/" : op = IDIV;break;
+            case "%":op = IREM;break;
+            default:throw new IllegalArgumentException("unknown op:" + node.operation);
+        }
+        md.visitInsn(at.getOpcode(op));
+        return null;
     }
 
     @Override
     public Object visitConstExpr(ConstExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        md.visitLdcInsn(node.value);
+        return null;
     }
 
     @Override
@@ -170,8 +218,13 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitFieldExpr(FieldExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        visit(node.target);
+        md.visitFieldInsn(
+                GETFIELD
+                ,asmType(node.target.type).getInternalName()
+                ,node.fieldName
+                , getTypeDescriptor(node.type));
+        return null;
     }
 
     @Override
@@ -234,13 +287,22 @@ public class Ast2Class extends AstVisitor<Object>{
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    private String getTypeDescriptor(String type){
-        String prefix = "";
-        if(type.endsWith("[]")){
-            prefix = "[";
-            type = type.substring(0,type.length()-2);
+    private String getTypeDescriptor(Type t){
+        if(t instanceof ArrayType){
+            return "[" + getTypeDescriptor(t);
+        }else{
+            if(t.equals(BOOLEAN_TYPE)){
+                return "Z";
+            }
+            switch(getT(t)){
+                case T_I:return "I";
+                case T_L:return "L";
+                case T_F:return "F";
+                case T_D:return "D";
+                case T_A:return "L" + interClassName(t.getName()) + ";";
+                default:throw new IllegalArgumentException("unknown type:" + t.getName());
+            }
         }
-        return prefix + getSingleTypeDescriptor(type);
     }
     private String getSingleTypeDescriptor(String type){
         switch(type){
@@ -252,7 +314,7 @@ public class Ast2Class extends AstVisitor<Object>{
             default:return "L" + interClassName(type) + ";";
         }
     }
-    
+        
     private String getMethodDescriptor(MethodNode node) {
 //        String desc = "";
 //        String retTyp = getTypeDescriptor(node.type);
@@ -261,6 +323,10 @@ public class Ast2Class extends AstVisitor<Object>{
 //        }
 //        return "(" + desc + ")" + retTyp;
         return null;
+    }
+    
+    private org.objectweb.asm.Type asmType(Type type){
+        return org.objectweb.asm.Type.getType(getTypeDescriptor(type));
     }
 
 }

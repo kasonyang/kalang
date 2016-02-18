@@ -124,13 +124,13 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterVarDecls(KalangParser.VarDeclsContext ctx) { }
+	@Override public void enterLocalVarDecl(KalangParser.LocalVarDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitVarDecls(KalangParser.VarDeclsContext ctx) { }
+	@Override public void exitLocalVarDecl(KalangParser.LocalVarDeclContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

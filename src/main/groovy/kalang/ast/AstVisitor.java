@@ -177,8 +177,20 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
     }
 
     @Override
-    public T visitVarObject(VarObject node) {
-        visitChildren(node);
+    public T visitLocalVarNode(LocalVarNode localVarNode) {
+        this.visitChildren(localVarNode);
+        return null;
+    }
+
+    @Override
+    public T visitParameterNode(ParameterNode parameterNode) {
+        this.visitChildren(parameterNode);
+        return null;
+    }
+
+    @Override
+    public T visitFieldNode(FieldNode fieldNode) {
+        this.visitChildren(fieldNode);
         return null;
     }
     

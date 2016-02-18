@@ -80,7 +80,7 @@ public class KalangBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVarDecls(KalangParser.VarDeclsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLocalVarDecl(KalangParser.LocalVarDeclContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

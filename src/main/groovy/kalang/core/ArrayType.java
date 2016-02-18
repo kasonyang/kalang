@@ -21,10 +21,13 @@ public class ArrayType extends Type{
     public ArrayType(Type componentType) {
         super(Types.ROOT_TYPE);
         this.componentType = componentType;
-        VarObject fieldObject = new VarObject(Modifier.PUBLIC, Types.INT_TYPE, "length", null);
+        FieldNode field = FieldNode.create(null);
+        field.modifier = Modifier.PUBLIC;
+        field.type = Types.INT_TYPE;
+        field.name = "length";
         //TODO here may be bug
         fields = new FieldNode[]{
-            FieldNode.create(null, fieldObject)
+            field
         };
     }
     

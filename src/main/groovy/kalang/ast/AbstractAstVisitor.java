@@ -60,7 +60,7 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
     abstract public T visitMultiStmtExpr(MultiStmtExpr node);
     
-    abstract public T visitVarObject(VarObject node);
+    //abstract public T visitVarObject(VarObject node);
     
     public T visit(AstNode node){
         
@@ -182,11 +182,17 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
             return visitMultiStmtExpr((MultiStmtExpr)node);
         }
         
-        if(node instanceof VarObject){
-            return visitVarObject((VarObject) node);
+        if(node instanceof LocalVarNode){
+            return visitLocalVarNode((LocalVarNode) node);
+        }
+        if(node instanceof ParameterNode){
+            return visitParameterNode((ParameterNode)node);
+        }
+        if(node instanceof FieldNode){
+            return visitFieldNode((FieldNode) node);
         }
         
-        throw new IllegalArgumentException("Unknown node type:"+node.getClass());
+        throw new IllegalArgumentException("BUG!Unknown node type:"+node.getClass());
     }
     
     public List<T> visitAll(List<?  extends AstNode> nodes){
@@ -206,5 +212,11 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         }
         return result;
     }
+
+    public abstract T visitLocalVarNode(LocalVarNode localVarNode);
+
+    public abstract T visitParameterNode(ParameterNode parameterNode);
+
+    public abstract T visitFieldNode(FieldNode fieldNode);
 
 }

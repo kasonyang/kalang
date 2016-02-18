@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -54,10 +55,10 @@ public class JavaAstLoader extends AstLoader {
         for (Executable m : methods) {
             MethodNode methodNode = cn.createMethodNode();
             for (Parameter p : m.getParameters()) {
-                VarObject param = new VarObject();
+                ParameterNode param = ParameterNode.create(methodNode);
                 param.name = p.getName();
                 param.type = getType(p.getType());
-                methodNode.parameters.add(ParameterNode.create(methodNode, param));
+                methodNode.parameters.add(param);
             }
             if (m instanceof Method) {
                 methodNode.type =getType(((Method) m).getReturnType());
@@ -74,11 +75,10 @@ public class JavaAstLoader extends AstLoader {
             }
         }
         for (Field f : clz.getFields()) {
-            VarObject fn = new VarObject();
+            FieldNode fn = cn.createField();
             fn.name = f.getName();
             fn.type =getType(f.getType());
             fn.modifier = f.getModifiers();
-            cn.createField(fn);
         }
         return cn;
     }

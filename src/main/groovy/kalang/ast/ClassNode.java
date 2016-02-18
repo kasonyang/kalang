@@ -88,8 +88,8 @@ public class ClassNode extends AstNode{
     }
 
 
-    public FieldNode createField(VarObject vo){
-        FieldNode fieldNode = FieldNode.create(this,vo);
+    public FieldNode createField(){
+        FieldNode fieldNode = FieldNode.create(this);
         fields.add(fieldNode);
         return fieldNode;
     }
