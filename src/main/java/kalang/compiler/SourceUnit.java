@@ -82,6 +82,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
+import kalang.ast.AssignableExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.LocalVarNode;
 import kalang.ast.ParameterNode;
@@ -351,7 +352,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             this.reportError("AssignExpr required", ctx);
         }
         AssignExpr assignExpr = (AssignExpr) leftExpr;
-        ExprNode to = assignExpr.to;
+        AssignableExpr to = assignExpr.to;
         ExprNode from = assignExpr.from;
         ExprNode cond = visitExpression(ctx.expression(1));
         Token op = ctx.op;
@@ -680,9 +681,13 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             from = new BinaryExpr(to, from, op);
         }
         AssignExpr aexpr = new AssignExpr();
-        aexpr.from = (ExprNode) from;
-        aexpr.to = (ExprNode) to;
         mapAst(aexpr, ctx);
+        aexpr.from = (ExprNode) from;
+        if(to instanceof AssignableExpr){
+            aexpr.to = (AssignableExpr) to;
+        }else{
+            reportError("unsupported assign statement",ctx);
+        }
         return aexpr;
     }
 
@@ -716,7 +721,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitExprGetField(ExprGetFieldContext ctx) {
+    public FieldExpr visitExprGetField(ExprGetFieldContext ctx) {
         AstNode expr = visitExpression(ctx.expression());
         String name = ctx.Identifier().getText();
         FieldExpr fe = new FieldExpr();

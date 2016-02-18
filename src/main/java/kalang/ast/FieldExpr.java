@@ -4,7 +4,7 @@ Don't modify!This file is generated automately.
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
-public class FieldExpr extends ExprNode{
+public class FieldExpr extends AssignableExpr{
     
     public ExprNode target;
     

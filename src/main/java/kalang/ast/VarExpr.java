@@ -4,7 +4,7 @@ Don't modify!This file is generated automately.
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
-public class VarExpr extends ExprNode{
+public class VarExpr extends AssignableExpr{
     
     public VarObject var;
     

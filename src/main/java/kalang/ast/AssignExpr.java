@@ -6,7 +6,7 @@ import java.util.*;
 import kalang.core.*;
 public class AssignExpr extends ExprNode{
     
-    public ExprNode to;
+    public AssignableExpr to;
     
     public ExprNode from;
     
@@ -16,7 +16,7 @@ public class AssignExpr extends ExprNode{
     }
     
     
-    public AssignExpr(ExprNode to,ExprNode from){
+    public AssignExpr(AssignableExpr to,ExprNode from){
         
         
             this.to = to;
