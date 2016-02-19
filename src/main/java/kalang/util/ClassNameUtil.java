@@ -15,7 +15,7 @@ public class ClassNameUtil {
         String dirPath = FilenameUtils.normalizeNoEndSeparator(dir.getAbsolutePath());
         String fname =FilenameUtils.normalizeNoEndSeparator(file.getAbsolutePath());
         String ext = FilenameUtils.getExtension(fname);
-        String clsName = fname.substring(dirPath.length() + 1, fname.length() - ext.length()+1).replace(File.separator, ".");
+        String clsName = fname.substring(dirPath.length() + 1, fname.length() - ext.length()-1).replace(File.separator, ".");
         return clsName;
     }
 
