@@ -96,7 +96,9 @@ public class Ast2Java extends AbstractAstVisitor<String> {
             return "\"" + v + "\"";
         } else if (ce.type == Types.CHAR_TYPE) {
             return "'" + v + "'";
-        } else {
+        } else if(ce.type == Types.NULL_TYPE) {
+            return "null";
+        }else{
             return v.toString();
         }
     }
