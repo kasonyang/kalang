@@ -45,8 +45,6 @@ public interface IAstVisitor<T>{
     
     public T visitClassExpr(ClassExpr node);
     
-    public T visitNewExpr(NewExpr node);
-    
     public T visitParameterExpr(ParameterExpr node);
     
     public T visitCastExpr(CastExpr node);
@@ -58,5 +56,11 @@ public interface IAstVisitor<T>{
     public T visitKeyExpr(KeyExpr node);
     
     public T visitMultiStmtExpr(MultiStmtExpr node);
+    
+    public T visitLocalVarNode(LocalVarNode localVarNode);
+
+    public T visitParameterNode(ParameterNode parameterNode);
+
+    public T visitFieldNode(FieldNode fieldNode);
     
 }

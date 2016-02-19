@@ -22,7 +22,6 @@ import kalang.ast.LoopStmt;
 import kalang.ast.MethodNode;
 import kalang.ast.MultiStmtExpr;
 import kalang.ast.NewArrayExpr;
-import kalang.ast.NewExpr;
 import kalang.ast.ParameterExpr;
 import kalang.ast.ReturnStmt;
 import kalang.ast.ThrowStmt;
@@ -307,12 +306,6 @@ public class Ast2Class extends AstVisitor<Object>{
 
     @Override
     public Object visitClassExpr(ClassExpr node) {
-        return null;
-    }
-
-    @Override
-    public Object visitNewExpr(NewExpr node) {
-        md.visitTypeInsn(NEW, asmType(node.type).getInternalName());
         return null;
     }
 

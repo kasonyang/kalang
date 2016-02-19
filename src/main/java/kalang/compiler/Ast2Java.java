@@ -122,11 +122,11 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         return node.parameter.name;
     }
 
-    @Override
-    public String visitNewExpr(NewExpr node) {
-        String args = String.join(",", visitAll(node.arguments)); //.join(",");
-        return String.format("new %s(%s)", node.type, args);
-    }
+//    @Override
+//    public String visitNewExpr(NewExpr node) {
+//        String args = String.join(",", visitAll(node.arguments)); //.join(",");
+//        return String.format("new %s(%s)", node.type, args);
+//    }
 
     @Override
     public String visitVarExpr(VarExpr node) {

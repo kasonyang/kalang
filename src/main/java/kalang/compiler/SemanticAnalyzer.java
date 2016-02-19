@@ -27,7 +27,6 @@ import kalang.ast.LoopStmt;
 import kalang.ast.MethodNode;
 import kalang.ast.MultiStmtExpr;
 import kalang.ast.NewArrayExpr;
-import kalang.ast.NewExpr;
 import kalang.ast.ParameterExpr;
 import kalang.ast.ReturnStmt;
 import kalang.ast.Statement;
@@ -406,10 +405,10 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return Types.getClassType(loadAst(node.name, node));
     }
 
-    @Override
-    public Type visitNewExpr(NewExpr node) {
-        return node.type;
-    }
+//    @Override
+//    public Type visitNewExpr(NewExpr node) {
+//        return node.type;
+//    }
 
     @Override
     public Type visitFieldNode(FieldNode fieldNode) {
