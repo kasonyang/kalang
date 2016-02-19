@@ -66,7 +66,7 @@ public class JavaAstLoader extends AstLoader {
                 methodNode.modifier = m.getModifiers();
             } else if (m instanceof Constructor) {
                 methodNode.name = "<init>";
-                methodNode.type = getType(clz);
+                methodNode.type = Types.VOID_TYPE;// getType(clz);
                 methodNode.modifier = m.getModifiers() | Modifier.STATIC;
             }
             methodNode.body = null;

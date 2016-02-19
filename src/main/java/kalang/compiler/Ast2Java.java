@@ -523,4 +523,13 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         return null;
     }
 
+    @Override
+    public String visitNewObjectExpr(NewObjectExpr node) {
+        String args = "";
+        if(node.arguments!=null){
+            args = String.join(",", visitAll(Arrays.asList(node.arguments)));
+        }
+        return String.format("new %s(%s)", node.objectType,args);
+    }
+
 }

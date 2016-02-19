@@ -84,6 +84,7 @@ import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.ast.AssignableExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.LocalVarNode;
+import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ClassType;
@@ -265,8 +266,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = mapType;
-        InvocationExpr invocationExpr = new InvocationExpr(new ClassExpr(mapType.getName()), "<init>", null);
-        vo.initExpr = invocationExpr;
+        NewObjectExpr newExpr = new NewObjectExpr(mapType);
+        vo.initExpr = newExpr;
         mse.stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
         List<TerminalNode> ids = ctx.Identifier();
@@ -296,7 +297,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = listType;
-        InvocationExpr newExpr = new InvocationExpr(new ClassExpr(listType.getName()), "<init>", null);
+        NewObjectExpr newExpr = new NewObjectExpr(listType);
         vo.initExpr = newExpr;
         mse.stmts.add(vds);
         //addCode(vds, ctx);
@@ -423,9 +424,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         Type type;
         int mdf = parseModifier(ctx.varModifier());
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
-            type = Types.getClassType(cls);
+            type = Types.VOID_TYPE;
             name = "<init>";
-            mdf = mdf | Modifier.STATIC;
+            //mdf = mdf | Modifier.STATIC;
         } else {
             if (ctx.type() == null) {
                 type = Types.VOID_TYPE;
@@ -918,11 +919,11 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
         String type = ctx.Identifier().getText();
-        ClassExpr expr = new ClassExpr();
-        expr.name = checkFullType(type, ctx);
-        InvocationExpr inv = this.getInvocationExpr(expr, "<init>", ctx.params);
-        mapAst(inv,ctx);
-        return inv;
+        String objectName = checkFullType(type, ctx);
+        ClassType clsType = requireClassType(objectName, ctx.Identifier().getSymbol());
+        NewObjectExpr newExpr = new NewObjectExpr(clsType);
+        mapAst(newExpr,ctx);
+        return newExpr;
     }
 
     @Override

@@ -63,4 +63,6 @@ public interface IAstVisitor<T>{
 
     public T visitFieldNode(FieldNode fieldNode);
     
+    public T visitNewObjectExpr(NewObjectExpr node);
+    
 }

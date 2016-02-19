@@ -90,7 +90,7 @@ public class AstUtil {
         MethodNode initMethod = clazzNode.createMethodNode();
         initMethod.modifier = Modifier.PUBLIC | Modifier.STATIC;
         initMethod.name = "<init>";
-        initMethod.type = Types.getClassType(clazzNode);
+        initMethod.type = Types.VOID_TYPE;// Types.getClassType(clazzNode);
         initMethod.body = BlockStmt.create();
     }
 

@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.ast.FieldNode;
 import kalang.ast.LocalVarNode;
+import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
@@ -501,14 +502,14 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             err.uncaughtException(uncaught.get(k),k.getName());
         }
         boolean needReturn;
-        if(isSpecialMethod(node)){
-            needReturn = isSpecialMethodNeedReturn(node);
-        }else{
+//        if(isSpecialMethod(node)){
+//            needReturn = isSpecialMethodNeedReturn(node);
+//        }else{
             needReturn = (
                     node.type != null
                     && !node.type.equals(Types.VOID_TYPE)
                     );
-        }
+//        }
        
         if (node.body != null && needReturn && !returned) {
             err.fail("Missing return statement in method:" + mStr, AstSemanticError.LACKS_OF_STATEMENT, node);
@@ -623,13 +624,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return node.name.startsWith("<");
     }
 
-    public boolean isSpecialMethodNeedReturn(MethodNode node) {
-        if(node.name.equals("<init>")) return false;
-        else{
-            System.err.println("unknown method:" + node.name);
-            return false;
-        }
-    }
+//    public boolean isSpecialMethodNeedReturn(MethodNode node) {
+//        if(node.name.equals("<init>")) return false;
+//        else{
+//            System.err.println("unknown method:" + node.name);
+//            return false;
+//        }
+//    }
 
     public AstLoader getAstLoader() {
         return astLoader;
@@ -678,6 +679,11 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitParameterNode(ParameterNode parameterNode) {
         return checkVarDecl(parameterNode);
+    }
+
+    @Override
+    public Type visitNewObjectExpr(NewObjectExpr node) {
+        return node.objectType;
     }
     
     
