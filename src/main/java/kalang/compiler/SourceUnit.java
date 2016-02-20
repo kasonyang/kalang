@@ -32,6 +32,7 @@ import kalang.ast.ReturnStmt;
 import kalang.ast.ParameterExpr;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -112,7 +113,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     //short name to full name
     private final Map<String, String> fullNames = new HashMap<>();
     private final List<String> importPaths = new LinkedList<>();
-    ClassNode cls = new ClassNode();
+    ClassNode classAst = new ClassNode();
     MethodNode method;
     //private final BidiMap<AstNode, ParserRuleContext> a2p = new DualHashBidiMap<>();
 
@@ -175,8 +176,13 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         return className;
     }
     
-    private ClassType requireClassType(String name,Token token){
-        ClassNode ast = requireAst(name, token);
+    private ClassType requireClassType(Token token){
+        return requireClassType(token.getText(),token);
+    }
+    
+    private ClassType requireClassType(String id,Token token){
+        ClassNode ast = requireAst(id, token);
+        if(ast==null) return null;
         return Types.getClassType(ast);
     }
 
@@ -193,8 +199,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         this.context = parser.compilantUnit();
         visit(context);
         //AstMetaParser metaParser = new AstAstMetaParser();
-        if(AstUtil.getMethodsByName(cls, "<init>").length<1){
-            AstUtil.createEmptyConstructor(cls);
+        if(AstUtil.getMethodsByName(classAst, "<init>").length<1){
+            AstUtil.createEmptyConstructor(classAst);
         }
     }
 
@@ -206,7 +212,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         if (className.contains(".")) {
             classPath = className.substring(0, className.lastIndexOf('.'));
         }
-        cls = ClassNode.create();
+        classAst = ClassNode.create();
             mapType = Types.MAP_IMPL_TYPE;
             stringType = Types.STRING_CLASS_TYPE;
             listType = Types.LIST_CLASS_TYPE;
@@ -242,7 +248,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 //    }
 
     public ClassNode getAst() {
-        return this.cls;
+        return this.classAst;
     }
     
     private void mapAst(AstNode node,ParserRuleContext tree){
@@ -373,26 +379,25 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitCompilantUnit(CompilantUnitContext ctx) {
         this.visitAll(ctx.importDecl());
-        cls.name = this.className;
-        cls.modifier = parseModifier(ctx.varModifier());
+        classAst.name = this.className;
+        classAst.modifier = parseModifier(ctx.varModifier());
         String classType = ctx.classType.getText();
         if (classType.equals("interface")) {
-            cls.isInterface = true;
+            classAst.isInterface = true;
         }
         if (ctx.parentClass != null) {
-            String parentName = this.checkFullType(ctx.parentClass.getText(), ctx);
-            cls.parent =  requireAst(parentName,ctx.parentClass);
+            classAst.parent =  requireAst(ctx.parentClass);
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (Token itf : ctx.interfaces) {
-                String iType = checkFullType(itf.getText(), ctx);
-                if(iType!=null){
-                    cls.interfaces.add(requireAst(iType,itf));
+                ClassNode itfClassNode = requireAst(itf);
+                if(itfClassNode!=null){
+                    classAst.interfaces.add(requireAst(itf));
                 }
             }
         }
         visitClassBody(ctx.classBody());
-        mapAst(cls, ctx);
+        mapAst(classAst, ctx);
         return null;
     }
 
@@ -401,7 +406,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         this.newVarStack();
         this.visitChildren(ctx);
         this.popVarStack();
-        mapAst(cls, ctx);
+        mapAst(classAst, ctx);
         return null;
     }
 
@@ -409,7 +414,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public Void visitFieldDecl(FieldDeclContext ctx) {
         int mdf = this.parseModifier(ctx.varModifier());
         for(VarDeclContext vd:ctx.varDecl()){
-            FieldNode fieldNode = cls.createField();
+            FieldNode fieldNode = classAst.createField();
             fieldNode.modifier = mdf;
             varDecl(vd,fieldNode);
         }
@@ -418,7 +423,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
-        method = cls.createMethodNode();
+        method = classAst.createMethodNode();
         this.newVarStack();
         String name;
         Type type;
@@ -450,8 +455,10 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         }
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {
-                String eFullType = this.checkFullType(et.getText(), ctx);
-                method.exceptionTypes.add(requireClassType(eFullType,et));
+                ClassType exType = requireClassType(et);
+                if(exType!=null){
+                    method.exceptionTypes.add(exType);
+                }
             }
         }
         this.popVarStack();
@@ -756,37 +763,60 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         mapAst(ee, ctx);
         return ee;
     }
-
-    private String checkFullType(String name, ParserRuleContext tree) {
-        String fn = getFullClassName(name);
-        if (fn == null) {
-            this.reportError("Unknown class:" + name, tree);
-            return DEFAULT_VAR_TYPE;
-        }
-        return fn;
-    }
-
-    public String getFullClassName(String simpleName) {
-        String postfix = "";
-        if (simpleName.endsWith("[]")) {
-            simpleName = simpleName.substring(0, simpleName.length() - 2);
-            postfix = "[]";
-        }
-        if (fullNames.containsKey(simpleName)) {
-            return fullNames.get(simpleName) + postfix;
+    
+    /**
+     * expand the class name if could
+     * @param id
+     * @return 
+     */
+    private String expandClassName(String id){
+        if (fullNames.containsKey(id)) {
+            return fullNames.get(id);
         } else {
-            ClassNode cls = astLoader.getAst(simpleName);
-            if(cls!=null) return simpleName + postfix;
-            for (String p : this.importPaths) {
-                String clsName = p + "." + simpleName;
-                cls = astLoader.getAst(clsName);
+            List<String> paths = new ArrayList<>(importPaths.size()+1);
+            paths.add(classPath);
+            paths.addAll(importPaths);
+            for (String p : paths) {
+                String clsName = p + "." + id;
+                ClassNode cls = astLoader.getAst(clsName);
                 if (cls != null) {
-                    return clsName + postfix;
+                    return clsName;
                 }
             }
         }
-        return null;
+        return id;
     }
+
+//    private String checkFullType(String name, ParserRuleContext tree) {
+//        String fn = getFullClassName(name);
+//        if (fn == null) {
+//            this.reportError("Unknown class:" + name, tree);
+//            return DEFAULT_VAR_TYPE;
+//        }
+//        return fn;
+//    }
+
+//    public String getFullClassName(String simpleName) {
+//        String postfix = "";
+//        if (simpleName.endsWith("[]")) {
+//            simpleName = simpleName.substring(0, simpleName.length() - 2);
+//            postfix = "[]";
+//        }
+//        if (fullNames.containsKey(simpleName)) {
+//            return fullNames.get(simpleName) + postfix;
+//        } else {
+//            ClassNode classAst = astLoader.getAst(simpleName);
+//            if(classAst!=null) return simpleName + postfix;
+//            for (String p : this.importPaths) {
+//                String clsName = p + "." + simpleName;
+//                classAst = astLoader.getAst(clsName);
+//                if (classAst != null) {
+//                    return clsName + postfix;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     private ExprNode getNodeByName(String name) {
         if (vtb.exist(name)) {
@@ -803,8 +833,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                     }
                 }
             }
-            if (cls.fields != null) {
-                for (FieldNode f : cls.fields) {
+            if (classAst.fields != null) {
+                for (FieldNode f : classAst.fields) {
                     if (f.name!=null && f.name.equals(name)) {
                         FieldExpr fe = new FieldExpr();
                         fe.fieldName = name;
@@ -812,9 +842,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                     }
                 }
             }
-            String clsName = this.getFullClassName(name);
-            if (clsName!=null) {
-                return new ClassExpr(clsName);
+            ClassNode targetClass = getAst(name);
+            if (targetClass!=null) {
+                return new ClassExpr(targetClass.name);
             }
         }
         return null;
@@ -918,9 +948,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
-        String type = ctx.Identifier().getText();
-        String objectName = checkFullType(type, ctx);
-        ClassType clsType = requireClassType(objectName, ctx.Identifier().getSymbol());
+        ClassType clsType = requireClassType(ctx.Identifier().getSymbol());
         NewObjectExpr newExpr = new NewObjectExpr(clsType);
         //visitAll(list);
         ExprNode[] ps = new ExprNode[ctx.params.size()];
@@ -955,7 +983,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 this.newVarStack();
                 LocalVarNode vo = new LocalVarNode();
                 vo.name = vName;
-                vo.type = requireClassType(checkFullType(vType, ctx), ctx.catchTypes.get(i).start);
+                vo.type = requireClassType(vType, ctx.catchTypes.get(i).start);
                 VarDeclStmt declStmt = new VarDeclStmt(vo);
                 catchStmt.execStmt = visitStat(ctx.catchStmts.get(i));
                 this.popVarStack();
@@ -1048,21 +1076,35 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public KalangParser getParser() {
         return parser;
     }
+    
+    private ClassNode requireAst(Token token){
+        return requireAst(token.getText(),token);
+    }
 
-    private ClassNode requireAst(String name,Token token) {
+    /**
+     * checks whether a class is available
+     * @param id
+     * @param token
+     * @return 
+     */
+    private ClassNode requireAst(String id,Token token) {
+        id = expandClassName(id);
         try {
-            return astLoader.loadAst(name);
+            return astLoader.loadAst(id);
         } catch (AstNotFoundException ex) {
-            reportError("ast not found:" + name, token);
+            reportError("ast not found:" + id, token);
             return null;
         }
+    }
+    
+    private ClassNode getAst(String id){
+        id =expandClassName(id);
+        return astLoader.getAst(id);
     }
 
     private Type parseSingleType(KalangParser.SingleTypeContext singleTypeContext){
         if(singleTypeContext.Identifier()!=null){
-            String fn = checkFullType(singleTypeContext.getText(), singleTypeContext);
-            if(fn==null) return null;
-            return requireClassType(fn,singleTypeContext.Identifier().getSymbol());
+            return requireClassType(singleTypeContext.Identifier().getSymbol());
         }else{
             return Types.getPrimitiveType(singleTypeContext.getText());
         }
