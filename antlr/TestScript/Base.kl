@@ -79,7 +79,7 @@ class{
         f1 = 1;
     }
     void throwStmt() throws Exception{
-        throws new Exception("Test");
+        throw new Exception("Test");
     }
     void questionExpr(){
         var q = true;

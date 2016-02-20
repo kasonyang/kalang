@@ -111,7 +111,7 @@ stat:
     |throwStat
 ;
 throwStat:
-    'throws' expression ';'
+    'throw' expression ';'
 ;
 blockStmt:
     '{' stat* '}'
