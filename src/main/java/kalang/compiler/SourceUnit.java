@@ -922,6 +922,12 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         String objectName = checkFullType(type, ctx);
         ClassType clsType = requireClassType(objectName, ctx.Identifier().getSymbol());
         NewObjectExpr newExpr = new NewObjectExpr(clsType);
+        //visitAll(list);
+        ExprNode[] ps = new ExprNode[ctx.params.size()];
+        for(int i=0;i<ps.length;i++){
+            ps[i] = visitExpression(ctx.params.get(i));
+        }
+        newExpr.arguments = ps;
         mapAst(newExpr,ctx);
         return newExpr;
     }
