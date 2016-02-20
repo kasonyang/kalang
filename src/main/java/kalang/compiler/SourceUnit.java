@@ -393,7 +393,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             for (Token itf : ctx.interfaces) {
                 ClassNode itfClassNode = requireAst(itf);
                 if(itfClassNode!=null){
-                    classAst.interfaces.add(requireAst(itf));
+                    classAst.interfaces.add(itfClassNode);
                 }
             }
         }
@@ -843,9 +843,10 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                     }
                 }
             }
-            ClassNode targetClass = getAst(name);
+            String id = expandClassName(name);
+            ClassNode targetClass = astLoader.getAst(id);
             if (targetClass!=null) {
-                return new ClassExpr(targetClass.name);
+                return new ClassExpr(id);
             }
         }
         return null;
