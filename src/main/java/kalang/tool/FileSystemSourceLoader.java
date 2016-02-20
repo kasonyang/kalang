@@ -7,7 +7,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.compiler.SourceLoader;
+import kalang.util.FilePathUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOCase;
 /**
  *  The class load source from file system.
  * @author Kason Yang <i@kasonyang.com>
@@ -19,12 +22,12 @@ class FileSystemSourceLoader implements SourceLoader {
     FileSystemSourceLoader(File srcDir) {
         this.srcDir = srcDir;
     }
-
+    
     @Override
     public String loadSource(String className) {
         String fn = className.replace(".", "/") + ".kl";
         File srcFile = new File(srcDir,fn);
-        if(srcFile.exists()){
+        if(FilePathUtil.existFile(srcFile)){
             try {
                 return FileUtils.readFileToString(srcFile);
             } catch (IOException ex) {
