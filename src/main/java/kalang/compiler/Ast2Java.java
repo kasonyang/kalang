@@ -113,10 +113,14 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 //        return "";
 //	//return	"  " + str.readLines().join("\r\n  ");
 //    }
+    
+    private String className(String name){
+        return name.replace("$", ".");
+    }
 
     @Override
     public String visitCastExpr(CastExpr node) {
-        return String.format("(%s)%s", node.type.toString(), visit(node.expr));
+        return String.format("(%s)%s",className(node.type.toString()), visit(node.expr));
     }
 
     @Override
@@ -137,7 +141,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitClassExpr(ClassExpr node) {
-        return node.name;
+        return className(node.name);
     }
 
     public String visitModifier(Integer modifier) {
@@ -334,6 +338,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     public void visitVarObject(VarObject var) {
         //varNames.put(node.varId,node.varName)
         String type = var.type != null ? var.type.getName() : "Object";
+        type = className(type);
         String name = getVarName(var);
         String code = type
                 + " "
@@ -487,7 +492,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     @Override
     public String visitThrowStmt(ThrowStmt node) {
         String expr = visit(node.expr);
-        c("throws " + expr + ";");
+        c("throw " + expr + ";");
         return null;
     }
 
@@ -529,7 +534,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         if(node.arguments!=null){
             args = String.join(",", visitAll(Arrays.asList(node.arguments)));
         }
-        return String.format("new %s(%s)", node.objectType,args);
+        return String.format("new %s(%s)",className(node.objectType.toString()),args);
     }
 
 }

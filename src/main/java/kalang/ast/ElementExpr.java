@@ -6,7 +6,7 @@ import kalang.core.*;
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class ElementExpr extends ExprNode{
+public class ElementExpr extends AssignableExpr{
     
     public ExprNode arrayExpr;
     
