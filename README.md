@@ -51,3 +51,7 @@ Netbeans [Kalang-support](https://github.com/kasonyang/kalang-support)
 
 * add javadoc
 * add more test
+
+#License
+
+MIT
