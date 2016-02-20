@@ -49,6 +49,12 @@ public class JavaAstLoader extends AstLoader {
         } else if (!cn.name.equals(ROOT_CLASS)) {
             cn.parent = findAst(ROOT_CLASS);
         }
+        Class[] clzInterfaces = clz.getInterfaces();
+        if(clzInterfaces != null){
+            for(Class itf:clzInterfaces){
+                cn.interfaces.add(findAst(itf.getName()));
+            }
+        }
         List<Executable> methods = new LinkedList();
         methods.addAll(Arrays.asList(clz.getMethods()));
         methods.addAll(Arrays.asList(clz.getConstructors()));
@@ -67,7 +73,7 @@ public class JavaAstLoader extends AstLoader {
             } else if (m instanceof Constructor) {
                 methodNode.name = "<init>";
                 methodNode.type = Types.VOID_TYPE;// getType(clz);
-                methodNode.modifier = m.getModifiers() | Modifier.STATIC;
+                methodNode.modifier = m.getModifiers();// | Modifier.STATIC;
             }
             methodNode.body = null;
             for (Class e : m.getExceptionTypes()) {

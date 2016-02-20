@@ -56,5 +56,15 @@ public class ClassType extends Type{
     public MethodNode[] getMethods() {
         return clazz.getMethodNodes();
     }
+
+    @Override
+    public boolean isSubTypeOf(Type targetType) {
+        if(targetType instanceof ClassType){
+            return clazz.isSubclassOf(
+                    ((ClassType)targetType).clazz
+                    );
+        }
+        return false;
+    }
     
 }

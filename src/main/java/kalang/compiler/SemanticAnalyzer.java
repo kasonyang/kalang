@@ -374,7 +374,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         for (Type e : exTypes) {
                 if (
                         e.equals(type)
-                        || e.isSubclassTypeOf(type)
+                        || e.isSubTypeOf(type)
                         ) {
                     exceptions.remove(e);
                 }

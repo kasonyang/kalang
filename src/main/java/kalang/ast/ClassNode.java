@@ -141,4 +141,18 @@ public class ClassNode extends AstNode{
         return methods.toArray(new MethodNode[0]);
     }
     
+    public boolean isSubclassOf(ClassNode clazz){
+        if(parent!=null){
+            if(parent.equals(clazz)) return true;
+            if(parent.isSubclassOf(clazz)) return true;
+        }
+        if(interfaces!=null){
+            for(ClassNode itf:interfaces){
+                if(itf.equals(clazz)) return true;
+                if(itf.isSubclassOf(clazz)) return true;
+            }
+        }
+        return false;
+    }
+    
 }

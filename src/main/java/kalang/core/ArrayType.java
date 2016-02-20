@@ -75,9 +75,9 @@ public class ArrayType extends Type{
     }
 
 //    @Override
-//    public boolean isSubclassTypeOf(Type targetType) {
+//    public boolean isSubTypeOf(Type targetType) {
 //        if(targetType instanceof ArrayType){
-//            return componentType.isSubclassTypeOf(targetType);
+//            return componentType.isSubTypeOf(targetType);
 //        }
 //        return false;
 //    }
@@ -87,6 +87,15 @@ public class ArrayType extends Type{
         if(super.isAssignedFrom(type)) return true;
         if(type instanceof ArrayType){
             return componentType.isAssignedFrom(((ArrayType)type).getComponentType());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isSubTypeOf(Type targetType) {
+        if(targetType.equals(superType)) return true;
+        if(targetType instanceof ArrayType){
+            return componentType.isSubTypeOf(((ArrayType)targetType).componentType);
         }
         return false;
     }

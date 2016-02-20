@@ -29,7 +29,7 @@ public abstract class Type {
     
     public abstract Type getComponentType();
     
-    public final boolean isSubclassTypeOf(Type targetType){
+    public boolean isSubTypeOf(Type targetType){
         Type t = this;
         while(t!=null){
             if(t.equals(targetType)) return true;
@@ -40,7 +40,7 @@ public abstract class Type {
     
     public boolean isAssignedFrom(Type type){
         if(equals(type)) return true;
-        return type.isSubclassTypeOf(this);
+        return type.isSubTypeOf(this);
     }
     
     //public abstract boolean isCastableTo(Type targetType);
