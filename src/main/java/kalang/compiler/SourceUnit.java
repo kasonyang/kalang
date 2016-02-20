@@ -206,6 +206,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 
     public SourceUnit(String className, KalangParser parser) {
         this.className = className;
+        classAst.name = className;
         this.classPath = "";
         this.parser = parser;
         tokenStream = parser.getTokenStream();
@@ -1098,6 +1099,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     private ClassNode getAst(String id){
+        if(id==null || id.length()==0) return null;
         id =expandClassName(id);
         return astLoader.getAst(id);
     }
