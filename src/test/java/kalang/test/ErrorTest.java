@@ -47,7 +47,7 @@ public class ErrorTest {
         if(errorHandler!=null)
             kc.setAstSemanticErrorHandler(errorHandler);
         if(compileErrorHandler!=null){
-            kc.setCompileErrorHandlerrrorHandler(compileErrorHandler);
+            kc.setCompileErrrorHandler(compileErrorHandler);
         }
         for(String n : name){
             File src = new File(dir,n+".kl");//.readLines().join("\r\n");

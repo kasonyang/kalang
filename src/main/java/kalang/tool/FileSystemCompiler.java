@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.CompileError;
+import kalang.compiler.CompileErrorHandler;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
 import org.apache.commons.io.FileUtils;
@@ -18,7 +19,7 @@ import org.apache.commons.io.FileUtils;
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class FileSystemCompiler {
+public class FileSystemCompiler implements CompileErrorHandler{
 
     private Map<String, File> sourceFiles = new HashMap<>();
 
@@ -54,11 +55,7 @@ public class FileSystemCompiler {
             File f = sourceFiles.get(srcName);
             cpl.addSource(srcName, FileUtils.readFileToString(f));
         }
-        cpl.setCompileErrrorHandler((CompileError error) -> {
-            String cname = error.className;
-            File fn = sourceFiles.get(cname);
-            System.err.println(fn + ":" + error);
-        });
+        cpl.setCompileErrrorHandler(this);
         cpl.compile();
         HashMap<String, CompilationUnit> units = cpl.getAllCompilationUnit();
         for (String cls : units.keySet()) {
@@ -79,6 +76,14 @@ public class FileSystemCompiler {
 
     public void setOutputDir(File outputDir) {
         this.outputDir = outputDir;
+    }
+
+    @Override
+    public void handleCompileError(CompileError error) {
+        //TODO should stop compiling
+        String cname = error.className;
+        File fn = sourceFiles.get(cname);
+        System.err.println(fn + ":" + error);
     }
 
 }
