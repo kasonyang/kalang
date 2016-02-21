@@ -116,6 +116,9 @@ public class BoxUtil {
 
     private static ExprNode castPrimitive2Object(ExprNode expr, PrimitiveType fromType) {
         ClassType classType = Types.getClassType(fromType);
+        if(classType==null){
+            throw new UnknownError("unknown primitive type:" + fromType);
+        }
         return new InvocationExpr(new ClassExpr(classType.getName()), "valueOf", Arrays.asList(new ExprNode[]{expr}));
     }
 

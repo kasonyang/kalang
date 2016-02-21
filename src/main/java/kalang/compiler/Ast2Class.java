@@ -102,6 +102,7 @@ public class Ast2Class extends AstVisitor<Object>{
         //TODO modifier -> access
         int access = node.modifier;
         String sign = null;
+        //TODO here may be bug
         classWriter.visit(V1_5, access,interClassName(node.name), sign, node.parent.name,interClassName(node.interfaces.toArray(new String[0])));
         return super.visit(node);
     }

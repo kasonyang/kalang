@@ -7,6 +7,8 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import kalang.compiler.AstLoader;
 import kalang.compiler.AstNotFoundException;
 import org.apache.commons.collections4.BidiMap;
@@ -75,8 +77,8 @@ public class Types {
             ,DOUBLE_CLASS_TYPE
             ,ROOT_TYPE
             ,STRING_CLASS_TYPE
-            ,MAP_IMPL_TYPE
-            ,LIST_CLASS_TYPE
+            ,MAP_IMPL_CLASS_TYPE
+            ,LIST_IMPL_CLASS_TYPE
             ;
             
     static {
@@ -93,8 +95,8 @@ public class Types {
             CHAR_CLASS_TYPE = getClassType(astLoader.loadAst(CHAR_CLASS_NAME));
             SHORT_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
             BYTE_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
-            MAP_IMPL_TYPE = getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
-            LIST_CLASS_TYPE = getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
+            MAP_IMPL_CLASS_TYPE = getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
+            LIST_IMPL_CLASS_TYPE = getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
         } catch (AstNotFoundException ex) {
             //ex.printStackTrace();
             throw new RuntimeException(ex);
@@ -120,6 +122,7 @@ public class Types {
         INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
     };
     
+    @Nonnull
     public static PrimitiveType getPrimitiveType(String name){
         PrimitiveType t = primitiveTypes.get(name);
         if(t ==null){
@@ -129,7 +132,8 @@ public class Types {
         return t;
     }
     
-    public static ArrayType getArrayType(Type componentType){
+    @Nonnull
+    public static ArrayType getArrayType(@Nonnull Type componentType){
         ArrayType at = arrayTypes.get(componentType);
         if(at==null){
             at = new ArrayType(componentType);
@@ -138,7 +142,8 @@ public class Types {
         return at;
     }
     
-    public static ClassType getClassType(ClassNode clazz){
+    @Nonnull
+    public static ClassType getClassType(@Nonnull ClassNode clazz){
         ClassType ct = classTypes.get(clazz);
         if(ct==null){
             ct = new ClassType(clazz);
@@ -147,15 +152,18 @@ public class Types {
         return ct;
     }
     
+    @Nullable
     public static PrimitiveType getPrimitiveType(ClassType classType){
         return primitive2class.getKey(classType);
     }
     
+    @Nonnull
     public static ClassType getClassType(String className) throws AstNotFoundException{
         ClassNode ast = AstLoader.BASE_AST_LOADER.loadAst(className);
         return getClassType(ast);
     }
     
+    @Nullable
     public static ClassType getClassType(PrimitiveType primitiveType){
         return primitive2class.get(primitiveType);
     }
@@ -180,6 +188,7 @@ public class Types {
         return type.equals(BOOLEAN_CLASS_TYPE) || type.equals(BOOLEAN_TYPE);
     }
 
+    @Nonnull
     public  static Type getHigherType(Type type1, Type type2) {
         if (
                 type1.equals(DOUBLE_CLASS_TYPE) 

@@ -3,8 +3,9 @@ package kalang.compiler;
 import java.util.HashMap;
 
 import kalang.ast.ClassNode;
-import kalang.ast.VarObject;
 import java.lang.reflect.Modifier;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.core.Types;
 
@@ -12,23 +13,26 @@ public class AstLoader {
     
     public static final AstLoader BASE_AST_LOADER = new JavaAstLoader();
 
-    private HashMap<String, ClassNode> asts = new HashMap();
+    @Nonnull
+    private final HashMap<String, ClassNode> asts = new HashMap();
 
-    private AstLoader parent;
+    @Nullable
+    private AstLoader parent = null;
 
     public AstLoader() {
 
     }
 
-    public AstLoader(AstLoader astLoader) {
+    public AstLoader(@Nonnull AstLoader astLoader) {
         parent = astLoader;
     }
 
-    public void add(ClassNode clazz) {
+    public void add(@Nonnull ClassNode clazz) {
         asts.put(clazz.name, clazz);
     }
 
-    protected ClassNode findAst(String className) throws AstNotFoundException {
+    @Nonnull
+    protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
         ClassNode ast = asts.get(className);
         if(ast==null && this!=BASE_AST_LOADER){
             ast = BASE_AST_LOADER.findAst(className);
@@ -43,7 +47,8 @@ public class AstLoader {
         return ast;
     }
 
-    public ClassNode loadAst(String className) throws AstNotFoundException {
+    @Nonnull
+    public ClassNode loadAst(@Nonnull String className) throws AstNotFoundException {
         boolean isArray = false;
         String name = className;
         if(name.endsWith("[]")){
@@ -58,7 +63,8 @@ public class AstLoader {
         return ast;
     }
 
-    public ClassNode getAst(String className) {
+    @Nullable
+    public ClassNode getAst(@Nonnull String className) {
         try {
             return loadAst(className);
         } catch (AstNotFoundException e) {
@@ -66,6 +72,7 @@ public class AstLoader {
         }
     }
 
+    //TODO should be removed?
     private ClassNode createArrayAst(ClassNode ast) {
         ClassNode clazz = ClassNode.create();
         FieldNode field = clazz.createField();

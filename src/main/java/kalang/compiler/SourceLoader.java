@@ -1,13 +1,14 @@
 
 package kalang.compiler;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
-import java.util.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
  */
 public interface SourceLoader {
-    String loadSource(String className);
+    
+    @Nullable
+    String loadSource(@Nonnull String className);
+    
 }
