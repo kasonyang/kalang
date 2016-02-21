@@ -104,7 +104,7 @@ public class MainCompiler {
             sourcesMap.put(clsName, src);
             cpl.addSource(clsName, src.source);
         }
-        cpl.setCompileErrorHandlerrrorHandler((CompileError error) -> {
+        cpl.setCompileErrrorHandler((CompileError error) -> {
             String cname = error.className;
             String fn = sourcesMap.get(cname).fileName;
             System.err.println(fn + ":" + error);

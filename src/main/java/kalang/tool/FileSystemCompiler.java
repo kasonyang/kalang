@@ -54,7 +54,7 @@ public class FileSystemCompiler {
             File f = sourceFiles.get(srcName);
             cpl.addSource(srcName, FileUtils.readFileToString(f));
         }
-        cpl.setCompileErrorHandlerrrorHandler((CompileError error) -> {
+        cpl.setCompileErrrorHandler((CompileError error) -> {
             String cname = error.className;
             File fn = sourceFiles.get(cname);
             System.err.println(fn + ":" + error);

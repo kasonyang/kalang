@@ -49,7 +49,7 @@ public class KalangCompiler extends AstLoader {
             reportError(see.getDescription(), parser.getClassName(), offsetRange);
         }
     };
-    private CompileErrorHandler compileErrorHandlerrrorHandler = new CompileErrorHandler() {
+    private CompileErrorHandler compileErrrorHandler = new CompileErrorHandler() {
         @Override
         public void handleCompileError(CompileError error) {
             System.err.println(error.toString());
@@ -127,7 +127,7 @@ public class KalangCompiler extends AstLoader {
     public void reportError(String msg, String className, OffsetRange loc) {
         String src = sources.get(className);
         CompileError ce = new CompileError(msg, className, src, loc);
-        compileErrorHandlerrrorHandler.handleCompileError(ce);
+        compileErrrorHandler.handleCompileError(ce);
     }
 
     public void reportAstNodeError(String msg, String className, AstNode node) {
@@ -182,12 +182,12 @@ public class KalangCompiler extends AstLoader {
         this.semanticErrorHandler = semanticErrorHandler;
     }
 
-    public CompileErrorHandler getCompileErrorHandlerrrorHandler() {
-        return compileErrorHandlerrrorHandler;
+    public CompileErrorHandler getCompileErrrorHandler() {
+        return compileErrrorHandler;
     }
 
-    public void setCompileErrorHandlerrrorHandler(CompileErrorHandler compileErrorHandlerrrorHandler) {
-        this.compileErrorHandlerrrorHandler = compileErrorHandlerrrorHandler;
+    public void setCompileErrrorHandler(CompileErrorHandler compileErrrorHandler) {
+        this.compileErrrorHandler = compileErrrorHandler;
     }
 
     private CompilationUnit createCompilationUnit(String className, String src) {
