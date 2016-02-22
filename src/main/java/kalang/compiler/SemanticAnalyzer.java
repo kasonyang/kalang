@@ -175,7 +175,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitCastExpr(CastExpr node) {
-        return node.type;
+        return node.toType;
     }
 
     @Override
@@ -357,7 +357,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (preOp != null && preOp.equals("!")) {
             if(!requireBoolean(node, et)) return getDefaultType();
         } else {
-            //TODO unary type check
+            //TODO unary toType check
             //if(!requireNumber(node,et)) return getDefaultType()
         }
         return et;
@@ -405,11 +405,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public Type visitClassExpr(ClassExpr node) {
         return Types.getClassType(loadAst(node.name, node));
     }
-
-//    @Override
-//    public Type visitNewExpr(NewExpr node) {
-//        return node.type;
-//    }
 
     @Override
     public Type visitFieldNode(FieldNode fieldNode) {

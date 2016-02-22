@@ -120,7 +120,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitCastExpr(CastExpr node) {
-        return String.format("(%s)%s",className(node.type.toString()), visit(node.expr));
+        return String.format("(%s)%s",className(node.toType.toString()), visit(node.expr));
     }
 
     @Override
@@ -131,7 +131,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 //    @Override
 //    public String visitNewExpr(NewExpr node) {
 //        String args = String.join(",", visitAll(node.arguments)); //.join(",");
-//        return String.format("new %s(%s)", node.type, args);
+//        return String.format("new %s(%s)", node.toType, args);
 //    }
 
     @Override

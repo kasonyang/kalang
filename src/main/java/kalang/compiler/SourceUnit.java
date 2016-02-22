@@ -310,7 +310,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         }
         mse.reference = ve;
         mapAst(mse,ctx);
-        //TODO set generic type
+        //TODO set generic toType
         return mse;
     }
 
@@ -333,7 +333,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             mse.stmts.add(new ExprStmt(iv));
         }
         mse.reference = ve;
-        //TODO set generic type
+        //TODO set generic toType
         mapAst(mse,ctx);
         return mse;
     }
@@ -943,7 +943,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitCastExpr(CastExprContext ctx) {
         CastExpr ce = new CastExpr();
         ce.expr = visitExpression(ctx.expression());
-        ce.type = parseType(ctx.type());
+        ce.toType = parseType(ctx.type());
         mapAst(ce,ctx);
         return ce;
     }

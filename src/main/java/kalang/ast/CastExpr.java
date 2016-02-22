@@ -6,7 +6,7 @@ import java.util.*;
 import kalang.core.*;
 public class CastExpr extends ExprNode{
     
-    public Type type;
+    public Type toType;
     
     public ExprNode expr;
     
@@ -19,7 +19,7 @@ public class CastExpr extends ExprNode{
     public CastExpr(Type type,ExprNode expr){
         
         
-            this.type = type;
+            this.toType = type;
         
             this.expr = expr;
         
@@ -51,8 +51,8 @@ public class CastExpr extends ExprNode{
     public String toString(){
         String str = "CastExpr{\r\n";
         
-        if(type!=null){
-            str += "  type:" + type.toString()+"\r\n";
+        if(toType!=null){
+            str += "  type:" + toType.toString()+"\r\n";
         }
         
         if(expr!=null){
