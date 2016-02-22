@@ -1,16 +1,13 @@
 package kalang.util;
 
-import kalang.ast.CastExpr;
 import kalang.ast.ClassExpr;
 import kalang.ast.ExprNode;
 import kalang.ast.InvocationExpr;
 import kalang.ast.PrimitiveCastExpr;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
 import java.util.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import kalang.compiler.MathType;
-import kalang.compiler.TypeCastException;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
@@ -33,7 +30,8 @@ public class BoxUtil {
             CAST_OBJECT_TO_STRING = 5,
             CAST_PRIMITIVE_TO_STRING = 6;
 
-    public static ExprNode assign(ExprNode expr, Type fromType, Type toType) {
+    @Nullable
+    public static ExprNode assign(@Nonnull ExprNode expr, @Nonnull Type fromType,@Nonnull Type toType) {
         int t = getCastMethod(fromType, toType);
         switch (t) {
             case CAST_NOTHING:

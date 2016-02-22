@@ -11,6 +11,7 @@ import java.util.List;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import javax.annotation.Nonnull;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.core.ClassType;
@@ -72,6 +73,7 @@ public class AstUtil {
         return types;
     }
 
+    @Nonnull
     public static List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassNode theInterface) {
         List<MethodNode> list = new LinkedList();
         for (MethodNode m : theInterface.getMethodNodes()) {

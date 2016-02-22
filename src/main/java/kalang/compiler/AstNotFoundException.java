@@ -1,7 +1,9 @@
 package kalang.compiler;
 
 public class AstNotFoundException extends Exception {
-	public AstNotFoundException(String clsName){
-		super(clsName);
-	}
+
+    public AstNotFoundException(String clsName) {
+        super(clsName);
+    }
+    
 }

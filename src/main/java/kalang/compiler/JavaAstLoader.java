@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.core.Type;
@@ -39,7 +40,8 @@ public class JavaAstLoader extends AstLoader {
      * @return the ast built from java class
      * @throws AstNotFoundException 
      */
-    public ClassNode buildFromClass(Class clz) throws AstNotFoundException {
+    @Nonnull
+    public ClassNode buildFromClass(@Nonnull Class clz) throws AstNotFoundException {
         ClassNode cn = ClassNode.create();
         cn.name = clz.getName();
         loadedClasses.put(clz.getName(), cn);
@@ -89,7 +91,7 @@ public class JavaAstLoader extends AstLoader {
         return cn;
     }
 
-    public JavaAstLoader(ClassLoader javaClassLoader) {
+    public JavaAstLoader(@Nonnull ClassLoader javaClassLoader) {
         this.javaClassLoader = javaClassLoader;
     }
 
