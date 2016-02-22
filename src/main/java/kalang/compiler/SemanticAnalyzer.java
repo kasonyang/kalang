@@ -175,6 +175,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitCastExpr(CastExpr node) {
+        Type et = visit(node.expr);
+        if(!node.toType.isSubTypeOf(et)
+                && !node.toType.equals(et)
+                ){
+            err.failedToCast(node, et.getName(), node.toType.getName());
+        }
         return node.toType;
     }
 
