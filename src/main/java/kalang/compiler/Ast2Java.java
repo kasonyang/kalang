@@ -188,7 +188,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
             }
             impStr = "implements " + String.join(",", interfaces);
         }
-        String classType = node.isInterface != null ? "interface" : "class";
+        String classType = node.isInterface ? "interface" : "class";
         c(pkgStr
                 + "\r\n"
                 + imports

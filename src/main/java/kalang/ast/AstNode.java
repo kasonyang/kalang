@@ -1,6 +1,7 @@
 package kalang.ast;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import kalang.compiler.OffsetRange;
 import kalang.core.*;
 
@@ -11,6 +12,7 @@ import kalang.core.*;
  */
 public abstract class AstNode {
     
+    @Nonnull
     public OffsetRange offset = OffsetRange.NONE;
     
     abstract public List<AstNode> getChildren();
