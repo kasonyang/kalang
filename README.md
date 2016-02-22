@@ -31,6 +31,8 @@ clone the source,and run
         }
     }
 
+More examples could be found in [examples](https://github.com/kasonyang/kalang/tree/master/examples) directory.
+
 # Usage
 
 add the path`build/install/kalang/bin` to your `PATH` environment variable,and run
