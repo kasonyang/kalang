@@ -11,6 +11,16 @@ import javax.annotation.Nullable;
 
 //import SourceUnit.OffsetRange
 public class KalangCompiler extends AstLoader {
+    
+    public final static int 
+            PHASE_INITIALIZE = 0,
+            PHASE_PARSING = 1,
+            PHASE_BUILDAST = 2,
+            PHASE_SEMANTIC = 3,
+            PHASE_CLASSGEN = 4,
+            PHASE_ALL = 5;
+    
+    private int compileTargetPhase = PHASE_ALL;
 
     private HashMap<String, CompilationUnit> compilationUnits = new HashMap<>();
 
@@ -31,6 +41,7 @@ public class KalangCompiler extends AstLoader {
         @Override
         public void handleAstSemanticError(AstSemanticError error) {
             reportAstNodeError(error.getDescription(), error.classNode.name, error.node);
+            compileTargetPhase = PHASE_SEMANTIC;
         }
     };
     
@@ -41,6 +52,7 @@ public class KalangCompiler extends AstLoader {
             SourceUnit parser = see.getSourceUnit();
             OffsetRange offsetRange = see.getOffset();
             reportError(see.getDescription(), parser.getClassName(), offsetRange);
+            compileTargetPhase = PHASE_PARSING;
         }
     };
     
@@ -84,6 +96,10 @@ public class KalangCompiler extends AstLoader {
     }
 
     protected void init() {
+        //do nothing
+    }
+    
+    protected void parsing(){
         Set<String> ks = sources.keySet();
         for (String k : ks) {
             String src = sources.get(k);
@@ -91,7 +107,7 @@ public class KalangCompiler extends AstLoader {
         }
     }
 
-    protected void parse() {
+    protected void buildAst() {
         while (parseTasks.size() > 0) {
             String k = parseTasks.get(0);
             CompilationUnit cunit = compilationUnits.get(k);
@@ -130,15 +146,24 @@ public class KalangCompiler extends AstLoader {
     public void reportAstNodeError(String msg, String className, AstNode node) {
         reportError(msg, className, node.offset);
     }
+    
+    public void setCompileTargetPhase(int targetPhase){
+        compileTargetPhase = targetPhase;
+    }
+
+    public int getCompileTargetPhase() {
+        return compileTargetPhase;
+    }
 
     /**
      * compile all sources
      */
     public void compile() {
-        init();
-        parse();
-        semanticAnalysis();
-        codeGen();
+        if(compileTargetPhase>=PHASE_INITIALIZE) init();
+        if(compileTargetPhase>=PHASE_PARSING) parsing();
+        if(compileTargetPhase>=PHASE_BUILDAST) buildAst();
+        if(compileTargetPhase>=PHASE_SEMANTIC) semanticAnalysis();
+        if(compileTargetPhase>=PHASE_CLASSGEN) codeGen();
     }
 
     @Override
