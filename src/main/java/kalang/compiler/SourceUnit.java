@@ -301,7 +301,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             iv.target = ve;
             iv.methodName = "put";
             ConstExpr k = new ConstExpr();
-            k.type = Types.STRING_CLASS_TYPE;// STRING_CLASS_NAME;
+            k.constType = Types.STRING_CLASS_TYPE;// STRING_CLASS_NAME;
             k.value = ctx.Identifier(i).getText();
             iv.arguments.add(k);
             iv.arguments.add(v);
@@ -342,7 +342,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
         NewArrayExpr nae = new NewArrayExpr();
         nae.size = (ExprNode) visit(ctx.expression());
-        nae.type = parseSingleType(ctx.singleType());
+        nae.componentType = parseSingleType(ctx.singleType());
         mapAst(nae, ctx);
         return nae;
     }
@@ -844,24 +844,24 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         ConstExpr ce = new ConstExpr();
         String t = ctx.getText();
         if (ctx.IntegerLiteral() != null) {
-            ce.type = Types.INT_TYPE;
+            ce.constType = Types.INT_TYPE;
             ce.value = Integer.parseInt(t);
         } else if (ctx.FloatingPointLiteral() != null) {
-            ce.type = Types.FLOAT_TYPE;
+            ce.constType = Types.FLOAT_TYPE;
             ce.value = Float.parseFloat(t);
         } else if (ctx.BooleanLiteral() != null) {
-            ce.type = Types.BOOLEAN_TYPE;
+            ce.constType = Types.BOOLEAN_TYPE;
             ce.value = Boolean.parseBoolean(t);
         } else if (ctx.CharacterLiteral() != null) {
-            ce.type = Types.CHAR_TYPE;
+            ce.constType = Types.CHAR_TYPE;
             char[] chars = t.toCharArray();
             ce.value = chars[1];
         } else if (ctx.StringLiteral() != null) {
-            ce.type = Types.STRING_CLASS_TYPE;
+            ce.constType = Types.STRING_CLASS_TYPE;
             //TODO parse string
             ce.value = t.substring(1, t.length() - 1);
         } else {
-            ce.type = Types.NULL_TYPE;
+            ce.constType = Types.NULL_TYPE;
         }
         mapAst(ce,ctx);
         return ce;

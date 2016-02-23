@@ -6,7 +6,7 @@ import java.util.*;
 import kalang.core.*;
 public abstract class VarObject extends AstNode{
     
-    public Integer modifier;
+    public int modifier;
     
     public Type type;
     
@@ -20,7 +20,7 @@ public abstract class VarObject extends AstNode{
     }
     
     
-    public VarObject(Integer modifier,Type type,String name,ExprNode initExpr){
+    public VarObject(int modifier,Type type,String name,ExprNode initExpr){
         
         
             this.modifier = modifier;

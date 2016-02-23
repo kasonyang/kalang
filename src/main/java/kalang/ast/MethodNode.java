@@ -6,7 +6,7 @@ import java.util.*;
 import kalang.core.*;
 public class MethodNode extends AstNode{
     
-    public Integer modifier;
+    public int modifier;
     
     public Type type;
     

@@ -8,7 +8,7 @@ public class ConstExpr extends ExprNode{
     
     public Object value;
     
-    public Type type;
+    public Type constType;
     
     
     public ConstExpr(){
@@ -21,7 +21,7 @@ public class ConstExpr extends ExprNode{
         
             this.value = value;
         
-            this.type = type;
+            this.constType = type;
         
     }
     
@@ -53,8 +53,8 @@ public class ConstExpr extends ExprNode{
             str += "  value:" + value.toString()+"\r\n";
         }
         
-        if(type!=null){
-            str += "  type:" + type.toString()+"\r\n";
+        if(constType!=null){
+            str += "  type:" + constType.toString()+"\r\n";
         }
         
         return str+"}";

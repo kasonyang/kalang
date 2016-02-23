@@ -375,8 +375,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitNewArrayExpr(NewArrayExpr node) {
         visit(node.size);
-        //org.objectweb.asm.Type t = asmType(node.type);
-        Type t = node.type;
+        //org.objectweb.asm.Type t = asmType(node.componentType);
+        Type t = node.componentType;
         int opr = -1;
         int op = NEWARRAY;
         if(t.equals(BOOLEAN_TYPE)){
@@ -520,7 +520,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitLocalVarNode(LocalVarNode localVarNode) {
-        //md.visitLocalVariable(localVarNode.name, getTypeDescriptor(localVarNode.type), null, start, end, 0);
+        //md.visitLocalVariable(localVarNode.name, getTypeDescriptor(localVarNode.componentType), null, start, end, 0);
         newVar(localVarNode);
         return null;
     }

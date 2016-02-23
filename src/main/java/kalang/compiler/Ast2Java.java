@@ -94,9 +94,9 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         Object v = ce.value;
         if (v instanceof String) {
             return "\"" + v + "\"";
-        } else if (ce.type == Types.CHAR_TYPE) {
+        } else if (ce.constType == Types.CHAR_TYPE) {
             return "'" + v + "'";
-        } else if(ce.type == Types.NULL_TYPE) {
+        } else if(ce.constType == Types.NULL_TYPE) {
             return "null";
         }else{
             return v.toString();
@@ -152,9 +152,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     String getVarStr(VarObject f) {
         String fs = "";
         String mdf = "";
-        if (f.modifier != null) {
-            fs += Modifier.toString(f.modifier) + " ";
-        }
+        fs += Modifier.toString(f.modifier) + " ";
         fs += f.type + " " + f.name;
         if (f.initExpr != null) {
             fs += "=" + visit(f.initExpr);
@@ -443,7 +441,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitNewArrayExpr(NewArrayExpr node) {
-        String type = node.type.toString();
+        String type = node.componentType.toString();
         return "new "
                 + type
                 + "["

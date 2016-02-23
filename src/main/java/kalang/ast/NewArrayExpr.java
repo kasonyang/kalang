@@ -6,7 +6,7 @@ import java.util.*;
 import kalang.core.*;
 public class NewArrayExpr extends ExprNode{
     
-    public Type type;
+    public Type componentType;
     
     public ExprNode size;
     
@@ -19,7 +19,7 @@ public class NewArrayExpr extends ExprNode{
     public NewArrayExpr(Type type,ExprNode size){
         
         
-            this.type = type;
+            this.componentType = type;
         
             this.size = size;
         
@@ -49,8 +49,8 @@ public class NewArrayExpr extends ExprNode{
     public String toString(){
         String str = "NewArrayExpr{\r\n";
         
-        if(type!=null){
-            str += "  type:" + type.toString()+"\r\n";
+        if(componentType!=null){
+            str += "  type:" + componentType.toString()+"\r\n";
         }
         
         if(size!=null){

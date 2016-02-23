@@ -52,7 +52,7 @@ import static kalang.util.AstUtil.matchTypes;
 import kalang.util.BoxUtil;
 
 /**
- *  The semantic analyzer class infers and checks the type of expressions. It may transform the abstract syntax tree.
+ *  The semantic analyzer class infers and checks the componentType of expressions. It may transform the abstract syntax tree.
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
@@ -283,7 +283,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitConstExpr(ConstExpr node) {
-        return node.type;
+        return node.constType;
     }
 
     @Override
@@ -443,7 +443,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitNewArrayExpr(NewArrayExpr node) {
-        return Types.getArrayType(node.type);
+        return Types.getArrayType(node.componentType);
     }
 
     @Override
