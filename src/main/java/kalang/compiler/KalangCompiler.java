@@ -134,6 +134,7 @@ public class KalangCompiler extends AstLoader {
     protected void codeGen() {
         for (CompilationUnit cunit : compilationUnits.values()) {
             cunit.generateJavaCode();
+            cunit.generateClassBytes();
         }
     }
 

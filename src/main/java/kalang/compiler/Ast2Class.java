@@ -125,8 +125,13 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         //TODO modifier -> access
         int access = node.modifier;
         String sign = null;
-        classWriter.visit(V1_5, access,interClassName(node.name), sign, node.parent.name,internalName(node.interfaces.toArray(new ClassNode[0])));
-        super.visit(node);
+        String parentName = node.parent!=null ? node.parent.name : null;
+        String[] interfaces = null;
+        if(node.interfaces!=null){
+            interfaces = internalName(node.interfaces.toArray(new ClassNode[0]));
+        }
+        classWriter.visit(V1_5, access,interClassName(node.name), sign, parentName,interfaces);
+        visitChildren(node);
         classWriter.visitEnd();
         return null;
     }
@@ -136,7 +141,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         //TODO mdf => access
         int access = node.modifier;
         md = classWriter.visitMethod(access, interClassName(node.name),getMethodDescriptor(node), null,internalName(node.exceptionTypes.toArray(new Type[0])) );
-        super.visit(node);
+        visitChildren(node);
         md.visitEnd();
         return null;
     }
@@ -221,14 +226,14 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitTryStmt(TryStmt node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
+        //TODO to impl try stmt
     }
 
     @Override
     public Object visitCatchStmt(CatchStmt node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO to impl catch
+        return null;
     }
 
     @Override
@@ -286,7 +291,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case "*" : op = IMUL;break;
             case "/" : op = IDIV;break;
             case "%":op = IREM;break;
-            default:throw new IllegalArgumentException("unknown op:" + node.operation);
+            //TODO impl logic op
+            //default:throw new IllegalArgumentException("unknown op:" + node.operation);
         }
         md.visitInsn(at.getOpcode(op));
         return null;
@@ -336,16 +342,20 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
                 opc
                 , internalName(node.target.type)
                 , node.methodName
-                , getTypeDescriptor(
-                        AstUtil.getExprTypes(node.arguments.toArray(new ExprNode[0])) )
+                ,getMethodDescriptor(
+                        node.type
+                        , node.methodName
+                        ,AstUtil.getExprTypes(node.arguments.toArray(new ExprNode[0])))
+//                , getTypeDescriptor(
+//                        AstUtil.getExprTypes(node.arguments.toArray(new ExprNode[0])) )
                 , false);
         return null;
     }
 
     @Override
     public Object visitUnaryExpr(UnaryExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO impl unary expr
+        return null;
     }
 
     @Override
@@ -420,6 +430,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     }
     
     private String getTypeDescriptor(Type[] types){
+        if(types==null) return null;
+        if(types.length==0) return null;
         String ts = "";
         for(Type t:types){
             ts += getTypeDescriptor(t);
@@ -428,15 +440,19 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     }
     
     private String getTypeDescriptor(Type t){
+        //TODO check why null
+        if(t==null){
+            return "V";
+        }
         if(t instanceof ArrayType){
-            return "[" + getTypeDescriptor(t);
+            return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());
         }else{
             if(t.equals(BOOLEAN_TYPE)){
                 return "Z";
             }
             switch(getT(t)){
                 case T_I:return "I";
-                case T_L:return "L";
+                case T_L:return "J";
                 case T_F:return "F";
                 case T_D:return "D";
                 case T_A:return "L" + interClassName(t.getName()) + ";";
@@ -454,14 +470,18 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             default:return "L" + interClassName(type) + ";";
         }
     }
+    
+    private String getMethodDescriptor(Type returnType,String methodName,Type[] parameterTypes){
+        String desc = "";
+        String retTyp = getTypeDescriptor(returnType);
+        for(Type t:parameterTypes){
+            desc += getTypeDescriptor(t);
+        }
+        return "(" + desc + ")" + retTyp;     
+    }
         
     private String getMethodDescriptor(MethodNode node) {
-        String desc = "";
-        String retTyp = getTypeDescriptor(node.type);
-        for(VarObject p:node.parameters){
-            desc += getTypeDescriptor(p.type);
-        }
-        return "(" + desc + ")" + retTyp;
+        return getMethodDescriptor(node.type, node.name, AstUtil.getParameterTypes(node));
     }
     
     private org.objectweb.asm.Type asmType(Type type){
@@ -506,6 +526,14 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         }
         return ts;
     }
+    
+    public void generate(ClassNode classNode){
+        visitClassNode(classNode);
+    }
+    
+    public byte [] getClassBytes(){
+        return classWriter.toByteArray();
+    }
 
     @Override
     public Object visitVarDeclStmt(VarDeclStmt node) {
@@ -514,8 +542,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitPrimitiveCastExpr(PrimitiveCastExpr node) {
-        //TODO support needed
-        throw new UnsupportedOperationException("Not supported yet.");
+        //TODO impl pri. cast
+        return null;
     }
 
     @Override

@@ -300,6 +300,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             if (isStatic(method.modifier)) {
                 if(!requireStatic(field.modifier, node)) return getDefaultType();
             }
+            if(isStatic(field.modifier)){
+                node.target = new ClassExpr(clazz.name);
+            }else{
+                node.target = new KeyExpr("this");
+            }
+            visit(node.target);
             return field.type;
         }
         Type t = visit(node.target);
@@ -320,13 +326,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public Type visitInvocationExpr(InvocationExpr node) {
         List<Type> argTypes = visitAll(node.arguments);
         ClassType target;
-        //TODO here may be bug
-        if(node.target!=null){
-            visit(node.target);
-            target = (ClassType) node.target.type;
-        }else{
-            target = Types.getClassType(this.clazz);
+        if(node.target==null){
+            node.target = new KeyExpr("this");
         }
+        //TODO here may be bug
+        visit(node.target);
+        target = (ClassType) node.target.type;
         if(target==null){
             throw new IllegalStateException("unknown return value");
         }

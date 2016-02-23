@@ -26,6 +26,7 @@ public class CompilationUnit {
     private final Ast2Java a2j;
     private String javaCode = "";
     private final CommonTokenStream tokens;
+    private byte[] classBytes;
 
     public CompilationUnit(@Nonnull String className,@Nonnull String source,@Nonnull AstLoader astLoader) {
         tokens = TokenStreamFactory.createTokenStream(source);
@@ -52,9 +53,18 @@ public class CompilationUnit {
         semanticAnalyzer.check(ast);
     }
 
-    @Nonnull
     public void generateJavaCode() {
         javaCode = a2j.generate(ast);
+    }
+    
+    public void generateClassBytes(){
+        Ast2Class a2c = new Ast2Class();
+        a2c.generate(ast);
+        classBytes = a2c.getClassBytes();
+    }
+    
+    public byte [] getClassBytes(){
+        return classBytes;
     }
 
     @Nonnull
