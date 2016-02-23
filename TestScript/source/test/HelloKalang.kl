@@ -1,0 +1,5 @@
+class{
+    int test(){
+        return 1;
+    }
+}

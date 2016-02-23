@@ -20,6 +20,7 @@ public class ExamplesTest extends FileSystemCompiler{
     @Test
     public void testExamples() throws IOException {
         addSourceDir(new File("examples"));
+        addSourceDir(new File("TestScript/source"));
         setOutputDir(new File("build/examples"));
         compile();
     }

@@ -26,6 +26,7 @@ public class FileSystemCompiler implements CompileErrorHandler{
     private List<URL> classPaths = new LinkedList<>();
 
     private File outputDir;
+    private KalangCompiler kalangCompiler;
 
     public void addSource(String className, File file) {
         sourceFiles.put(className, file);
@@ -50,14 +51,14 @@ public class FileSystemCompiler implements CompileErrorHandler{
     public void compile() throws IOException {
         URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
         JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
-        KalangCompiler cpl = new KalangCompiler(astLoader);
+        kalangCompiler = new KalangCompiler(astLoader);
         for (String srcName : sourceFiles.keySet()) {
             File f = sourceFiles.get(srcName);
-            cpl.addSource(srcName, FileUtils.readFileToString(f));
+            kalangCompiler.addSource(srcName, FileUtils.readFileToString(f));
         }
-        cpl.setCompileErrrorHandler(this);
-        cpl.compile();
-        HashMap<String, CompilationUnit> units = cpl.getAllCompilationUnit();
+        kalangCompiler.setCompileErrrorHandler(this);
+        kalangCompiler.compile();
+        HashMap<String, CompilationUnit> units = kalangCompiler.getAllCompilationUnit();
         for (String cls : units.keySet()) {
             String code = units.get(cls).getJavaCode();
             byte[] bs = units.get(cls).getClassBytes();
@@ -87,6 +88,10 @@ public class FileSystemCompiler implements CompileErrorHandler{
         String cname = error.className;
         File fn = sourceFiles.get(cname);
         System.err.println(fn + ":" + error);
+    }
+
+    public KalangCompiler getKalangCompiler() {
+        return kalangCompiler;
     }
 
 }

@@ -128,7 +128,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         //TODO modifier -> access
         int access = node.modifier;
         String sign = null;
-        String parentName = "java.lang.Object;";
+        String parentName = "java.lang.Object";
         if(node.parent!=null){
             parentName = node.parent.name;
         }
@@ -136,7 +136,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         if(node.interfaces!=null){
             interfaces = internalName(node.interfaces.toArray(new ClassNode[0]));
         }
-        classWriter.visit(V1_5, access,interClassName(node.name), sign, parentName,interfaces);
+        classWriter.visit(V1_5, access,interClassName(node.name), sign, interClassName(parentName),interfaces);
         visitChildren(node);
         classWriter.visitEnd();
         return null;
@@ -156,6 +156,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         if(node.type.equals(VOID_TYPE)){
             md.visitInsn(RETURN);
         }
+        md.visitMaxs(0, 0);
         md.visitEnd();
         return null;
     }
@@ -329,11 +330,18 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitFieldExpr(FieldExpr node) {
+        visit(node.target);
+        if(node.target.type.isArray()){
+            if(node.fieldName.equals("length")){
+                md.visitInsn(ARRAYLENGTH);
+            }else{
+                throw new UnsupportedOperationException("unknown field:" + node.fieldName);
+            }
+            return null;
+        }
         int opc = GETFIELD;
         if(node.target instanceof ClassExpr){
             opc = GETSTATIC;
-        }else{
-            visit(node.target);
         }
         md.visitFieldInsn(
                 opc
