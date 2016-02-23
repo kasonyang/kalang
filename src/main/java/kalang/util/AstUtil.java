@@ -90,7 +90,7 @@ public class AstUtil {
     
     public static void createEmptyConstructor(ClassNode clazzNode){
         MethodNode initMethod = clazzNode.createMethodNode();
-        initMethod.modifier = Modifier.PUBLIC | Modifier.STATIC;
+        initMethod.modifier = Modifier.PUBLIC;
         initMethod.name = "<init>";
         initMethod.type = Types.VOID_TYPE;// Types.getClassType(clazzNode);
         initMethod.body = BlockStmt.create();
@@ -150,6 +150,10 @@ public class AstUtil {
             types[i] = exprs[i].type;
         }
         return types;
+    }
+    
+    public static boolean isStatic(int modifier){
+            return Modifier.isStatic(modifier);
     }
     
 }

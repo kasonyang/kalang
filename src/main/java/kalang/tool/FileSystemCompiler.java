@@ -60,10 +60,13 @@ public class FileSystemCompiler implements CompileErrorHandler{
         HashMap<String, CompilationUnit> units = cpl.getAllCompilationUnit();
         for (String cls : units.keySet()) {
             String code = units.get(cls).getJavaCode();
+            byte[] bs = units.get(cls).getClassBytes();
             if (outputDir != null) {
-                String fname = cls.replace(".", "/") + ".java";
-                File destFile = new File(outputDir, fname);
+                String fname = cls.replace(".", "/");// + ".java";
+                File destFile = new File(outputDir, fname + ".java");
+                File classDest = new File(outputDir,fname + ".class");
                 FileUtils.write(destFile, code);
+                FileUtils.writeByteArrayToFile(classDest, bs);
             } else {
                 System.out.println(code);
             }

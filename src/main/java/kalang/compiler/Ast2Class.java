@@ -43,6 +43,7 @@ import kalang.ast.ParameterNode;
 import kalang.ast.PrimitiveCastExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
+import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import static kalang.core.Types.*;
@@ -64,7 +65,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     
     private Map<VarObject,Integer> varIds = new HashMap<>();
     
-    private int varIdCounter = 1;
+    private int varIdCounter = 0;
     
     private Stack<Label> breakLabels = new Stack<>();
     private Stack<Label> continueLabels = new Stack<>();
@@ -98,7 +99,9 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             return t;
     }
     
-    
+    private void newVar(int size){
+        varIdCounter += size;
+    }
     
     private void newVar(VarObject vo){
         int vid = varIdCounter;
@@ -125,7 +128,10 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         //TODO modifier -> access
         int access = node.modifier;
         String sign = null;
-        String parentName = node.parent!=null ? node.parent.name : null;
+        String parentName = "java.lang.Object;";
+        if(node.parent!=null){
+            parentName = node.parent.name;
+        }
         String[] interfaces = null;
         if(node.interfaces!=null){
             interfaces = internalName(node.interfaces.toArray(new ClassNode[0]));
@@ -141,7 +147,15 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         //TODO mdf => access
         int access = node.modifier;
         md = classWriter.visitMethod(access, interClassName(node.name),getMethodDescriptor(node), null,internalName(node.exceptionTypes.toArray(new Type[0])) );
+        if(AstUtil.isStatic(node.modifier)){
+            varIdCounter = 0;
+        }else{
+            varIdCounter = 1;
+        }
         visitChildren(node);
+        if(node.type.equals(VOID_TYPE)){
+            md.visitInsn(RETURN);
+        }
         md.visitEnd();
         return null;
     }
@@ -441,24 +455,22 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     
     private String getTypeDescriptor(Type t){
         //TODO check why null
-        if(t==null){
+        if(t==null || t.equals(VOID_TYPE)){
             return "V";
         }
         if(t instanceof ArrayType){
             return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());
-        }else{
-            if(t.equals(BOOLEAN_TYPE)){
-                return "Z";
-            }
-            switch(getT(t)){
-                case T_I:return "I";
-                case T_L:return "J";
-                case T_F:return "F";
-                case T_D:return "D";
-                case T_A:return "L" + interClassName(t.getName()) + ";";
-                default:throw new IllegalArgumentException("unknown type:" + t.getName());
-            }
         }
+        if(t.equals(BOOLEAN_TYPE)){
+            return "Z";
+        }else if(t.equals(LONG_TYPE)){
+            return "J";
+        }
+        if(t instanceof PrimitiveType){
+            return t.getName().substring(0,1).toUpperCase();
+        }
+        return "L" + interClassName(t.getName()) + ";";
+            //default:throw new IllegalArgumentException("unknown type:" + t.getName());
     }
     private String getSingleTypeDescriptor(String type){
         switch(type){

@@ -568,8 +568,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return true;
     }
 
-    public boolean isStatic(Integer modifier) {
-        return modifier != null ? Modifier.isStatic(modifier) : false;
+    public boolean isStatic(int modifier) {
+        return AstUtil.isStatic(modifier);
     }
 
     boolean requireStatic(Integer modifier, AstNode node) {
