@@ -23,6 +23,7 @@ public class ClassLoaderTest {
         Method md = hwCls.getMethod("test", null);
         Object ret = md.invoke(null, null);
         System.out.println(ret);
+        assertEquals(1, ret);
     }
     
 }

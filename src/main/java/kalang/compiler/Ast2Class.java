@@ -359,6 +359,9 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         }else{
             visit(node.target);
         }
+        if(AstUtil.isSpecialMethod(node.methodName)){
+            opc = INVOKESPECIAL;
+        }
         visitAll(node.arguments);
         md.visitMethodInsn(
                 opc

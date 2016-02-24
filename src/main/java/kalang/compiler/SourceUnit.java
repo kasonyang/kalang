@@ -406,6 +406,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         }
         if (ctx.parentClass != null) {
             classAst.parent =  requireAst(ctx.parentClass);
+        }else{
+            classAst.parent = Types.ROOT_TYPE.getClassNode();
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (Token itf : ctx.interfaces) {

@@ -12,8 +12,13 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.annotation.Nonnull;
+import kalang.ast.ExprStmt;
 import kalang.ast.FieldNode;
+import kalang.ast.InvocationExpr;
+import kalang.ast.KeyExpr;
+import kalang.ast.ParameterExpr;
 import kalang.ast.ParameterNode;
+import kalang.ast.VarExpr;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -89,11 +94,51 @@ public class AstUtil {
     }
     
     public static void createEmptyConstructor(ClassNode clazzNode){
-        MethodNode initMethod = clazzNode.createMethodNode();
-        initMethod.modifier = Modifier.PUBLIC;
-        initMethod.name = "<init>";
-        initMethod.type = Types.VOID_TYPE;// Types.getClassType(clazzNode);
-        initMethod.body = BlockStmt.create();
+       ClassNode parent = clazzNode.parent;
+       MethodNode[] methods = parent.getMethodNodes();
+       for(MethodNode m:methods){
+           if(m.name.equals("<init>")){
+               MethodNode mm = clazzNode.createMethodNode();
+               mm.name = m.name;
+               mm.exceptionTypes = m.exceptionTypes;
+               mm.modifier = m.modifier;
+               mm.parameters = m.parameters;
+               mm.type = m.type;
+               BlockStmt body =  BlockStmt.create();
+               mm.body = body;
+               ExprNode[] params = new ExprNode[mm.parameters.size()];
+               for(int i=0;i<params.length;i++){
+                   params[i] = new ParameterExpr(mm.parameters.get(i));
+               }
+               body.statements.add(
+                       new ExprStmt(
+                               new InvocationExpr(
+                                       new KeyExpr("super")
+                                       , "<init>"
+                                       ,Arrays.asList(
+                                               params
+                                       )
+                               )
+                       )
+               );
+           }
+       }
+//        MethodNode initMethod = clazzNode.createMethodNode();
+//        initMethod.modifier = Modifier.PUBLIC;
+//        initMethod.name = "<init>";
+//        initMethod.type = Types.VOID_TYPE;// Types.getClassType(clazzNode);
+//       BlockStmt body = BlockStmt.create();
+//       //body.statements.add(new )
+//       initMethod.body = body;
+    }
+    
+    @Nonnull
+    public static String[] getParameterNames(@Nonnull ParameterNode[] parameterNodes){
+        String[] names = new String[parameterNodes.length];
+        for(int i=0;i<names.length;i++){
+            names[i] = parameterNodes[i].name;
+        }
+        return names;
     }
 
     public static MethodNode[] getMethodsByName(ClassNode cls, String methodName) {
@@ -154,6 +199,11 @@ public class AstUtil {
     
     public static boolean isStatic(int modifier){
             return Modifier.isStatic(modifier);
+    }
+
+    public static boolean isSpecialMethod(String methodName) {
+        //TODO is it a special method?
+        return methodName.startsWith("<");
     }
     
 }

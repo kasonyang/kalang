@@ -490,7 +490,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public Type visitMethodNode(MethodNode node) {
         String mStr = AstUtil.getMethodDescriptor(node, this.clazz.name);
         if (methodDeclared.contains(mStr)) {
-            err.unsupported("declare method duplicately", node);
+            err.unsupported("declare method duplicately:"+mStr, node);
             return getDefaultType();
         }
         methodDeclared.add(mStr);
