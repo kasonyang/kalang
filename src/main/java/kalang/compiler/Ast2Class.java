@@ -195,8 +195,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitExprStmt(ExprStmt node) {
         visitChildren(node);
         if(!(node.expr instanceof AssignExpr)){
-            if(
-                    node.expr.type !=null &&
+            if(//node.expr.type !=null &&
                     !Types.VOID_TYPE.equals(node.expr.type)
                     ){
                 pop(node.expr.type);
@@ -685,7 +684,10 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         }
         Type exprType = node.expr.type;
         //TODO 1 maybe wrong if type is long
-        BinaryExpr be = new BinaryExpr(node.expr,new ConstExpr(1, exprType), "+");
+        //TODO -1 increment
+        ConstExpr ce = new ConstExpr(1, exprType);
+        ce.type = exprType;
+        BinaryExpr be = new BinaryExpr(node.expr,ce, "+");
         be.type = exprType;
         AssignExpr addOne = new AssignExpr(node.expr,be);
         visit(addOne);

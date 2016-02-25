@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.ast.FieldNode;
+import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
@@ -690,6 +691,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitNewObjectExpr(NewObjectExpr node) {
         return node.objectType;
+    }
+
+    @Override
+    public Type visitIncrementExpr(IncrementExpr expr) {
+        visitChildren(expr);
+        return expr.expr.type;
     }
     
     
