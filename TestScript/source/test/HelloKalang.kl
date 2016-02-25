@@ -27,5 +27,14 @@ class{
         }
         return j;
     }
+    int whileStmt(){
+        int i=1;
+        while(i<6) i++;
+        return i;
+    }
+    
+    int invoaction(){
+        return whileStmt();
+    }
     
 }

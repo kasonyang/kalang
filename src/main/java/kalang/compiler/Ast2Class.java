@@ -123,7 +123,6 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitClassNode(ClassNode node) {        
         classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        //TODO modifier -> access
         int access = node.modifier;
         String sign = null;
         String parentName = "java.lang.Object";
@@ -142,7 +141,6 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitMethodNode(MethodNode node) {
-        //TODO mdf => access
         int access = node.modifier;
         md = classWriter.visitMethod(access, internalName(node.name),getMethodDescriptor(node), null,internalName(node.exceptionTypes.toArray(new Type[0])) );
         if(AstUtil.isStatic(node.modifier)){
@@ -181,15 +179,28 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         md.visitJumpInsn(GOTO, continueLabels.peek());
         return null;
     }
+    
+    private void pop(Type type){
+        int size =  asmType(type).getSize();
+        if(size==1){
+            md.visitInsn(POP);
+        }else if(size==2){
+            md.visitInsn(POP2);
+        }else{
+            throw new UnsupportedOperationException("It is unsupported to pop for the type:" + type);
+        }
+    }
 
     @Override
     public Object visitExprStmt(ExprStmt node) {
         visitChildren(node);
         if(!(node.expr instanceof AssignExpr)){
-            if(!Types.VOID_TYPE.equals(node.expr.type)){
-                md.visitInsn(POP);
+            if(
+                    node.expr.type !=null &&
+                    !Types.VOID_TYPE.equals(node.expr.type)
+                    ){
+                pop(node.expr.type);
             }
-            //TODO bug when long
         }
         return null;
     }
