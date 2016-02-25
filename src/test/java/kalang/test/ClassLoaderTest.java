@@ -21,10 +21,17 @@ public class ClassLoaderTest {
         clsLoader.setOutputDir(new File("build/ClassLoaderTest"));
         Class<?> hwCls = clsLoader.loadClass("test.HelloKalang");
         Object inst = hwCls.newInstance();
-        Method[] mds = hwCls.getMethods();
+        Method[] mds = hwCls.getDeclaredMethods();
         for(int i=0;i<mds.length;i++){
             Method m = mds[i];
-            Object ret = m.invoke(inst, null);
+            Object ret;
+            try{
+                ret = m.invoke(inst, null);
+            }catch(Exception ex){
+                System.err.println("Exception in method:" + m.getName());
+                ex.printStackTrace();
+                continue;
+            }
             assertEquals(6, ret);
         }
         //Method md = hwCls.getMethod("test", null);

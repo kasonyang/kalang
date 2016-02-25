@@ -2,6 +2,24 @@ class{
     int test(){
         return 6;
     }
+    int inc(){
+        int i=5;
+        i++;
+        return i;
+    }
+    int ifStmt(){
+        int i = 3;
+        int j = 4;
+        //return j;
+        if(i == 3){
+            j++;
+            if( i < 6) j++; 
+        }else{
+            return 0;
+        }
+        return j;
+    }
+    
     int forStmt(){
         int j=0;
         for(int i=0;i<6;i++){
@@ -9,4 +27,5 @@ class{
         }
         return j;
     }
+    
 }

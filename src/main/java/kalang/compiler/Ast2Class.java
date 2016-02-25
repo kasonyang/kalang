@@ -186,8 +186,10 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitExprStmt(ExprStmt node) {
         visitChildren(node);
         if(!(node.expr instanceof AssignExpr)){
+            if(!Types.VOID_TYPE.equals(node.expr.type)){
+                md.visitInsn(POP);
+            }
             //TODO bug when long
-            md.visitInsn(POP);
         }
         return null;
     }
@@ -310,8 +312,6 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitBinaryExpr(BinaryExpr node) {
-        visit(node.expr1);
-        visit(node.expr2);
         int op = 0;
         org.objectweb.asm.Type at = asmType(node.expr1.type);
         switch(node.operation){
@@ -320,9 +320,12 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case "*" : op = IMUL;break;
             case "/" : op = IDIV;break;
             case "%":op = IREM;break;
-            //TODO impl logic op
-            //default:throw new IllegalArgumentException("unknown op:" + node.operation);
+            default:
+                compare(node.expr1,node.expr2,node.operation);
+                return null;
         }
+        visit(node.expr1);
+        visit(node.expr2);
         md.visitInsn(at.getOpcode(op));
         return null;
     }
@@ -691,18 +694,60 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 //        md.visitVarInsn(t.getOpcode(ISTORE),vi);
         return null;
     }
+    
+    private void constX(Object x){
+        md.visitLdcInsn(x);
+    }
 
-    private void const1(Type type) {
+    private void constX(Type type,int i) {
         int t = getT(type);
-        int opc;
+        Object obj;
         switch(t){
-            case T_I:opc = ICONST_1;break;
-            case T_L:opc = LCONST_1;break;
-            case T_F:opc = FCONST_1;break;
-            case T_D:opc = DCONST_1;break;
+            case T_I:obj = new Integer(i);break;
+            case T_L:obj = new Long(i);break;
+            case T_F:obj = new Float(i);break;
+            case T_D:obj = new Double(i);break;
             default:throw new UnsupportedOperationException("unsupported type:" + type);
         }
-        md.visitInsn(opc);
+        constX(obj);
+    }
+
+    private void compare(ExprNode expr1, ExprNode expr2,String op) {
+        Type type = expr1.type;
+        //org.objectweb.asm.Type t = asmType(expr1.type);
+        visit(expr1);
+        visit(expr2);
+        int t = getT(type);
+        if(T_L==t){
+            md.visitInsn(LCMP);
+        }else if(T_F==t){
+            md.visitInsn(FCMPL);
+        }else if(T_D==t){
+            md.visitInsn(DCMPL);
+        }else if(T_I == t){
+            //do nothing
+        }else{
+            throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
+        }
+        Label trueLabel = new Label();
+        Label stopLabel = new Label();
+        int opc = -1;
+        switch(op){
+            case "==" : opc =IF_ICMPEQ;break;
+            case ">"    : opc = IF_ICMPGT;break;
+            case ">=" : opc = IF_ICMPGE;break;
+            case "<"   : opc = IF_ICMPLT;break;
+            case "<=" : opc = IF_ICMPLE;break;
+            case "!=" : opc = IF_ICMPNE;break;
+            default:
+                throw  new UnsupportedOperationException();
+        }
+        md.visitJumpInsn(opc, trueLabel);
+        constX(type, 0);
+        md.visitJumpInsn(GOTO, stopLabel);
+        md.visitLabel(trueLabel);
+        constX(type, 1);
+        md.visitLabel(stopLabel);
     }
 
 }
