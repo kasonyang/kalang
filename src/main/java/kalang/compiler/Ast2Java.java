@@ -434,9 +434,9 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitUnaryExpr(UnaryExpr node) {
-        return (node.preOperation != null ? node.preOperation : "")
-                + visit(node.expr)
-                + (node.postOperation != null ? node.postOperation : "");
+        String expr = visit(node.expr);
+        String op = node.operation;
+        return "(" + op + expr + ")";
     }
 
     @Override
@@ -533,6 +533,17 @@ public class Ast2Java extends AbstractAstVisitor<String> {
             args = String.join(",", visitAll(Arrays.asList(node.arguments)));
         }
         return String.format("new %s(%s)",className(node.objectType.toString()),args);
+    }
+
+    @Override
+    public String visitIncrementExpr(IncrementExpr node) {
+        String op=node.isDesc ? "--" : "++";
+        String vn = visit(node.expr);
+        if(node.isPrefix){
+            return "(" + op + vn + ")";
+        }else{
+            return "(" + vn + op + ")";
+        }
     }
 
 }

@@ -363,9 +363,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitUnaryExpr(UnaryExpr node) {
-        String preOp = node.preOperation;
+        String op = node.operation;
         Type et = visit(node.expr);
-        if (preOp != null && preOp.equals("!")) {
+        if (op.equals("!")) {
             if(!requireBoolean(node, et)) return getDefaultType();
         } else {
             //TODO unary toType check

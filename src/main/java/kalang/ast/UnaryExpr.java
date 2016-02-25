@@ -6,33 +6,29 @@ import java.util.*;
 import kalang.core.*;
 public class UnaryExpr extends ExprNode{
     
+    public final static String
+            //OPERATION_INC = "++",
+            //OPERATION_DEC = "--",
+            OPERATION_NEG = "-",
+            OPERATION_POS = "+";
+    
     public ExprNode expr;
     
-    public String preOperation;
-    
-    public String postOperation;
-    
+    public String operation;
     
     public UnaryExpr(){
         
     }
     
     
-    public UnaryExpr(ExprNode expr,String preOperation,String postOperation){
-        
-        
+    public UnaryExpr(ExprNode expr,String operation){
             this.expr = expr;
-        
-            this.preOperation = preOperation;
-        
-            this.postOperation = postOperation;
-        
+            this.operation = operation;
     }
     
     
     public static UnaryExpr create(){
         UnaryExpr node = new UnaryExpr();
-        
         return node;
     }
     
@@ -52,21 +48,4 @@ public class UnaryExpr extends ExprNode{
         return ls;
     }
     
-    public String toString(){
-        String str = "UnaryExpr{\r\n";
-        
-        if(expr!=null){
-            str += "  expr:" + expr.toString()+"\r\n";
-        }
-        
-        if(preOperation!=null){
-            str += "  preOperation:" + preOperation.toString()+"\r\n";
-        }
-        
-        if(postOperation!=null){
-            str += "  postOperation:" + postOperation.toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
 }

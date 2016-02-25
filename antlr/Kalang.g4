@@ -191,8 +191,9 @@ expression
          '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
     |   NEW singleType '[' expression ']'     #exprNewArray
     |   '(' type ')' expression #castExpr
-    |   expression ('++' | '--') #exprSelfOp
-    |   ('+'|'-'|'++'|'--') expression #exprSelfOpPre
+    |   expression op=('++' | '--') #exprInc
+    |   ( '+' | '-' ) expression #exprSelfOpPre
+    |   op=( '++' | '--' ) expression #exprIncPre
     |   ('~'|'!') expression  #exprSelfOpPre
     |   expression ('*'|'/'|'%') expression #exprMidOp
     |   expression ('+'|'-') expression #exprMidOp

@@ -1,5 +1,12 @@
 class{
-    static int test(){
-        return 1;
+    int test(){
+        return 6;
+    }
+    int forStmt(){
+        int j=0;
+        for(int i=0;i<6;i++){
+                j++;
+        }
+        return j;
     }
 }

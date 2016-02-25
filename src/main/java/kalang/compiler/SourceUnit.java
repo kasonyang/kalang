@@ -55,7 +55,6 @@ import kalang.antlr.KalangParser.ExprLiteralContext;
 import kalang.antlr.KalangParser.ExprMemberInvocationContext;
 import kalang.antlr.KalangParser.ExprMidOpContext;
 import kalang.antlr.KalangParser.ExprParenContext;
-import kalang.antlr.KalangParser.ExprSelfOpContext;
 import kalang.antlr.KalangParser.ExprSelfOpPreContext;
 import kalang.antlr.KalangParser.ExprSelfRefContext;
 import kalang.antlr.KalangParser.ExprStatContext;
@@ -86,6 +85,7 @@ import javax.annotation.Nullable;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.ast.AssignableExpr;
 import kalang.ast.FieldNode;
+import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
@@ -756,21 +756,22 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         return fe;
     }
 
-    @Override
-    public AstNode visitExprSelfOp(ExprSelfOpContext ctx) {
-        UnaryExpr ue = new UnaryExpr();
-        ue.postOperation = ctx.getChild(1).getText();
-        ue.expr = (ExprNode) visitExpression(ctx.expression());
-        mapAst(ue, ctx);
-        return ue;
-    }
+//    @Override
+//    public AstNode visitExprSelfOp(ExprSelfOpContext ctx) {
+//        UnaryExpr ue = new UnaryExpr();
+//        ue.operation = ctx.getChild(1).getText();
+//        ue.direct = UnaryExpr.DIRECT_POST;
+//        ue.expr = (ExprNode) visitExpression(ctx.expression());
+//        mapAst(ue, ctx);
+//        return ue;
+//    }
 
     @Override
     public UnaryExpr visitExprSelfOpPre(ExprSelfOpPreContext ctx) {
         String op = ctx.getChild(0).getText();
         UnaryExpr ue = new UnaryExpr();
         ue.expr = (ExprNode) visitExpression(ctx.expression());
-        ue.preOperation = op;
+        ue.operation = op;
         mapAst(ue, ctx);
         return ue;
     }
@@ -1119,7 +1120,25 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public Object visitPrimitiveType(KalangParser.PrimitiveTypeContext ctx) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public IncrementExpr visitExprInc(KalangParser.ExprIncContext ctx) {
+        return getIncrementExpr(ctx.expression(), ctx.op.getText(), false);
+    }
+
+    @Override
+    public IncrementExpr visitExprIncPre(KalangParser.ExprIncPreContext ctx) {
+        return getIncrementExpr(ctx.expression(), ctx.op.getText(), true);
+    }
     
-    
+    public IncrementExpr getIncrementExpr(ExpressionContext expressionContext,String op,boolean isPrefix){
+        ExprNode expr = visitExpression(expressionContext);
+        if(!(expr instanceof AssignableExpr)){
+            reportError("require assignable expression", expressionContext);
+            return null;
+        }
+        boolean isDesc = op.equals("--");
+        return new IncrementExpr((AssignableExpr) expr, isDesc, isPrefix);
+    }
 
 }

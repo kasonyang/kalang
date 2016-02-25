@@ -37,6 +37,7 @@ import javax.annotation.Nonnull;
 import kalang.ast.AssignableExpr;
 import kalang.ast.ExprNode;
 import kalang.ast.FieldNode;
+import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
@@ -99,25 +100,22 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             return t;
     }
     
-    private void newVar(int size){
-        varIdCounter += size;
-    }
-    
     private void newVar(VarObject vo){
         int vid = varIdCounter;
         int vSize = asmType(vo.type).getSize();
         varIdCounter+= vSize;
         varIds.put(vo, vid);
+        assignVarObject(vo, vo.initExpr);
     }
 
-    private String interClassName(String name){
+    private String internalName(String name){
         return name.replace(".", "/");
     }
     
-    private String[] interClassName(String[] names){
+    private String[] internalNames(String[] names){
         String[] inames = new String[names.length];
         for(int i=0;i<names.length;i++){
-            inames[i] = interClassName(names[i]);
+            inames[i] = internalName(names[i]);
         }
         return inames;
     }
@@ -136,7 +134,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         if(node.interfaces!=null){
             interfaces = internalName(node.interfaces.toArray(new ClassNode[0]));
         }
-        classWriter.visit(V1_5, access,interClassName(node.name), sign, interClassName(parentName),interfaces);
+        classWriter.visit(V1_5, access,internalName(node.name), sign, internalName(parentName),interfaces);
         visitChildren(node);
         classWriter.visitEnd();
         return null;
@@ -146,7 +144,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitMethodNode(MethodNode node) {
         //TODO mdf => access
         int access = node.modifier;
-        md = classWriter.visitMethod(access, interClassName(node.name),getMethodDescriptor(node), null,internalName(node.exceptionTypes.toArray(new Type[0])) );
+        md = classWriter.visitMethod(access, internalName(node.name),getMethodDescriptor(node), null,internalName(node.exceptionTypes.toArray(new Type[0])) );
         if(AstUtil.isStatic(node.modifier)){
             varIdCounter = 0;
         }else{
@@ -156,7 +154,12 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         if(node.type.equals(VOID_TYPE)){
             md.visitInsn(RETURN);
         }
-        md.visitMaxs(0, 0);
+        try{
+            md.visitMaxs(0, 0);
+        }catch(Exception ex){
+            System.err.println("exception when visit method:" + node.name);
+            //throw ex;
+        }
         md.visitEnd();
         return null;
     }
@@ -182,6 +185,10 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitExprStmt(ExprStmt node) {
         visitChildren(node);
+        if(!(node.expr instanceof AssignExpr)){
+            //TODO bug when long
+            md.visitInsn(POP);
+        }
         return null;
     }
 
@@ -257,11 +264,16 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         md.visitInsn(ATHROW);
         return null;
     }
-
-    @Override
-    public Object visitAssignExpr(AssignExpr node) {
-        AssignableExpr to = node.to;
-        org.objectweb.asm.Type type = asmType(node.from.type);
+    
+    private void assignVarObject(VarObject to,ExprNode from){
+        org.objectweb.asm.Type type = asmType(to.type);
+        visit(from);
+        int vid = getVarId(to);
+        md.visitVarInsn(type.getOpcode(ISTORE), vid);
+    }
+    
+    private void assign(ExprNode to,ExprNode from){
+        org.objectweb.asm.Type type = asmType(from.type);
         if(to instanceof FieldExpr){
             FieldExpr toField = (FieldExpr) to;
             int opc = PUTFIELD;
@@ -270,7 +282,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             }else{
                 visit(toField.target);
             }
-            visit(node.from);
+            visit(from);
             md.visitFieldInsn(
                     opc, 
                     asmType(toField.target.type).getInternalName()
@@ -278,19 +290,21 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
                     , getTypeDescriptor(toField.target.type)
             );
         }else if(to instanceof VarExpr){
-            visit(node.from);
-            VarExpr toVarExpr = (VarExpr) to;
-            int vid = getVarId(toVarExpr.var);
-            md.visitVarInsn(type.getOpcode(ISTORE), vid);
+            assignVarObject(((VarExpr) to).var, from);
         }else if(to instanceof ElementExpr){
             ElementExpr elementExpr = (ElementExpr) to;
             visit(elementExpr.arrayExpr);
             visit(elementExpr.index);
-            visit(node.from);
+            visit(from);
             md.visitInsn(type.getOpcode(IASTORE));
         }else{
             throw new UnknownError("unknown expression:" + to);
         }
+    }
+
+    @Override
+    public Object visitAssignExpr(AssignExpr node) {
+        assign(node.to, node.from);
         return null;
     }
 
@@ -379,6 +393,17 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitUnaryExpr(UnaryExpr node) {
+        org.objectweb.asm.Type t = asmType(node.expr.type);
+        switch(node.operation){
+            case UnaryExpr.OPERATION_POS:
+                break;
+            case UnaryExpr.OPERATION_NEG:
+                visit(node.expr);
+                md.visitInsn(t.getOpcode(INEG));
+                break;
+            //case UnaryExpr.OPERATION_INC:
+                //md.visitIincInsn(getVarId(var), 0);
+        }
         //TODO impl unary expr
         return null;
     }
@@ -480,7 +505,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         if(t instanceof PrimitiveType){
             return t.getName().substring(0,1).toUpperCase();
         }
-        return "L" + interClassName(t.getName()) + ";";
+        return "L" + internalName(t.getName()) + ";";
             //default:throw new IllegalArgumentException("unknown type:" + t.getName());
     }
     private String getSingleTypeDescriptor(String type){
@@ -490,7 +515,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case "float":return "F";
             case "double":return "D";
             case "boolean":return "Z";
-            default:return "L" + interClassName(type) + ";";
+            default:return "L" + internalName(type) + ";";
         }
     }
     
@@ -562,10 +587,42 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitVarDeclStmt(VarDeclStmt node) {
         return visitChildren(node);
     }
+    
+    private int getPrimitiveCastOpc(Type fromType,Type toType){
+        
+        Type f = fromType;
+        Type tt = toType;
+        if(f.equals(INT_TYPE)){
+            if(tt.equals(LONG_TYPE)) return I2L;
+            if(tt.equals(FLOAT_TYPE)) return I2F;
+            if(tt.equals(DOUBLE_TYPE)) return I2D;
+            if(tt.equals(SHORT_TYPE)) return I2S;
+            if(tt.equals(BYTE_TYPE)) return I2B;
+            if(tt.equals(CHAR_TYPE)) return I2C;
+        }else if(f.equals(FLOAT_TYPE)){
+            if(tt.equals(INT_TYPE)) return F2I;
+            if(tt.equals(LONG_TYPE)) return F2L;
+            if(tt.equals(DOUBLE_TYPE)) return F2D;
+        }else if(f.equals(LONG_TYPE)){
+            if(tt.equals(INT_TYPE)) return L2I;
+            if(tt.equals(FLOAT_TYPE)) return L2F;
+            if(tt.equals(DOUBLE_TYPE)) return L2D;
+        }else if(f.equals(DOUBLE_TYPE)){
+            if(tt.equals(INT_TYPE)) return D2I;
+            if(tt.equals(LONG_TYPE)) return D2L;
+            if(tt.equals(FLOAT_TYPE)) return D2F;
+        }
+        throw new UnsupportedOperationException("It is unable to cast " + fromType + " to " + toType);
+    }
 
     @Override
     public Object visitPrimitiveCastExpr(PrimitiveCastExpr node) {
-        //TODO impl pri. cast
+        visit(node.expr);
+        int opc;
+        Type ft = node.expr.type;
+        Type tt = node.toType;
+        opc = getPrimitiveCastOpc(ft, tt);
+        md.visitInsn(opc);
         return null;
     }
 
@@ -598,6 +655,54 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         md.visitInsn(DUP);
         md.visitMethodInsn(INVOKESPECIAL, t.getInternalName(), "<init>",getTypeDescriptor(AstUtil.getExprTypes(node.arguments)), false);
         return null;
+    }
+
+    private void dupX(Type type){
+        int size = asmType(type).getSize();
+        if(size==1) md.visitInsn(DUP);
+            else if(size==2) md.visitInsn(DUP2);
+            else throw new UnsupportedOperationException("unsupported type:" + type);
+    }
+    
+    @Override
+    public Object visitIncrementExpr(IncrementExpr node) {
+        if(!node.isPrefix){
+            visit(node.expr);
+        }
+        Type exprType = node.expr.type;
+        //TODO 1 maybe wrong if type is long
+        BinaryExpr be = new BinaryExpr(node.expr,new ConstExpr(1, exprType), "+");
+        be.type = exprType;
+        AssignExpr addOne = new AssignExpr(node.expr,be);
+        visit(addOne);
+        if(node.isPrefix){
+            visit(node.expr);
+        }        
+//        Type type = node.expr.type;
+//        org.objectweb.asm.Type t = asmType(node.expr.type);
+//        if(!node.isPrefix){
+//            dupX(type);
+//        }
+//        const1(type);
+//        md.visitInsn(t.getOpcode(IADD));
+//        if(node.isPrefix){
+//            dupX(type);
+//        }
+//        md.visitVarInsn(t.getOpcode(ISTORE),vi);
+        return null;
+    }
+
+    private void const1(Type type) {
+        int t = getT(type);
+        int opc;
+        switch(t){
+            case T_I:opc = ICONST_1;break;
+            case T_L:opc = LCONST_1;break;
+            case T_F:opc = FCONST_1;break;
+            case T_D:opc = DCONST_1;break;
+            default:throw new UnsupportedOperationException("unsupported type:" + type);
+        }
+        md.visitInsn(opc);
     }
 
 }

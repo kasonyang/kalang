@@ -193,5 +193,11 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
         this.visitChildren(node);
         return null;
     }
+
+    @Override
+    public T visitIncrementExpr(IncrementExpr expr) {
+        this.visitChildren(expr);
+        return null;
+    }
     
 }

@@ -484,13 +484,13 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExprSelfOp(KalangParser.ExprSelfOpContext ctx) { }
+	@Override public void enterExprInc(KalangParser.ExprIncContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExprSelfOp(KalangParser.ExprSelfOpContext ctx) { }
+	@Override public void exitExprInc(KalangParser.ExprIncContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -539,6 +539,18 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprNewArray(KalangParser.ExprNewArrayContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprIncPre(KalangParser.ExprIncPreContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprIncPre(KalangParser.ExprIncPreContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
