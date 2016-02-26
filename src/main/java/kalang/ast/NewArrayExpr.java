@@ -32,13 +32,6 @@ public class NewArrayExpr extends ExprNode{
         return node;
     }
     
-    private void addChild(List<AstNode> list,List nodes){
-        if(nodes!=null) list.addAll(nodes);
-    }
-    
-    private void addChild(List<AstNode> list,AstNode node){
-        if(node!=null) list.add(node);
-    }
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
@@ -58,5 +51,10 @@ public class NewArrayExpr extends ExprNode{
         }
         
         return str+"}";
+    }
+
+    @Override
+    public Type getType() {
+        return Types.getArrayType(componentType);
     }
 }

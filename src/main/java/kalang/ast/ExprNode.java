@@ -10,5 +10,22 @@ public abstract class ExprNode extends AstNode{
     /**
      * The type of the expression
      */
-    public Type type;
+    //protected Type type;
+
+    /**
+     * @return the type
+     */
+    public abstract Type getType();
+    
+    protected static Type getType(ExprNode expr){
+        if(expr==null) return null;
+        return expr.getType();
+    }
+
+    /**
+     * @param type the type to set
+     */
+//    public void setType(Type type) {
+//        this.type = type;
+//    }
 }

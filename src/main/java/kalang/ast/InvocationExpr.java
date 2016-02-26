@@ -1,6 +1,7 @@
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
+import kalang.util.AstUtil;
 public class InvocationExpr extends ExprNode{
     
     /**
@@ -44,14 +45,6 @@ public class InvocationExpr extends ExprNode{
         return node;
     }
     
-    private void addChild(List<AstNode> list,List nodes){
-        if(nodes!=null) list.addAll(nodes);
-    }
-    
-    private void addChild(List<AstNode> list,AstNode node){
-        if(node!=null) list.add(node);
-    }
-    
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
@@ -60,6 +53,26 @@ public class InvocationExpr extends ExprNode{
         addChild(ls,arguments);
         
         return ls;
+    }
+    
+    public ClassType getTargetClassType(){
+        Type targetType = target.getType();
+        if(!(targetType instanceof ClassType)){
+            throw new UnsupportedOperationException("unsupported type:" + targetType);
+        }
+        return (ClassType) targetType;
+    }
+    
+    public Type[] getArgumentTypes(){
+        return AstUtil.getExprTypes(arguments.toArray(new ExprNode[0]));
+    }
+
+    @Override
+    public Type getType() {
+        ClassNode clazz = getTargetClassType().getClassNode();
+        MethodNode method = AstUtil.getMethod(clazz, methodName,getArgumentTypes());
+        if(method == null) return null;
+        return method.type;
     }
     
 }

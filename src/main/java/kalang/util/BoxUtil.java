@@ -117,10 +117,10 @@ public class BoxUtil {
         if(classType==null){
             throw new UnknownError("unknown primitive type:" + fromType);
         }
-        ClassExpr classExpr = new ClassExpr(classType.getName());
-        classExpr.type = classType;
+        ClassExpr classExpr = new ClassExpr(classType.getClassNode());
+        //classExpr.setType(classType);
         InvocationExpr inv = new InvocationExpr(classExpr, "valueOf", Arrays.asList(new ExprNode[]{expr}));
-        inv.type = classType;
+        //inv.setType(classType);
         return inv;
     }
 
@@ -128,7 +128,7 @@ public class BoxUtil {
         InvocationExpr inv = new InvocationExpr();
         inv.target = expr;
         inv.methodName = toType + "Value";
-        inv.type = toType;
+        //inv.setType(toType);
         return inv;
     }
 
@@ -138,7 +138,7 @@ public class BoxUtil {
 
     private static ExprNode castObject2String(ExprNode expr) {
         InvocationExpr inv = new InvocationExpr(expr, "toString", Collections.emptyList());
-        inv.type = Types.STRING_CLASS_TYPE;
+        //inv.setType(Types.STRING_CLASS_TYPE);
         return inv;
     }
 

@@ -20,4 +20,12 @@ public abstract class AstNode {
         return Collections.EMPTY_LIST;
     }
     
+        protected void addChild(List<AstNode> list,List nodes){
+        if(nodes!=null) list.addAll(nodes);
+    }
+    
+    protected void addChild(List<AstNode> list,AstNode node){
+        if(node!=null) list.add(node);
+    }
+    
 }

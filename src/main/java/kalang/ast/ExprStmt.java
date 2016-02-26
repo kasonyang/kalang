@@ -28,14 +28,6 @@ public class ExprStmt extends Statement{
         return node;
     }
     
-    private void addChild(List<AstNode> list,List nodes){
-        if(nodes!=null) list.addAll(nodes);
-    }
-    
-    private void addChild(List<AstNode> list,AstNode node){
-        if(node!=null) list.add(node);
-    }
-    
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         

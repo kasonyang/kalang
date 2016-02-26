@@ -32,11 +32,11 @@ public class UnaryExpr extends ExprNode{
         return node;
     }
     
-    private void addChild(List<AstNode> list,List nodes){
+    protected void addChild(List<AstNode> list,List nodes){
         if(nodes!=null) list.addAll(nodes);
     }
     
-    private void addChild(List<AstNode> list,AstNode node){
+    protected void addChild(List<AstNode> list,AstNode node){
         if(node!=null) list.add(node);
     }
     
@@ -46,6 +46,14 @@ public class UnaryExpr extends ExprNode{
         addChild(ls,expr);
         
         return ls;
+    }
+
+    @Override
+    public Type getType() {
+        switch(operation){
+            case "!":return Types.BOOLEAN_TYPE;
+            default:return getType(expr);
+        }
     }
     
 }

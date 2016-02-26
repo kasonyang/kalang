@@ -7,33 +7,11 @@ import kalang.core.*;
 public class KeyExpr extends ExprNode{
     
     public String key;
+    private final Type classType;
     
-    
-    public KeyExpr(){
-        
-    }
-    
-    
-    public KeyExpr(String key){
-        
-        
+    public KeyExpr(String key,Type classType){
             this.key = key;
-        
-    }
-    
-    
-    public static KeyExpr create(){
-        KeyExpr node = new KeyExpr();
-        
-        return node;
-    }
-    
-    private void addChild(List<AstNode> list,List nodes){
-        if(nodes!=null) list.addAll(nodes);
-    }
-    
-    private void addChild(List<AstNode> list,AstNode node){
-        if(node!=null) list.add(node);
+            this.classType = classType;
     }
     
     public List<AstNode> getChildren(){
@@ -51,4 +29,10 @@ public class KeyExpr extends ExprNode{
         
         return str+"}";
     }
+
+    @Override
+    public Type getType() {
+        return classType;
+    }
+    
 }

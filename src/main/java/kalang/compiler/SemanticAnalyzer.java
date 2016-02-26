@@ -163,12 +163,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         Object ret = super.visit(node);
         if (ret instanceof Type) {
             types.put(node,(Type) ret);
-            if(node instanceof ExprNode){
-                ExprNode exprNode = ((ExprNode)node);
-                if(exprNode.type==null){
-                    exprNode.type = (Type) ret;
-                }
-            }
+//            if(node instanceof ExprNode){
+//                ExprNode exprNode = ((ExprNode)node);
+//                if(exprNode.getType()==null){
+//                    exprNode.setType((Type) ret);
+//                }
+//            }
             return  (Type) ret;
         }
         return null;
@@ -302,9 +302,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if(!requireStatic(field.modifier, node)) return getDefaultType();
             }
             if(isStatic(field.modifier)){
-                node.target = new ClassExpr(clazz.name);
+                node.target = new ClassExpr(clazz);
             }else{
-                node.target = new KeyExpr("this");
+                node.target = new KeyExpr("this",Types.getClassType(clazz));
             }
             visit(node.target);
             return field.type;
@@ -328,11 +328,11 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         List<Type> argTypes = visitAll(node.arguments);
         ClassType target;
         if(node.target==null){
-            node.target = new KeyExpr("this");
+            node.target = new KeyExpr("this",Types.getClassType(clazz));
         }
         //TODO here may be bug
         visit(node.target);
-        target = (ClassType) node.target.type;
+        target = (ClassType) node.target.getType();
         if(target==null){
             throw new IllegalStateException("unknown return value");
         }
@@ -415,7 +415,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitClassExpr(ClassExpr node) {
-        return Types.getClassType(loadAst(node.name, node));
+        return Types.getClassType(node.clazz);
     }
 
     @Override
@@ -696,7 +696,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitIncrementExpr(IncrementExpr expr) {
         visitChildren(expr);
-        return expr.expr.type;
+        return expr.expr.getType();
     }
     
     

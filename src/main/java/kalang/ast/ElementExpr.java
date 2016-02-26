@@ -34,13 +34,6 @@ public class ElementExpr extends AssignableExpr{
         return node;
     }
     
-    private void addChild(List<AstNode> list,List nodes){
-        if(nodes!=null) list.addAll(nodes);
-    }
-    
-    private void addChild(List<AstNode> list,AstNode node){
-        if(node!=null) list.add(node);
-    }
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
@@ -50,6 +43,16 @@ public class ElementExpr extends AssignableExpr{
         addChild(ls,index);
         
         return ls;
+    }
+
+    @Override
+    public Type getType() {
+        Type arrayType = getType(arrayExpr);
+        if(arrayType==null) return null;
+        if(!(arrayType instanceof ArrayType)){
+            throw new UnknownError("ArrayType is required!");
+        }
+        return ((ArrayType)arrayType).getComponentType();
     }
     
 }

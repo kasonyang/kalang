@@ -4,6 +4,7 @@ Don't modify!This file is generated automately.
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
+import kalang.util.AstUtil;
 public class FieldExpr extends AssignableExpr{
     
     public ExprNode target;
@@ -33,11 +34,11 @@ public class FieldExpr extends AssignableExpr{
         return node;
     }
     
-    private void addChild(List<AstNode> list,List nodes){
+    protected void addChild(List<AstNode> list,List nodes){
         if(nodes!=null) list.addAll(nodes);
     }
     
-    private void addChild(List<AstNode> list,AstNode node){
+    protected void addChild(List<AstNode> list,AstNode node){
         if(node!=null) list.add(node);
     }
     
@@ -61,5 +62,22 @@ public class FieldExpr extends AssignableExpr{
         }
         
         return str+"}";
+    }
+    
+    public ClassType getTargetType(){
+        Type tt = getType(target);
+        if(!(tt instanceof ClassType)){
+            throw new UnsupportedOperationException("unsupported type:" + tt);
+        }
+        return (ClassType) tt;
+    }
+
+    @Override
+    public Type getType() {
+        ClassType ct = getTargetType();
+        if(ct==null) return null;
+        FieldNode field = AstUtil.getField(ct.getClassNode(), fieldName);
+        if(field==null) return null;
+        return field.type;
     }
 }

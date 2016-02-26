@@ -113,7 +113,7 @@ public class AstUtil {
                body.statements.add(
                        new ExprStmt(
                                new InvocationExpr(
-                                       new KeyExpr("super")
+                                       new KeyExpr("super",Types.getClassType(clazzNode.parent))
                                        , "<init>"
                                        ,Arrays.asList(
                                                params
@@ -192,7 +192,7 @@ public class AstUtil {
     public static Type[] getExprTypes(ExprNode[] exprs) {
         Type[] types = new Type[exprs.length];
         for(int i=0;i<types.length;i++){
-            types[i] = exprs[i].type;
+            types[i] = exprs[i].getType();
         }
         return types;
     }

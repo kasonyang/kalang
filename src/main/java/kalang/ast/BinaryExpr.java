@@ -40,15 +40,7 @@ public class BinaryExpr extends ExprNode{
         
         return node;
     }
-    
-    private void addChild(List<AstNode> list,List nodes){
-        if(nodes!=null) list.addAll(nodes);
-    }
-    
-    private void addChild(List<AstNode> list,AstNode node){
-        if(node!=null) list.add(node);
-    }
-    
+        
     @Override
     public List<AstNode> getChildren(){
         
@@ -59,6 +51,11 @@ public class BinaryExpr extends ExprNode{
         addChild(ls,expr2);
         
         return ls;
+    }
+
+    @Override
+    public Type getType() {
+        return getType(expr1);
     }
 
 }

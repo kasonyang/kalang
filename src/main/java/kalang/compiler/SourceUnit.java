@@ -382,9 +382,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             BinaryExpr be = new BinaryExpr(to, cond, opStr);
             cond = be;
         }
-        AssignExpr as = new AssignExpr();
-        as.from = from;
-        as.to = to;
+        AssignExpr as = new AssignExpr(to, from);
         IfStmt is = new IfStmt();
         is.conditionExpr = cond;
         is.trueBody = new ExprStmt(as);
@@ -684,7 +682,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         String methodName;
         ExprNode target;
         if (ctx.key != null) {
-            target = new KeyExpr(ctx.key.getText());
+            String key = ctx.key.getText();
+            target = getSelfReference(key);
             methodName = "<init>";
         } else {
             methodName = ctx.Identifier().getText();
@@ -705,14 +704,15 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             String op = assignOp.substring(0, assignOp.length() - 1);
             from = new BinaryExpr(to, from, op);
         }
-        AssignExpr aexpr = new AssignExpr();
-        mapAst(aexpr, ctx);
-        aexpr.from = (ExprNode) from;
+        ExprNode fromExpr = (ExprNode) from;
+        AssignableExpr toExpr = null;
         if(to instanceof AssignableExpr){
-            aexpr.to = (AssignableExpr) to;
+            toExpr = (AssignableExpr) to;
         }else{
             reportError("unsupported assign statement",ctx);
         }
+        AssignExpr aexpr = new AssignExpr(toExpr,fromExpr);
+        mapAst(aexpr, ctx);
         return aexpr;
     }
 
@@ -836,7 +836,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             String id = expandClassName(name);
             ClassNode targetClass = astLoader.getAst(id);
             if (targetClass!=null) {
-                return new ClassExpr(id);
+                return new ClassExpr(targetClass);
             }
         }
         return null;
@@ -1034,10 +1034,22 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitVarModifier(VarModifierContext ctx) {
         throw new UnsupportedOperationException();
     }
+    
+    private KeyExpr getSelfReference(String key){
+            Type type;
+            if(key.equals("this")){
+                type = Types.getClassType(classAst);
+            }else if(key.equals("super")){
+                type = Types.getClassType(classAst.parent);
+            }else{
+                throw new UnsupportedOperationException("unknown key:" + key);
+            }
+            return new KeyExpr(key,type);
+    }
 
     @Override
     public AstNode visitExprSelfRef(ExprSelfRefContext ctx) {
-        KeyExpr expr = new KeyExpr(ctx.ref.getText());
+        KeyExpr expr = getSelfReference(ctx.ref.getText());
         mapAst(expr, ctx);
         return expr;
     }

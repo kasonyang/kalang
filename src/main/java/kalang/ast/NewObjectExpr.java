@@ -5,6 +5,7 @@ import java.nio.*;
 import java.net.*;
 import java.util.*;
 import kalang.core.ClassType;
+import kalang.core.Type;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -31,6 +32,11 @@ public class NewObjectExpr extends ExprNode{
     @Override
     public List<AstNode> getChildren() {
         return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public Type getType() {
+        return objectType;
     }
 
 }

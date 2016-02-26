@@ -28,11 +28,11 @@ public class VarExpr extends AssignableExpr{
         return node;
     }
     
-    private void addChild(List<AstNode> list,List nodes){
+    protected void addChild(List<AstNode> list,List nodes){
         if(nodes!=null) list.addAll(nodes);
     }
     
-    private void addChild(List<AstNode> list,AstNode node){
+    protected void addChild(List<AstNode> list,AstNode node){
         if(node!=null) list.add(node);
     }
     
@@ -50,5 +50,10 @@ public class VarExpr extends AssignableExpr{
         }
         
         return str+"}";
+    }
+
+    @Override
+    public Type getType() {
+        return var.type;
     }
 }
