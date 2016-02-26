@@ -199,5 +199,11 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
         this.visitChildren(expr);
         return null;
     }
+
+    @Override
+    public T visitArrayLengthExpr(ArrayLengthExpr node) {
+        visitChildren(node);
+        return null;
+    }
     
 }

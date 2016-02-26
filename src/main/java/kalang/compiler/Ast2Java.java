@@ -546,4 +546,9 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         }
     }
 
+    @Override
+    public String visitArrayLengthExpr(ArrayLengthExpr node) {
+        return visit(node.arrayExpr) + ".length";
+    }
+
 }

@@ -9,6 +9,7 @@ import kalang.ast.ClassNode;
 import kalang.util.SourceUnitFactory;
 import kalang.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
+import static kalang.compiler.CompilePhase.*;
 
 /**
  *
@@ -27,6 +28,10 @@ public class CompilationUnit {
     private String javaCode = "";
     private final CommonTokenStream tokens;
     private byte[] classBytes;
+    
+    private int compilingPhase;
+    private SourceParsingErrorHandler parsingErrorHandler;
+    private AstSemanticErrorHandler semanticErrorHandler;
 
     public CompilationUnit(@Nonnull String className,@Nonnull String source,@Nonnull AstLoader astLoader) {
         tokens = TokenStreamFactory.createTokenStream(source);
@@ -42,22 +47,52 @@ public class CompilationUnit {
     public CompilationUnit(@Nonnull String className,@Nonnull String source) {
         this(className, source, AstLoader.BASE_AST_LOADER);
     }
-
-    public void parse(SourceParsingErrorHandler semanticErrorHandler) {
-        sourceUnit.setSemanticErrorHandler(semanticErrorHandler);
-        sourceUnit.compile(astLoader);
+    
+    private void doCompilePhase(int phase){
+        if(phase==PHASE_INITIALIZE){
+            
+        }else if(phase==PHASE_PARSING){
+            parseMeta(parsingErrorHandler);
+        }else if(phase == PHASE_BUILDAST){
+            parseBody(parsingErrorHandler);
+        }else if(phase==PHASE_SEMANTIC){
+            semanticAnalysis(semanticErrorHandler);
+        }else if(phase == PHASE_CLASSGEN){
+            generateJavaCode();
+            generateClassBytes();
+        }
+    }
+    
+    public void compile(int targetPhase){
+        while(compilingPhase<targetPhase){
+            compilingPhase++;
+            doCompilePhase(compilingPhase);
+        }
+    }
+    
+    protected void parseMeta(SourceParsingErrorHandler semanticErrorHandler){
+        parse(semanticErrorHandler, SourceUnit.PARSING_PHASE_META);
+    }
+    
+    public void parseBody(SourceParsingErrorHandler semanticErrorHandler){
+        parse(semanticErrorHandler, SourceUnit.PARSING_PHASE_ALL);
     }
 
-    public void semanticAnalysis(AstSemanticErrorHandler handler) {
+    protected void parse(SourceParsingErrorHandler semanticErrorHandler, int targetParsingPhase) {
+        sourceUnit.setSemanticErrorHandler(semanticErrorHandler);
+        sourceUnit.compile(targetParsingPhase,astLoader);
+    }
+
+    protected void semanticAnalysis(AstSemanticErrorHandler handler) {
         semanticAnalyzer.setAstSemanticErrorHandler(handler);
         semanticAnalyzer.check(ast);
     }
 
-    public void generateJavaCode() {
+    protected void generateJavaCode() {
         javaCode = a2j.generate(ast);
     }
     
-    public void generateClassBytes(){
+    protected void generateClassBytes(){
         Ast2Class a2c = new Ast2Class();
         a2c.generate(ast);
         classBytes = a2c.getClassBytes();
@@ -96,5 +131,15 @@ public class CompilationUnit {
     public CommonTokenStream getTokenStream() {
         return tokens;
     }
+
+    public void setParsingErrorHandler(SourceParsingErrorHandler parsingErrorHandler) {
+        this.parsingErrorHandler = parsingErrorHandler;
+    }
+
+    public void setSemanticErrorHandler(AstSemanticErrorHandler semanticErrorHandler) {
+        this.semanticErrorHandler = semanticErrorHandler;
+    }
+    
+    
 
 }

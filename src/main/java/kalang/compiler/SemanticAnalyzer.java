@@ -38,6 +38,7 @@ import kalang.ast.VarObject;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.ast.ArrayLengthExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
@@ -698,6 +699,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         visitChildren(expr);
         return expr.expr.getType();
     }
+
+    @Override
+    public Type visitArrayLengthExpr(ArrayLengthExpr node) {
+        return node.getType();
+    }
+    
     
     
 

@@ -34,6 +34,7 @@ import java.nio.*;
 import java.net.*;
 import java.util.*;
 import javax.annotation.Nonnull;
+import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.ExprNode;
 import kalang.ast.FieldNode;
@@ -350,7 +351,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitElementExpr(ElementExpr node) {
         visit(node.arrayExpr);
         visit(node.index);
-        org.objectweb.asm.Type t = asmType(((ArrayType)node.getType()).getComponentType());
+        org.objectweb.asm.Type t = asmType(node.getType());
         md.visitInsn(t.getOpcode(IALOAD));
         return null;
     }
@@ -751,7 +752,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case "<=" : opc = IF_ICMPLE;break;
             case "!=" : opc = IF_ICMPNE;break;
             default:
-                throw  new UnsupportedOperationException();
+                throw  new UnsupportedOperationException("Unsupported operation:" + op);
         }
         md.visitJumpInsn(opc, trueLabel);
         constX(type, 0);
@@ -759,6 +760,15 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         md.visitLabel(trueLabel);
         constX(type, 1);
         md.visitLabel(stopLabel);
+    }
+
+    @Override
+    public Object visitArrayLengthExpr(ArrayLengthExpr node) {
+        //TODO support needed
+        //throw new UnsupportedOperationException("Not supported yet.");
+        visit(node.arrayExpr);
+        md.visitInsn(ARRAYLENGTH);
+        return null;
     }
 
 }

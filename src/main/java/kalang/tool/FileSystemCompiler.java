@@ -52,11 +52,11 @@ public class FileSystemCompiler implements CompileErrorHandler{
         URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
         JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
         kalangCompiler = new KalangCompiler(astLoader);
+        kalangCompiler.setCompileErrrorHandler(this);
         for (String srcName : sourceFiles.keySet()) {
             File f = sourceFiles.get(srcName);
             kalangCompiler.addSource(srcName, FileUtils.readFileToString(f));
         }
-        kalangCompiler.setCompileErrrorHandler(this);
         kalangCompiler.compile();
         HashMap<String, CompilationUnit> units = kalangCompiler.getAllCompilationUnit();
         for (String cls : units.keySet()) {

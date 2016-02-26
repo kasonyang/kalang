@@ -30,7 +30,7 @@ public class ErrorTest {
             System.out.println("on error:" + error.getDescription());
                   eCode = error.getErrorCode();
             errMsg =error.getDescription();
-            kc.setCompileTargetPhase(KalangCompiler.PHASE_SEMANTIC);
+            kc.setCompileTargetPhase(CompilePhase.PHASE_SEMANTIC);
         }
     };
     

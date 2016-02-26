@@ -8,18 +8,10 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
+import static kalang.compiler.CompilePhase.*;
 //import SourceUnit.OffsetRange
 public class KalangCompiler extends AstLoader {
-    
-    public final static int 
-            PHASE_INITIALIZE = 0,
-            PHASE_PARSING = 1,
-            PHASE_BUILDAST = 2,
-            PHASE_SEMANTIC = 3,
-            PHASE_CLASSGEN = 4,
-            PHASE_ALL = 5;
-    
+        
     private int compileTargetPhase = PHASE_ALL;
 
     private HashMap<String, CompilationUnit> compilationUnits = new HashMap<>();
@@ -28,7 +20,7 @@ public class KalangCompiler extends AstLoader {
     private final HashMap<String, String> sources = new HashMap();
 
     @Nonnull
-    private final List<String> parseTasks = new LinkedList<>();
+    private final List<CompilationUnit> parseTasks = new LinkedList<>();
 
     @Nonnull
     private AstLoader astLoader = AstLoader.BASE_AST_LOADER;
@@ -63,6 +55,7 @@ public class KalangCompiler extends AstLoader {
             System.err.println(error.toString());
         }
     };
+    private int compilingPhase;
 
     public KalangCompiler() {
     }
@@ -93,27 +86,7 @@ public class KalangCompiler extends AstLoader {
      */
     public void addSource(String className, String source) {
         sources.put(className, source);
-    }
-
-    protected void init() {
-        //do nothing
-    }
-    
-    protected void parsing(){
-        Set<String> ks = sources.keySet();
-        for (String k : ks) {
-            String src = sources.get(k);
-            createCompilationUnit(k, src);
-        }
-    }
-
-    protected void buildAst() {
-        while (parseTasks.size() > 0) {
-            String k = parseTasks.get(0);
-            CompilationUnit cunit = compilationUnits.get(k);
-            cunit.parse(semanticErrorHandler);
-            parseTasks.remove(0);
-        }
+        compilationUnits.put(className, createCompilationUnit(className, source));
     }
 
     @Nonnull
@@ -128,13 +101,6 @@ public class KalangCompiler extends AstLoader {
     protected void semanticAnalysis() {
         for (CompilationUnit cunit : compilationUnits.values()) {
             cunit.semanticAnalysis(astSemanticErrorHandler);
-        }
-    }
-
-    protected void codeGen() {
-        for (CompilationUnit cunit : compilationUnits.values()) {
-            cunit.generateJavaCode();
-            cunit.generateClassBytes();
         }
     }
 
@@ -160,11 +126,21 @@ public class KalangCompiler extends AstLoader {
      * compile all sources
      */
     public void compile() {
-        if(compileTargetPhase>=PHASE_INITIALIZE) init();
-        if(compileTargetPhase>=PHASE_PARSING) parsing();
-        if(compileTargetPhase>=PHASE_BUILDAST) buildAst();
-        if(compileTargetPhase>=PHASE_SEMANTIC) semanticAnalysis();
-        if(compileTargetPhase>=PHASE_CLASSGEN) codeGen();
+        while(compilingPhase<compileTargetPhase){
+            compilingPhase++;
+            for(CompilationUnit unit:compilationUnits.values()){
+                unit.compile(compilingPhase);
+            }
+        }
+//        while(parseTasks.size()>0){
+//            CompilationUnit cunit = parseTasks.get(0);
+//            cunit.compile(compileTargetPhase);
+//        }
+//        if(compileTargetPhase>=PHASE_INITIALIZE) init();
+//        if(compileTargetPhase>=PHASE_PARSING) parsing();
+//        if(compileTargetPhase>=PHASE_BUILDAST) buildAst();
+//        if(compileTargetPhase>=PHASE_SEMANTIC) semanticAnalysis();
+//        if(compileTargetPhase>=PHASE_CLASSGEN) codeGen();
     }
 
     @Override
@@ -216,8 +192,12 @@ public class KalangCompiler extends AstLoader {
 
     private CompilationUnit createCompilationUnit(String className, String src) {
         CompilationUnit unit = new CompilationUnit(className, src,this);
+        unit.setParsingErrorHandler(semanticErrorHandler);
+        unit.setSemanticErrorHandler(astSemanticErrorHandler);
+        unit.compile(compilingPhase);
+        //unit.parseMeta(semanticErrorHandler);
         compilationUnits.put(className, unit);
-        this.parseTasks.add(className);
+        this.parseTasks.add(unit);
         return unit;
     }
 

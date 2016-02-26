@@ -83,6 +83,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
+import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
@@ -90,6 +91,7 @@ import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.VarDeclStmt;
+import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -109,7 +111,12 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
  * @author Kason Yang <i@kasonyang.com>
  */
 public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisitor {
+    
+    public static final int 
+            PARSING_PHASE_META = 1,
+            PARSING_PHASE_ALL = 2;
    
+    private int parsingPhase=0;
     //static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
 
     //short name to full name
@@ -120,7 +127,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private final ClassNode classAst = new ClassNode();
     private MethodNode method;
-    //private final BidiMap<AstNode, ParserRuleContext> a2p = new DualHashBidiMap<>();
+    private final HashMap<MethodNode,StatContext> methodBodys = new HashMap<>();
 
     @Nonnull
     private AstLoader astLoader;
@@ -203,20 +210,41 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     public void compile(){
-        compile(null);
+        compile(PARSING_PHASE_ALL,null);
     }
     
-    public void compile(@Nullable AstLoader astLoader) {
+    public void compile(int targetPhase){
+        compile(targetPhase, null);
+    }
+    
+    public void compile(int targetPhase,@Nullable AstLoader astLoader) {
         if(astLoader==null){
             this.astLoader = new AstLoader();
         }else{
             this.astLoader = astLoader;
         }
-        this.context = parser.compilantUnit();
-        visit(context);
+        if(targetPhase>=PARSING_PHASE_META
+                && parsingPhase < PARSING_PHASE_META){
+            parsingPhase = PARSING_PHASE_META;
+            this.context = parser.compilantUnit();
+            visit(context);
         //AstMetaParser metaParser = new AstAstMetaParser();
-        if(AstUtil.getMethodsByName(classAst, "<init>").length<1){
-            AstUtil.createEmptyConstructor(classAst);
+            if(AstUtil.getMethodsByName(classAst, "<init>").length<1){
+                AstUtil.createEmptyConstructor(classAst);
+            }
+        }
+        if(targetPhase>=PARSING_PHASE_ALL
+                && parsingPhase < PARSING_PHASE_ALL){
+            parsingPhase = PARSING_PHASE_ALL;
+            for(MethodNode m:classAst.getMethodNodes()){
+                StatContext body = methodBodys.get(m);
+                if(body!=null){
+                    method = m;
+                    newVarStack();
+                    m.body = visitStat(body);
+                    popVarStack();
+                }
+            }
         }
     }
 
@@ -443,7 +471,6 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
         method = classAst.createMethodNode();
-        this.newVarStack();
         String name;
         Type type;
         int mdf = parseModifier(ctx.varModifier());
@@ -470,7 +497,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
         if (ctx.stat() != null) {
-            method.body = visitStat(ctx.stat());
+            methodBodys.put(method, ctx.stat());
+            //method.body = visitStat(ctx.stat());
         }
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {
@@ -480,8 +508,6 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 }
             }
         }
-        this.popVarStack();
-        //cls.methods.add(method);
         mapAst(method, ctx);
         return method;
     }
@@ -746,14 +772,25 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public FieldExpr visitExprGetField(ExprGetFieldContext ctx) {
-        AstNode expr = visitExpression(ctx.expression());
+    public ExprNode visitExprGetField(ExprGetFieldContext ctx) {
+        ExprNode ret;
+        ExprNode expr = visitExpression(ctx.expression());
+        Type exprType = expr.getType();
         String name = ctx.Identifier().getText();
-        FieldExpr fe = new FieldExpr();
-        fe.target = (ExprNode) expr;
-        fe.fieldName = name;
-        mapAst(fe, ctx);
-        return fe;
+        if(exprType instanceof ArrayType){
+            if(!name.equals("length")){
+                reportError("unknown arrtibute", ctx.Identifier().getSymbol());
+                return null;
+            }
+            ret = new ArrayLengthExpr(expr);
+        }else{
+            FieldExpr fe = new FieldExpr();
+            fe.target = (ExprNode) expr;
+            fe.fieldName = name;
+            ret = fe;
+        }
+        mapAst(ret, ctx);
+        return ret;
     }
 
 //    @Override

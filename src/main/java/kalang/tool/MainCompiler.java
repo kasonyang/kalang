@@ -98,17 +98,17 @@ public class MainCompiler {
         KalangCompiler cpl = new KalangCompiler(astLoader,new FileSystemSourceLoader(srcDir));
         int size = sources.size();
         HashMap<String, Source> sourcesMap = new HashMap<>();
+        cpl.setCompileErrrorHandler((CompileError error) -> {
+            String cname = error.className;
+            String fn = sourcesMap.get(cname).fileName;
+            System.err.println(fn + ":" + error);
+        });
         for (int i = 0; i < size; i++) {
             Source src = sources.get(i);
             String clsName = src.className;
             sourcesMap.put(clsName, src);
             cpl.addSource(clsName, src.source);
         }
-        cpl.setCompileErrrorHandler((CompileError error) -> {
-            String cname = error.className;
-            String fn = sourcesMap.get(cname).fileName;
-            System.err.println(fn + ":" + error);
-        });
         cpl.compile();
         HashMap<String, CompilationUnit> units = cpl.getAllCompilationUnit();
         for (String cls : units.keySet()) {
