@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import javax.annotation.Nonnull;
 import kalang.core.Type;
 import kalang.core.Types;
 /**
@@ -12,9 +13,10 @@ import kalang.core.Types;
  */
 public class ArrayLengthExpr extends ExprNode{
 
+    @Nonnull
     public ExprNode arrayExpr;
 
-    public ArrayLengthExpr(ExprNode arrayExpr) {
+    public ArrayLengthExpr(@Nonnull ExprNode arrayExpr) {
         this.arrayExpr = arrayExpr;
     }
     

@@ -29,8 +29,7 @@ public class AssignExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        if(to==null) return null;
-        return to.getType();
+        return getType(to);
     }
     
 }

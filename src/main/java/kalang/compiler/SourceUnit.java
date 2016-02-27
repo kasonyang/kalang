@@ -667,7 +667,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         ls.initStmts.add(vds);
         ls.preConditionExpr = (ExprNode) visit(ctx.expression());
         //TODO fixme
-        BlockStmt bs = BlockStmt.create();
+        BlockStmt bs =new BlockStmt();
         if (ctx.stat() != null) {
             Statement st = visitStat(ctx.stat());
             if(st instanceof BlockStmt){
@@ -745,10 +745,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitExprMidOp(ExprMidOpContext ctx) {
         String op = ctx.getChild(1).getText();
-        BinaryExpr be = new BinaryExpr();
-        be.expr1 = (ExprNode) visitExpression(ctx.expression(0));
-        be.expr2 = (ExprNode) visitExpression(ctx.expression(1));
-        be.operation = op;
+        ExprNode expr1 = (ExprNode) visitExpression(ctx.expression(0));
+        ExprNode expr2 = (ExprNode) visitExpression(ctx.expression(1));
+        BinaryExpr be = new BinaryExpr(expr1,expr2,op);
         mapAst(be, ctx);
         return be;
     }
@@ -981,9 +980,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitCastExpr(CastExprContext ctx) {
-        CastExpr ce = new CastExpr();
-        ce.expr = visitExpression(ctx.expression());
-        ce.toType = parseType(ctx.type());
+        ExprNode expr = visitExpression(ctx.expression());
+        Type toType = parseType(ctx.type());
+        CastExpr ce = new CastExpr(toType,expr);
         mapAst(ce,ctx);
         return ce;
     }
@@ -1056,7 +1055,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitBlockStmt(BlockStmtContext ctx) {
-        BlockStmt bs = BlockStmt.create();
+        BlockStmt bs =new BlockStmt();
         if (ctx.stat() == null) {
             return bs;
         }

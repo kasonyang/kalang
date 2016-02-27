@@ -331,6 +331,10 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case "*" : op = IMUL;break;
             case "/" : op = IDIV;break;
             case "%":op = IREM;break;
+            case "&&":
+            case "||":
+                doLogicOperation(node.expr1,node.expr2,node.operation);
+                break;
             default:
                 compare(node.expr1,node.expr2,node.operation);
                 return null;
@@ -776,6 +780,42 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         visit(node.arrayExpr);
         md.visitInsn(ARRAYLENGTH);
         return null;
+    }
+    
+    private void constTrue(){
+        constX(new Integer(1));
+    }
+    
+    private void constFalse(){
+        constX(new Integer(0));
+    }
+
+    private void doLogicOperation(ExprNode expr1, ExprNode expr2, String op) {
+        Label stopLabel = new Label();
+        if(op.equals("&&")){
+            Label falseLabel = new Label();
+            visit(expr1);
+            md.visitJumpInsn(IFEQ, falseLabel);
+            visit(expr2);
+            md.visitJumpInsn(IFEQ, falseLabel);
+            constTrue();
+            md.visitJumpInsn(GOTO, stopLabel);
+            md.visitLabel(falseLabel);
+            constFalse();
+        }else if(op.equals("||")){
+            Label trueLable = new Label();
+            visit(expr1);
+            md.visitJumpInsn(IFNE,trueLable);
+            visit(expr2);
+            md.visitJumpInsn(IFNE, trueLable);
+            constFalse();
+            md.visitJumpInsn(GOTO, stopLabel);
+            md.visitLabel(trueLable);
+            constTrue();
+        }else{
+            throw new UnsupportedOperationException(op);
+        }
+        md.visitLabel(stopLabel);
     }
 
 }

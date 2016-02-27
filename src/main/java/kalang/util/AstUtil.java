@@ -104,7 +104,7 @@ public class AstUtil {
                mm.modifier = m.modifier;
                mm.parameters = m.parameters;
                mm.type = m.type;
-               BlockStmt body =  BlockStmt.create();
+               BlockStmt body = new BlockStmt();
                mm.body = body;
                ExprNode[] params = new ExprNode[mm.parameters.size()];
                for(int i=0;i<params.length;i++){

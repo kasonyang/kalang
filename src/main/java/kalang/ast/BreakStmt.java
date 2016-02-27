@@ -11,24 +11,11 @@ public class BreakStmt extends Statement{
         
     }
     
-    
-    
-    public static BreakStmt create(){
-        BreakStmt node = new BreakStmt();
-        
-        return node;
-    }
-    
-    
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
         return ls;
     }
     
-    public String toString(){
-        String str = "BreakStmt{\r\n";
-        
-        return str+"}";
-    }
+
 }

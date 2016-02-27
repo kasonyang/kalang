@@ -11,45 +11,25 @@ import kalang.core.*;
  */
 public class BinaryExpr extends ExprNode{
     
-    public ExprNode expr1 = null;
+    @Nonnull
+    public ExprNode expr1;
     
-    public ExprNode expr2 = null;
+    @Nonnull
+    public ExprNode expr2;
     
-    public String operation = null;
-    
-    
-    public BinaryExpr(){
-        
-    }
-    
+    @Nonnull
+    public String operation;
     
     public BinaryExpr(@Nonnull ExprNode expr1,@Nonnull ExprNode expr2,@Nonnull String operation){
-        
-        
             this.expr1 = expr1;
-        
             this.expr2 = expr2;
-        
             this.operation = operation;
-        
     }
-    
-    
-    public static BinaryExpr create(){
-        BinaryExpr node = new BinaryExpr();
-        
-        return node;
-    }
-        
     @Override
     public List<AstNode> getChildren(){
-        
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls,expr1);
-        
         addChild(ls,expr2);
-        
         return ls;
     }
 
