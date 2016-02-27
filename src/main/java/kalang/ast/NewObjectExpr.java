@@ -14,7 +14,7 @@ public class NewObjectExpr extends ExprNode{
 
     public ClassType objectType;
     
-    public ExprNode[] arguments;
+    public ExprNode[] arguments = new ExprNode[0];
 
     public NewObjectExpr(ClassType objectType, ExprNode[] arguments) {
         this.objectType = objectType;
@@ -23,10 +23,6 @@ public class NewObjectExpr extends ExprNode{
     
     public NewObjectExpr(ClassType objectType) {
         this.objectType = objectType;
-    }
-
-    public NewObjectExpr() {
-        
     }
     
     @Override

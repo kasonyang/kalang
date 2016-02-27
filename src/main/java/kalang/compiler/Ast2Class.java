@@ -196,7 +196,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitExprStmt(ExprStmt node) {
         visitChildren(node);
         if(!(node.expr instanceof AssignExpr)){
-            if(//node.expr.type !=null &&
+            if(node.expr.getType() !=null &&
                     !Types.VOID_TYPE.equals(node.expr.getType())
                     ){
                 pop(node.expr.getType());
@@ -664,8 +664,15 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitNewObjectExpr(NewObjectExpr node) {
         org.objectweb.asm.Type t = asmType(node.objectType);
         md.visitTypeInsn(NEW, t.getInternalName());
-        md.visitInsn(DUP);
-        md.visitMethodInsn(INVOKESPECIAL, t.getInternalName(), "<init>",getTypeDescriptor(AstUtil.getExprTypes(node.arguments)), false);
+        //TODO init object
+//        md.visitInsn(DUP);
+//        md.visitMethodInsn(
+//                INVOKESPECIAL
+//                , t.getInternalName()
+//                , "<init>"
+//                ,getTypeDescriptor(
+//                        AstUtil.getExprTypes(node.arguments))
+//                , false);
         return null;
     }
 

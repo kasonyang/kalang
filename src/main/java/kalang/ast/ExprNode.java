@@ -1,5 +1,6 @@
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nonnull;
 import kalang.core.*;
 /**
  * The base class of expression node
@@ -18,7 +19,7 @@ public abstract class ExprNode extends AstNode{
     public abstract Type getType();
     
     protected static Type getType(ExprNode expr){
-        if(expr==null) return null;
+        if(expr==null) return Types.VOID_TYPE;
         return expr.getType();
     }
 

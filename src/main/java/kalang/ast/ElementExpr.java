@@ -48,7 +48,7 @@ public class ElementExpr extends AssignableExpr{
     @Override
     public Type getType() {
         Type arrayType = getType(arrayExpr);
-        if(arrayType==null) return null;
+        if(arrayType==null) return Types.VOID_TYPE;
         if(!(arrayType instanceof ArrayType)){
             throw new UnknownError("ArrayType is required!");
         }
