@@ -11,15 +11,15 @@ import kalang.core.Type;
  */
 public class IncrementExpr extends ExprNode{
     
-    public AssignableExpr expr;
+    protected AssignableExpr expr;
     
-    public boolean isDesc = false;
+    protected boolean isDesc = false;
     
-    public boolean isPrefix = false;
+    protected boolean isPrefix = false;
 
     @Override
     public List<AstNode> getChildren() {
-        return Collections.singletonList(expr);
+        return Collections.singletonList(getExpr());
     }
 
     public IncrementExpr(AssignableExpr expr,boolean isDesc,boolean isPrefix) {
@@ -34,7 +34,50 @@ public class IncrementExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        return getType(expr);
+        return getType(getExpr());
+    }
+
+    /**
+     * @return the expr
+     */
+    public AssignableExpr getExpr() {
+        return expr;
+    }
+
+    /**
+     * @param expr the expr to set
+     */
+    public void setExpr(AssignableExpr expr) {
+        Objects.requireNonNull(expr);
+        this.expr = expr;
+    }
+
+    /**
+     * @return the isDesc
+     */
+    public boolean isIsDesc() {
+        return isDesc;
+    }
+
+    /**
+     * @param isDesc the isDesc to set
+     */
+    public void setIsDesc(boolean isDesc) {
+        this.isDesc = isDesc;
+    }
+
+    /**
+     * @return the isPrefix
+     */
+    public boolean isIsPrefix() {
+        return isPrefix;
+    }
+
+    /**
+     * @param isPrefix the isPrefix to set
+     */
+    public void setIsPrefix(boolean isPrefix) {
+        this.isPrefix = isPrefix;
     }
 
 }

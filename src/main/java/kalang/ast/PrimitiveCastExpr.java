@@ -6,11 +6,11 @@ import java.util.*;
 import kalang.core.*;
 public class PrimitiveCastExpr extends ExprNode{
     
-    public PrimitiveType fromType;
+    protected PrimitiveType fromType;
     
-    public PrimitiveType toType;
+    protected PrimitiveType toType;
     
-    public ExprNode expr;
+    protected ExprNode expr;
     
     
     public PrimitiveCastExpr(){
@@ -39,7 +39,7 @@ public class PrimitiveCastExpr extends ExprNode{
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
-        addChild(ls,expr);
+        addChild(ls, getExpr());
         
         return ls;
     }
@@ -47,16 +47,16 @@ public class PrimitiveCastExpr extends ExprNode{
     public String toString(){
         String str = "PrimitiveCastExpr{\r\n";
         
-        if(fromType!=null){
-            str += "  fromType:" + fromType.toString()+"\r\n";
+        if(getFromType()!=null){
+            str += "  fromType:" + getFromType().toString()+"\r\n";
         }
         
-        if(toType!=null){
-            str += "  toType:" + toType.toString()+"\r\n";
+        if(getToType()!=null){
+            str += "  toType:" + getToType().toString()+"\r\n";
         }
         
-        if(expr!=null){
-            str += "  expr:" + expr.toString()+"\r\n";
+        if(getExpr()!=null){
+            str += "  expr:" + getExpr().toString()+"\r\n";
         }
         
         return str+"}";
@@ -64,6 +64,50 @@ public class PrimitiveCastExpr extends ExprNode{
 
     @Override
     public Type getType() {
+        return getToType();
+    }
+
+    /**
+     * @return the fromType
+     */
+    public PrimitiveType getFromType() {
+        return fromType;
+    }
+
+    /**
+     * @param fromType the fromType to set
+     */
+    public void setFromType(PrimitiveType fromType) {
+        Objects.requireNonNull(fromType);
+        this.fromType = fromType;
+    }
+
+    /**
+     * @return the toType
+     */
+    public PrimitiveType getToType() {
         return toType;
+    }
+
+    /**
+     * @param toType the toType to set
+     */
+    public void setToType(PrimitiveType toType) {
+        Objects.requireNonNull(toType);
+        this.toType = toType;
+    }
+
+    /**
+     * @return the expr
+     */
+    public ExprNode getExpr() {
+        return expr;
+    }
+
+    /**
+     * @param expr the expr to set
+     */
+    public void setExpr(ExprNode expr) {
+        this.expr = expr;
     }
 }

@@ -13,14 +13,14 @@ public class InvocationExpr extends ExprNode{
     /**
      * The target object to invoke
      */
-    public ExprNode target;
+    protected ExprNode target;
     
     /**
      * The method name of invocation
      */
-    public String methodName;
+    protected String methodName;
     
-    public ExprNode[] arguments;
+    protected ExprNode[] arguments;
     
     public InvocationExpr(ExprNode target,String methodName){
         this(target, methodName, null);
@@ -38,14 +38,14 @@ public class InvocationExpr extends ExprNode{
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        addChild(ls,target);
-        addChild(ls,arguments);
+        addChild(ls, getTarget());
+        addChild(ls, getArguments());
         return ls;
     }
     
     @Nonnull
     public ClassType getTargetClassType(){
-        Type targetType = target.getType();
+        Type targetType = getTarget().getType();
         if(!(targetType instanceof ClassType)){
             throw new UnsupportedOperationException("unsupported type:" + targetType);
         }
@@ -54,16 +54,61 @@ public class InvocationExpr extends ExprNode{
     
     @Nullable
     public Type[] getArgumentTypes(){
-        if(arguments==null) return null;
-        return AstUtil.getExprTypes(arguments);
+        if(getArguments()==null) return null;
+        return AstUtil.getExprTypes(getArguments());
     }
 
     @Override
     public Type getType() {
         ClassNode clazz = getTargetClassType().getClassNode();
-        MethodNode method = AstUtil.getMethod(clazz, methodName,getArgumentTypes());
+        MethodNode method = AstUtil.getMethod(clazz, getMethodName(),getArgumentTypes());
         if(method == null) return null;
         return method.type;
+    }
+
+    /**
+     * @return the target
+     */
+    public ExprNode getTarget() {
+        return target;
+    }
+
+    /**
+     * @param target the target to set
+     */
+    public void setTarget(ExprNode target) {
+        Objects.requireNonNull(target);
+        this.target = target;
+    }
+
+    /**
+     * @return the methodName
+     */
+    public String getMethodName() {
+        return methodName;
+    }
+
+    /**
+     * @param methodName the methodName to set
+     */
+    public void setMethodName(String methodName) {
+        Objects.requireNonNull(methodName);
+        this.methodName = methodName;
+    }
+
+    /**
+     * @return the arguments
+     */
+    public ExprNode[] getArguments() {
+        return arguments;
+    }
+
+    /**
+     * @param arguments the arguments to set
+     */
+    public void setArguments(ExprNode[] arguments) {
+        //Objects.requireNonNull(arguments);
+        this.arguments = arguments;
     }
     
 }

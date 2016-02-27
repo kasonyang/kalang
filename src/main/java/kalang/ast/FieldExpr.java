@@ -7,11 +7,11 @@ import kalang.core.*;
 import kalang.util.AstUtil;
 public class FieldExpr extends AssignableExpr{
     
-    public ExprNode target;
+    protected ExprNode target;
     
-    public String fieldName;
+    protected String fieldName;
     
-    public FieldNode matchedField;    
+    protected FieldNode matchedField;    
     
     public FieldExpr(){
         
@@ -45,7 +45,7 @@ public class FieldExpr extends AssignableExpr{
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
-        addChild(ls,target);
+        addChild(ls, getTarget());
         
         return ls;
     }
@@ -53,19 +53,19 @@ public class FieldExpr extends AssignableExpr{
     public String toString(){
         String str = "FieldExpr{\r\n";
         
-        if(target!=null){
-            str += "  target:" + target.toString()+"\r\n";
+        if(getTarget()!=null){
+            str += "  target:" + getTarget().toString()+"\r\n";
         }
         
-        if(fieldName!=null){
-            str += "  fieldName:" + fieldName.toString()+"\r\n";
+        if(getFieldName()!=null){
+            str += "  fieldName:" + getFieldName().toString()+"\r\n";
         }
         
         return str+"}";
     }
     
     public ClassType getTargetType(){
-        Type tt = getType(target);
+        Type tt = getType(getTarget());
         if(!(tt instanceof ClassType)){
             throw new UnsupportedOperationException("unsupported type:" + tt);
         }
@@ -76,8 +76,51 @@ public class FieldExpr extends AssignableExpr{
     public Type getType() {
         ClassType ct = getTargetType();
         if(ct==null) return null;
-        FieldNode field = AstUtil.getField(ct.getClassNode(), fieldName);
+        FieldNode field = AstUtil.getField(ct.getClassNode(), getFieldName());
         if(field==null) return null;
         return field.type;
+    }
+
+    /**
+     * @return the target
+     */
+    public ExprNode getTarget() {
+        return target;
+    }
+
+    /**
+     * @param target the target to set
+     */
+    public void setTarget(ExprNode target) {
+        Objects.requireNonNull(target);
+        this.target = target;
+    }
+
+    /**
+     * @return the fieldName
+     */
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    /**
+     * @param fieldName the fieldName to set
+     */
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
+
+    /**
+     * @return the matchedField
+     */
+    public FieldNode getMatchedField() {
+        return matchedField;
+    }
+
+    /**
+     * @param matchedField the matchedField to set
+     */
+    public void setMatchedField(FieldNode matchedField) {
+        this.matchedField = matchedField;
     }
 }

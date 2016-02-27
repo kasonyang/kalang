@@ -13,9 +13,9 @@ import kalang.util.AstUtil;
  */
 public class NewObjectExpr extends ExprNode{
 
-    public ClassType objectType;
+    protected ClassType objectType;
     
-    public InvocationExpr constructor;
+    protected InvocationExpr constructor;
 
     public NewObjectExpr(ClassType objectType, InvocationExpr constructor) {
         this.objectType = objectType;
@@ -36,7 +36,37 @@ public class NewObjectExpr extends ExprNode{
 
     @Override
     public Type getType() {
+        return getObjectType();
+    }
+
+    /**
+     * @return the objectType
+     */
+    public ClassType getObjectType() {
         return objectType;
+    }
+
+    /**
+     * @param objectType the objectType to set
+     */
+    public void setObjectType(ClassType objectType) {
+        Objects.requireNonNull(objectType);
+        this.objectType = objectType;
+    }
+
+    /**
+     * @return the constructor
+     */
+    public InvocationExpr getConstructor() {
+        return constructor;
+    }
+
+    /**
+     * @param constructor the constructor to set
+     */
+    public void setConstructor(InvocationExpr constructor) {
+        Objects.requireNonNull(constructor);
+        this.constructor = constructor;
     }
 
 }

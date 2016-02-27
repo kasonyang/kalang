@@ -177,24 +177,25 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitCastExpr(CastExpr node) {
-        Type et = visit(node.expr);
-        if(!node.toType.isSubTypeOf(et)
-                && !node.toType.equals(et)
+        Type et = visit(node.getExpr());
+        if(!node.getToType().isSubTypeOf(et)
+                && !node.getToType().equals(et)
                 ){
-            err.failedToCast(node, et.getName(), node.toType.getName());
+            err.failedToCast(node, et.getName(), node.getToType().getName());
         }
-        return node.toType;
+        return node.getToType();
     }
 
     @Override
     public Type visitAssignExpr(AssignExpr node) {
-        Type ft = visit(node.from);
-        Type tt = visit(node.to);
+        Type ft = visit(node.getFrom());
+        Type tt = visit(node.getTo());
         if(!requireNoneVoid(ft, node)) return getDefaultType();
         if(!requireNoneVoid(tt, node)) return getDefaultType();
         if(!ft.equals(tt)){
-            node.from = checkAssign(node.from, ft, tt, node);
-            if(node.from==null) return getDefaultType();            
+            ExprNode from = checkAssign(node.getFrom(), ft, tt, node); 
+            if(from==null) return getDefaultType();            
+            node.setFrom(from);
         }
         return tt;
     }
@@ -222,9 +223,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitBinaryExpr(BinaryExpr node) {
-        Type t1 = visit(node.expr1);
-        Type t2 = visit(node.expr2);
-        String op = node.operation;
+        Type t1 = visit(node.getExpr1());
+        Type t2 = visit(node.getExpr2());
+        String op = node.getOperation();
         Type t;
         switch (op) {
             case "==":
@@ -242,8 +243,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if(isNumber(t1) && isNumber(t2)){
                     t = getMathType(t1, t2, op);
                 }else{
-                    node.expr1 = checkAssign(node.expr1,t1,Types.STRING_CLASS_TYPE, node);
-                    node.expr2 = checkAssign(node.expr2, t2, Types.STRING_CLASS_TYPE, node);
+                    node.setExpr1(checkAssign(node.getExpr1(), t1, Types.STRING_CLASS_TYPE, node));
+                    node.setExpr2(checkAssign(node.getExpr2(), t2, Types.STRING_CLASS_TYPE, node));
                     t =Types.STRING_CLASS_TYPE;
                 }
                 break;
@@ -285,55 +286,55 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitConstExpr(ConstExpr node) {
-        return node.constType;
+        return node.getConstType();
     }
 
     @Override
     public Type visitElementExpr(ElementExpr node) {
-        Type type = visit(node.arrayExpr);
+        Type type = visit(node.getArrayExpr());
         if(!requireArray(node, type)) return getDefaultType();
         return type.getComponentType();
     }
 
     @Override
     public Type visitFieldExpr(FieldExpr node) {
-        if (null == node.target) {
-            VarObject field = fields.get(node.fieldName);
+        if (null == node.getTarget()) {
+            VarObject field = fields.get(node.getFieldName());
             if (isStatic(method.modifier)) {
                 if(!requireStatic(field.modifier, node)) return getDefaultType();
             }
             if(isStatic(field.modifier)){
-                node.target = new ClassExpr(clazz);
+                node.setTarget(new ClassExpr(clazz));
             }else{
-                node.target = new KeyExpr("this",Types.getClassType(clazz));
+                node.setTarget(new KeyExpr("this",Types.getClassType(clazz)));
             }
-            visit(node.target);
+            visit(node.getTarget());
             return field.type;
         }
-        Type t = visit(node.target);
-        String fname = node.fieldName;
+        Type t = visit(node.getTarget());
+        String fname = node.getFieldName();
         FieldNode field = t.getField(fname);
         if (field == null) {
             err.fieldNotFound(node, fname);
             return getDefaultType();
         }
-        if (node.target instanceof ClassExpr) {
+        if (node.getTarget() instanceof ClassExpr) {
             if(!requireStatic(field.modifier, node)) return getDefaultType();
         }
-        node.matchedField = field;
+        node.setMatchedField(field);
         return field.type;
     }
 
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
-        List<Type> argTypes = visitAll(node.arguments);
+        List<Type> argTypes = visitAll(node.getArguments());
         ClassType target;
-        if(node.target==null){
-            node.target = new KeyExpr("this",Types.getClassType(clazz));
+        if(node.getTarget()==null){
+            node.setTarget(new KeyExpr("this",Types.getClassType(clazz)));
         }
         //TODO here may be bug
-        visit(node.target);
-        target = (ClassType) node.target.getType();
+        visit(node.getTarget());
+        target = (ClassType) node.getTarget().getType();
         if(target==null){
             throw new IllegalStateException("unknown return value");
         }
@@ -346,8 +347,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             return getDefaultType();
         }
         //node.matchedMethod = matched;
-        boolean inStaticMethod = node.target == null && Modifier.isStatic(this.method.modifier);
-        boolean isClassExpr = node.target instanceof ClassExpr;
+        boolean inStaticMethod = node.getTarget() == null && Modifier.isStatic(this.method.modifier);
+        boolean isClassExpr = node.getTarget() instanceof ClassExpr;
         if (inStaticMethod || isClassExpr) {
             if(!requireStatic(matched.modifier, node)) return getDefaultType();
         }
@@ -360,13 +361,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitParameterExpr(ParameterExpr node) {
-        return node.parameter.type;
+        return node.getParameter().type;
     }
 
     @Override
     public Type visitUnaryExpr(UnaryExpr node) {
-        String op = node.operation;
-        Type et = visit(node.expr);
+        String op = node.getOperation();
+        Type et = visit(node.getExpr());
         if (op.equals("!")) {
             if(!requireBoolean(node, et)) return getDefaultType();
         } else {
@@ -378,7 +379,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitVarExpr(VarExpr node) {
-        return node.var.type;
+        return node.getVar().type;
     }
 
     private void caughException(Type type) {
@@ -416,7 +417,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitClassExpr(ClassExpr node) {
-        return Types.getClassType(node.clazz);
+        return Types.getClassType(node.getClazz());
     }
 
     @Override
@@ -450,20 +451,20 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitNewArrayExpr(NewArrayExpr node) {
-        return Types.getArrayType(node.componentType);
+        return Types.getArrayType(node.getComponentType());
     }
 
     @Override
     public Type visitIfStmt(IfStmt node) {
         //node.conditionExpr = this.checkAndCastToBoolean(node.conditionExpr);
-        if(!requireBoolean(node, visit(node.conditionExpr))) return getDefaultType();
-        if (node.trueBody != null) {
-            visit(node.trueBody);
+        if(!requireBoolean(node, visit(node.getConditionExpr()))) return getDefaultType();
+        if (node.getTrueBody() != null) {
+            visit(node.getTrueBody());
         }
         boolean returnedOld = returned;
         returned = false;
-        if (node.falseBody != null) {
-            visit(node.falseBody);
+        if (node.getFalseBody() != null) {
+            visit(node.getFalseBody());
         } else {
             returned = false;
         }
@@ -652,13 +653,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
      * @return the selected method,or null
      */
     private MethodNode applyMethod(ClassNode cls, InvocationExpr invocationExpr, Type[] types) {
-        String methodName = invocationExpr.methodName;
+        String methodName = invocationExpr.getMethodName();
         MethodNode md = AstUtil.getMethod(cls, methodName, types);
         if (md != null) {
             return md;
         } else {
             MethodNode[] methods = getMethodsByName(cls, methodName);
-            ExprNode[] args = invocationExpr.arguments;
+            ExprNode[] args = invocationExpr.getArguments();
             int matchedCount = 0;
             ExprNode[] matchedParams=null;
             MethodNode matchedMethod = null;
@@ -678,7 +679,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, invocationExpr);
                 return null;
             }
-            invocationExpr.arguments = matchedParams;
+            invocationExpr.setArguments(matchedParams);
             return matchedMethod;
         }
     }
@@ -690,13 +691,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitNewObjectExpr(NewObjectExpr node) {
-        return node.objectType;
+        return node.getObjectType();
     }
 
     @Override
     public Type visitIncrementExpr(IncrementExpr expr) {
         visitChildren(expr);
-        return expr.expr.getType();
+        return expr.getExpr().getType();
     }
 
     @Override

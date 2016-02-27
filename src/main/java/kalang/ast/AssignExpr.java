@@ -8,10 +8,10 @@ import kalang.core.*;
 public class AssignExpr extends ExprNode{
     
     @Nonnull
-    public AssignableExpr to;
+    protected AssignableExpr to;
     
     @Nonnull
-    public ExprNode from;
+    protected ExprNode from;
     
     public AssignExpr(@Nonnull AssignableExpr to,@Nonnull ExprNode from){
             this.to = to;
@@ -22,14 +22,44 @@ public class AssignExpr extends ExprNode{
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        addChild(ls,to);
-        addChild(ls,from);
+        addChild(ls, getTo());
+        addChild(ls, getFrom());
         return ls;
     }
 
     @Override
     public Type getType() {
-        return getType(to);
+        return getType(getTo());
+    }
+
+    /**
+     * @return the to
+     */
+    public AssignableExpr getTo() {
+        return to;
+    }
+
+    /**
+     * @param to the to to set
+     */
+    public void setTo(AssignableExpr to) {
+        Objects.requireNonNull(to);
+        this.to = to;
+    }
+
+    /**
+     * @return the from
+     */
+    public ExprNode getFrom() {
+        return from;
+    }
+
+    /**
+     * @param from the from to set
+     */
+    public void setFrom(ExprNode from) {
+        Objects.requireNonNull(from);
+        this.from = from;
     }
     
 }

@@ -8,9 +8,9 @@ import kalang.core.*;
  */
 public class ElementExpr extends AssignableExpr{
     
-    public ExprNode arrayExpr;
+    protected ExprNode arrayExpr;
     
-    public ExprNode index;
+    protected ExprNode index;
     
     
     public ElementExpr(){
@@ -38,21 +38,51 @@ public class ElementExpr extends AssignableExpr{
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
-        addChild(ls,arrayExpr);
+        addChild(ls, getArrayExpr());
         
-        addChild(ls,index);
+        addChild(ls, getIndex());
         
         return ls;
     }
 
     @Override
     public Type getType() {
-        Type arrayType = getType(arrayExpr);
+        Type arrayType = getType(getArrayExpr());
         if(arrayType==null) return Types.VOID_TYPE;
         if(!(arrayType instanceof ArrayType)){
             throw new UnknownError("ArrayType is required!");
         }
         return ((ArrayType)arrayType).getComponentType();
+    }
+
+    /**
+     * @return the arrayExpr
+     */
+    public ExprNode getArrayExpr() {
+        return arrayExpr;
+    }
+
+    /**
+     * @param arrayExpr the arrayExpr to set
+     */
+    public void setArrayExpr(ExprNode arrayExpr) {
+        Objects.requireNonNull(arrayExpr);
+        this.arrayExpr = arrayExpr;
+    }
+
+    /**
+     * @return the index
+     */
+    public ExprNode getIndex() {
+        return index;
+    }
+
+    /**
+     * @param index the index to set
+     */
+    public void setIndex(ExprNode index) {
+        Objects.requireNonNull(index);
+        this.index = index;
     }
     
 }

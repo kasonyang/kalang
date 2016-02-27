@@ -91,12 +91,12 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     }
 
     private String toJavaString(ConstExpr ce) {
-        Object v = ce.value;
+        Object v = ce.getValue();
         if (v instanceof String) {
             return "\"" + v + "\"";
-        } else if (ce.constType == Types.CHAR_TYPE) {
+        } else if (ce.getConstType() == Types.CHAR_TYPE) {
             return "'" + v + "'";
-        } else if(ce.constType == Types.NULL_TYPE) {
+        } else if(ce.getConstType() == Types.NULL_TYPE) {
             return "null";
         }else{
             return v.toString();
@@ -120,12 +120,12 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitCastExpr(CastExpr node) {
-        return String.format("(%s)%s",className(node.toType.toString()), visit(node.expr));
+        return String.format("(%s)%s",className(node.getToType().toString()), visit(node.getExpr()));
     }
 
     @Override
     public String visitParameterExpr(ParameterExpr node) {
-        return node.parameter.name;
+        return node.getParameter().name;
     }
 
 //    @Override
@@ -136,12 +136,12 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitVarExpr(VarExpr node) {
-        return this.getVarName(node.var);
+        return this.getVarName(node.getVar());
     }
 
     @Override
     public String visitClassExpr(ClassExpr node) {
-        return className(node.clazz.name);
+        return className(node.getClazz().name);
     }
 
     public String visitModifier(Integer modifier) {
@@ -279,19 +279,19 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitExprStmt(ExprStmt node) {
-        String expr = visit(node.expr);
+        String expr = visit(node.getExpr());
         addCode(expr + ';');
         return null;
     }
 
     @Override
     public String visitIfStmt(IfStmt node) {
-        String cdt = trimStmt(visit(node.conditionExpr));
+        String cdt = trimStmt(visit(node.getConditionExpr()));
         c("if(" + cdt + ")");
-        visit(node.trueBody);
-        if (node.falseBody != null) {
+        visit(node.getTrueBody());
+        if (node.getFalseBody() != null) {
             c("else");
-            visit(node.falseBody);
+            visit(node.getFalseBody());
         }
         return null;
     }
@@ -350,8 +350,8 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitAssignExpr(AssignExpr node) {
-        String from = visit(node.from);
-        String to = visit(node.to);
+        String from = visit(node.getFrom());
+        String to = visit(node.getTo());
         return to
                 + "="
                 + from;
@@ -360,11 +360,11 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     @Override
     public String visitBinaryExpr(BinaryExpr node) {
         return "(("
-                + visit(node.expr1)
+                + visit(node.getExpr1())
                 + ") "
-                + node.operation
+                + node.getOperation()
                 + "("
-                + visit(node.expr2)
+                + visit(node.getExpr2())
                 + ") )";
     }
 
@@ -375,17 +375,17 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitElementExpr(ElementExpr node) {
-        return visit(node.arrayExpr)
+        return visit(node.getArrayExpr())
                 + "["
-                + visit(node.index)
+                + visit(node.getIndex())
                 + "]";
     }
 
     @Override
     public String visitFieldExpr(FieldExpr node) {
         String target;
-        if (node.target != null) {
-            target = visit(node.target);
+        if (node.getTarget() != null) {
+            target = visit(node.getTarget());
         } else if (Modifier.isStatic(this.method.modifier)) {
             target = cls.name;
         } else {
@@ -393,20 +393,20 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         }
         return target
                 + "."
-                + node.fieldName;
+                + node.getFieldName();
     }
 
     @Override
     public String visitInvocationExpr(InvocationExpr node) {
         String targetType = null;
-        if (node.target != null) {
-            targetType = visit(node.target);
+        if (node.getTarget() != null) {
+            targetType = visit(node.getTarget());
         }
-        String args = String.join(",", visitAll(node.arguments));//.join(",");
-        String mname = node.methodName;
+        String args = String.join(",", visitAll(node.getArguments()));//.join(",");
+        String mname = node.getMethodName();
         if (mname.equals("<init>")) {
-            if (node.target instanceof KeyExpr) {
-                KeyExpr keyExpr = (KeyExpr) node.target;
+            if (node.getTarget() instanceof KeyExpr) {
+                KeyExpr keyExpr = (KeyExpr) node.getTarget();
                 return keyExpr.key
                         + "("
                         + args
@@ -425,7 +425,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
                 targetType = "";
             }
             return targetType
-                    + node.methodName
+                    + node.getMethodName()
                     + "("
                     + args
                     + ")";
@@ -434,18 +434,18 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitUnaryExpr(UnaryExpr node) {
-        String expr = visit(node.expr);
-        String op = node.operation;
+        String expr = visit(node.getExpr());
+        String op = node.getOperation();
         return "(" + op + expr + ")";
     }
 
     @Override
     public String visitNewArrayExpr(NewArrayExpr node) {
-        String type = node.componentType.toString();
+        String type = node.getComponentType().toString();
         return "new "
                 + type
                 + "["
-                + visit(node.size)
+                + visit(node.getSize())
                 + "]";
     }
 
@@ -496,8 +496,8 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitPrimitiveCastExpr(PrimitiveCastExpr node) {
-        String expr = visit(node.expr);
-        return "(" + node.toType + "/*" + node.fromType + "*/" + ")" + expr;
+        String expr = visit(node.getExpr());
+        return "(" + node.getToType() + "/*" + node.getFromType() + "*/" + ")" + expr;
     }
 
     @Override
@@ -529,17 +529,17 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     @Override
     public String visitNewObjectExpr(NewObjectExpr node) {
         String args = "";
-        if(node.constructor!=null && node.constructor.arguments!=null){
-            args = String.join(",", visitAll(Arrays.asList(node.constructor.arguments)));
+        if(node.getConstructor()!=null && node.getConstructor().getArguments()!=null){
+            args = String.join(",", visitAll(Arrays.asList(node.getConstructor().getArguments())));
         }
-        return String.format("new %s(%s)",className(node.objectType.toString()),args);
+        return String.format("new %s(%s)",className(node.getObjectType().toString()),args);
     }
 
     @Override
     public String visitIncrementExpr(IncrementExpr node) {
-        String op=node.isDesc ? "--" : "++";
-        String vn = visit(node.expr);
-        if(node.isPrefix){
+        String op=node.isIsDesc() ? "--" : "++";
+        String vn = visit(node.getExpr());
+        if(node.isIsPrefix()){
             return "(" + op + vn + ")";
         }else{
             return "(" + vn + op + ")";
@@ -548,7 +548,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitArrayLengthExpr(ArrayLengthExpr node) {
-        return visit(node.arrayExpr) + ".length";
+        return visit(node.getArrayExpr()) + ".length";
     }
 
 }

@@ -14,7 +14,7 @@ import kalang.core.Types;
 public class ArrayLengthExpr extends ExprNode{
 
     @Nonnull
-    public ExprNode arrayExpr;
+    protected ExprNode arrayExpr;
 
     public ArrayLengthExpr(@Nonnull ExprNode arrayExpr) {
         this.arrayExpr = arrayExpr;
@@ -23,6 +23,21 @@ public class ArrayLengthExpr extends ExprNode{
     @Override
     public Type getType() {
         return Types.INT_TYPE;
+    }
+
+    /**
+     * @return the arrayExpr
+     */
+    public ExprNode getArrayExpr() {
+        return arrayExpr;
+    }
+
+    /**
+     * @param arrayExpr the arrayExpr to set
+     */
+    public void setArrayExpr(@Nonnull ExprNode arrayExpr) {
+        Objects.requireNonNull(arrayExpr);
+        this.arrayExpr = arrayExpr;
     }
 
 }

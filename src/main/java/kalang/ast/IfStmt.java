@@ -6,11 +6,11 @@ import java.util.*;
 import kalang.core.*;
 public class IfStmt extends Statement{
     
-    public ExprNode conditionExpr;
+    protected ExprNode conditionExpr;
     
-    public Statement trueBody;
+    protected Statement trueBody;
     
-    public Statement falseBody;
+    protected Statement falseBody;
     
     
     public IfStmt(){
@@ -39,11 +39,11 @@ public class IfStmt extends Statement{
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
-        addChild(ls,conditionExpr);
+        addChild(ls, getConditionExpr());
         
-        addChild(ls,trueBody);
+        addChild(ls, getTrueBody());
         
-        addChild(ls,falseBody);
+        addChild(ls, getFalseBody());
         
         return ls;
     }
@@ -51,18 +51,63 @@ public class IfStmt extends Statement{
     public String toString(){
         String str = "IfStmt{\r\n";
         
-        if(conditionExpr!=null){
-            str += "  conditionExpr:" + conditionExpr.toString()+"\r\n";
+        if(getConditionExpr()!=null){
+            str += "  conditionExpr:" + getConditionExpr().toString()+"\r\n";
         }
         
-        if(trueBody!=null){
-            str += "  trueBody:" + trueBody.toString()+"\r\n";
+        if(getTrueBody()!=null){
+            str += "  trueBody:" + getTrueBody().toString()+"\r\n";
         }
         
-        if(falseBody!=null){
-            str += "  falseBody:" + falseBody.toString()+"\r\n";
+        if(getFalseBody()!=null){
+            str += "  falseBody:" + getFalseBody().toString()+"\r\n";
         }
         
         return str+"}";
+    }
+
+    /**
+     * @return the conditionExpr
+     */
+    public ExprNode getConditionExpr() {
+        return conditionExpr;
+    }
+
+    /**
+     * @param conditionExpr the conditionExpr to set
+     */
+    public void setConditionExpr(ExprNode conditionExpr) {
+        Objects.requireNonNull(conditionExpr);
+        this.conditionExpr = conditionExpr;
+    }
+
+    /**
+     * @return the trueBody
+     */
+    public Statement getTrueBody() {
+        return trueBody;
+    }
+
+    /**
+     * @param trueBody the trueBody to set
+     */
+    public void setTrueBody(Statement trueBody) {
+        Objects.requireNonNull(trueBody);
+        this.trueBody = trueBody;
+    }
+
+    /**
+     * @return the falseBody
+     */
+    public Statement getFalseBody() {
+        return falseBody;
+    }
+
+    /**
+     * @param falseBody the falseBody to set
+     */
+    public void setFalseBody(Statement falseBody) {
+        Objects.requireNonNull(falseBody);
+        this.falseBody = falseBody;
     }
 }

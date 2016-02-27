@@ -6,9 +6,9 @@ import java.util.*;
 import kalang.core.*;
 public class NewArrayExpr extends ExprNode{
     
-    public Type componentType;
+    protected Type componentType;
     
-    public ExprNode size;
+    protected ExprNode size;
     
     
     public NewArrayExpr(){
@@ -42,12 +42,12 @@ public class NewArrayExpr extends ExprNode{
     public String toString(){
         String str = "NewArrayExpr{\r\n";
         
-        if(componentType!=null){
-            str += "  type:" + componentType.toString()+"\r\n";
+        if(getComponentType()!=null){
+            str += "  type:" + getComponentType().toString()+"\r\n";
         }
         
-        if(size!=null){
-            str += "  size:" + size.toString()+"\r\n";
+        if(getSize()!=null){
+            str += "  size:" + getSize().toString()+"\r\n";
         }
         
         return str+"}";
@@ -55,6 +55,36 @@ public class NewArrayExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        return Types.getArrayType(componentType);
+        return Types.getArrayType(getComponentType());
+    }
+
+    /**
+     * @return the componentType
+     */
+    public Type getComponentType() {
+        return componentType;
+    }
+
+    /**
+     * @param componentType the componentType to set
+     */
+    public void setComponentType(Type componentType) {
+        Objects.requireNonNull(componentType);
+        this.componentType = componentType;
+    }
+
+    /**
+     * @return the size
+     */
+    public ExprNode getSize() {
+        return size;
+    }
+
+    /**
+     * @param size the size to set
+     */
+    public void setSize(ExprNode size) {
+        Objects.requireNonNull(size);
+        this.size = size;
     }
 }

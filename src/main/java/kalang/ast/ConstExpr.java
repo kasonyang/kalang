@@ -6,9 +6,9 @@ import java.util.*;
 import kalang.core.*;
 public class ConstExpr extends ExprNode{
     
-    public Object value;
+    protected Object value;
     
-    public Type constType;
+    protected Type constType;
     
     
     public ConstExpr(){
@@ -41,12 +41,12 @@ public class ConstExpr extends ExprNode{
     public String toString(){
         String str = "ConstExpr{\r\n";
         
-        if(value!=null){
-            str += "  value:" + value.toString()+"\r\n";
+        if(getValue()!=null){
+            str += "  value:" + getValue().toString()+"\r\n";
         }
         
-        if(constType!=null){
-            str += "  type:" + constType.toString()+"\r\n";
+        if(getConstType()!=null){
+            str += "  type:" + getConstType().toString()+"\r\n";
         }
         
         return str+"}";
@@ -54,6 +54,35 @@ public class ConstExpr extends ExprNode{
 
     @Override
     public Type getType() {
+        return getConstType();
+    }
+
+    /**
+     * @return the value
+     */
+    public Object getValue() {
+        return value;
+    }
+
+    /**
+     * @param value the value to set
+     */
+    public void setValue(Object value) {
+        this.value = value;
+    }
+
+    /**
+     * @return the constType
+     */
+    public Type getConstType() {
         return constType;
+    }
+
+    /**
+     * @param constType the constType to set
+     */
+    public void setConstType(Type constType) {
+        Objects.requireNonNull(constType);
+        this.constType = constType;
     }
 }

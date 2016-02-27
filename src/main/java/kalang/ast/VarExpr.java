@@ -6,7 +6,7 @@ import java.util.*;
 import kalang.core.*;
 public class VarExpr extends AssignableExpr{
     
-    public VarObject var;
+    protected VarObject var;
     
     
     public VarExpr(){
@@ -45,8 +45,8 @@ public class VarExpr extends AssignableExpr{
     public String toString(){
         String str = "VarExpr{\r\n";
         
-        if(var!=null){
-            str += "  var:" + var.toString()+"\r\n";
+        if(getVar()!=null){
+            str += "  var:" + getVar().toString()+"\r\n";
         }
         
         return str+"}";
@@ -54,6 +54,21 @@ public class VarExpr extends AssignableExpr{
 
     @Override
     public Type getType() {
-        return var.type;
+        return getVar().type;
+    }
+
+    /**
+     * @return the var
+     */
+    public VarObject getVar() {
+        return var;
+    }
+
+    /**
+     * @param var the var to set
+     */
+    public void setVar(VarObject var) {
+        Objects.requireNonNull(var);
+        this.var = var;
     }
 }

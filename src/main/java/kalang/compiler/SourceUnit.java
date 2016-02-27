@@ -326,8 +326,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             ExpressionContext e = ctx.expression(i);
             ExprNode v = (ExprNode) visit(e);
             ConstExpr k = new ConstExpr();
-            k.constType = Types.STRING_CLASS_TYPE;// STRING_CLASS_NAME;
-            k.value = ctx.Identifier(i).getText();
+            k.setConstType(Types.STRING_CLASS_TYPE);// STRING_CLASS_NAME;
+            k.setValue(ctx.Identifier(i).getText());
             ExprNode[] args = new ExprNode[]{k,v};
             InvocationExpr iv = new InvocationExpr(ve, "put",args);
             ExprStmt es = new ExprStmt(iv);
@@ -363,8 +363,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
         NewArrayExpr nae = new NewArrayExpr();
-        nae.size = (ExprNode) visit(ctx.expression());
-        nae.componentType = parseSingleType(ctx.singleType());
+        nae.setSize((ExprNode) visit(ctx.expression()));
+        nae.setComponentType(parseSingleType(ctx.singleType()));
         mapAst(nae, ctx);
         return nae;
     }
@@ -378,9 +378,9 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         //addCode(vds, ctx);
         VarExpr ve = new VarExpr(vo);
         IfStmt is = new IfStmt();
-        is.conditionExpr = (ExprNode) visit(ctx.expression(0));
-        is.trueBody = new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(1))));
-        is.falseBody = new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(2))));
+        is.setConditionExpr((ExprNode) visit(ctx.expression(0)));
+        is.setTrueBody(new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(1)))));
+        is.setFalseBody(new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(2)))));
         mse.stmts.add(is);
         mse.reference = ve;
         //addCode(is, ctx);
@@ -395,8 +395,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             this.reportError("AssignExpr required", ctx);
         }
         AssignExpr assignExpr = (AssignExpr) leftExpr;
-        AssignableExpr to = assignExpr.to;
-        ExprNode from = assignExpr.from;
+        AssignableExpr to = assignExpr.getTo();
+        ExprNode from = assignExpr.getFrom();
         ExprNode cond = visitExpression(ctx.expression(1));
         Token op = ctx.op;
         if (op != null) {
@@ -406,8 +406,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         }
         AssignExpr as = new AssignExpr(to, from);
         IfStmt is = new IfStmt();
-        is.conditionExpr = cond;
-        is.trueBody = new ExprStmt(as);
+        is.setConditionExpr(cond);
+        is.setTrueBody(new ExprStmt(as));
         //addCode(is, ctx);
         mapAst(is,ctx);
         return is;
@@ -524,12 +524,12 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitIfStat(IfStatContext ctx) {
         IfStmt ifStmt = new IfStmt();
         ExprNode expr = visitExpression(ctx.expression());
-        ifStmt.conditionExpr = expr;
+        ifStmt.setConditionExpr(expr);
         if (ctx.trueStmt != null) {
-            ifStmt.trueBody = visitStat(ctx.trueStmt);
+            ifStmt.setTrueBody(visitStat(ctx.trueStmt));
         }
         if (ctx.falseStmt != null) {
-            ifStmt.falseBody = visitStat(ctx.falseStmt);
+            ifStmt.setFalseBody(visitStat(ctx.falseStmt));
         }
         mapAst(ifStmt,ctx);
         return ifStmt;
@@ -694,7 +694,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitExprStat(ExprStatContext ctx) {
         AstNode expr = visitExpression(ctx.expression());
         ExprStmt es = new ExprStmt();
-        es.expr = (ExprNode) expr;
+        es.setExpr((ExprNode) expr);
         mapAst(es,ctx);
         return es;
     }
@@ -777,8 +777,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             ret = new ArrayLengthExpr(expr);
         }else{
             FieldExpr fe = new FieldExpr();
-            fe.target = (ExprNode) expr;
-            fe.fieldName = name;
+            fe.setTarget((ExprNode) expr);
+            fe.setFieldName(name);
             ret = fe;
         }
         mapAst(ret, ctx);
@@ -799,8 +799,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public UnaryExpr visitExprSelfOpPre(ExprSelfOpPreContext ctx) {
         String op = ctx.getChild(0).getText();
         UnaryExpr ue = new UnaryExpr();
-        ue.expr = (ExprNode) visitExpression(ctx.expression());
-        ue.operation = op;
+        ue.setExpr((ExprNode) visitExpression(ctx.expression()));
+        ue.setOperation(op);
         mapAst(ue, ctx);
         return ue;
     }
@@ -808,8 +808,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public ElementExpr visitExprGetArrayElement(ExprGetArrayElementContext ctx) {
         ElementExpr ee = new ElementExpr();
-        ee.arrayExpr = (ExprNode) visitExpression(ctx.expression(0));
-        ee.index = (ExprNode) visitExpression(ctx.expression(1));
+        ee.setArrayExpr((ExprNode) visitExpression(ctx.expression(0)));
+        ee.setIndex((ExprNode) visitExpression(ctx.expression(1)));
         mapAst(ee, ctx);
         return ee;
     }
@@ -842,7 +842,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         if (vtb.exist(name)) {
             VarExpr ve = new VarExpr();
             LocalVarNode declStmt = vtb.get(name); //vars.indexOf(vo);
-            ve.var = declStmt;
+            ve.setVar(declStmt);
             return ve;
         } else {
             //find parameters
@@ -857,7 +857,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 for (FieldNode f : classAst.fields) {
                     if (f.name!=null && f.name.equals(name)) {
                         FieldExpr fe = new FieldExpr();
-                        fe.fieldName = name;
+                        fe.setFieldName(name);
                         return fe;
                     }
                 }
@@ -876,24 +876,24 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         ConstExpr ce = new ConstExpr();
         String t = ctx.getText();
         if (ctx.IntegerLiteral() != null) {
-            ce.constType = Types.INT_TYPE;
-            ce.value = Integer.parseInt(t);
+            ce.setConstType(Types.INT_TYPE);
+            ce.setValue((Object) Integer.parseInt(t));
         } else if (ctx.FloatingPointLiteral() != null) {
-            ce.constType = Types.FLOAT_TYPE;
-            ce.value = Float.parseFloat(t);
+            ce.setConstType(Types.FLOAT_TYPE);
+            ce.setValue((Object) Float.parseFloat(t));
         } else if (ctx.BooleanLiteral() != null) {
-            ce.constType = Types.BOOLEAN_TYPE;
-            ce.value = Boolean.parseBoolean(t);
+            ce.setConstType(Types.BOOLEAN_TYPE);
+            ce.setValue((Object) Boolean.parseBoolean(t));
         } else if (ctx.CharacterLiteral() != null) {
-            ce.constType = Types.CHAR_TYPE;
+            ce.setConstType(Types.CHAR_TYPE);
             char[] chars = t.toCharArray();
-            ce.value = chars[1];
+            ce.setValue((Object) chars[1]);
         } else if (ctx.StringLiteral() != null) {
-            ce.constType = Types.STRING_CLASS_TYPE;
+            ce.setConstType(Types.STRING_CLASS_TYPE);
             //TODO parse string
-            ce.value = t.substring(1, t.length() - 1);
+            ce.setValue(t.substring(1, t.length() - 1));
         } else {
-            ce.constType = Types.NULL_TYPE;
+            ce.setConstType(Types.NULL_TYPE);
         }
         mapAst(ce,ctx);
         return ce;
@@ -967,7 +967,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
 //            ps[i] = visitExpression(ctx.params.get(i));
 //        }
         InvocationExpr inv = getInvocationExpr(newExpr, "<init>", ctx.params);
-        newExpr.constructor = inv;
+        newExpr.setConstructor(inv);
         mapAst(newExpr,ctx);
         return newExpr;
     }

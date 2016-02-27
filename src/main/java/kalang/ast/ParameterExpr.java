@@ -6,7 +6,7 @@ import java.util.*;
 import kalang.core.*;
 public class ParameterExpr extends ExprNode{
     
-    public VarObject parameter;
+    protected VarObject parameter;
     
     
     public ParameterExpr(){
@@ -37,8 +37,8 @@ public class ParameterExpr extends ExprNode{
     public String toString(){
         String str = "ParameterExpr{\r\n";
         
-        if(parameter!=null){
-            str += "  parameter:" + parameter.toString()+"\r\n";
+        if(getParameter()!=null){
+            str += "  parameter:" + getParameter().toString()+"\r\n";
         }
         
         return str+"}";
@@ -46,6 +46,21 @@ public class ParameterExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        return parameter.type;
+        return getParameter().type;
+    }
+
+    /**
+     * @return the parameter
+     */
+    public VarObject getParameter() {
+        return parameter;
+    }
+
+    /**
+     * @param parameter the parameter to set
+     */
+    public void setParameter(VarObject parameter) {
+        Objects.requireNonNull(parameter);
+        this.parameter = parameter;
     }
 }

@@ -195,11 +195,11 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitExprStmt(ExprStmt node) {
         visitChildren(node);
-        if(!(node.expr instanceof AssignExpr)){
-            if(node.expr.getType() !=null &&
-                    !Types.VOID_TYPE.equals(node.expr.getType())
+        if(!(node.getExpr() instanceof AssignExpr)){
+            if(node.getExpr().getType() !=null &&
+                    !Types.VOID_TYPE.equals(node.getExpr().getType())
                     ){
-                pop(node.expr.getType());
+                pop(node.getExpr().getType());
             }
         }
         return null;
@@ -209,15 +209,15 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitIfStmt(IfStmt node) {
         Label stopLabel = new Label();
         Label falseLabel = new Label();
-        visit(node.conditionExpr);
+        visit(node.getConditionExpr());
         md.visitJumpInsn(IFEQ, falseLabel);
-        if(node.trueBody!=null){
-            visit(node.trueBody);
+        if(node.getTrueBody()!=null){
+            visit(node.getTrueBody());
         }
         md.visitJumpInsn(GOTO, stopLabel);
         md.visitLabel(falseLabel);
-        if(node.falseBody!=null){
-            visit(node.falseBody);
+        if(node.getFalseBody()!=null){
+            visit(node.getFalseBody());
         }
         md.visitLabel(stopLabel);
         return null;
@@ -290,24 +290,22 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         if(to instanceof FieldExpr){
             FieldExpr toField = (FieldExpr) to;
             int opc = PUTFIELD;
-            if(toField.target instanceof ClassExpr){
+            if(toField.getTarget() instanceof ClassExpr){
                 opc = PUTSTATIC;
             }else{
-                visit(toField.target);
+                visit(toField.getTarget());
             }
             visit(from);
-            md.visitFieldInsn(
-                    opc, 
-                    asmType(toField.target.getType()).getInternalName()
-                    , toField.fieldName
-                    , getTypeDescriptor(toField.target.getType())
-            );
+            md.visitFieldInsn(opc, 
+                    asmType(toField.getTarget().getType()).getInternalName()
+                    , toField.getFieldName()
+            , getTypeDescriptor(toField.getTarget().getType()));
         }else if(to instanceof VarExpr){
-            assignVarObject(((VarExpr) to).var, from);
+            assignVarObject(((VarExpr) to).getVar(), from);
         }else if(to instanceof ElementExpr){
             ElementExpr elementExpr = (ElementExpr) to;
-            visit(elementExpr.arrayExpr);
-            visit(elementExpr.index);
+            visit(elementExpr.getArrayExpr());
+            visit(elementExpr.getIndex());
             visit(from);
             md.visitInsn(type.getOpcode(IASTORE));
         }else{
@@ -317,15 +315,15 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitAssignExpr(AssignExpr node) {
-        assign(node.to, node.from);
+        assign(node.getTo(), node.getFrom());
         return null;
     }
 
     @Override
     public Object visitBinaryExpr(BinaryExpr node) {
         int op = 0;
-        org.objectweb.asm.Type at = asmType(node.expr1.getType());
-        switch(node.operation){
+        org.objectweb.asm.Type at = asmType(node.getExpr1().getType());
+        switch(node.getOperation()){
             case "+": op = IADD;break;
             case "-" : op = ISUB;break;
             case "*" : op = IMUL;break;
@@ -333,28 +331,28 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case "%":op = IREM;break;
             case "&&":
             case "||":
-                doLogicOperation(node.expr1,node.expr2,node.operation);
+                doLogicOperation(node.getExpr1(), node.getExpr2(), node.getOperation());
                 break;
             default:
-                compare(node.expr1,node.expr2,node.operation);
+                compare(node.getExpr1(), node.getExpr2(), node.getOperation());
                 return null;
         }
-        visit(node.expr1);
-        visit(node.expr2);
+        visit(node.getExpr1());
+        visit(node.getExpr2());
         md.visitInsn(at.getOpcode(op));
         return null;
     }
 
     @Override
     public Object visitConstExpr(ConstExpr node) {
-        md.visitLdcInsn(node.value);
+        md.visitLdcInsn(node.getValue());
         return null;
     }
 
     @Override
     public Object visitElementExpr(ElementExpr node) {
-        visit(node.arrayExpr);
-        visit(node.index);
+        visit(node.getArrayExpr());
+        visit(node.getIndex());
         org.objectweb.asm.Type t = asmType(node.getType());
         md.visitInsn(t.getOpcode(IALOAD));
         return null;
@@ -362,59 +360,54 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitFieldExpr(FieldExpr node) {
-        visit(node.target);
-        if(node.target.getType().isArray()){
-            if(node.fieldName.equals("length")){
+        visit(node.getTarget());
+        if(node.getTarget().getType().isArray()){
+            if(node.getFieldName().equals("length")){
                 md.visitInsn(ARRAYLENGTH);
             }else{
-                throw new UnsupportedOperationException("unknown field:" + node.fieldName);
+                throw new UnsupportedOperationException("unknown field:" + node.getFieldName());
             }
             return null;
         }
         int opc = GETFIELD;
-        if(node.target instanceof ClassExpr){
+        if(node.getTarget() instanceof ClassExpr){
             opc = GETSTATIC;
         }
-        md.visitFieldInsn(
-                opc
-                ,asmType(node.target.getType()).getInternalName()
-                ,node.fieldName
-                , getTypeDescriptor(node.getType()));
+        md.visitFieldInsn(opc
+                ,asmType(node.getTarget().getType()).getInternalName()
+                , node.getFieldName(), getTypeDescriptor(node.getType()));
         return null;
     }
 
     @Override
     public Object visitInvocationExpr(InvocationExpr node) {
         int opc = INVOKEVIRTUAL;
-        if(node.target instanceof ClassExpr){
+        if(node.getTarget() instanceof ClassExpr){
             opc = INVOKESTATIC;
         }else{
-            visit(node.target);
+            visit(node.getTarget());
         }
-        if(AstUtil.isSpecialMethod(node.methodName)){
+        if(AstUtil.isSpecialMethod(node.getMethodName())){
             opc = INVOKESPECIAL;
         }
-        visitAll(node.arguments);
-        md.visitMethodInsn(
-                opc
-                , internalName(node.target.getType())
-                , node.methodName
-                ,getMethodDescriptor(node.getType(), node.methodName
-                        ,AstUtil.getExprTypes(node.arguments))
+        visitAll(node.getArguments());
+        md.visitMethodInsn(opc
+                , internalName(node.getTarget().getType())
+                ,node.getMethodName()
 //                , getTypeDescriptor(
 //                        AstUtil.getExprTypes(node.arguments.toArray(new ExprNode[0])) )
-                , false);
+                , getMethodDescriptor(node.getType(), node.getMethodName(), AstUtil.getExprTypes(node.getArguments())), false);
         return null;
     }
 
     @Override
     public Object visitUnaryExpr(UnaryExpr node) {
-        org.objectweb.asm.Type t = asmType(node.expr.getType());
-        switch(node.operation){
+        org.objectweb.asm.Type t = asmType(node.getExpr().getType());
+        switch(node.getOperation()){
             case UnaryExpr.OPERATION_POS:
                 break;
             case UnaryExpr.OPERATION_NEG:
-                visit(node.expr);
+                visit(node.getExpr());
                 md.visitInsn(t.getOpcode(INEG));
                 break;
             //case UnaryExpr.OPERATION_INC:
@@ -426,7 +419,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitVarExpr(VarExpr node) {
-        visitVarObject(node.var);
+        visitVarObject(node.getVar());
         return null;
     }
 
@@ -437,22 +430,22 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitParameterExpr(ParameterExpr node) {
-        visitVarObject(node.parameter);
+        visitVarObject(node.getParameter());
         return null;
     }
 
     @Override
     public Object visitCastExpr(CastExpr node) {
-        visit(node.expr);
-        md.visitTypeInsn(CHECKCAST, internalName(node.toType));
+        visit(node.getExpr());
+        md.visitTypeInsn(CHECKCAST, internalName(node.getToType()));
         return null;
     }
 
     @Override
     public Object visitNewArrayExpr(NewArrayExpr node) {
-        visit(node.size);
+        visit(node.getSize());
         //org.objectweb.asm.Type t = asmType(node.componentType);
-        Type t = node.componentType;
+        Type t = node.getComponentType();
         int opr = -1;
         int op = NEWARRAY;
         if(t.equals(BOOLEAN_TYPE)){
@@ -635,10 +628,10 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitPrimitiveCastExpr(PrimitiveCastExpr node) {
-        visit(node.expr);
+        visit(node.getExpr());
         int opc;
-        Type ft = node.expr.getType();
-        Type tt = node.toType;
+        Type ft = node.getExpr().getType();
+        Type tt = node.getToType();
         opc = getPrimitiveCastOpc(ft, tt);
         md.visitInsn(opc);
         return null;
@@ -668,14 +661,14 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitNewObjectExpr(NewObjectExpr node) {
-        org.objectweb.asm.Type t = asmType(node.objectType);
+        org.objectweb.asm.Type t = asmType(node.getObjectType());
         md.visitTypeInsn(NEW, t.getInternalName());
         md.visitInsn(DUP);
         md.visitMethodInsn(
                 INVOKESPECIAL
                 , t.getInternalName()
                 , "<init>"
-                ,getMethodDescriptor(node.constructor.getType(), node.constructor.methodName, node.constructor.getArgumentTypes())
+                ,getMethodDescriptor(node.getConstructor().getType(), node.getConstructor().getMethodName(), node.getConstructor().getArgumentTypes())
                 //,getTypeDescriptor(
                 //        AstUtil.getExprTypes(node.constructor.arguments))
                 , false);
@@ -691,16 +684,16 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     
     @Override
     public Object visitIncrementExpr(IncrementExpr node) {
-        if(!node.isPrefix){
-            visit(node.expr);
+        if(!node.isIsPrefix()){
+            visit(node.getExpr());
         }
-        Type exprType = node.expr.getType();
-        ConstExpr ce = getConstX(exprType, node.isDesc ? -1 : 1);
-        BinaryExpr be = new BinaryExpr(node.expr,ce, "+");
-        AssignExpr addOne = new AssignExpr(node.expr,be);
+        Type exprType = node.getExpr().getType();
+        ConstExpr ce = getConstX(exprType, node.isIsDesc() ? -1 : 1);
+        BinaryExpr be = new BinaryExpr(node.getExpr(),ce, "+");
+        AssignExpr addOne = new AssignExpr(node.getExpr(),be);
         visit(addOne);
-        if(node.isPrefix){
-            visit(node.expr);
+        if(node.isIsPrefix()){
+            visit(node.getExpr());
         }        
         return null;
     }
@@ -731,7 +724,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     }
 
     private void constX(Type type,int i) {
-        constX(getConstX(type, i).value);
+        constX(getConstX(type, i).getValue());
     }
 
     private void compare(ExprNode expr1, ExprNode expr2,String op) {
@@ -776,7 +769,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitArrayLengthExpr(ArrayLengthExpr node) {
         //TODO support needed
         //throw new UnsupportedOperationException("Not supported yet.");
-        visit(node.arrayExpr);
+        visit(node.getArrayExpr());
         md.visitInsn(ARRAYLENGTH);
         return null;
     }

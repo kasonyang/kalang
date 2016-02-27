@@ -6,7 +6,7 @@ import java.util.*;
 import kalang.core.*;
 public class ExprStmt extends Statement{
     
-    public ExprNode expr;
+    protected ExprNode expr;
     
     
     public ExprStmt(){
@@ -31,7 +31,7 @@ public class ExprStmt extends Statement{
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         
-        addChild(ls,expr);
+        addChild(ls, getExpr());
         
         return ls;
     }
@@ -39,10 +39,25 @@ public class ExprStmt extends Statement{
     public String toString(){
         String str = "ExprStmt{\r\n";
         
-        if(expr!=null){
-            str += "  expr:" + expr.toString()+"\r\n";
+        if(getExpr()!=null){
+            str += "  expr:" + getExpr().toString()+"\r\n";
         }
         
         return str+"}";
+    }
+
+    /**
+     * @return the expr
+     */
+    public ExprNode getExpr() {
+        return expr;
+    }
+
+    /**
+     * @param expr the expr to set
+     */
+    public void setExpr(ExprNode expr) {
+        Objects.requireNonNull(expr);
+        this.expr = expr;
     }
 }
