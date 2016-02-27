@@ -671,14 +671,15 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         org.objectweb.asm.Type t = asmType(node.objectType);
         md.visitTypeInsn(NEW, t.getInternalName());
         //TODO init object
-//        md.visitInsn(DUP);
-//        md.visitMethodInsn(
-//                INVOKESPECIAL
-//                , t.getInternalName()
-//                , "<init>"
-//                ,getTypeDescriptor(
-//                        AstUtil.getExprTypes(node.arguments))
-//                , false);
+        md.visitInsn(DUP);
+        md.visitMethodInsn(
+                INVOKESPECIAL
+                , t.getInternalName()
+                , "<init>"
+                ,getMethodDescriptor(node.constructor.getType(), node.constructor.methodName, node.constructor.getArgumentTypes())
+                //,getTypeDescriptor(
+                //        AstUtil.getExprTypes(node.constructor.arguments))
+                , false);
         return null;
     }
 

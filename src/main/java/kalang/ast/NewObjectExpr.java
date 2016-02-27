@@ -6,6 +6,7 @@ import java.net.*;
 import java.util.*;
 import kalang.core.ClassType;
 import kalang.core.Type;
+import kalang.util.AstUtil;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -23,12 +24,14 @@ public class NewObjectExpr extends ExprNode{
     
     public NewObjectExpr(ClassType objectType) {
         this.objectType = objectType;
+        MethodNode methodNode = AstUtil.getMethod(objectType.getClassNode(), "<init>", null);
+        constructor = new InvocationExpr(this, "<init>");
     }
     
     @Override
     public List<AstNode> getChildren() {
-        //TODO should constructor become a child
         return Collections.EMPTY_LIST;
+        //return Collections.singletonList(constructor);
     }
 
     @Override

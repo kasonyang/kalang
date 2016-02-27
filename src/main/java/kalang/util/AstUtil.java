@@ -184,6 +184,9 @@ public class AstUtil {
         for(MethodNode m:methods){
            Type[] mdTypes = getParameterTypes(m);
            if(Arrays.equals(mdTypes, types)) return m;
+           if(mdTypes==null || mdTypes.length==0){
+               if(types==null || types.length==0) return m;
+           }
         }
         return null;
     }

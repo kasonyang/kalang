@@ -5,6 +5,10 @@ import javax.annotation.Nullable;
 import kalang.core.*;
 import kalang.util.AstUtil;
 public class InvocationExpr extends ExprNode{
+
+    public static InvocationExpr create(ExprNode target, MethodNode methodNode) {
+        return new InvocationExpr(target, methodNode.name);
+    }
     
     /**
      * The target object to invoke
