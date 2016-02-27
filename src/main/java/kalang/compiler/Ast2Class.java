@@ -106,7 +106,9 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         int vSize = asmType(vo.type).getSize();
         varIdCounter+= vSize;
         varIds.put(vo, vid);
-        assignVarObject(vo, vo.initExpr);
+        if(vo.initExpr!=null){
+            assignVarObject(vo, vo.initExpr);
+        }
     }
 
     private String internalName(String name){
@@ -664,6 +666,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         org.objectweb.asm.Type t = asmType(node.getObjectType());
         md.visitTypeInsn(NEW, t.getInternalName());
         md.visitInsn(DUP);
+        visitAll(node.getConstructor().getArguments());
         md.visitMethodInsn(
                 INVOKESPECIAL
                 , t.getInternalName()
