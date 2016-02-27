@@ -197,13 +197,13 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitExprStmt(ExprStmt node) {
         visitChildren(node);
-        if(!(node.getExpr() instanceof AssignExpr)){
+        //if(!(node.getExpr() instanceof AssignExpr)){
             if(node.getExpr().getType() !=null &&
                     !Types.VOID_TYPE.equals(node.getExpr().getType())
                     ){
                 pop(node.getExpr().getType());
             }
-        }
+        //}
         return null;
     }
 
@@ -318,6 +318,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitAssignExpr(AssignExpr node) {
         assign(node.getTo(), node.getFrom());
+        visit(node.getTo());
         return null;
     }
 
@@ -703,6 +704,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         BinaryExpr be = new BinaryExpr(node.getExpr(),ce, "+");
         AssignExpr addOne = new AssignExpr(node.getExpr(),be);
         visit(addOne);
+        pop(exprType);
         if(node.isIsPrefix()){
             visit(node.getExpr());
         }        
