@@ -405,15 +405,23 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitUnaryExpr(UnaryExpr node) {
         org.objectweb.asm.Type t = asmType(node.getExpr().getType());
+        visit(node.getExpr());
         switch(node.getOperation()){
             case UnaryExpr.OPERATION_POS:
                 break;
             case UnaryExpr.OPERATION_NEG:
-                visit(node.getExpr());
                 md.visitInsn(t.getOpcode(INEG));
                 break;
-            //case UnaryExpr.OPERATION_INC:
-                //md.visitIincInsn(getVarId(var), 0);
+           case UnaryExpr.OPERATION_NOT:
+               Label falseLabel = new Label();
+               Label stopLabel = new Label();
+               md.visitJumpInsn(IFEQ, falseLabel);
+               constFalse();
+               md.visitJumpInsn(GOTO, stopLabel);
+               md.visitLabel(falseLabel);
+               constTrue();
+               md.visitLabel(stopLabel);
+               break;
         }
         //TODO impl unary expr
         return null;

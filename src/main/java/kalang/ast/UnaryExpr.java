@@ -10,7 +10,8 @@ public class UnaryExpr extends ExprNode{
             //OPERATION_INC = "++",
             //OPERATION_DEC = "--",
             OPERATION_NEG = "-",
-            OPERATION_POS = "+";
+            OPERATION_POS = "+",
+            OPERATION_NOT = "!";
     
     protected ExprNode expr;
     
