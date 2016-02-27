@@ -670,7 +670,6 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitNewObjectExpr(NewObjectExpr node) {
         org.objectweb.asm.Type t = asmType(node.objectType);
         md.visitTypeInsn(NEW, t.getInternalName());
-        //TODO init object
         md.visitInsn(DUP);
         md.visitMethodInsn(
                 INVOKESPECIAL
@@ -696,46 +695,43 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             visit(node.expr);
         }
         Type exprType = node.expr.getType();
-        //TODO 1 maybe wrong if type is long
-        //TODO -1 increment
-        ConstExpr ce = new ConstExpr(1, exprType);
-        //ce.setType(exprType);
+        ConstExpr ce = getConstX(exprType, node.isDesc ? -1 : 1);
         BinaryExpr be = new BinaryExpr(node.expr,ce, "+");
-        //be.setType(exprType);
         AssignExpr addOne = new AssignExpr(node.expr,be);
         visit(addOne);
         if(node.isPrefix){
             visit(node.expr);
         }        
-//        Type type = node.expr.type;
-//        org.objectweb.asm.Type t = asmType(node.expr.type);
-//        if(!node.isPrefix){
-//            dupX(type);
-//        }
-//        const1(type);
-//        md.visitInsn(t.getOpcode(IADD));
-//        if(node.isPrefix){
-//            dupX(type);
-//        }
-//        md.visitVarInsn(t.getOpcode(ISTORE),vi);
         return null;
     }
     
+    private ConstExpr getConstX(Type type, int i) {
+        Object obj;
+        int t = getT(type);
+        switch (t) {
+            case T_I:
+                obj = new Integer(i);
+                break;
+            case T_L:
+                obj = new Long(i);
+                break;
+            case T_F:
+                obj = new Float(i);
+                break;
+            case T_D:
+                obj = new Double(i);
+                break;
+            default:
+                throw new UnsupportedOperationException("unsupported type:" + type);
+        }
+        return new ConstExpr(obj, type);
+    }
     private void constX(Object x){
         md.visitLdcInsn(x);
     }
 
     private void constX(Type type,int i) {
-        int t = getT(type);
-        Object obj;
-        switch(t){
-            case T_I:obj = new Integer(i);break;
-            case T_L:obj = new Long(i);break;
-            case T_F:obj = new Float(i);break;
-            case T_D:obj = new Double(i);break;
-            default:throw new UnsupportedOperationException("unsupported type:" + type);
-        }
-        constX(obj);
+        constX(getConstX(type, i).value);
     }
 
     private void compare(ExprNode expr1, ExprNode expr2,String op) {
