@@ -205,6 +205,11 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         throw new IllegalArgumentException("BUG!Unknown node type:"+node.getClass());
     }
     
+    public List<T> visitAll(AstNode[] nodes){
+        if(nodes==null) return Collections.EMPTY_LIST;
+        return visitAll(Arrays.asList(nodes));
+    }
+    
     public List<T> visitAll(List<?  extends AstNode> nodes){
         if(nodes==null) return null;
         List<T> result = new LinkedList();

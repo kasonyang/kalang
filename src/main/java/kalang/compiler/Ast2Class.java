@@ -400,7 +400,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
                 , internalName(node.target.getType())
                 , node.methodName
                 ,getMethodDescriptor(node.getType(), node.methodName
-                        ,AstUtil.getExprTypes(node.arguments.toArray(new ExprNode[0])))
+                        ,AstUtil.getExprTypes(node.arguments))
 //                , getTypeDescriptor(
 //                        AstUtil.getExprTypes(node.arguments.toArray(new ExprNode[0])) )
                 , false);
@@ -538,8 +538,10 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     private String getMethodDescriptor(Type returnType,String methodName,Type[] parameterTypes){
         String desc = "";
         String retTyp = getTypeDescriptor(returnType);
-        for(Type t:parameterTypes){
-            desc += getTypeDescriptor(t);
+        if(parameterTypes!=null){
+            for(Type t:parameterTypes){
+                desc += getTypeDescriptor(t);
+            }
         }
         return "(" + desc + ")" + retTyp;     
     }

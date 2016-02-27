@@ -119,16 +119,13 @@ public class BoxUtil {
         }
         ClassExpr classExpr = new ClassExpr(classType.getClassNode());
         //classExpr.setType(classType);
-        InvocationExpr inv = new InvocationExpr(classExpr, "valueOf", Arrays.asList(new ExprNode[]{expr}));
+        InvocationExpr inv = new InvocationExpr(classExpr, "valueOf", new ExprNode[]{expr});
         //inv.setType(classType);
         return inv;
     }
 
     private static ExprNode castObject2Primitive(ExprNode expr, Type fromType, Type toType) {
-        InvocationExpr inv = new InvocationExpr();
-        inv.target = expr;
-        inv.methodName = toType + "Value";
-        //inv.setType(toType);
+        InvocationExpr inv = new InvocationExpr(expr,toType + "Value");
         return inv;
     }
 
@@ -137,8 +134,7 @@ public class BoxUtil {
     }
 
     private static ExprNode castObject2String(ExprNode expr) {
-        InvocationExpr inv = new InvocationExpr(expr, "toString", Collections.emptyList());
-        //inv.setType(Types.STRING_CLASS_TYPE);
+        InvocationExpr inv = new InvocationExpr(expr, "toString");
         return inv;
     }
 

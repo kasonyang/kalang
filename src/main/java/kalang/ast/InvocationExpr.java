@@ -1,5 +1,7 @@
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import kalang.core.*;
 import kalang.util.AstUtil;
 public class InvocationExpr extends ExprNode{
@@ -14,47 +16,30 @@ public class InvocationExpr extends ExprNode{
      */
     public String methodName;
     
-    public List<ExprNode> arguments;
+    public ExprNode[] arguments;
     
-    public InvocationExpr(){
-        
-            if(arguments == null) arguments = new LinkedList();
-        
+    public InvocationExpr(ExprNode target,String methodName){
+        this(target, methodName, null);
     }
     
+    public InvocationExpr(ExprNode target,String methodName, ExprNode[] arguments){
+        this(target, methodName, arguments, null);
+    }
     
-    public InvocationExpr(ExprNode target,String methodName,List<ExprNode> arguments){
-        
-            if(arguments == null) arguments = new LinkedList();
-        
-        
+    public InvocationExpr(ExprNode target,String methodName, ExprNode[] arguments,ClassNode specialClass){
             this.target = target;
-        
             this.methodName = methodName;
-        
             this.arguments = arguments;
-        
-    }
-    
-    
-    public static InvocationExpr create(){
-        InvocationExpr node = new InvocationExpr();
-        
-        node.arguments = new LinkedList();
-        
-        return node;
     }
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls,target);
-        
         addChild(ls,arguments);
-        
         return ls;
     }
     
+    @Nonnull
     public ClassType getTargetClassType(){
         Type targetType = target.getType();
         if(!(targetType instanceof ClassType)){
@@ -63,8 +48,10 @@ public class InvocationExpr extends ExprNode{
         return (ClassType) targetType;
     }
     
+    @Nullable
     public Type[] getArgumentTypes(){
-        return AstUtil.getExprTypes(arguments.toArray(new ExprNode[0]));
+        if(arguments==null) return null;
+        return AstUtil.getExprTypes(arguments);
     }
 
     @Override

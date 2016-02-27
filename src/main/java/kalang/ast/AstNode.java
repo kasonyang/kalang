@@ -1,5 +1,6 @@
 package kalang.ast;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -18,6 +19,11 @@ public abstract class AstNode {
     
     public List<AstNode> getChildren(){
         return Collections.EMPTY_LIST;
+    }
+    
+    protected void addChild(List<AstNode> list, AstNode[] nodes){
+        if(nodes==null) return;
+        list.addAll(Arrays.asList(nodes));
     }
     
         protected void addChild(List<AstNode> list,List nodes){

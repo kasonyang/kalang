@@ -14,11 +14,11 @@ public class NewObjectExpr extends ExprNode{
 
     public ClassType objectType;
     
-    public ExprNode[] arguments = new ExprNode[0];
+    public InvocationExpr constructor;
 
-    public NewObjectExpr(ClassType objectType, ExprNode[] arguments) {
+    public NewObjectExpr(ClassType objectType, InvocationExpr constructor) {
         this.objectType = objectType;
-        this.arguments = arguments;
+        this.constructor = constructor;
     }
     
     public NewObjectExpr(ClassType objectType) {
@@ -27,6 +27,7 @@ public class NewObjectExpr extends ExprNode{
     
     @Override
     public List<AstNode> getChildren() {
+        //TODO should constructor become a child
         return Collections.EMPTY_LIST;
     }
 

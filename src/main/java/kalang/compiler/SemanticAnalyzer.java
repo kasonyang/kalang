@@ -658,7 +658,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             return md;
         } else {
             MethodNode[] methods = getMethodsByName(cls, methodName);
-            ExprNode[] args = invocationExpr.arguments.toArray(new ExprNode[0]);
+            ExprNode[] args = invocationExpr.arguments;
             int matchedCount = 0;
             ExprNode[] matchedParams=null;
             MethodNode matchedMethod = null;
@@ -678,8 +678,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, invocationExpr);
                 return null;
             }
-            invocationExpr.arguments.clear();
-            invocationExpr.arguments.addAll(Arrays.asList(matchedParams));
+            invocationExpr.arguments = matchedParams;
             return matchedMethod;
         }
     }

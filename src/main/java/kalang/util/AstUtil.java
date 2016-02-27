@@ -12,6 +12,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import kalang.ast.ExprStmt;
 import kalang.ast.FieldNode;
 import kalang.ast.InvocationExpr;
@@ -115,9 +116,7 @@ public class AstUtil {
                                new InvocationExpr(
                                        new KeyExpr("super",Types.getClassType(clazzNode.parent))
                                        , "<init>"
-                                       ,Arrays.asList(
-                                               params
-                                       )
+                                       ,        params
                                )
                        )
                );
@@ -180,7 +179,7 @@ public class AstUtil {
         return newParams;
     }
 
-    public static MethodNode getMethod(ClassNode cls, String methodName, Type[] types) {
+    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types) {
        MethodNode[] methods = getMethodsByName(cls, methodName);
         for(MethodNode m:methods){
            Type[] mdTypes = getParameterTypes(m);
@@ -190,6 +189,7 @@ public class AstUtil {
     }
 
     public static Type[] getExprTypes(ExprNode[] exprs) {
+        if(exprs==null) return null;
         Type[] types = new Type[exprs.length];
         for(int i=0;i<types.length;i++){
             types[i] = exprs[i].getType();

@@ -325,14 +325,11 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         for (int i = 0; i < ids.size(); i++) {
             ExpressionContext e = ctx.expression(i);
             ExprNode v = (ExprNode) visit(e);
-            InvocationExpr iv = new InvocationExpr();
-            iv.target = ve;
-            iv.methodName = "put";
             ConstExpr k = new ConstExpr();
             k.constType = Types.STRING_CLASS_TYPE;// STRING_CLASS_NAME;
             k.value = ctx.Identifier(i).getText();
-            iv.arguments.add(k);
-            iv.arguments.add(v);
+            ExprNode[] args = new ExprNode[]{k,v};
+            InvocationExpr iv = new InvocationExpr(ve, "put",args);
             ExprStmt es = new ExprStmt(iv);
             mse.stmts.add(es);
         }
@@ -354,10 +351,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         //addCode(vds, ctx);
         VarExpr ve = new VarExpr(vo);
         for (ExpressionContext e : ctx.expression()) {
-            InvocationExpr iv = new InvocationExpr();
-            iv.target = ve;
-            iv.methodName = "add";
-            iv.arguments.add((ExprNode) visit(e));
+            InvocationExpr iv = new InvocationExpr(ve,"add",new ExprNode[]{visitExpression(e)});
             mse.stmts.add(new ExprStmt(iv));
         }
         mse.reference = ve;
@@ -518,10 +512,12 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         return null;
     }
 
-    public void visitAll(List<? extends ParserRuleContext> list) {
+    public List<Object> visitAll(List<? extends ParserRuleContext> list) {
+        List<Object> ret = new ArrayList<>(list.size());
         for (ParserRuleContext i : list) {
-            visit(i);
+            ret.add(visit(i));
         }
+        return ret;
     }
 
     @Override
@@ -752,13 +748,10 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         return be;
     }
 
-    private InvocationExpr getInvocationExpr(AstNode expr, String methodName, List<ExpressionContext> argumentsCtx) {
-        InvocationExpr is = InvocationExpr.create();
-        is.methodName = methodName;
-        is.target = (ExprNode) expr;
-        for(ExpressionContext arg:argumentsCtx){
-            is.arguments.add(visitExpression(arg));
-        }
+    private InvocationExpr getInvocationExpr(ExprNode expr, String methodName, List<ExpressionContext> argumentsCtx) {
+        ExprNode target = (ExprNode) expr;
+        ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
+        InvocationExpr is = new InvocationExpr(target, methodName, args);
         return is;
     }
 
@@ -968,12 +961,13 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitNewExpr(NewExprContext ctx) {
         ClassType clsType = requireClassType(ctx.Identifier().getSymbol());
         NewObjectExpr newExpr = new NewObjectExpr(clsType);
-        //visitAll(list);
-        ExprNode[] ps = new ExprNode[ctx.params.size()];
-        for(int i=0;i<ps.length;i++){
-            ps[i] = visitExpression(ctx.params.get(i));
-        }
-        newExpr.arguments = ps;
+//visitAll(list);
+//        ExprNode[] ps = new ExprNode[ctx.params.size()];
+//        for(int i=0;i<ps.length;i++){
+//            ps[i] = visitExpression(ctx.params.get(i));
+//        }
+        InvocationExpr inv = getInvocationExpr(newExpr, "<init>", ctx.params);
+        newExpr.constructor = inv;
         mapAst(newExpr,ctx);
         return newExpr;
     }
