@@ -753,7 +753,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 ){
             ret = new ArrayLengthExpr(expr);
         }else{
-            FieldExpr fe = new FieldExpr(expr,name);
+            FieldExpr fe = FieldExpr.create(expr,name);
             ret = fe;
         }
         mapAst(ret, ctx);
@@ -834,7 +834,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             if (classAst.fields != null) {
                 for (FieldNode f : classAst.fields) {
                     if (f.name!=null && f.name.equals(name)) {
-                        FieldExpr fe = new FieldExpr(new ThisExpr(Types.getClassType(classAst)),name);
+                        FieldExpr fe = FieldExpr.create(new ThisExpr(Types.getClassType(classAst)),name);
                         return fe;
                     }
                 }
@@ -1176,10 +1176,10 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                     && fieldName.equals("length")){
                 return new ArrayLengthExpr(expr);
             }
-            return new FieldExpr(expr,fieldName,null);
+            return FieldExpr.create(expr,fieldName);
         }else{
             ClassNode fieldClazz = requireAst(idToken);
-            return new FieldExpr(null, fieldName,fieldClazz);
+            return FieldExpr.createStaticFieldExpr(fieldClazz,fieldName);
         }
     }
 

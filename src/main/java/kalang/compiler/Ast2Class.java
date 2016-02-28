@@ -304,7 +304,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             visit(from);
             md.visitFieldInsn(opc, 
                     asmType(toField.getTarget().getType()).getInternalName()
-                    , toField.getFieldName()
+                    , toField.getField().name
             , getTypeDescriptor(toField.getTarget().getType()));
         }else if(to instanceof VarExpr){
             assignVarObject(((VarExpr) to).getVar(), from);
@@ -374,14 +374,14 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     public Object visitFieldExpr(FieldExpr node) {
         ExprNode target = node.getTarget();
         int   opc = GETSTATIC;
-        String owner = internalName(node.getTargetType());
+        String owner = internalName(node.getField().classNode);
         if(target!=null){
             visit(target);
             opc = GETFIELD;
         }
         md.visitFieldInsn(opc
                 ,owner
-                , node.getFieldName()
+                , node.getField().name
                 ,getTypeDescriptor(node.getType()));
         return null;
     }

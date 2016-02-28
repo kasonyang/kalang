@@ -303,7 +303,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
         FieldNode field = node.getField();
         if (field == null) {
-            err.fieldNotFound(node, node.getFieldName());
+            err.fieldNotFound(node, node.getField().name);
             return getDefaultType();
         }
         if (isStatic(method.modifier)) {

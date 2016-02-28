@@ -388,7 +388,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         }
         return target
                 + "."
-                + node.getFieldName();
+                + node.getField().name;
     }
 
     @Override
