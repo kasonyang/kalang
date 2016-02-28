@@ -352,6 +352,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExprGetVarOrStaticField(KalangParser.ExprGetVarOrStaticFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprGetVarOrStaticField(KalangParser.ExprGetVarOrStaticFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprMemberInvocation(KalangParser.ExprMemberInvocationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -491,6 +503,18 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprInc(KalangParser.ExprIncContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExprVarOrStaticInvocation(KalangParser.ExprVarOrStaticInvocationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprVarOrStaticInvocation(KalangParser.ExprVarOrStaticInvocationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

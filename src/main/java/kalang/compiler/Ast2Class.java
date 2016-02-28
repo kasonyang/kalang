@@ -373,22 +373,17 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitFieldExpr(FieldExpr node) {
-        visit(node.getTarget());
-        if(node.getTarget().getType().isArray()){
-            if(node.getFieldName().equals("length")){
-                md.visitInsn(ARRAYLENGTH);
-            }else{
-                throw new UnsupportedOperationException("unknown field:" + node.getFieldName());
-            }
-            return null;
-        }
-        int opc = GETFIELD;
-        if(node.getTarget() instanceof ClassExpr){
-            opc = GETSTATIC;
+        ExprNode target = node.getTarget();
+        int   opc = GETSTATIC;
+        String owner = internalName(node.getTargetType());
+        if(target!=null){
+            visit(target);
+            opc = GETFIELD;
         }
         md.visitFieldInsn(opc
-                ,asmType(node.getTarget().getType()).getInternalName()
-                , node.getFieldName(), getTypeDescriptor(node.getType()));
+                ,owner
+                , node.getFieldName()
+                ,getTypeDescriptor(node.getType()));
         return null;
     }
 

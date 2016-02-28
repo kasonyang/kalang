@@ -292,6 +292,18 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitCastExpr(KalangParser.CastExprContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code exprGetVarOrStaticField}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprGetVarOrStaticField(KalangParser.ExprGetVarOrStaticFieldContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code exprGetVarOrStaticField}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprGetVarOrStaticField(KalangParser.ExprGetVarOrStaticFieldContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code exprMemberInvocation}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -435,6 +447,18 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExprInc(KalangParser.ExprIncContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code exprVarOrStaticInvocation}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExprVarOrStaticInvocation(KalangParser.ExprVarOrStaticInvocationContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code exprVarOrStaticInvocation}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExprVarOrStaticInvocation(KalangParser.ExprVarOrStaticInvocationContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code exprQuestion}
 	 * labeled alternative in {@link KalangParser#expression}.

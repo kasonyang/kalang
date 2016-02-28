@@ -26,11 +26,9 @@ import kalang.ast.BlockStmt;
 import kalang.ast.BreakStmt;
 import kalang.ast.UnaryExpr;
 import kalang.ast.NewArrayExpr;
-import kalang.ast.ClassExpr;
 import kalang.ast.IfStmt;
 import kalang.ast.FieldExpr;
 import kalang.ast.ReturnStmt;
-import kalang.ast.ParameterExpr;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -78,9 +76,6 @@ import kalang.antlr.KalangParser.VarModifierContext;
 import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.ast.ArrayLengthExpr;
@@ -104,8 +99,6 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.apache.commons.collections4.BidiMap;
-import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 
 /**
  *  build ast from antlr parse tree
@@ -553,19 +546,8 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         if (type != null) {
             declType = parseType(type);
         }
-        ExprNode namedNode = this.getNodeByName(name);
-        if (namedNode != null) {
-            String msg = null;
-            if (namedNode instanceof ClassExpr) {
-                msg = "Can't use class name as variable name:" + name;
-            } else if (namedNode instanceof ParameterExpr) {
-                msg = "Variable was definded in parameters:" + name;
-            } else if (namedNode instanceof VarExpr) {
-                msg = "Variable was definded already:" + name;
-            }
-            if (msg != null) {
-                reportError(msg, ctx);
-            }
+        if (isDefindedId(name)) {
+            reportError("the name is definded:" + name, ctx);
         }
         vds.name = name;
         vds.type = declType;
@@ -771,9 +753,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 ){
             ret = new ArrayLengthExpr(expr);
         }else{
-            FieldExpr fe = new FieldExpr();
-            fe.setTarget((ExprNode) expr);
-            fe.setFieldName(name);
+            FieldExpr fe = new FieldExpr(expr,name);
             ret = fe;
         }
         mapAst(ret, ctx);
@@ -822,9 +802,21 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         }
         return id;
     }
+    
+    private boolean isDefindedId(String id){
+        if(isClassId(id)) return true;
+        if(getNodeById(id)!=null) return true;
+        return false;
+    }
+    
+    private boolean isClassId(String name){
+        String id = expandClassName(name);
+        ClassNode targetClass = astLoader.getAst(id);
+        return (targetClass!=null);
+    }
 
     @Nullable
-    private ExprNode getNodeByName(@Nonnull String name) {
+    private ExprNode getNodeById(@Nonnull String name) {
         if (vtb.exist(name)) {
             VarExpr ve = new VarExpr();
             LocalVarNode declStmt = vtb.get(name); //vars.indexOf(vo);
@@ -842,16 +834,10 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             if (classAst.fields != null) {
                 for (FieldNode f : classAst.fields) {
                     if (f.name!=null && f.name.equals(name)) {
-                        FieldExpr fe = new FieldExpr();
-                        fe.setFieldName(name);
+                        FieldExpr fe = new FieldExpr(new ThisExpr(Types.getClassType(classAst)),name);
                         return fe;
                     }
                 }
-            }
-            String id = expandClassName(name);
-            ClassNode targetClass = astLoader.getAst(id);
-            if (targetClass!=null) {
-                return new ClassExpr(targetClass);
             }
         }
         return null;
@@ -1008,7 +994,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitExprIdentifier(ExprIdentifierContext ctx) {
         String name = ctx.Identifier().getText();
-        ExprNode expr = this.getNodeByName(name);
+        ExprNode expr = this.getNodeById(name);
         if (expr == null) {
             this.reportError(name + " is undefined!", ctx);
             return null;
@@ -1157,6 +1143,44 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             reportError("unable to cast " + fromType + " to " + toType, token);
         }
         return expr;
+    }
+
+    @Override
+    public Object visitExprVarOrStaticInvocation(KalangParser.ExprVarOrStaticInvocationContext ctx) {
+        Token idToken = ctx.Identifier(0).getSymbol();
+        String id = idToken.getText();
+        String methodName = ctx.Identifier(1).getText();
+        ExprNode node = getNodeById(id);
+        if(node!=null){
+            return getInvocationExpr(node, methodName, ctx.params,null);
+        }else if(isClassId(id)){
+            ClassNode ast = requireAst(id, idToken);
+            if(ast!=null)
+                return getInvocationExpr(null, methodName, ctx.params, ast);
+        }else{
+            reportError("unknown identifier:" + id,idToken);
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitExprGetVarOrStaticField(KalangParser.ExprGetVarOrStaticFieldContext ctx) {
+        Token idToken = ctx.Identifier(0).getSymbol();
+        String id = idToken.getText();
+        String fieldName = ctx.Identifier(1).getText();
+        ExprNode expr = getNodeById(id);
+        if(expr!=null){
+            Type exprType = expr.getType();
+            if(
+                    (exprType instanceof ArrayType)
+                    && fieldName.equals("length")){
+                return new ArrayLengthExpr(expr);
+            }
+            return new FieldExpr(expr,fieldName,null);
+        }else{
+            ClassNode fieldClazz = requireAst(idToken);
+            return new FieldExpr(null, fieldName,fieldClazz);
+        }
     }
 
 }

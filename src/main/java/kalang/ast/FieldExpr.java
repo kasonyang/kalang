@@ -12,60 +12,32 @@ public class FieldExpr extends AssignableExpr{
     protected String fieldName;
     
     protected FieldNode matchedField;    
-    
-    public FieldExpr(){
-        
-    }
-    
+    private ClassNode specialClass;
     
     public FieldExpr(ExprNode target,String fieldName){
-        
-        
+        this.target = target;
+        this.fieldName = fieldName;
+    }
+    
+    public FieldExpr(ExprNode target,String fieldName,ClassNode specialClass){
             this.target = target;
-        
             this.fieldName = fieldName;
-        
+            this.specialClass = specialClass;
     }
     
-    
-    public static FieldExpr create(){
-        FieldExpr node = new FieldExpr();
-        
-        return node;
-    }
-    
-    protected void addChild(List<AstNode> list,List nodes){
-        if(nodes!=null) list.addAll(nodes);
-    }
-    
-    protected void addChild(List<AstNode> list,AstNode node){
-        if(node!=null) list.add(node);
-    }
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls, getTarget());
-        
         return ls;
     }
     
-    public String toString(){
-        String str = "FieldExpr{\r\n";
-        
-        if(getTarget()!=null){
-            str += "  target:" + getTarget().toString()+"\r\n";
-        }
-        
-        if(getFieldName()!=null){
-            str += "  fieldName:" + getFieldName().toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
-    
     public ClassType getTargetType(){
-        Type tt = getType(getTarget());
+        if(specialClass!=null){
+            return Types.getClassType(specialClass);
+        }
+        Objects.requireNonNull(target);
+        Type tt = getType(target);
         if(!(tt instanceof ClassType)){
             throw new UnsupportedOperationException("unsupported type:" + tt);
         }
@@ -79,6 +51,12 @@ public class FieldExpr extends AssignableExpr{
         FieldNode field = AstUtil.getField(ct.getClassNode(), getFieldName());
         if(field==null) return null;
         return field.type;
+    }
+    
+    public FieldNode getField(){
+        ClassType targetType = getTargetType();
+        ClassNode ast = targetType.getClassNode();
+        return AstUtil.getField(ast, fieldName);
     }
 
     /**
@@ -123,4 +101,14 @@ public class FieldExpr extends AssignableExpr{
     public void setMatchedField(FieldNode matchedField) {
         this.matchedField = matchedField;
     }
+
+    public ClassNode getSpecialClass() {
+        return specialClass;
+    }
+
+    public void setSpecialClass(ClassNode specialClass) {
+        this.specialClass = specialClass;
+    }
+    
+    
 }

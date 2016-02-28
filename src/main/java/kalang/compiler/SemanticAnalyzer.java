@@ -298,30 +298,18 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitFieldExpr(FieldExpr node) {
-        if (null == node.getTarget()) {
-            VarObject field = fields.get(node.getFieldName());
-            if (isStatic(method.modifier)) {
-                if(!requireStatic(field.modifier, node)) return getDefaultType();
-            }
-            if(isStatic(field.modifier)){
-                node.setTarget(new ClassExpr(clazz));
-            }else{
-                node.setTarget(new ThisExpr(Types.getClassType(clazz)));
-            }
-            visit(node.getTarget());
-            return field.type;
+        ExprNode target = node.getTarget();
+        if(target!=null){
+            visit(target);
         }
-        Type t = visit(node.getTarget());
-        String fname = node.getFieldName();
-        FieldNode field = t.getField(fname);
+        FieldNode field = node.getField();
         if (field == null) {
-            err.fieldNotFound(node, fname);
+            err.fieldNotFound(node, node.getFieldName());
             return getDefaultType();
         }
-        if (node.getTarget() instanceof ClassExpr) {
+        if (isStatic(method.modifier)) {
             if(!requireStatic(field.modifier, node)) return getDefaultType();
         }
-        node.setMatchedField(field);
         return field.type;
     }
 

@@ -175,13 +175,15 @@ expression
     |   ref=('this'|'super') #exprSelfRef
     //|   'super'
     |   literal #exprLiteral
-    |   Identifier #exprIdentifier 
     | map #mapExpr
     | listOrArray # listOrArrayExpr
+    |   Identifier '.' Identifier #exprGetVarOrStaticField
     |   expression '.' Identifier #exprGetField
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
+|    Identifier '.' Identifier 
+        '(' (params+=expression (',' params+=expression)*)? ')'  #exprVarOrStaticInvocation
     |    target=expression '.' Identifier 
         '(' (params+=expression (',' params+=expression)*)? ')'  #exprInvocation
     |     (Identifier|key='this'|key='super') 
@@ -206,6 +208,7 @@ expression
     |   expression '|' expression #exprMidOp
     |   expression ('&&'|'||') expression #exprMidOp
     |   expression '?' expression ':' expression #exprQuestion
+    |   Identifier #exprIdentifier 
     |   <assoc=right> expression
          ( '=' 
         |   '+='
