@@ -676,7 +676,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public InvocationExpr visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
         String methodName;
-        ExprNode target = null;
+        ExprNode target = new ThisExpr(Types.getClassType(classAst));
         ClassNode specialClass = null;
         if (ctx.key != null) {
             methodName = ctx.key.getText();

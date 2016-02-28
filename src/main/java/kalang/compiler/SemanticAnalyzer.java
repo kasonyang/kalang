@@ -328,27 +328,23 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
         List<Type> argTypes = visitAll(node.getArguments());
-        ClassType target;
-        if(node.getTarget()==null){
-            //TODO check static
-            node.setTarget(new ThisExpr(Types.getClassType(clazz)));
-        }
+//        if(node.getTarget()==null){
+//            //TODO check static
+//            node.setTarget(new ThisExpr(Types.getClassType(clazz)));
+//        }
         //TODO here may be bug
-        visit(node.getTarget());
-        target = (ClassType) node.getTarget().getType();
-        if(target==null){
-            throw new IllegalStateException("unknown return value");
+        ExprNode target = node.getTarget();
+        ClassNode invokeClass = node.getInvokeClassType().getClassNode();
+        if(target!=null){
+            visit(target);
         }
-        ClassNode ast = target.getClassNode();
-        if (ast == null) {
-            return getDefaultType();
-        }
-        MethodNode matched = applyMethod(ast,node,argTypes.toArray(new Type[0]));
+        //TODO should move to InvocationExpr?
+        MethodNode matched = applyMethod(invokeClass,node,argTypes.toArray(new Type[0]));
         if (matched==null) {
             return getDefaultType();
         }
         //node.matchedMethod = matched;
-        boolean inStaticMethod = node.getTarget() == null && Modifier.isStatic(this.method.modifier);
+        boolean inStaticMethod = target==null && Modifier.isStatic(this.method.modifier);
         boolean isClassExpr = node.getTarget() instanceof ClassExpr;
         if (inStaticMethod || isClassExpr) {
             if(!requireStatic(matched.modifier, node)) return getDefaultType();

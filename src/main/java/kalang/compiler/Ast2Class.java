@@ -79,6 +79,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             T_F = 2,
             T_D = 3,
             T_A = 4;
+    private ClassNode clazz;
+    private String classInternalName;
     
     private int getT(Type type){
         int t;
@@ -126,6 +128,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     
     @Override
     public Object visitClassNode(ClassNode node) {        
+        clazz = node;
+        classInternalName = internalName(clazz);
         classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         int access = node.modifier;
         String sign = null;
@@ -390,28 +394,30 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitInvocationExpr(InvocationExpr node) {
-        int opc = INVOKEVIRTUAL;
-        if(node.getTarget() instanceof ClassExpr){
-            opc = INVOKESTATIC;
-        }else{
-            visit(node.getTarget());
-        }
+        int opc;
+        String ownerClass;
+        ExprNode target = node.getTarget();
         ClassNode specialClass = node.getSpecialClass();
-        String specialClassName = null;
-        if(specialClass!=null){
-            opc = INVOKESPECIAL;
-            specialClassName = internalName(specialClass);
+        if(target==null){
+            opc = INVOKESTATIC;
+            ownerClass = internalName(specialClass);
         }else{
-            specialClassName = internalName(node.getTarget().getType());
-            //specialClassName = internalName(node.getTarget().getType());
+            visit(target);
+            if(specialClass!=null){
+                opc = INVOKESPECIAL;
+                ownerClass = internalName(specialClass);
+            }else{
+                opc = INVOKEVIRTUAL;
+                ownerClass = classInternalName;
+            }
         }
 //        String ownerName = 
         visitAll(node.getArguments());
-        md.visitMethodInsn(opc
-                , 
-                specialClassName
+        md.visitMethodInsn(
+                opc 
+                ,ownerClass
                 ,node.getMethodName()
-                , getMethodDescriptor(node.getType(), node.getMethodName(), AstUtil.getExprTypes(node.getArguments())), false);
+                ,getMethodDescriptor(node.getType(), node.getMethodName(), AstUtil.getExprTypes(node.getArguments())), false);
         return null;
     }
 

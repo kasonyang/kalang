@@ -114,7 +114,7 @@ public class AstUtil {
                body.statements.add(
                        new ExprStmt(
                                new InvocationExpr(
-                                       null
+                                       new ThisExpr(Types.getClassType(clazzNode))
                                        , "<init>"
                                        ,        params
                                        ,clazzNode.parent

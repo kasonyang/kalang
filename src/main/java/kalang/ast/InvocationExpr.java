@@ -46,11 +46,12 @@ public class InvocationExpr extends ExprNode{
     }
     
     @Nonnull
-    public ClassType getTargetClassType(){
-        Type targetType = getTarget().getType();
-        if(!(targetType instanceof ClassType)){
-            throw new UnsupportedOperationException("unsupported type:" + targetType);
+    public ClassType getInvokeClassType(){
+        if(specialClass!=null){
+            return Types.getClassType(specialClass);
         }
+        Objects.requireNonNull(target);
+        Type targetType = target.getType();
         return (ClassType) targetType;
     }
     
@@ -62,14 +63,14 @@ public class InvocationExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        ClassNode clazz = getTargetClassType().getClassNode();
+        ClassNode clazz = getInvokeClassType().getClassNode();
         MethodNode method = AstUtil.getMethod(clazz, getMethodName(),getArgumentTypes());
         if(method == null) return null;
         return method.type;
     }
 
     /**
-     * @return the target
+     * @return the target,null if method is static
      */
     public ExprNode getTarget() {
         return target;
