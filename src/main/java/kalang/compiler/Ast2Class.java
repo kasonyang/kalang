@@ -332,6 +332,11 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case "*" : op = IMUL;break;
             case "/" : op = IDIV;break;
             case "%":op = IREM;break;
+            //bitwise
+            case BinaryExpr.OP_AND:op = IAND;break;
+            case BinaryExpr.OP_OR:op = IOR;break;
+            case BinaryExpr.OP_XOR: op = IXOR;break;
+            //TODO shift is disabled now
             case "&&":
             case "||":
                 doLogicOperation(node.getExpr1(), node.getExpr2(), node.getOperation());

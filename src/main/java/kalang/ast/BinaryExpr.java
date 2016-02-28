@@ -11,6 +11,33 @@ import kalang.core.*;
  */
 public class BinaryExpr extends ExprNode{
     
+    public static final String
+            //Math
+            OP_ADD = "+",
+            OP_SUB = "-",
+            OP_MUL = "*",
+            OP_DIV = "/",
+            OP_REM = "%",
+            //Bitwise
+            OP_AND = "&",
+            OP_OR = "|",
+            OP_XOR = "^",
+            //TODO shift operation is disabled
+            //OP_SHIFT_LEFT = "<<",
+            //OP_SHIFT_RIGHT = ">>",
+            //Compare
+            OP_LE = "<=",
+            OP_GE = ">=",
+            OP_LT = "<",
+            OP_GT = ">",
+            OP_EQ = "==",
+            OP_NE = "!=",
+            //Logic
+            OP_LOGIC_AND = "&&",
+            OP_LOGIC_OR = "||"
+            ;
+            
+    
     @Nonnull
     protected ExprNode expr1;
     
