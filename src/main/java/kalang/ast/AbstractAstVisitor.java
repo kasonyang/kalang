@@ -58,7 +58,7 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
     abstract public T visitNewArrayExpr(NewArrayExpr node);
     
-    abstract public T visitKeyExpr(KeyExpr node);
+    abstract public T visitThisExpr(ThisExpr node);
     
     abstract public T visitMultiStmtExpr(MultiStmtExpr node);
     
@@ -184,8 +184,8 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
             return visitNewArrayExpr((NewArrayExpr)node);
         }
         
-        if(node instanceof KeyExpr){
-            return visitKeyExpr((KeyExpr)node);
+        if(node instanceof ThisExpr){
+            return visitThisExpr((ThisExpr)node);
         }
         
         if(node instanceof MultiStmtExpr){

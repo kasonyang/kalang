@@ -16,7 +16,7 @@ import kalang.ast.InvocationExpr;
 import kalang.ast.ExprStmt;
 import kalang.ast.BinaryExpr;
 import kalang.ast.VarExpr;
-import kalang.ast.KeyExpr;
+import kalang.ast.ThisExpr;
 import kalang.ast.ConstExpr;
 import kalang.ast.TryStmt;
 import kalang.ast.ThrowStmt;
@@ -1083,22 +1083,10 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitVarModifier(VarModifierContext ctx) {
         throw new UnsupportedOperationException();
     }
-    
-    private KeyExpr getSelfReference(String key){
-            Type type;
-            if(key.equals("this")){
-                type = Types.getClassType(classAst);
-            }else if(key.equals("super")){
-                type = Types.getClassType(classAst.parent);
-            }else{
-                throw new UnsupportedOperationException("unknown key:" + key);
-            }
-            return new KeyExpr(key,type);
-    }
 
     @Override
     public AstNode visitExprSelfRef(ExprSelfRefContext ctx) {
-        KeyExpr expr = getSelfReference(ctx.ref.getText());
+        ThisExpr expr = new ThisExpr(Types.getClassType(classAst));
         mapAst(expr, ctx);
         return expr;
     }

@@ -405,19 +405,11 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         String args = String.join(",", visitAll(node.getArguments()));//.join(",");
         String mname = node.getMethodName();
         if (mname.equals("<init>")) {
-            if (node.getTarget() instanceof KeyExpr) {
-                KeyExpr keyExpr = (KeyExpr) node.getTarget();
-                return keyExpr.key
-                        + "("
-                        + args
-                        + ")";
-            } else {
-                return "new "
+               return "new "
                         + targetType
                         + "("
                         + args
                         + ")";
-            }
         } else {
             if (targetType != null && targetType.length()>0) {
                 targetType += ".";
@@ -475,8 +467,8 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     }
 
     @Override
-    public String visitKeyExpr(KeyExpr node) {
-        return node.key;
+    public String visitThisExpr(ThisExpr node) {
+        return "this";
     }
 
     @Override

@@ -17,7 +17,7 @@ import kalang.ast.ExprStmt;
 import kalang.ast.FieldExpr;
 import kalang.ast.IfStmt;
 import kalang.ast.InvocationExpr;
-import kalang.ast.KeyExpr;
+import kalang.ast.ThisExpr;
 import kalang.ast.LoopStmt;
 import kalang.ast.MethodNode;
 import kalang.ast.MultiStmtExpr;
@@ -507,7 +507,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     }
 
     @Override
-    public Object visitKeyExpr(KeyExpr node) {
+    public Object visitThisExpr(ThisExpr node) {
         md.visitVarInsn(ALOAD, 0);
         return null;
     }

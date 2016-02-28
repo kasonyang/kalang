@@ -22,7 +22,7 @@ import kalang.ast.ExprNode;
 import kalang.ast.FieldExpr;
 import kalang.ast.IfStmt;
 import kalang.ast.InvocationExpr;
-import kalang.ast.KeyExpr;
+import kalang.ast.ThisExpr;
 import kalang.ast.LoopStmt;
 import kalang.ast.MethodNode;
 import kalang.ast.MultiStmtExpr;
@@ -306,7 +306,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             if(isStatic(field.modifier)){
                 node.setTarget(new ClassExpr(clazz));
             }else{
-                node.setTarget(new KeyExpr("this",Types.getClassType(clazz)));
+                node.setTarget(new ThisExpr(Types.getClassType(clazz)));
             }
             visit(node.getTarget());
             return field.type;
@@ -330,7 +330,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         List<Type> argTypes = visitAll(node.getArguments());
         ClassType target;
         if(node.getTarget()==null){
-            node.setTarget(new KeyExpr("this",Types.getClassType(clazz)));
+            //TODO check static
+            node.setTarget(new ThisExpr(Types.getClassType(clazz)));
         }
         //TODO here may be bug
         visit(node.getTarget());
@@ -596,19 +597,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     @Override
-    public Type visitKeyExpr(KeyExpr node) {
-        String key = node.key;
-        if (key.equals("this")) {
-            return Types.getClassType(this.clazz);
-        } else if (key.equals("super")) {
-            if (clazz.parent == null) {
-                return getDefaultType();
-            }
-            return Types.getClassType(clazz.parent);
-        } else {
-            System.err.println("Unknown key:" + key);
-            return getDefaultType();
-        }
+    public Type visitThisExpr(ThisExpr node) {
+        return node.getType();
     }
 
     @Override
