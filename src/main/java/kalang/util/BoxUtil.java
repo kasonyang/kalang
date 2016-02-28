@@ -1,6 +1,5 @@
 package kalang.util;
 
-import kalang.ast.ClassExpr;
 import kalang.ast.ExprNode;
 import kalang.ast.InvocationExpr;
 import kalang.ast.PrimitiveCastExpr;
@@ -117,10 +116,7 @@ public class BoxUtil {
         if(classType==null){
             throw new UnknownError("unknown primitive type:" + fromType);
         }
-        ClassExpr classExpr = new ClassExpr(classType.getClassNode());
-        //classExpr.setType(classType);
-        InvocationExpr inv = new InvocationExpr(classExpr, "valueOf", new ExprNode[]{expr});
-        //inv.setType(classType);
+        InvocationExpr inv = new InvocationExpr(null, "valueOf", new ExprNode[]{expr},classType.getClassNode());
         return inv;
     }
 

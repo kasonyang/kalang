@@ -139,11 +139,6 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         return this.getVarName(node.getVar());
     }
 
-    @Override
-    public String visitClassExpr(ClassExpr node) {
-        return className(node.getClazz().name);
-    }
-
     public String visitModifier(Integer modifier) {
         int m = modifier != null ? modifier : 0;
         return Modifier.toString(m);

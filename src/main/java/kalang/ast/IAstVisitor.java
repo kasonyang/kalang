@@ -43,8 +43,6 @@ public interface IAstVisitor<T>{
     
     public T visitVarExpr(VarExpr node);
     
-    public T visitClassExpr(ClassExpr node);
-    
     public T visitParameterExpr(ParameterExpr node);
     
     public T visitCastExpr(CastExpr node);

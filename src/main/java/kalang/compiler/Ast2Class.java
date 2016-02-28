@@ -8,7 +8,6 @@ import kalang.ast.BlockStmt;
 import kalang.ast.BreakStmt;
 import kalang.ast.CastExpr;
 import kalang.ast.CatchStmt;
-import kalang.ast.ClassExpr;
 import kalang.ast.ClassNode;
 import kalang.ast.ConstExpr;
 import kalang.ast.ContinueStmt;
@@ -297,7 +296,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         if(to instanceof FieldExpr){
             FieldExpr toField = (FieldExpr) to;
             int opc = PUTFIELD;
-            if(toField.getTarget() instanceof ClassExpr){
+            if(AstUtil.isStatic(toField.getField().modifier)){
                 opc = PUTSTATIC;
             }else{
                 visit(toField.getTarget());
@@ -452,11 +451,6 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitVarExpr(VarExpr node) {
         visitVarObject(node.getVar());
-        return null;
-    }
-
-    @Override
-    public Object visitClassExpr(ClassExpr node) {
         return null;
     }
 

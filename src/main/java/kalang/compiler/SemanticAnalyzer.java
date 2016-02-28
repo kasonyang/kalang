@@ -14,7 +14,6 @@ import kalang.ast.AstVisitor;
 import kalang.ast.BinaryExpr;
 import kalang.ast.CastExpr;
 import kalang.ast.CatchStmt;
-import kalang.ast.ClassExpr;
 import kalang.ast.ClassNode;
 import kalang.ast.ConstExpr;
 import kalang.ast.ElementExpr;
@@ -333,8 +332,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
         //node.matchedMethod = matched;
         boolean inStaticMethod = target==null && Modifier.isStatic(this.method.modifier);
-        boolean isClassExpr = node.getTarget() instanceof ClassExpr;
-        if (inStaticMethod || isClassExpr) {
+        if (inStaticMethod) {
             if(!requireStatic(matched.modifier, node)) return getDefaultType();
         }
         //TODO here could be optim
@@ -398,11 +396,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         //TODO here may be bug
         this.caughException(node.catchVarDecl.vars.get(0).type);
         return null;
-    }
-
-    @Override
-    public Type visitClassExpr(ClassExpr node) {
-        return Types.getClassType(node.getClazz());
     }
 
     @Override
