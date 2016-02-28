@@ -405,7 +405,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitUnaryExpr(UnaryExpr node) {
-        org.objectweb.asm.Type t = asmType(node.getExpr().getType());
+        Type exprType = node.getExpr().getType();
+        org.objectweb.asm.Type t = asmType(exprType);
         visit(node.getExpr());
         switch(node.getOperation()){
             case UnaryExpr.OPERATION_POS:
@@ -413,7 +414,13 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case UnaryExpr.OPERATION_NEG:
                 md.visitInsn(t.getOpcode(INEG));
                 break;
-           case UnaryExpr.OPERATION_NOT:
+            case UnaryExpr.OPERATION_NOT:
+                //TODO here I am not sure
+                constX(exprType, -1);
+                md.visitInsn(t.getOpcode(IXOR));
+                break;
+                //md.visitInsn(ICONST_M1);
+           case UnaryExpr.OPERATION_LOGIC_NOT:
                Label falseLabel = new Label();
                Label stopLabel = new Label();
                md.visitJumpInsn(IFEQ, falseLabel);

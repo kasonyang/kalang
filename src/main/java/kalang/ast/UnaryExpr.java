@@ -11,7 +11,8 @@ public class UnaryExpr extends ExprNode{
             //OPERATION_DEC = "--",
             OPERATION_NEG = "-",
             OPERATION_POS = "+",
-            OPERATION_NOT = "!";
+            OPERATION_LOGIC_NOT = "!",
+            OPERATION_NOT = "~" ;
     
     protected ExprNode expr;
     

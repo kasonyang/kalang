@@ -37,4 +37,8 @@ class{
         return whileStmt();
     }
     
+    int not(){
+        int i = -7;
+        return ~i;
+    }
 }
