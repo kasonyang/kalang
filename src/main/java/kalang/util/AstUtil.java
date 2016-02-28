@@ -117,6 +117,7 @@ public class AstUtil {
                                        new KeyExpr("super",Types.getClassType(clazzNode.parent))
                                        , "<init>"
                                        ,        params
+                                       ,clazzNode.parent
                                )
                        )
                );
@@ -204,9 +205,4 @@ public class AstUtil {
             return Modifier.isStatic(modifier);
     }
 
-    public static boolean isSpecialMethod(String methodName) {
-        //TODO is it a special method?
-        return methodName.startsWith("<");
-    }
-    
 }

@@ -45,6 +45,7 @@ import kalang.ast.ParameterNode;
 import kalang.ast.PrimitiveCastExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
+import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -395,15 +396,21 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         }else{
             visit(node.getTarget());
         }
-        if(AstUtil.isSpecialMethod(node.getMethodName())){
+        ClassNode specialClass = node.getSpecialClass();
+        String specialClassName = null;
+        if(specialClass!=null){
             opc = INVOKESPECIAL;
+            specialClassName = internalName(specialClass);
+        }else{
+            specialClassName = internalName(node.getTarget().getType());
+            //specialClassName = internalName(node.getTarget().getType());
         }
+//        String ownerName = 
         visitAll(node.getArguments());
         md.visitMethodInsn(opc
-                , internalName(node.getTarget().getType())
+                , 
+                specialClassName
                 ,node.getMethodName()
-//                , getTypeDescriptor(
-//                        AstUtil.getExprTypes(node.arguments.toArray(new ExprNode[0])) )
                 , getMethodDescriptor(node.getType(), node.getMethodName(), AstUtil.getExprTypes(node.getArguments())), false);
         return null;
     }

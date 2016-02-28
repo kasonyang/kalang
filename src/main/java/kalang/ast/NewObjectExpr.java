@@ -25,7 +25,7 @@ public class NewObjectExpr extends ExprNode{
     public NewObjectExpr(ClassType objectType) {
         this.objectType = objectType;
         MethodNode methodNode = AstUtil.getMethod(objectType.getClassNode(), "<init>", null);
-        constructor = new InvocationExpr(this, "<init>");
+        constructor = new InvocationExpr(this, "<init>",null,objectType.getClassNode());
     }
     
     @Override

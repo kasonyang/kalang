@@ -21,6 +21,7 @@ public class InvocationExpr extends ExprNode{
     protected String methodName;
     
     protected ExprNode[] arguments;
+    private ClassNode specialClass;
     
     public InvocationExpr(ExprNode target,String methodName){
         this(target, methodName, null);
@@ -34,6 +35,7 @@ public class InvocationExpr extends ExprNode{
             this.target = target;
             this.methodName = methodName;
             this.arguments = arguments;
+            this.specialClass = specialClass;
     }
     
     public List<AstNode> getChildren(){
@@ -109,6 +111,14 @@ public class InvocationExpr extends ExprNode{
     public void setArguments(ExprNode[] arguments) {
         //Objects.requireNonNull(arguments);
         this.arguments = arguments;
+    }
+
+    public ClassNode getSpecialClass() {
+        return specialClass;
+    }
+
+    public void setSpecialClass(ClassNode specialClass) {
+        this.specialClass = specialClass;
     }
     
 }
