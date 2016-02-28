@@ -93,8 +93,10 @@ import kalang.ast.ParameterNode;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
+import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.util.BoxUtil;
 import kalang.util.OffsetRangeHelper;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -743,9 +745,26 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         String op = ctx.getChild(1).getText();
         ExprNode expr1 = (ExprNode) visitExpression(ctx.expression(0));
         ExprNode expr2 = (ExprNode) visitExpression(ctx.expression(1));
-        BinaryExpr be = new BinaryExpr(expr1,expr2,op);
-        mapAst(be, ctx);
-        return be;
+        Type type1 = expr1.getType();
+        Type type2 = expr2.getType();
+        boolean isPrimitive1 = (type1 instanceof PrimitiveType);
+        boolean isPrimitive2 = (type2 instanceof PrimitiveType);
+        ExprNode expr;
+        if(isPrimitive1 && isPrimitive2){
+            BinaryExpr be = new BinaryExpr(expr1,expr2,op);
+            expr = be;
+        }else{
+            if(!Types.STRING_CLASS_TYPE.equals(type1)){
+                expr1 = checkBox(expr1,expr1.getType(),Types.STRING_CLASS_TYPE,ctx.expression(0).getStart());
+            }
+            if(!Types.STRING_CLASS_TYPE.equals(type2)){
+                expr2 = checkBox(expr2,expr2.getType(),Types.STRING_CLASS_TYPE,ctx.expression(1).getStart());
+            }
+            InvocationExpr ie = new InvocationExpr(expr1, "concat",new ExprNode[]{expr2});
+            expr = ie;
+        }
+        mapAst(expr, ctx);
+        return expr;
     }
 
     private InvocationExpr getInvocationExpr(ExprNode expr, String methodName, List<ExpressionContext> argumentsCtx) {
@@ -1181,6 +1200,14 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         }
         boolean isDesc = op.equals("--");
         return new IncrementExpr((AssignableExpr) expr, isDesc, isPrefix);
+    }
+
+    private ExprNode checkBox(ExprNode expr1, Type fromType, Type toType,Token token) {
+        ExprNode expr = BoxUtil.assign(expr1,fromType,toType);
+        if(expr==null){
+            reportError("unable to cast " + fromType + " to " + toType, token);
+        }
+        return expr;
     }
 
 }

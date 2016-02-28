@@ -54,7 +54,7 @@ public class VarExpr extends AssignableExpr{
 
     @Override
     public Type getType() {
-        return getVar().type;
+        return getVar().getType();
     }
 
     /**

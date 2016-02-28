@@ -51,4 +51,12 @@ public abstract class VarObject extends AstNode{
         
         return ls;
     }
+    
+    public Type getType(){
+        if(type!=null) return type;
+        if(initExpr!=null){
+            return initExpr.getType();
+        }
+        return Types.ROOT_TYPE;
+    }
 }
