@@ -435,8 +435,9 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
                constTrue();
                md.visitLabel(stopLabel);
                break;
+          
+           default:throw new UnsupportedOperationException("unsupported unary operation:" + node.getOperation());
         }
-        //TODO impl unary expr
         return null;
     }
 
