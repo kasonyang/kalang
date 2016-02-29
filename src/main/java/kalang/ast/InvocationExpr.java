@@ -9,8 +9,8 @@ import kalang.util.AstUtil;
 
 public class InvocationExpr extends ExprNode {
 
-    public static InvocationExpr create(ExprNode target, MethodNode methodNode) {
-        return new InvocationExpr(target, methodNode, null);
+    public static InvocationExpr create(ExprNode target, ClassNode specialClass,MethodNode methodNode) {
+        return new InvocationExpr(target,specialClass, methodNode, null);
     }
 
     /**
@@ -23,7 +23,7 @@ public class InvocationExpr extends ExprNode {
      */
     //protected String methodName;
     protected ExprNode[] arguments;
-    //private ClassNode specialClass;
+    private ClassNode specialClass;
     private MethodNode method;
 
     public static InvocationExpr createStatic(ClassNode clazz, String methodName, ExprNode[] args) throws MethodNotFoundException {
@@ -34,23 +34,20 @@ public class InvocationExpr extends ExprNode {
         return create(target, methodName, null);
     }
     
-//    public static InvocationExpr create(@Nonnull ExprNode target,ClassNode clazz, String methodName, @Nullable ExprNode[] arguments){
-//        return create(target, methodNode);
-//    }
-        /**
+     /**
      *  select the method for invocation expression,and apply ast transform if needed
-     * @param cls
+     * @param specialClass
      * @param invocationExpr
      * @param types
      * @return the selected method,or null
      */
-    private static InvocationExpr applyMethod(ExprNode target,ClassNode cls,String methodName, ExprNode[] args) throws MethodNotFoundException {
+    private static InvocationExpr applyMethod(ExprNode target,ClassNode specialClass,String methodName, ExprNode[] args) throws MethodNotFoundException {
         Type[] types = AstUtil.getExprTypes(args);
-        MethodNode md = AstUtil.getMethod(cls, methodName, types);
+        MethodNode md = AstUtil.getMethod(specialClass, methodName, types);
         if (md != null) {
-            return new InvocationExpr(target, md, args);
+            return new InvocationExpr(target,specialClass,md, args);
         } else {
-            MethodNode[] methods = AstUtil.getMethodsByName(cls, methodName);
+            MethodNode[] methods = AstUtil.getMethodsByName(specialClass, methodName);
             int matchedCount = 0;
             ExprNode[] matchedParams=null;
             MethodNode matchedMethod = null;
@@ -68,7 +65,7 @@ public class InvocationExpr extends ExprNode {
             } else if (matchedCount > 1) {
                 throw new MethodNotFoundException("the method " + methodName + " is ambiguous");
             }
-            return new InvocationExpr(target,matchedMethod, matchedParams);
+            return new InvocationExpr(target,specialClass,matchedMethod, matchedParams);
         }
     }
 
@@ -79,14 +76,15 @@ public class InvocationExpr extends ExprNode {
     }
 
     public static InvocationExpr create(
-            @Nullable ExprNode target,@Nonnull ClassNode clazz, String methodName, @Nullable ExprNode[] args) throws MethodNotFoundException {
-        return applyMethod(target,clazz,methodName, args);
+            @Nullable ExprNode target,@Nonnull ClassNode specialClass, String methodName, @Nullable ExprNode[] args) throws MethodNotFoundException {
+        return applyMethod(target,specialClass,methodName, args);
     }
 
-    public InvocationExpr(ExprNode target, MethodNode method, ExprNode[] args) {
+    public InvocationExpr(ExprNode target,@Nonnull ClassNode specialClass ,MethodNode method, ExprNode[] args) {
         this.target = target;
         this.method = method;
         this.arguments = args;
+        this.specialClass = specialClass;
     }
 
     @Override
@@ -147,6 +145,11 @@ public class InvocationExpr extends ExprNode {
 
     public MethodNode getMethod() {
         return method;
+    }
+
+    @Nonnull
+    public ClassNode getSpecialClass() {
+        return specialClass;
     }
 
 }

@@ -397,7 +397,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         }else{
             visit(target);
             if(target instanceof ThisExpr){
-                if(method.classNode==clazz){
+                ClassNode spcialClass = node.getSpecialClass();
+                if(spcialClass.equals(clazz)){
                     opc = INVOKEVIRTUAL;
                 }else{
                     opc = INVOKESPECIAL;
