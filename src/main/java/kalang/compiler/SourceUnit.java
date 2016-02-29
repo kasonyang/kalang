@@ -971,10 +971,11 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
         ClassType clsType = requireClassType(ctx.Identifier().getSymbol());
+        ExprNode[] params = visitAll(ctx.params).toArray(new ExprNode[0]);
         //InvocationExpr inv = getInvocationExpr(newExpr, "<init>", ctx.params,clsType.getClassNode(),ctx.Identifier().getSymbol());
         NewObjectExpr newExpr;
         try {
-            newExpr = new NewObjectExpr(clsType);
+            newExpr = new NewObjectExpr(clsType,params);
         } catch (MethodNotFoundException ex) {
             reportError("construcotr not found", ctx.Identifier().getSymbol());
             return null;

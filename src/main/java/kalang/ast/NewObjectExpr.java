@@ -23,13 +23,18 @@ public class NewObjectExpr extends ExprNode{
         this.constructor = constructor;
     }
     
-    public NewObjectExpr(ClassType objectType) throws MethodNotFoundException {
+    public NewObjectExpr(ClassType objectType,ExprNode[] args) throws MethodNotFoundException {
         this.objectType = objectType;
-        initDefaultConstructor();
+        initDefaultConstructor(args);
     }
     
-    private void initDefaultConstructor() throws MethodNotFoundException{
-        constructor = InvocationExpr.create(this, "<init>");
+    public NewObjectExpr(ClassType objectType) throws MethodNotFoundException {
+        this.objectType = objectType;
+        initDefaultConstructor(null);
+    }
+    
+    private void initDefaultConstructor(ExprNode[] args) throws MethodNotFoundException{
+        constructor = InvocationExpr.create(this, "<init>",args);
     }
     
     @Override
