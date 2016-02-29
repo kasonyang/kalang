@@ -4,9 +4,12 @@ import kalang.ast.ExprNode;
 import kalang.ast.InvocationExpr;
 import kalang.ast.PrimitiveCastExpr;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.compiler.MathType;
+import kalang.compiler.MethodNotFoundException;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
@@ -116,12 +119,22 @@ public class BoxUtil {
         if(classType==null){
             throw new UnknownError("unknown primitive type:" + fromType);
         }
-        InvocationExpr inv = new InvocationExpr(null, "valueOf", new ExprNode[]{expr},classType.getClassNode());
+        InvocationExpr inv;
+        try {
+            inv = InvocationExpr.createStatic(classType.getClassNode(), "valueOf", new ExprNode[]{expr});
+        } catch (MethodNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
         return inv;
     }
 
     private static ExprNode castObject2Primitive(ExprNode expr, Type fromType, Type toType) {
-        InvocationExpr inv = new InvocationExpr(expr,toType + "Value");
+        InvocationExpr inv;
+        try {
+            inv = InvocationExpr.create(expr,toType + "Value");
+        } catch (MethodNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
         return inv;
     }
 
@@ -130,7 +143,12 @@ public class BoxUtil {
     }
 
     private static ExprNode castObject2String(ExprNode expr) {
-        InvocationExpr inv = new InvocationExpr(expr, "toString");
+        InvocationExpr inv;
+        try {
+            inv = InvocationExpr.create(expr, "toString");
+        } catch (MethodNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
         return inv;
     }
 

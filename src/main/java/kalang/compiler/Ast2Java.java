@@ -398,7 +398,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
             targetType = visit(node.getTarget());
         }
         String args = String.join(",", visitAll(node.getArguments()));//.join(",");
-        String mname = node.getMethodName();
+        String mname = node.getMethod().name;
         if (mname.equals("<init>")) {
                return "new "
                         + targetType
@@ -412,7 +412,7 @@ public class Ast2Java extends AbstractAstVisitor<String> {
                 targetType = "";
             }
             return targetType
-                    + node.getMethodName()
+                    + node.getMethod().name
                     + "("
                     + args
                     + ")";

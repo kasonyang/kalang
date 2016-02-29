@@ -113,12 +113,7 @@ public class AstUtil {
                }
                body.statements.add(
                        new ExprStmt(
-                               new InvocationExpr(
-                                       new ThisExpr(Types.getClassType(clazzNode))
-                                       , "<init>"
-                                       ,        params
-                                       ,clazzNode.parent
-                               )
+                               new InvocationExpr(new ThisExpr(Types.getClassType(clazzNode)), m, params)
                        )
                );
            }
@@ -166,6 +161,12 @@ public class AstUtil {
      * @return array when matched,null when not
      */
     public static ExprNode[] matchTypes(ExprNode[] args,Type[] from, Type[] target) {
+        if(args==null) return null;
+        if(from==null || from.length==0){
+            if(target==null || target.length==0){
+                return args;
+            }
+        }
         if (from.length != target.length || from.length!=args.length) {
             return null;
         }

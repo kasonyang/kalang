@@ -326,11 +326,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             visit(target);
         }
         //TODO should move to InvocationExpr?
-        MethodNode matched = applyMethod(invokeClass,node,argTypes.toArray(new Type[0]));
-        if (matched==null) {
-            return getDefaultType();
-        }
+//        MethodNode matched = applyMethod(invokeClass,node,argTypes.toArray(new Type[0]));
+//        if (matched==null) {
+//            return getDefaultType();
+//        }
         //node.matchedMethod = matched;
+        MethodNode matched = node.getMethod();
         boolean inStaticMethod = target==null && Modifier.isStatic(this.method.modifier);
         if (inStaticMethod) {
             if(!requireStatic(matched.modifier, node)) return getDefaultType();
@@ -610,45 +611,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     public AstLoader getAstLoader() {
         return astLoader;
-    }
-    
-    /**
-     *  select the method for invocation expression,and apply ast transform if needed
-     * @param cls
-     * @param invocationExpr
-     * @param types
-     * @return the selected method,or null
-     */
-    private MethodNode applyMethod(ClassNode cls, InvocationExpr invocationExpr, Type[] types) {
-        String methodName = invocationExpr.getMethodName();
-        MethodNode md = AstUtil.getMethod(cls, methodName, types);
-        if (md != null) {
-            return md;
-        } else {
-            MethodNode[] methods = getMethodsByName(cls, methodName);
-            ExprNode[] args = invocationExpr.getArguments();
-            int matchedCount = 0;
-            ExprNode[] matchedParams=null;
-            MethodNode matchedMethod = null;
-            for (MethodNode m : methods) {
-                Type[] mTypes = AstUtil.getParameterTypes(m);
-                ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
-                if (mp != null) {
-                    matchedCount++;
-                    matchedParams = mp;
-                    matchedMethod = m;
-                }
-            }
-            if (matchedCount < 1) {
-                err.methodNotFound(invocationExpr, cls.name, methodName,types);
-                return null;
-            } else if (matchedCount > 1) {
-                err.fail("the method " + methodName + " is ambiguous", AstSemanticError.METHOD_NOT_FOUND, invocationExpr);
-                return null;
-            }
-            invocationExpr.setArguments(matchedParams);
-            return matchedMethod;
-        }
     }
 
     @Override

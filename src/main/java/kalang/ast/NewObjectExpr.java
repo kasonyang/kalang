@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.compiler.MethodNotFoundException;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.util.AstUtil;
@@ -22,10 +23,13 @@ public class NewObjectExpr extends ExprNode{
         this.constructor = constructor;
     }
     
-    public NewObjectExpr(ClassType objectType) {
+    public NewObjectExpr(ClassType objectType) throws MethodNotFoundException {
         this.objectType = objectType;
-        MethodNode methodNode = AstUtil.getMethod(objectType.getClassNode(), "<init>", null);
-        constructor = new InvocationExpr(this, "<init>",null,objectType.getClassNode());
+        initDefaultConstructor();
+    }
+    
+    private void initDefaultConstructor() throws MethodNotFoundException{
+        constructor = InvocationExpr.create(this, "<init>");
     }
     
     @Override

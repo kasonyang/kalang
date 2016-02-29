@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
@@ -287,7 +289,12 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = Types.MAP_IMPL_CLASS_TYPE;
-        NewObjectExpr newExpr = new NewObjectExpr(Types.MAP_IMPL_CLASS_TYPE);
+        NewObjectExpr newExpr;
+        try {
+            newExpr = new NewObjectExpr(Types.MAP_IMPL_CLASS_TYPE);
+        } catch (MethodNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
         vo.initExpr = newExpr;
         mse.stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
@@ -299,7 +306,12 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             k.setConstType(Types.STRING_CLASS_TYPE);// STRING_CLASS_NAME;
             k.setValue(ctx.Identifier(i).getText());
             ExprNode[] args = new ExprNode[]{k,v};
-            InvocationExpr iv = new InvocationExpr(ve, "put",args);
+            InvocationExpr iv;
+            try {
+                iv = InvocationExpr.create(ve, "put",args);
+            } catch (MethodNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
             ExprStmt es = new ExprStmt(iv);
             mse.stmts.add(es);
         }
@@ -315,12 +327,22 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = Types.LIST_IMPL_CLASS_TYPE;
-        NewObjectExpr newExpr = new NewObjectExpr(Types.LIST_IMPL_CLASS_TYPE);
+        NewObjectExpr newExpr;
+        try {
+            newExpr = new NewObjectExpr(Types.LIST_IMPL_CLASS_TYPE);
+        } catch (MethodNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
         vo.initExpr = newExpr;
         mse.stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
         for (ExpressionContext e : ctx.expression()) {
-            InvocationExpr iv = new InvocationExpr(ve,"add",new ExprNode[]{visitExpression(e)});
+            InvocationExpr iv;
+            try {
+                iv = InvocationExpr.create(ve,"add",new ExprNode[]{visitExpression(e)});
+            } catch (MethodNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
             mse.stmts.add(new ExprStmt(iv));
         }
         mse.reference = ve;
@@ -553,7 +575,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         vds.type = declType;
         if (ctx.expression() != null) {
             vds.initExpr = (ExprNode) visit(ctx.expression());
-            if(vds.type==null){
+            if(vds.type==null && vds.initExpr!=null){
                 vds.type = vds.initExpr.getType();
             }
         }
@@ -659,10 +681,13 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     public InvocationExpr visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
         String methodName;
         ExprNode target = new ThisExpr(Types.getClassType(classAst));
+        Token id;
         ClassNode specialClass = null;
         if (ctx.key != null) {
+            id = ctx.key;
             methodName = ctx.key.getText();
         } else {
+            id = ctx.Identifier().getSymbol();
             methodName = ctx.Identifier().getText();
         }
         if(methodName.equals("this")){
@@ -673,7 +698,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             specialClass = this.classAst.parent;
         }
         InvocationExpr ie = this.getInvocationExpr(
-                target, methodName, ctx.params,specialClass);
+                target, methodName, ctx.params,specialClass,id);
         mapAst(ie, ctx);
         return ie;
     }
@@ -719,24 +744,39 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             if(!Types.STRING_CLASS_TYPE.equals(type2)){
                 expr2 = checkBox(expr2,expr2.getType(),Types.STRING_CLASS_TYPE,ctx.expression(1).getStart());
             }
-            InvocationExpr ie = new InvocationExpr(expr1, "concat",new ExprNode[]{expr2});
+            InvocationExpr ie;
+            try {
+                ie = InvocationExpr.create(expr1, "concat",new ExprNode[]{expr2});
+            } catch (MethodNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
             expr = ie;
         }
         mapAst(expr, ctx);
         return expr;
     }
 
-    private InvocationExpr getInvocationExpr(ExprNode expr, String methodName, List<ExpressionContext> argumentsCtx,@Nullable ClassNode specialClass) {
+    private @Nullable InvocationExpr getInvocationExpr(ExprNode expr, String methodName, List<ExpressionContext> argumentsCtx,@Nullable ClassNode specialClass,Token id) {
         ExprNode target = (ExprNode) expr;
         ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
-        InvocationExpr is = new InvocationExpr(target, methodName, args,specialClass);
+        InvocationExpr is = null;
+        try {
+            if(specialClass!=null){
+                is = InvocationExpr.create(target,specialClass,methodName, args);
+            }else{
+                is = InvocationExpr.create(target, methodName,args);
+            }
+        } catch (MethodNotFoundException ex) {
+                reportError("method not foud:" + methodName, id);
+        }
         return is;
     }
 
     @Override
     public AstNode visitExprInvocation(ExprInvocationContext ctx) {
         InvocationExpr ei = this.getInvocationExpr(
-                visitExpression(ctx.target), ctx.Identifier().getText(), ctx.params,null);
+                visitExpression(ctx.target), ctx.Identifier().getText(), ctx.params,null,ctx.Identifier().getSymbol());
+        if(ei==null) return null;
         mapAst(ei, ctx);
         return ei;
     }
@@ -931,9 +971,16 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
         ClassType clsType = requireClassType(ctx.Identifier().getSymbol());
-        NewObjectExpr newExpr = new NewObjectExpr(clsType);
-        InvocationExpr inv = getInvocationExpr(newExpr, "<init>", ctx.params,clsType.getClassNode());
-        newExpr.setConstructor(inv);
+        //InvocationExpr inv = getInvocationExpr(newExpr, "<init>", ctx.params,clsType.getClassNode(),ctx.Identifier().getSymbol());
+        NewObjectExpr newExpr;
+        try {
+            newExpr = new NewObjectExpr(clsType);
+        } catch (MethodNotFoundException ex) {
+            reportError("construcotr not found", ctx.Identifier().getSymbol());
+            return null;
+        }
+//        
+//        newExpr.setConstructor(inv);
         mapAst(newExpr,ctx);
         return newExpr;
     }
@@ -1152,11 +1199,11 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         String methodName = ctx.Identifier(1).getText();
         ExprNode node = getNodeById(id);
         if(node!=null){
-            return getInvocationExpr(node, methodName, ctx.params,null);
+            return getInvocationExpr(node, methodName, ctx.params,null,ctx.Identifier(1).getSymbol());
         }else if(isClassId(id)){
             ClassNode ast = requireAst(id, idToken);
             if(ast!=null)
-                return getInvocationExpr(null, methodName, ctx.params, ast);
+                return getInvocationExpr(null, methodName, ctx.params, ast,ctx.Identifier(1).getSymbol());
         }else{
             reportError("unknown identifier:" + id,idToken);
         }

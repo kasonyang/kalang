@@ -1,71 +1,117 @@
 package kalang.ast;
+
 import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import kalang.compiler.MethodNotFoundException;
 import kalang.core.*;
 import kalang.util.AstUtil;
-public class InvocationExpr extends ExprNode{
+
+public class InvocationExpr extends ExprNode {
 
     public static InvocationExpr create(ExprNode target, MethodNode methodNode) {
-        return new InvocationExpr(target, methodNode.name);
+        return new InvocationExpr(target, methodNode, null);
     }
-    
+
     /**
      * The target object to invoke
      */
     protected ExprNode target;
-    
+
     /**
      * The method name of invocation
      */
-    protected String methodName;
-    
+    //protected String methodName;
     protected ExprNode[] arguments;
-    private ClassNode specialClass;
-    
-    public InvocationExpr(ExprNode target,String methodName){
-        this(target, methodName, null);
+    //private ClassNode specialClass;
+    private MethodNode method;
+
+    public static InvocationExpr createStatic(ClassNode clazz, String methodName, ExprNode[] args) throws MethodNotFoundException {
+        return create(null, clazz, methodName, args);
+    }
+
+    public static InvocationExpr create(@Nonnull ExprNode target, String methodName) throws MethodNotFoundException {
+        return create(target, methodName, null);
     }
     
-    public InvocationExpr(ExprNode target,String methodName, ExprNode[] arguments){
-        this(target, methodName, arguments, null);
+//    public static InvocationExpr create(@Nonnull ExprNode target,ClassNode clazz, String methodName, @Nullable ExprNode[] arguments){
+//        return create(target, methodNode);
+//    }
+        /**
+     *  select the method for invocation expression,and apply ast transform if needed
+     * @param cls
+     * @param invocationExpr
+     * @param types
+     * @return the selected method,or null
+     */
+    private static InvocationExpr applyMethod(ExprNode target,ClassNode cls,String methodName, ExprNode[] args) throws MethodNotFoundException {
+        Type[] types = AstUtil.getExprTypes(args);
+        MethodNode md = AstUtil.getMethod(cls, methodName, types);
+        if (md != null) {
+            return new InvocationExpr(target, md, args);
+        } else {
+            MethodNode[] methods = AstUtil.getMethodsByName(cls, methodName);
+            int matchedCount = 0;
+            ExprNode[] matchedParams=null;
+            MethodNode matchedMethod = null;
+            for (MethodNode m : methods) {
+                Type[] mTypes = AstUtil.getParameterTypes(m);
+                ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
+                if (mp != null) {
+                    matchedCount++;
+                    matchedParams = mp;
+                    matchedMethod = m;
+                }
+            }
+            if (matchedCount < 1) {
+                throw new MethodNotFoundException(methodName);
+            } else if (matchedCount > 1) {
+                throw new MethodNotFoundException("the method " + methodName + " is ambiguous");
+            }
+            return new InvocationExpr(target,matchedMethod, matchedParams);
+        }
     }
-    
-    public InvocationExpr(ExprNode target,String methodName, ExprNode[] arguments,ClassNode specialClass){
-            this.target = target;
-            this.methodName = methodName;
-            this.arguments = arguments;
-            this.specialClass = specialClass;
+
+    public static InvocationExpr create(@Nonnull ExprNode target, String methodName, @Nullable ExprNode[] arguments) throws MethodNotFoundException {
+        ClassType targetType = (ClassType) target.getType();
+        ClassNode clazz = targetType.getClassNode();
+        return create(target, clazz, methodName, arguments);
     }
-    
-    public List<AstNode> getChildren(){
+
+    public static InvocationExpr create(
+            @Nullable ExprNode target,@Nonnull ClassNode clazz, String methodName, @Nullable ExprNode[] args) throws MethodNotFoundException {
+        return applyMethod(target,clazz,methodName, args);
+    }
+
+    public InvocationExpr(ExprNode target, MethodNode method, ExprNode[] args) {
+        this.target = target;
+        this.method = method;
+        this.arguments = args;
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
         List<AstNode> ls = new LinkedList();
         addChild(ls, getTarget());
         addChild(ls, getArguments());
         return ls;
     }
-    
+
     @Nonnull
-    public ClassType getInvokeClassType(){
-        if(specialClass!=null){
-            return Types.getClassType(specialClass);
-        }
-        Objects.requireNonNull(target);
-        Type targetType = target.getType();
-        return (ClassType) targetType;
+    public ClassType getInvokeClassType() {
+        return Types.getClassType(method.classNode);
     }
-    
+
     @Nullable
-    public Type[] getArgumentTypes(){
-        if(getArguments()==null) return null;
+    public Type[] getArgumentTypes() {
+        if (getArguments() == null) {
+            return null;
+        }
         return AstUtil.getExprTypes(getArguments());
     }
 
     @Override
     public Type getType() {
-        ClassNode clazz = getInvokeClassType().getClassNode();
-        MethodNode method = AstUtil.getMethod(clazz, getMethodName(),getArgumentTypes());
-        if(method == null) return null;
         return method.type;
     }
 
@@ -85,21 +131,6 @@ public class InvocationExpr extends ExprNode{
     }
 
     /**
-     * @return the methodName
-     */
-    public String getMethodName() {
-        return methodName;
-    }
-
-    /**
-     * @param methodName the methodName to set
-     */
-    public void setMethodName(String methodName) {
-        Objects.requireNonNull(methodName);
-        this.methodName = methodName;
-    }
-
-    /**
      * @return the arguments
      */
     public ExprNode[] getArguments() {
@@ -114,12 +145,8 @@ public class InvocationExpr extends ExprNode{
         this.arguments = arguments;
     }
 
-    public ClassNode getSpecialClass() {
-        return specialClass;
+    public MethodNode getMethod() {
+        return method;
     }
 
-    public void setSpecialClass(ClassNode specialClass) {
-        this.specialClass = specialClass;
-    }
-    
 }

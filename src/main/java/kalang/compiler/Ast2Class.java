@@ -389,20 +389,25 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitInvocationExpr(InvocationExpr node) {
         int opc;
-        String ownerClass;
+        MethodNode method = node.getMethod();
+        String ownerClass = internalName(node.getMethod().classNode);
         ExprNode target = node.getTarget();
-        ClassNode specialClass = node.getSpecialClass();
         if(target==null){
             opc = INVOKESTATIC;
-            ownerClass = internalName(specialClass);
         }else{
             visit(target);
-            if(specialClass!=null){
-                opc = INVOKESPECIAL;
-                ownerClass = internalName(specialClass);
+            if(target instanceof ThisExpr){
+                if(method.classNode==clazz){
+                    opc = INVOKEVIRTUAL;
+                }else{
+                    opc = INVOKESPECIAL;
+                }
             }else{
-                opc = INVOKEVIRTUAL;
-                ownerClass = classInternalName;
+                if(method.name.equals("<init>")){
+                    opc = INVOKESPECIAL;
+                }else{
+                    opc = INVOKEVIRTUAL;
+                }
             }
         }
 //        String ownerName = 
@@ -410,8 +415,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         md.visitMethodInsn(
                 opc 
                 ,ownerClass
-                ,node.getMethodName()
-                ,getMethodDescriptor(node.getType(), node.getMethodName(), AstUtil.getExprTypes(node.getArguments())), false);
+                ,method.name
+                ,getMethodDescriptor(node.getType(), method.name, AstUtil.getExprTypes(node.getArguments())), false);
         return null;
     }
 
@@ -695,7 +700,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
                 INVOKESPECIAL
                 , t.getInternalName()
                 , "<init>"
-                ,getMethodDescriptor(node.getConstructor().getType(), node.getConstructor().getMethodName(), node.getConstructor().getArgumentTypes())
+                ,getMethodDescriptor(node.getConstructor().getType(), node.getConstructor().getMethod().name, node.getConstructor().getArgumentTypes())
                 //,getTypeDescriptor(
                 //        AstUtil.getExprTypes(node.constructor.arguments))
                 , false);
