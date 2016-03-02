@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.util.AstUtil;
 
 /**
  * The class output the ast as java source
@@ -379,12 +380,11 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     @Override
     public String visitFieldExpr(FieldExpr node) {
         String target;
+        //TODO super field"?
         if (node.getTarget() != null) {
             target = visit(node.getTarget());
-        } else if (Modifier.isStatic(this.method.modifier)) {
-            target = cls.name;
-        } else {
-            target = "this";
+        } else { //static field
+            target = node.getField().classNode.name;
         }
         return target
                 + "."
@@ -393,25 +393,35 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitInvocationExpr(InvocationExpr node) {
-        String targetType = null;
+        String invokeTarget = null;
         if (node.getTarget() != null) {
-            targetType = visit(node.getTarget());
+            invokeTarget = visit(node.getTarget());
         }
         String args = String.join(",", visitAll(node.getArguments()));//.join(",");
         String mname = node.getMethod().name;
         if (mname.equals("<init>")) {
                return "new "
-                        + targetType
+                        + invokeTarget
                         + "("
                         + args
                         + ")";
         } else {
-            if (targetType != null && targetType.length()>0) {
-                targetType += ".";
+            if (invokeTarget != null && invokeTarget.length()>0) {
+                invokeTarget += ".";
             }else{
-                targetType = "";
+                ClassNode specialClass = node.getSpecialClass();
+node.getSpecialClass();
+                if(AstUtil.isStatic(node.getMethod().modifier)){
+                    invokeTarget = specialClass.name + ".";
+                }else{
+                    if(cls.equals(specialClass)){
+                        invokeTarget = "";
+                    }else{
+                        invokeTarget = "super.";
+                    }
+                }
             }
-            return targetType
+            return invokeTarget
                     + node.getMethod().name
                     + "("
                     + args
