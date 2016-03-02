@@ -8,7 +8,7 @@ A toy compiler front-end
 * static type safe
 * jvm compatible
 * auto type
-* java source output
+* java source output and class file output
 
 # How to build
 
