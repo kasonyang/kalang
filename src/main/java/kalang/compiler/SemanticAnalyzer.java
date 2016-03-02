@@ -78,8 +78,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     private Stack<Map<Type,AstNode>> exceptionStack = new Stack();
 
-    private Map<AstNode, Type> types = new HashMap<>();
-
     SemanticAnalyzer(AstLoader astLoader) {
         this.astLoader = astLoader;
         errHandler = new AstSemanticErrorHandler() {
@@ -163,14 +161,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
         Object ret = super.visit(node);
         if (ret instanceof Type) {
-            types.put(node,(Type) ret);
-//            if(node instanceof ExprNode){
-//                ExprNode exprNode = ((ExprNode)node);
-//                if(exprNode.getType()==null){
-//                    exprNode.setType((Type) ret);
-//                }
-//            }
             return  (Type) ret;
+        }else if(node instanceof ExprNode){
+            return ((ExprNode)node).getType();
         }
         return null;
     }
@@ -285,11 +278,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     @Override
-    public Type visitConstExpr(ConstExpr node) {
-        return node.getConstType();
-    }
-
-    @Override
     public Type visitElementExpr(ElementExpr node) {
         Type type = visit(node.getArrayExpr());
         if(!requireArray(node, type)) return getDefaultType();
@@ -303,10 +291,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             visit(target);
         }
         FieldNode field = node.getField();
-        if (field == null) {
-            err.fieldNotFound(node, node.getField().name);
-            return getDefaultType();
-        }
         if (isStatic(method.modifier)) {
             if(!requireStatic(field.modifier, node)) return getDefaultType();
         }
@@ -315,7 +299,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
-        List<Type> argTypes = visitAll(node.getArguments());
+        visitAll(node.getArguments());
 //        if(node.getTarget()==null){
 //            //TODO check static
 //            node.setTarget(new ThisExpr(Types.getClassType(clazz)));
@@ -326,12 +310,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if(target!=null){
             visit(target);
         }
-        //TODO should move to InvocationExpr?
-//        MethodNode matched = applyMethod(invokeClass,node,argTypes.toArray(new Type[0]));
-//        if (matched==null) {
-//            return getDefaultType();
-//        }
-        //node.matchedMethod = matched;
         MethodNode matched = node.getMethod();
         boolean inStaticMethod = target==null && Modifier.isStatic(this.method.modifier);
         if (inStaticMethod) {
@@ -345,11 +323,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     @Override
-    public Type visitParameterExpr(ParameterExpr node) {
-        return node.getParameter().type;
-    }
-
-    @Override
     public Type visitUnaryExpr(UnaryExpr node) {
         String op = node.getOperation();
         Type et = visit(node.getExpr());
@@ -360,11 +333,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             //if(!requireNumber(node,et)) return getDefaultType()
         }
         return et;
-    }
-
-    @Override
-    public Type visitVarExpr(VarExpr node) {
-        return node.getVar().type;
     }
 
     private void caughException(Type type) {
@@ -436,13 +404,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     @Override
-    public Type visitNewArrayExpr(NewArrayExpr node) {
-        return Types.getArrayType(node.getComponentType());
-    }
-
-    @Override
     public Type visitIfStmt(IfStmt node) {
-        //node.conditionExpr = this.checkAndCastToBoolean(node.conditionExpr);
         if(!requireBoolean(node, visit(node.getConditionExpr()))) return getDefaultType();
         if (node.getTrueBody() != null) {
             visit(node.getTrueBody());
@@ -581,40 +543,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return true;
     }
 
-    @Override
-    public Type visitThisExpr(ThisExpr node) {
-        return node.getType();
-    }
-
-    @Override
-    public Type visitMultiStmtExpr(MultiStmtExpr node) {
-        visitAll(node.stmts);
-        return visit(node.reference);
-    }
-    
-    public Type getType(AstNode node){
-        return types.get(node);
-    }
-
-    public Map<AstNode, Type> getTypes() {
-        return types;
-    }
-
     private boolean isNumber(Type t1) {
         return Types.isNumber(t1);
     }
-
-    public boolean isSpecialMethod(MethodNode node) {
-        return node.name.startsWith("<");
-    }
-
-//    public boolean isSpecialMethodNeedReturn(MethodNode node) {
-//        if(node.name.equals("<init>")) return false;
-//        else{
-//            System.err.println("unknown method:" + node.name);
-//            return false;
-//        }
-//    }
 
     public AstLoader getAstLoader() {
         return astLoader;
@@ -626,29 +557,10 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     @Override
-    public Type visitNewObjectExpr(NewObjectExpr node) {
-        return node.getObjectType();
-    }
-
-    @Override
-    public Type visitIncrementExpr(IncrementExpr expr) {
-        visitChildren(expr);
-        return expr.getExpr().getType();
-    }
-
-    @Override
-    public Type visitArrayLengthExpr(ArrayLengthExpr node) {
-        return node.getType();
-    }
-
-    @Override
     public Type visitThrowStmt(ThrowStmt node) {
         Type ret = super.visitThrowStmt(node);
         returned = true;
         return ret;
     }
-    
-    
-    
 
 }
