@@ -354,7 +354,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     }
 
     @Override
-    public Object visitCatchStmt(CatchBlock node) {
+    public Object visitCatchBlock(CatchBlock node) {
         visit(node.catchVar);
         int exVarId = getVarId(node.catchVar);
         md.visitVarInsn(ASTORE, exVarId);

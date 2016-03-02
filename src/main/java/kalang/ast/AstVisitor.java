@@ -69,7 +69,7 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
     }
     
     @Override
-    public T visitCatchStmt(CatchBlock node){
+    public T visitCatchBlock(CatchBlock node){
         this.visitChildren(node);
         return null;
     }

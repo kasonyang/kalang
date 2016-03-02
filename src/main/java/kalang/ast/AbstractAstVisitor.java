@@ -28,7 +28,7 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
     abstract public T visitTryStmt(TryStmt node);
     
-    abstract public T visitCatchStmt(CatchBlock node);
+    abstract public T visitCatchBlock(CatchBlock node);
     
     abstract public T visitThrowStmt(ThrowStmt node);
     
@@ -123,7 +123,7 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         }
         
         if(node instanceof CatchBlock){
-            return visitCatchStmt((CatchBlock)node);
+            return visitCatchBlock((CatchBlock)node);
         }
         
         if(node instanceof ThrowStmt){

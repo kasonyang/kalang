@@ -43,6 +43,7 @@ import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
+import kalang.ast.ThrowStmt;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -381,22 +382,28 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitTryStmt(TryStmt node) {
-        this.exceptionStack.add(new HashMap<>());
+        this.exceptionStack.add(new HashMap<>());        
         visit(node.execStmt);
-        visitAll(node.catchStmts);
+        boolean tryReturned = this.returned;
+        for(CatchBlock cs:node.catchStmts){
+            this.returned = false;
+            visit(cs);
+            tryReturned = tryReturned && this.returned;
+        }
         Map<Type, AstNode> uncaught = this.exceptionStack.pop();
         if (uncaught.size() > 0) {
             this.exceptionStack.peek().putAll(uncaught);
         }
+        returned = false;
         visit(node.finallyStmt);
+        this.returned = tryReturned || returned;
         return null;
     }
 
     @Override
-    public Type visitCatchStmt(CatchBlock node) {
-        //TODO here may be bug
+    public Type visitCatchBlock(CatchBlock node) {
         this.caughException(node.catchVar.type);
-        return null;
+        return super.visitCatchBlock(node);
     }
 
     @Override
@@ -632,6 +639,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitArrayLengthExpr(ArrayLengthExpr node) {
         return node.getType();
+    }
+
+    @Override
+    public Type visitThrowStmt(ThrowStmt node) {
+        Type ret = super.visitThrowStmt(node);
+        returned = true;
+        return ret;
     }
     
     

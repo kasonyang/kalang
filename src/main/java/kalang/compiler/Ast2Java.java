@@ -461,7 +461,7 @@ node.getSpecialClass();
     }
 
     @Override
-    public String visitCatchStmt(CatchBlock node) {
+    public String visitCatchBlock(CatchBlock node) {
         c("catch(");
         this.trim = true;
         visit(node.catchVar);

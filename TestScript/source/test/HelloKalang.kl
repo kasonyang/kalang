@@ -62,6 +62,5 @@ class{
         }catch(Exception ex){
             return 6;
         }
-        return 1;
     }
 }
