@@ -50,7 +50,7 @@ class {
         byte[] data = new byte[4096];
         var destDir = new File(destPath);
         if(!destDir.exists() && !destDir.mkdirs()){
-            fail("创建文件夹失败！");
+            fail("unable to create directory:"+destDir);
             return;
         }
         while(ens.hasMoreElements()){

@@ -42,6 +42,7 @@ import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.PrimitiveCastExpr;
+import kalang.ast.Statement;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
@@ -210,20 +211,77 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         //}
         return null;
     }
+    
+    private void ifBinaryInsn(ExprNode expr1,ExprNode expr2,String op,Label trueLabel,Label falseLabel){
+        if(op.equals("&&")){
+            visit(expr1);
+            md.visitJumpInsn(IFEQ, falseLabel);
+            visit(expr2);
+            md.visitJumpInsn(IFEQ, falseLabel);
+            md.visitJumpInsn(GOTO, trueLabel);
+        }else if(op.equals("||")){
+            visit(expr1);
+            md.visitJumpInsn(IFNE,trueLabel);
+            visit(expr2);
+            md.visitJumpInsn(IFNE, trueLabel);
+            md.visitJumpInsn(GOTO, falseLabel);
+        }else{
+            Type type = expr1.getType();
+        //org.objectweb.asm.Type t = asmType(expr1.type);
+            visit(expr1);
+            visit(expr2);
+            int t = getT(type);
+            if(T_L==t){
+                md.visitInsn(LCMP);
+            }else if(T_F==t){
+                md.visitInsn(FCMPL);
+            }else if(T_D==t){
+                md.visitInsn(DCMPL);
+            }else if(T_I == t){
+                //do nothing
+            }else{
+                throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
+            }
+            int opc = -1;
+            //TODO maybe bug when type is long...
+            switch(op){
+                case "==" : opc =IF_ICMPEQ;break;
+                case ">"    : opc = IF_ICMPGT;break;
+                case ">=" : opc = IF_ICMPGE;break;
+                case "<"   : opc = IF_ICMPLT;break;
+                case "<=" : opc = IF_ICMPLE;break;
+                case "!=" : opc = IF_ICMPNE;break;
+                default:
+                    throw  new UnsupportedOperationException("Unsupported operation:" + op);
+            }
+            md.visitJumpInsn(opc, trueLabel);
+            md.visitJumpInsn(GOTO,falseLabel);
+        }
+    }
 
     @Override
     public Object visitIfStmt(IfStmt node) {
         Label stopLabel = new Label();
+        Label trueLabel = new Label();
         Label falseLabel = new Label();
-        visit(node.getConditionExpr());
-        md.visitJumpInsn(IFEQ, falseLabel);
-        if(node.getTrueBody()!=null){
-            visit(node.getTrueBody());
+        ExprNode condition = node.getConditionExpr();
+        Statement trueBody = node.getTrueBody();
+        Statement falseBody = node.getFalseBody();    
+        if(condition instanceof BinaryExpr){
+            BinaryExpr binCondition = (BinaryExpr) condition;
+            ifBinaryInsn(binCondition.getExpr1(), binCondition.getExpr2(), binCondition.getOperation(), trueLabel, falseLabel);         }else{
+            visit(condition);
+            md.visitJumpInsn(IFEQ, falseLabel);
+            //md.visitJumpInsn(GOTO, trueLabel);
+        }
+        md.visitLabel(trueLabel);
+        if(trueBody!=null){
+            visit(trueBody);
         }
         md.visitJumpInsn(GOTO, stopLabel);
         md.visitLabel(falseLabel);
-        if(node.getFalseBody()!=null){
-            visit(node.getFalseBody());
+        if(falseBody!=null){
+            visit(falseBody);
         }
         md.visitLabel(stopLabel);
         return null;
@@ -328,6 +386,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitBinaryExpr(BinaryExpr node) {
+        ExprNode e1 = node.getExpr1();
+        ExprNode e2 = node.getExpr2();
         int op = 0;
         org.objectweb.asm.Type at = asmType(node.getExpr1().getType());
         switch(node.getOperation()){
@@ -341,16 +401,21 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case BinaryExpr.OP_OR:op = IOR;break;
             case BinaryExpr.OP_XOR: op = IXOR;break;
             //TODO shift is disabled now
-            case "&&":
-            case "||":
-                doLogicOperation(node.getExpr1(), node.getExpr2(), node.getOperation());
-                break;
-            default:
-                compare(node.getExpr1(), node.getExpr2(), node.getOperation());
+            default://logic expression
+                Label trueLabel = new Label();
+                Label falseLabel = new Label();
+                Label stopLabel = new Label();
+                ifBinaryInsn(e1, e2,node.getOperation(), trueLabel, falseLabel);
+                md.visitLabel(trueLabel);
+                constTrue();
+                md.visitJumpInsn(GOTO, stopLabel);
+                md.visitLabel(falseLabel);
+                constFalse();
+                md.visitLabel(stopLabel);
                 return null;
         }
-        visit(node.getExpr1());
-        visit(node.getExpr2());
+        visit(e1);
+        visit(e2);
         md.visitInsn(at.getOpcode(op));
         return null;
     }
