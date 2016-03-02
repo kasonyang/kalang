@@ -680,7 +680,6 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public InvocationExpr visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
         String methodName;
-        ExprNode target = new ThisExpr(Types.getClassType(classAst));
         Token id;
         ClassNode specialClass = null;
         if (ctx.key != null) {
@@ -696,9 +695,15 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         }else if(methodName.equals("super")){
             methodName = "<init>";
             specialClass = this.classAst.parent;
+        }else{
+            specialClass = this.classAst;
         }
         InvocationExpr ie = this.getInvocationExpr(
-                target, methodName, ctx.params,specialClass,id);
+                null, methodName, ctx.params,specialClass,id);
+        if(ie==null) return null;
+        if(!Modifier.isStatic(ie.getMethod().modifier)){
+            ie.setTarget(new ThisExpr(Types.getClassType(classAst)));
+        }
         mapAst(ie, ctx);
         return ie;
     }
