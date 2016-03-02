@@ -793,7 +793,13 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 ){
             ret = new ArrayLengthExpr(expr);
         }else{
-            FieldExpr fe = FieldExpr.create(expr,name);
+            FieldExpr fe;
+            try {
+                fe = FieldExpr.create(expr,name);
+            } catch (FieldNotFoundException ex) {
+                reportError("field not found:" + name, ctx.Identifier().getSymbol());
+                return null;
+            }
             ret = fe;
         }
         mapAst(ret, ctx);
@@ -874,8 +880,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
             if (classAst.fields != null) {
                 for (FieldNode f : classAst.fields) {
                     if (f.name!=null && f.name.equals(name)) {
-                        FieldExpr fe = FieldExpr.create(new ThisExpr(Types.getClassType(classAst)),name);
-                        return fe;
+                        return new FieldExpr(new ThisExpr(Types.getClassType(classAst)), f);
                     }
                 }
             }
@@ -1224,10 +1229,21 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                     && fieldName.equals("length")){
                 return new ArrayLengthExpr(expr);
             }
-            return FieldExpr.create(expr,fieldName);
+            try {
+                return FieldExpr.create(expr,fieldName);
+            } catch (FieldNotFoundException ex) {
+                reportError("field not found:" + fieldName, idToken);
+                return null;
+            }
         }else{
             ClassNode fieldClazz = requireAst(idToken);
-            return FieldExpr.createStaticFieldExpr(fieldClazz,fieldName);
+            if(fieldClazz==null) return null;
+            try {
+                return FieldExpr.createStaticFieldExpr(fieldClazz,fieldName);
+            } catch (FieldNotFoundException ex) {
+                reportError("field not found:" + fieldName, idToken);
+                return null;
+            }
         }
     }
 
