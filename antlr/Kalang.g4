@@ -230,7 +230,7 @@ singleType? '{' ( Identifier ':' expression ( ',' Identifier ':' expression)*)? 
 ;
 listOrArray:
 '[]'
-| singleType? '[' ( expression ( ',' expression )* ) ']'
+| /* singleType? */ '[' ( expression ( ',' expression )* ) ']'
 ;
 
 literal
