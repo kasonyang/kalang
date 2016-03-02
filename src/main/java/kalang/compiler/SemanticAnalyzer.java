@@ -13,7 +13,7 @@ import kalang.ast.AstNode;
 import kalang.ast.AstVisitor;
 import kalang.ast.BinaryExpr;
 import kalang.ast.CastExpr;
-import kalang.ast.CatchStmt;
+import kalang.ast.CatchBlock;
 import kalang.ast.ClassNode;
 import kalang.ast.ConstExpr;
 import kalang.ast.ElementExpr;
@@ -393,9 +393,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     @Override
-    public Type visitCatchStmt(CatchStmt node) {
+    public Type visitCatchStmt(CatchBlock node) {
         //TODO here may be bug
-        this.caughException(node.catchVarDecl.vars.get(0).type);
+        this.caughException(node.catchVar.type);
         return null;
     }
 

@@ -8,7 +8,7 @@ public class TryStmt extends Statement{
     
     public Statement execStmt;
     
-    public List<CatchStmt> catchStmts;
+    public List<CatchBlock> catchStmts;
     
     public Statement finallyStmt;
     
@@ -20,7 +20,7 @@ public class TryStmt extends Statement{
     }
     
     
-    public TryStmt(Statement execStmt,List<CatchStmt> catchStmts,Statement finallyStmt){
+    public TryStmt(Statement execStmt,List<CatchBlock> catchStmts,Statement finallyStmt){
         
             if(catchStmts == null) catchStmts = new LinkedList();
         

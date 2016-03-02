@@ -20,7 +20,7 @@ import kalang.ast.ThisExpr;
 import kalang.ast.ConstExpr;
 import kalang.ast.TryStmt;
 import kalang.ast.ThrowStmt;
-import kalang.ast.CatchStmt;
+import kalang.ast.CatchBlock;
 import kalang.ast.CastExpr;
 import kalang.ast.BlockStmt;
 import kalang.ast.BreakStmt;
@@ -1013,17 +1013,15 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         this.popVarStack();
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
-                CatchStmt catchStmt =CatchStmt.create();
                 String vName = ctx.catchVarNames.get(i).getText();
                 String vType = ctx.catchTypes.get(i).getText();
                 this.newVarStack();
                 LocalVarNode vo = new LocalVarNode();
                 vo.name = vName;
                 vo.type = requireClassType(vType, ctx.catchTypes.get(i).start);
-                VarDeclStmt declStmt = new VarDeclStmt(vo);
-                catchStmt.execStmt = visitStat(ctx.catchStmts.get(i));
+                Statement execStmt = visitStat(ctx.catchStmts.get(i));
+                CatchBlock catchStmt = new CatchBlock(vo,execStmt); 
                 this.popVarStack();
-                catchStmt.catchVarDecl = declStmt;
                 tryStmt.catchStmts.add(catchStmt);
             }
         }

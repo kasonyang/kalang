@@ -23,7 +23,7 @@ public interface IAstVisitor<T>{
     
     public T visitTryStmt(TryStmt node);
     
-    public T visitCatchStmt(CatchStmt node);
+    public T visitCatchStmt(CatchBlock node);
     
     public T visitThrowStmt(ThrowStmt node);
     

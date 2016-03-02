@@ -450,7 +450,7 @@ node.getSpecialClass();
     public String visitTryStmt(TryStmt node) {
         c("try");
         visit(node.execStmt);
-        for (CatchStmt c : node.catchStmts) {
+        for (CatchBlock c : node.catchStmts) {
             visit(c);
         }
         if (node.finallyStmt != null) {
@@ -461,10 +461,10 @@ node.getSpecialClass();
     }
 
     @Override
-    public String visitCatchStmt(CatchStmt node) {
+    public String visitCatchStmt(CatchBlock node) {
         c("catch(");
         this.trim = true;
-        visit(node.catchVarDecl);
+        visit(node.catchVar);
         this.trim = false;
         c(")");
         visit(node.execStmt);

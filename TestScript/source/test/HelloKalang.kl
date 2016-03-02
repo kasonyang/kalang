@@ -56,4 +56,12 @@ class{
         int i = -7;
         return ~i;
     }
+    int tryStmt(){
+        try{
+            throw new Exception("test");
+        }catch(Exception ex){
+            return 6;
+        }
+        return 1;
+    }
 }

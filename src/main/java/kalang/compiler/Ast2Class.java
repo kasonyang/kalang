@@ -7,7 +7,7 @@ import kalang.ast.BinaryExpr;
 import kalang.ast.BlockStmt;
 import kalang.ast.BreakStmt;
 import kalang.ast.CastExpr;
-import kalang.ast.CatchStmt;
+import kalang.ast.CatchBlock;
 import kalang.ast.ClassNode;
 import kalang.ast.ConstExpr;
 import kalang.ast.ContinueStmt;
@@ -212,7 +212,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         return null;
     }
     
-    private void ifBinaryInsn(ExprNode expr1,ExprNode expr2,String op,Label trueLabel,Label falseLabel){
+    private void doIfBinaryInsn(ExprNode expr1,ExprNode expr2,String op,Label trueLabel,Label falseLabel){
         if(op.equals("&&")){
             visit(expr1);
             md.visitJumpInsn(IFEQ, falseLabel);
@@ -269,7 +269,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         Statement falseBody = node.getFalseBody();    
         if(condition instanceof BinaryExpr){
             BinaryExpr binCondition = (BinaryExpr) condition;
-            ifBinaryInsn(binCondition.getExpr1(), binCondition.getExpr2(), binCondition.getOperation(), trueLabel, falseLabel);         }else{
+            doIfBinaryInsn(binCondition.getExpr1(), binCondition.getExpr2(), binCondition.getOperation(), trueLabel, falseLabel);         }else{
             visit(condition);
             md.visitJumpInsn(IFEQ, falseLabel);
             //md.visitJumpInsn(GOTO, trueLabel);
@@ -325,13 +325,40 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitTryStmt(TryStmt node) {
+        Label startLabel = new Label();
+        Label endLabel = new Label();
+        Label stopLabel = new Label();
+        md.visitLabel(startLabel);
+        visit(node.execStmt);
+        md.visitJumpInsn(GOTO, stopLabel);
+        md.visitLabel(endLabel);
+        if(node.catchStmts!=null){
+            for(CatchBlock s:node.catchStmts){
+                Label handler = new Label();
+                md.visitLabel(handler);
+                visit(s);
+                md.visitJumpInsn(GOTO, stopLabel);
+                String type = asmType(s.catchVar.type).getInternalName();
+                md.visitTryCatchBlock(startLabel, endLabel, handler,type);
+            }
+        }
+        if(node.finallyStmt!=null){
+            Label handler = new Label();
+            md.visitLabel(handler);
+            visit(node.finallyStmt);
+            md.visitJumpInsn(GOTO, stopLabel);
+            md.visitTryCatchBlock(startLabel, endLabel, handler, null);
+        }
+        md.visitLabel(stopLabel);
         return null;
-        //TODO to impl try stmt
     }
 
     @Override
-    public Object visitCatchStmt(CatchStmt node) {
-        //TODO to impl catch
+    public Object visitCatchStmt(CatchBlock node) {
+        visit(node.catchVar);
+        int exVarId = getVarId(node.catchVar);
+        md.visitVarInsn(ASTORE, exVarId);
+        visit(node.execStmt);
         return null;
     }
 
@@ -405,7 +432,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
                 Label trueLabel = new Label();
                 Label falseLabel = new Label();
                 Label stopLabel = new Label();
-                ifBinaryInsn(e1, e2,node.getOperation(), trueLabel, falseLabel);
+                doIfBinaryInsn(e1, e2,node.getOperation(), trueLabel, falseLabel);
                 md.visitLabel(trueLabel);
                 constTrue();
                 md.visitJumpInsn(GOTO, stopLabel);
@@ -866,8 +893,6 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
 
     @Override
     public Object visitArrayLengthExpr(ArrayLengthExpr node) {
-        //TODO support needed
-        //throw new UnsupportedOperationException("Not supported yet.");
         visit(node.getArrayExpr());
         md.visitInsn(ARRAYLENGTH);
         return null;
