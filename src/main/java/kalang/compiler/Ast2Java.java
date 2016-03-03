@@ -400,11 +400,14 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         String args = String.join(",", visitAll(node.getArguments()));//.join(",");
         String mname = node.getMethod().name;
         if (mname.equals("<init>")) {
-               return "new "
-                        + invokeTarget
-                        + "("
-                        + args
-                        + ")";
+            ClassNode specialClass = node.getSpecialClass();
+            if(cls.equals(specialClass)){
+                return "this(" + args + ")";
+            }else if(cls.isSubclassOf(specialClass)){
+                return "super(" + args + ")";
+            }else{
+                throw new UnsupportedOperationException();
+            }
         } else {
             if (invokeTarget != null && invokeTarget.length()>0) {
                 invokeTarget += ".";
