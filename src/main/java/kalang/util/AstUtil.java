@@ -21,6 +21,7 @@ import kalang.ast.ParameterExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.Statement;
 import kalang.ast.VarExpr;
+import kalang.compiler.MethodNotFoundException;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -207,4 +208,22 @@ public class AstUtil {
         }
     }
 
+    public static boolean isConstructor(MethodNode m) {
+        return !isStatic(m.modifier) && m.name.equals("<init>");
+    }
+
+    public static boolean hasConstructorCallStatement(List<Statement> statements) {
+        for(Statement s:statements){
+            if(isConstructorCallStatement(s)) return true;
+        }
+        return false;
+    }
+    
+    public static Statement createDefaultSuperConstructorCall(ClassNode clazz) throws MethodNotFoundException{
+       ClassType clsType = Types.getClassType(clazz);
+       ThisExpr thisExpr = new ThisExpr(clsType);
+        return new ExprStmt(
+                InvocationExpr.create(thisExpr, clazz.parent, "<init>", null)
+        );
+    }
 }

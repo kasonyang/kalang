@@ -222,6 +222,17 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                     method = m;
                     newVarStack();
                     m.body = (BlockStmt) visitStat(body);
+                    if(m.body!=null && AstUtil.isConstructor(m)){   
+                        @SuppressWarnings("null")
+                        List<Statement> bodyStmts = m.body.statements;
+                        if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
+                            try {
+                                bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(classAst));
+                            } catch (MethodNotFoundException ex) {
+                                reportError("default constructor not found", body.start);
+                            }
+                        }
+                    }
                     popVarStack();
                 }
             }
