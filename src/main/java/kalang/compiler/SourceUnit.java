@@ -221,7 +221,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
                 if(body!=null){
                     method = m;
                     newVarStack();
-                    m.body = visitStat(body);
+                    m.body = (BlockStmt) visitStat(body);
                     popVarStack();
                 }
             }

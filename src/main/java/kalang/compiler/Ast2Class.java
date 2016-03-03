@@ -156,15 +156,37 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         }else{
             varIdCounter = 1;
         }
-        visitChildren(node);
-        if(node.type.equals(VOID_TYPE)){
-            md.visitInsn(RETURN);
-        }
-        try{
-            md.visitMaxs(0, 0);
-        }catch(Exception ex){
-            System.err.println("exception when visit method:" + node.name);
-            //throw ex;
+        BlockStmt body = node.body;
+        if(body!=null){
+            String methodName = node.name;
+            if(!AstUtil.isStatic(node.modifier) && methodName.equals("<init>")){//constructor
+                int stmtsSize = body.statements.size();
+                assert stmtsSize > 0;
+                Statement firstStmt = body.statements.get(0);
+                if(!AstUtil.isConstructorCallStatement(firstStmt)){
+                    throw new RuntimeException("missing constructor call");
+                }
+                visit(firstStmt);
+                //init fields
+                List<FieldNode> fields = clazz.fields;
+                for(FieldNode f:fields){
+                    assignField(f, new ThisExpr(Types.getClassType(clazz)), f.initExpr);
+                }
+                for(int i=1;i<stmtsSize;i++){
+                    visit(body.statements.get(i));
+                }
+            }else{
+                visitChildren(node);
+            }
+            if(node.type.equals(VOID_TYPE)){
+                md.visitInsn(RETURN);
+            }
+            try{
+                md.visitMaxs(0, 0);
+            }catch(Exception ex){
+                System.err.println("exception when visit method:" + node.name);
+                //throw ex;
+            }
         }
         md.visitEnd();
         return null;
@@ -376,21 +398,25 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         md.visitVarInsn(type.getOpcode(ISTORE), vid);
     }
     
+    private void assignField(FieldNode fn,ExprNode target,ExprNode expr){
+            int opc = PUTFIELD;
+            if(AstUtil.isStatic(fn.modifier)){
+                opc = PUTSTATIC;
+            }else{
+                visit(target);
+            }
+            visit(expr);
+            md.visitFieldInsn(opc, 
+                    asmType(Types.getClassType(fn.classNode)).getInternalName()
+                    ,fn.name
+            , getTypeDescriptor(fn.type));
+    }
+    
     private void assign(ExprNode to,ExprNode from){
         org.objectweb.asm.Type type = asmType(from.getType());
         if(to instanceof FieldExpr){
             FieldExpr toField = (FieldExpr) to;
-            int opc = PUTFIELD;
-            if(AstUtil.isStatic(toField.getField().modifier)){
-                opc = PUTSTATIC;
-            }else{
-                visit(toField.getTarget());
-            }
-            visit(from);
-            md.visitFieldInsn(opc, 
-                    asmType(toField.getTarget().getType()).getInternalName()
-                    , toField.getField().name
-            , getTypeDescriptor(toField.getTarget().getType()));
+            assignField(toField.getField(), toField.getTarget(), from);
         }else if(to instanceof VarExpr){
             assignVarObject(((VarExpr) to).getVar(), from);
         }else if(to instanceof ElementExpr){
@@ -668,7 +694,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     }
     
     private org.objectweb.asm.Type asmType(Type type){
-        return org.objectweb.asm.Type.getType(getTypeDescriptor(type));
+        String typeDesc = getTypeDescriptor(type);
+        return org.objectweb.asm.Type.getType(typeDesc);
     }
 
     private int getVarId(VarObject var) {

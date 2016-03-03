@@ -1,8 +1,6 @@
-/*
-Don't modify!This file is generated automately.
-*/
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.core.*;
 public class MethodNode extends AstNode{
     
@@ -14,7 +12,8 @@ public class MethodNode extends AstNode{
     
     public List<ParameterNode> parameters;
     
-    public Statement body;
+    @Nullable
+    public BlockStmt body = null;
     
     public List<Type> exceptionTypes;
     
@@ -30,45 +29,30 @@ public class MethodNode extends AstNode{
     }
     
     
-    protected MethodNode(ClassNode classNode,Integer modifier,Type type,String name,List<ParameterNode> parameters,Statement body,List<Type> exceptionTypes){
+    protected MethodNode(ClassNode classNode,Integer modifier,Type type,String name,List<ParameterNode> parameters,BlockStmt body,List<Type> exceptionTypes){
         this.classNode = classNode;
             if(parameters == null) parameters = new LinkedList();
-        
             if(exceptionTypes == null) exceptionTypes = new LinkedList();
-        
-        
             this.modifier = modifier;
-        
             this.type = type;
-        
             this.name = name;
-        
             this.parameters = parameters;
-        
             this.body = body;
-        
             this.exceptionTypes = exceptionTypes;
-        
     }
     
     
     protected static MethodNode create(ClassNode classNode){
         MethodNode node = new MethodNode(classNode);
-        
         node.parameters = new LinkedList();
-        
         node.exceptionTypes = new LinkedList();
-        
         return node;
     }
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls,parameters);
-        
         addChild(ls,body);
-        
         return ls;
     }
     

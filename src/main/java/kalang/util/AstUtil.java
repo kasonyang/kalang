@@ -19,6 +19,7 @@ import kalang.ast.InvocationExpr;
 import kalang.ast.ThisExpr;
 import kalang.ast.ParameterExpr;
 import kalang.ast.ParameterNode;
+import kalang.ast.Statement;
 import kalang.ast.VarExpr;
 import kalang.core.ClassType;
 import kalang.core.Type;
@@ -53,21 +54,6 @@ public class AstUtil {
         return null;
     }
 
-    /*MethodNode getMethod(ClassNode ast,String name,String[] types){
-		def methods = ast.methods
-		for(def m in methods){
-			if(m.name!=name) continue
-			def ps = m.parameters
-			def mtypes = []
-			for(def p in ps){
-				mtypes.add(p.type)
-			}
-			if(castSystem.isCastableTo(types,mtypes)){
-				return m
-			}
-		}
-		return null
-	}*/
     public static Type[] getParameterTypes(MethodNode mn) {
         if (mn.parameters == null) {
             return new Type[0];
@@ -208,6 +194,17 @@ public class AstUtil {
     
     public static boolean isStatic(int modifier){
             return Modifier.isStatic(modifier);
+    }
+    
+    public static boolean isConstructorCallStatement(Statement stmt){
+        try{
+            ExprStmt exprStmt = (ExprStmt) stmt;
+            InvocationExpr invExpr = (InvocationExpr) exprStmt.getExpr();
+            MethodNode method = invExpr.getMethod();
+            return method.name.equals("<init>") && !Modifier.isStatic(method.modifier);
+        }catch(ClassCastException ex){
+            return false;
+        }
     }
 
 }
