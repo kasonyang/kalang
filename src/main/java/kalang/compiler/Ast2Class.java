@@ -158,8 +158,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         }
         BlockStmt body = node.body;
         if(body!=null){
-            String methodName = node.name;
-            if(!AstUtil.isStatic(node.modifier) && methodName.equals("<init>")){//constructor
+            if(AstUtil.isConstructor(node)){//constructor
                 int stmtsSize = body.statements.size();
                 assert stmtsSize > 0;
                 Statement firstStmt = body.statements.get(0);
@@ -806,7 +805,6 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
     @Override
     public Object visitFieldNode(FieldNode fieldNode) {
         classWriter.visitField(0, fieldNode.name, getTypeDescriptor(fieldNode.type), null, null);
-        //TODO init field
         return null;
     }
 

@@ -1,4 +1,8 @@
 class{
+    int f = 6;
+    int fieldTest(){
+        return f;
+    }
     int test(){
         return 6;
     }
