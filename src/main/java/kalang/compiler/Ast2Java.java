@@ -355,13 +355,11 @@ public class Ast2Java extends AbstractAstVisitor<String> {
 
     @Override
     public String visitBinaryExpr(BinaryExpr node) {
-        return "(("
+        return "("
                 + visit(node.getExpr1())
-                + ") "
                 + node.getOperation()
-                + "("
                 + visit(node.getExpr2())
-                + ") )";
+                + ")";
     }
 
     @Override
@@ -452,13 +450,25 @@ node.getSpecialClass();
     @Override
     public String visitTryStmt(TryStmt node) {
         c("try");
-        visit(node.execStmt);
+        if(node.execStmt instanceof BlockStmt){
+            visit(node.execStmt);
+        }else{
+            c("{");
+            visit(node.execStmt);
+            c("}");
+        }     
         for (CatchBlock c : node.catchStmts) {
             visit(c);
         }
         if (node.finallyStmt != null) {
             c("finally ");
-            visit(node.finallyStmt);
+            if(node.finallyStmt instanceof BlockStmt){
+                 visit(node.finallyStmt);
+            }else{
+                c("{");
+                visit(node.finallyStmt);
+                c("}");
+            }           
         }
         return null;
     }
@@ -470,7 +480,14 @@ node.getSpecialClass();
         visit(node.catchVar);
         this.trim = false;
         c(")");
-        visit(node.execStmt);
+        if(node.execStmt instanceof BlockStmt){
+            visit(node.execStmt);
+        }else{
+            c("{");
+            visit(node.execStmt);
+            c("}");
+        }
+        
         return null;
     }
 
@@ -540,9 +557,9 @@ node.getSpecialClass();
         String op=node.isIsDesc() ? "--" : "++";
         String vn = visit(node.getExpr());
         if(node.isIsPrefix()){
-            return "(" + op + vn + ")";
+            return  op + vn;
         }else{
-            return "(" + vn + op + ")";
+            return vn + op;
         }
     }
 
