@@ -131,7 +131,6 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         clazz = node;
         classInternalName = internalName(clazz);
         classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        int access = node.modifier;
         String sign = null;
         String parentName = "java.lang.Object";
         if(node.parent!=null){
@@ -140,6 +139,10 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         String[] interfaces = null;
         if(node.interfaces!=null){
             interfaces = internalName(node.interfaces.toArray(new ClassNode[0]));
+        }
+        int access = node.modifier;
+        if(node.isInterface){
+            access += ACC_INTERFACE;
         }
         classWriter.visit(V1_5, access,internalName(node.name), sign, internalName(parentName),interfaces);
         visitChildren(node);
