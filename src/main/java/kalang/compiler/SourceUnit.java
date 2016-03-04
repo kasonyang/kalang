@@ -652,7 +652,6 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         VarDeclStmt vds = new VarDeclStmt(vars);
         ls.initStmts.add(vds);
         ls.preConditionExpr = (ExprNode) visit(ctx.expression());
-        //TODO fixme
         BlockStmt bs =new BlockStmt();
         if (ctx.stat() != null) {
             Statement st = visitStat(ctx.stat());

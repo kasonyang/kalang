@@ -52,7 +52,6 @@ public abstract class Type {
     public abstract MethodNode[] getMethods();
     
     public FieldNode getField(String name){
-        //TODO low performance
         for(FieldNode f:getFields()){
             if(f.name.equals(name)) return f;
         }
