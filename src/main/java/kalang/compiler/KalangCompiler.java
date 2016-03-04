@@ -3,13 +3,14 @@ package kalang.compiler;
 import kalang.ast.AstNode;
 import kalang.ast.ClassNode;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import static kalang.compiler.CompilePhase.*;
-//import SourceUnit.OffsetRange
+/**
+ * The core compiler
+ * 
+ * @author Kason Yang <i@kasonyang.com>
+ */
 public class KalangCompiler extends AstLoader {
         
     private int compileTargetPhase = PHASE_ALL;
@@ -18,9 +19,8 @@ public class KalangCompiler extends AstLoader {
 
     @Nonnull
     private final HashMap<String, String> sources = new HashMap();
-
-    @Nonnull
-    private final List<CompilationUnit> parseTasks = new LinkedList<>();
+    
+    private int compilingPhase;
 
     @Nonnull
     private AstLoader astLoader = AstLoader.BASE_AST_LOADER;
@@ -38,7 +38,7 @@ public class KalangCompiler extends AstLoader {
     };
     
     @Nonnull
-    private SourceParsingErrorHandler semanticErrorHandler = new SourceParsingErrorHandler() {
+    private SourceParsingErrorHandler sourceParsingErrorhandler = new SourceParsingErrorHandler() {
         @Override
         public void handleSemanticError(SourceParsingException see) {
             SourceUnit parser = see.getSourceUnit();
@@ -55,7 +55,7 @@ public class KalangCompiler extends AstLoader {
             System.err.println(error.toString());
         }
     };
-    private int compilingPhase;
+    
 
     public KalangCompiler() {
     }
@@ -132,15 +132,6 @@ public class KalangCompiler extends AstLoader {
                 unit.compile(compilingPhase);
             }
         }
-//        while(parseTasks.size()>0){
-//            CompilationUnit cunit = parseTasks.get(0);
-//            cunit.compile(compileTargetPhase);
-//        }
-//        if(compileTargetPhase>=PHASE_INITIALIZE) init();
-//        if(compileTargetPhase>=PHASE_PARSING) parsing();
-//        if(compileTargetPhase>=PHASE_BUILDAST) buildAst();
-//        if(compileTargetPhase>=PHASE_SEMANTIC) semanticAnalysis();
-//        if(compileTargetPhase>=PHASE_CLASSGEN) codeGen();
     }
 
     @Override
@@ -173,12 +164,12 @@ public class KalangCompiler extends AstLoader {
     }
     
     @Nonnull
-    public SourceParsingErrorHandler getSemanticErrorHandler() {
-        return semanticErrorHandler;
+    public SourceParsingErrorHandler getSourceParsingErrorhandler() {
+        return sourceParsingErrorhandler;
     }
 
-    public void setSemanticErrorHandler(@Nonnull SourceParsingErrorHandler semanticErrorHandler) {
-        this.semanticErrorHandler = semanticErrorHandler;
+    public void setSourceParsingErrorhandler(@Nonnull SourceParsingErrorHandler sourceParsingErrorhandler) {
+        this.sourceParsingErrorhandler = sourceParsingErrorhandler;
     }
 
     @Nonnull
@@ -192,12 +183,10 @@ public class KalangCompiler extends AstLoader {
 
     private CompilationUnit createCompilationUnit(String className, String src) {
         CompilationUnit unit = new CompilationUnit(className, src,this);
-        unit.setParsingErrorHandler(semanticErrorHandler);
+        unit.setParsingErrorHandler(sourceParsingErrorhandler);
         unit.setSemanticErrorHandler(astSemanticErrorHandler);
         unit.compile(compilingPhase);
-        //unit.parseMeta(semanticErrorHandler);
         compilationUnits.put(className, unit);
-        this.parseTasks.add(unit);
         return unit;
     }
 
@@ -209,6 +198,10 @@ public class KalangCompiler extends AstLoader {
     @Nullable
     public SourceLoader getSourceLoader() {
         return sourceLoader;
+    }
+
+    public int getCurrentCompilePhase() {
+        return compilingPhase;
     }
 
 }

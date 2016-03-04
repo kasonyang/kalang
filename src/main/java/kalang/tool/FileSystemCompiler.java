@@ -84,10 +84,10 @@ public class FileSystemCompiler implements CompileErrorHandler{
 
     @Override
     public void handleCompileError(CompileError error) {
-        //TODO should stop compiling
         String cname = error.className;
         File fn = sourceFiles.get(cname);
         System.err.println(fn + ":" + error);
+        kalangCompiler.setCompileTargetPhase(kalangCompiler.getCurrentCompilePhase());
     }
 
     public KalangCompiler getKalangCompiler() {
