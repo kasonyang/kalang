@@ -1,5 +1,5 @@
 /*
-Don't modify!This file is generated automately.
+
 */
 package kalang.ast;
 import java.util.*;
