@@ -266,6 +266,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             case "&":
             case "|":
             case "^":
+            case BinaryExpr.OP_SHIFT_LEFT:
+            case BinaryExpr.OP_SHIFT_RIGHT:
                 if(!requireNumber(node, t1)) return getDefaultType();
                 if(!requireNumber(node, t2)) return getDefaultType();
                 t = getPrimitiveType(Types.getHigherType(t1, t2));

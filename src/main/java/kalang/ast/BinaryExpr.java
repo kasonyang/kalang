@@ -22,9 +22,8 @@ public class BinaryExpr extends ExprNode{
             OP_AND = "&",
             OP_OR = "|",
             OP_XOR = "^",
-            //TODO shift operation is disabled
-            //OP_SHIFT_LEFT = "<<",
-            //OP_SHIFT_RIGHT = ">>",
+            OP_SHIFT_LEFT = "<<",
+            OP_SHIFT_RIGHT = ">>",
             //Compare
             OP_LE = "<=",
             OP_GE = ">=",

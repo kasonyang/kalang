@@ -464,7 +464,8 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             case BinaryExpr.OP_AND:op = IAND;break;
             case BinaryExpr.OP_OR:op = IOR;break;
             case BinaryExpr.OP_XOR: op = IXOR;break;
-            //TODO shift is disabled now
+            case BinaryExpr.OP_SHIFT_LEFT:op = ISHL;break;
+            case BinaryExpr.OP_SHIFT_RIGHT:op = ISHR;break;
             default://logic expression
                 Label trueLabel = new Label();
                 Label falseLabel = new Label();
