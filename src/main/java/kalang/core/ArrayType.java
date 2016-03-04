@@ -17,20 +17,11 @@ import kalang.compiler.AstLoader;
 public class ArrayType extends ClassType{
 
     private Type componentType;
-    private FieldNode[] fields;
 
     public ArrayType(Type componentType) {
         //TODO should not hard code
         super(AstLoader.BASE_AST_LOADER.getAst("java.lang.Object"));
         this.componentType = componentType;
-        FieldNode field = FieldNode.create(null);
-        field.modifier = Modifier.PUBLIC;
-        field.type = Types.INT_TYPE;
-        field.name = "length";
-        //TODO here may be bug
-        fields = new FieldNode[]{
-            field
-        };
     }
     
     @Override
@@ -68,7 +59,7 @@ public class ArrayType extends ClassType{
 
     @Override
     public FieldNode[] getFields() {
-        return fields;
+        return new FieldNode[0];
     }
 
     @Override

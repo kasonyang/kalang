@@ -300,26 +300,19 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
         visitAll(node.getArguments());
-//        if(node.getTarget()==null){
-//            //TODO check static
-//            node.setTarget(new ThisExpr(Types.getClassType(clazz)));
-//        }
-        //TODO here may be bug
         ExprNode target = node.getTarget();
-        ClassNode invokeClass = node.getInvokeClassType().getClassNode();
         if(target!=null){
             visit(target);
         }
-        MethodNode matched = node.getMethod();
+        MethodNode invokeMethod = node.getMethod();
         boolean inStaticMethod = target==null && Modifier.isStatic(this.method.modifier);
         if (inStaticMethod) {
-            if(!requireStatic(matched.modifier, node)) return getDefaultType();
+            if(!requireStatic(invokeMethod.modifier, node)) return getDefaultType();
         }
-        //TODO here could be optim
-        for(Type et:matched.exceptionTypes){
+        for(Type et:invokeMethod.exceptionTypes){
             this.exceptionStack.peek().put(et,node);
         }
-        return matched.type;
+        return invokeMethod.type;
     }
 
     @Override

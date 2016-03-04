@@ -248,35 +248,47 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
             md.visitJumpInsn(GOTO, falseLabel);
         }else{
             Type type = expr1.getType();
-        //org.objectweb.asm.Type t = asmType(expr1.type);
             visit(expr1);
             visit(expr2);
             int t = getT(type);
-            if(T_L==t){
-                md.visitInsn(LCMP);
-            }else if(T_F==t){
-                md.visitInsn(FCMPL);
-            }else if(T_D==t){
-                md.visitInsn(DCMPL);
-            }else if(T_I == t){
-                //do nothing
-            }else{
-                throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
+            if(T_I == t){
+                int opc = -1;
+                switch(op){
+                    case "==" : opc =IF_ICMPEQ;break;
+                    case ">"    : opc = IF_ICMPGT;break;
+                    case ">=" : opc = IF_ICMPGE;break;
+                    case "<"   : opc = IF_ICMPLT;break;
+                    case "<=" : opc = IF_ICMPLE;break;
+                    case "!=" : opc = IF_ICMPNE;break;
+                    default:
+                        throw  new UnsupportedOperationException("Unsupported operation:" + op);
+                }
+                md.visitJumpInsn(opc, trueLabel);
+                md.visitJumpInsn(GOTO,falseLabel);
+            }else{//type is not int
+                if(T_L==t){
+                    md.visitInsn(LCMP);
+                }else if(T_F==t){
+                    md.visitInsn(FCMPL);
+                }else if(T_D==t){
+                    md.visitInsn(DCMPL);
+                }else{
+                    throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
+                }
+                int opc = -1;
+                switch(op){
+                    case "==" : opc =IFEQ;break;
+                    case ">"    : opc = IFGT;break;
+                    case ">=" : opc = IFGE;break;
+                    case "<"   : opc = IFLT;break;
+                    case "<=" : opc = IFLE;break;
+                    case "!=" : opc = IFNE;break;
+                    default:
+                        throw  new UnsupportedOperationException("Unsupported operation:" + op);
+                }
+                md.visitJumpInsn(opc, trueLabel);
+                md.visitJumpInsn(GOTO,falseLabel);
             }
-            int opc = -1;
-            //TODO maybe bug when type is long...
-            switch(op){
-                case "==" : opc =IF_ICMPEQ;break;
-                case ">"    : opc = IF_ICMPGT;break;
-                case ">=" : opc = IF_ICMPGE;break;
-                case "<"   : opc = IF_ICMPLT;break;
-                case "<=" : opc = IF_ICMPLE;break;
-                case "!=" : opc = IF_ICMPNE;break;
-                default:
-                    throw  new UnsupportedOperationException("Unsupported operation:" + op);
-            }
-            md.visitJumpInsn(opc, trueLabel);
-            md.visitJumpInsn(GOTO,falseLabel);
         }
     }
 
