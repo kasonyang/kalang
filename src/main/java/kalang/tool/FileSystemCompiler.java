@@ -7,6 +7,10 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.ast.ClassNode;
+import kalang.compiler.Ast2Class;
+import kalang.compiler.Ast2Java;
+import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.CompileError;
 import kalang.compiler.CompileErrorHandler;
@@ -19,7 +23,7 @@ import org.apache.commons.io.FileUtils;
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class FileSystemCompiler implements CompileErrorHandler{
+public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
 
     private Map<String, File> sourceFiles = new HashMap<>();
 
@@ -27,6 +31,8 @@ public class FileSystemCompiler implements CompileErrorHandler{
 
     private File outputDir;
     private KalangCompiler kalangCompiler;
+    
+    private CodeGenerator codeGenerator = this;
 
     public void addSource(String className, File file) {
         sourceFiles.put(className, file);
@@ -53,25 +59,12 @@ public class FileSystemCompiler implements CompileErrorHandler{
         JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
         kalangCompiler = new KalangCompiler(astLoader);
         kalangCompiler.setCompileErrrorHandler(this);
+        kalangCompiler.setCodeGenerator(codeGenerator);
         for (String srcName : sourceFiles.keySet()) {
             File f = sourceFiles.get(srcName);
             kalangCompiler.addSource(srcName, FileUtils.readFileToString(f));
         }
         kalangCompiler.compile();
-        HashMap<String, CompilationUnit> units = kalangCompiler.getAllCompilationUnit();
-        for (String cls : units.keySet()) {
-            String code = units.get(cls).getJavaCode();
-            byte[] bs = units.get(cls).getClassBytes();
-            if (outputDir != null) {
-                String fname = cls.replace(".", "/");// + ".java";
-                File destFile = new File(outputDir, fname + ".java");
-                File classDest = new File(outputDir,fname + ".class");
-                FileUtils.write(destFile, code);
-                FileUtils.writeByteArrayToFile(classDest, bs);
-            } else {
-                System.out.println(code);
-            }
-        }
     }
 
     public File getOutputDir() {
@@ -93,5 +86,38 @@ public class FileSystemCompiler implements CompileErrorHandler{
     public KalangCompiler getKalangCompiler() {
         return kalangCompiler;
     }
+
+    @Override
+    public void generate(ClassNode classNode) {
+        Ast2Class ast2Class = new Ast2Class();
+        ast2Class.generate(classNode);
+        Ast2Java ast2Java = new Ast2Java();
+        ast2Java.generate(classNode);
+        String cls = classNode.name;
+        if (outputDir != null) {
+                String fname = cls.replace(".", "/");// + ".java";
+                File destFile = new File(outputDir, fname + ".java");
+                File classDest = new File(outputDir,fname + ".class");
+                try{
+                    FileUtils.write(destFile, ast2Java.getCode());
+                    FileUtils.writeByteArrayToFile(classDest, ast2Class.getClassBytes());
+                }catch(IOException ex){
+                    //TODO report io exception
+                    System.err.println(ex.getMessage());
+                }
+            } else {
+                System.out.println(ast2Java.getCode());
+            }
+    }
+
+    public CodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
+    public void setCodeGenerator(CodeGenerator codeGenerator) {
+        this.codeGenerator = codeGenerator;
+    }
+    
+    
 
 }

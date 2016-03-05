@@ -61,7 +61,7 @@ import static org.objectweb.asm.Opcodes.*;
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class Ast2Class extends AbstractAstVisitor<Object>{
+public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerator{
 
     private ClassWriter classWriter;
     private MethodVisitor md;
@@ -749,6 +749,7 @@ public class Ast2Class extends AbstractAstVisitor<Object>{
         return ts;
     }
     
+    @Override
     public void generate(ClassNode classNode){
         visitClassNode(classNode);
     }

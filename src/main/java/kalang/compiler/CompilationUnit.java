@@ -4,6 +4,8 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import kalang.ast.ClassNode;
 import kalang.util.SourceUnitFactory;
@@ -20,18 +22,16 @@ public class CompilationUnit {
     private final SourceUnit sourceUnit;
 
     private final SemanticAnalyzer semanticAnalyzer;
-
+    
     @Nonnull
     private final ClassNode ast;
     private final AstLoader astLoader;
-    private final Ast2Java a2j;
-    private String javaCode = "";
     private final CommonTokenStream tokens;
-    private byte[] classBytes;
     
     private int compilingPhase;
     private SourceParsingErrorHandler parsingErrorHandler;
     private AstSemanticErrorHandler semanticErrorHandler;
+    private CodeGenerator codeGenerator;
 
     public CompilationUnit(@Nonnull String className,@Nonnull String source,@Nonnull AstLoader astLoader) {
         tokens = TokenStreamFactory.createTokenStream(source);
@@ -41,10 +41,9 @@ public class CompilationUnit {
         ast = sourceUnit.getAst();
         this.astLoader = astLoader;
         semanticAnalyzer = new SemanticAnalyzer(astLoader);
-        a2j = new Ast2Java();
     }
 
-    public CompilationUnit(@Nonnull String className,@Nonnull String source) {
+    public CompilationUnit(@Nonnull String className,@Nonnull String source,CompileConfiguration configuration) {
         this(className, source, AstLoader.BASE_AST_LOADER);
     }
     
@@ -58,8 +57,10 @@ public class CompilationUnit {
         }else if(phase==PHASE_SEMANTIC){
             semanticAnalysis(semanticErrorHandler);
         }else if(phase == PHASE_CLASSGEN){
-            generateJavaCode();
-            generateClassBytes();
+            if(codeGenerator==null){
+                throw new IllegalStateException("CodeGenerator is missing");
+            }
+            codeGenerator.generate(ast);
         }
     }
     
@@ -88,20 +89,6 @@ public class CompilationUnit {
         semanticAnalyzer.check(ast);
     }
 
-    protected void generateJavaCode() {
-        javaCode = a2j.generate(ast);
-    }
-    
-    protected void generateClassBytes(){
-        Ast2Class a2c = new Ast2Class();
-        a2c.generate(ast);
-        classBytes = a2c.getClassBytes();
-    }
-    
-    public byte [] getClassBytes(){
-        return classBytes;
-    }
-
     @Nonnull
     public ClassNode getAst() {
         return ast;
@@ -123,11 +110,6 @@ public class CompilationUnit {
     }
 
     @Nonnull
-    public String getJavaCode() {
-        return javaCode;
-    }
-
-    @Nonnull
     public CommonTokenStream getTokenStream() {
         return tokens;
     }
@@ -139,7 +121,13 @@ public class CompilationUnit {
     public void setSemanticErrorHandler(AstSemanticErrorHandler semanticErrorHandler) {
         this.semanticErrorHandler = semanticErrorHandler;
     }
-    
-    
+
+    public CodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
+    public void setCodeGenerator(CodeGenerator codeGenerator) {
+        this.codeGenerator = codeGenerator;
+    }
 
 }

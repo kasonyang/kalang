@@ -24,6 +24,8 @@ public class KalangCompiler extends AstLoader {
 
     @Nonnull
     private AstLoader astLoader = AstLoader.BASE_AST_LOADER;
+    
+    private CodeGenerator codeGenerator = new Ast2Java();
 
     @Nullable
     private SourceLoader sourceLoader;
@@ -186,6 +188,7 @@ public class KalangCompiler extends AstLoader {
         compilationUnits.put(className, unit);
         unit.setParsingErrorHandler(sourceParsingErrorhandler);
         unit.setSemanticErrorHandler(astSemanticErrorHandler);
+        unit.setCodeGenerator(codeGenerator);
         unit.compile(compilingPhase);
         return unit;
     }
@@ -202,6 +205,14 @@ public class KalangCompiler extends AstLoader {
 
     public int getCurrentCompilePhase() {
         return compilingPhase;
+    }
+
+    public CodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
+    public void setCodeGenerator(CodeGenerator codeGenerator) {
+        this.codeGenerator = codeGenerator;
     }
 
 }

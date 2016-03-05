@@ -56,9 +56,6 @@ public class ErrorTest {
             kc.addSource(n,source);
         }
         kc.compile();
-        for(CompilationUnit unit:kc.getAllCompilationUnit().values()){
-            System.out.println(unit.getJavaCode());
-        }
         //
     }
 	

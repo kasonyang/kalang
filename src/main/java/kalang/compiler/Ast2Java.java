@@ -1,5 +1,7 @@
 package kalang.compiler;
 
+import java.io.File;
+import java.io.IOException;
 import kalang.ast.*;
 
 import java.lang.reflect.Modifier;
@@ -10,13 +12,15 @@ import java.util.List;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.util.AstUtil;
+import kalang.util.ClassNameUtil;
+import org.apache.commons.io.FileUtils;
 
 /**
  * The class output the ast as java source
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class Ast2Java extends AbstractAstVisitor<String> {
+public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerator{
 
     private List<VarObject> varList = new LinkedList<>();
 
@@ -28,6 +32,12 @@ public class Ast2Java extends AbstractAstVisitor<String> {
     private ClassNode cls;
 
     private MethodNode method;
+    
+    //private File outputDir  = null;
+
+    public Ast2Java() {
+        
+    }
 
     private String getVarName(VarObject vo) {
         String name = vo.name;
@@ -104,11 +114,16 @@ public class Ast2Java extends AbstractAstVisitor<String> {
         }
     }
 
-    public String generate(ClassNode cls) {
+    @Override
+    public void generate(ClassNode cls){
         code = "";
         visit(cls);
+    }
+
+    public String getCode() {
         return code;
     }
+    
 //	
 //    private String indent(String str){
 //        return "";

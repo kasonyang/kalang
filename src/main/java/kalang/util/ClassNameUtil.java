@@ -4,12 +4,21 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import javax.annotation.Nullable;
 import org.apache.commons.io.FilenameUtils;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
  */
 public class ClassNameUtil {
+    
+    public static String getRelativePathOfClass(String className,@Nullable String extention){
+        String name = className.replace(".", "/");
+        if(extention!=null){
+            name += "." + extention;
+        }
+        return name;
+    }
     
     public static String getClassName(File dir,File file){
         String dirPath = FilenameUtils.normalizeNoEndSeparator(dir.getAbsolutePath());

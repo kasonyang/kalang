@@ -111,16 +111,17 @@ public class MainCompiler {
         }
         cpl.compile();
         HashMap<String, CompilationUnit> units = cpl.getAllCompilationUnit();
-        for (String cls : units.keySet()) {
-            String code = units.get(cls).getJavaCode();
-            if (outDir != null) {
-                String fname = cls.replace(".", "/") + ".java";
-                File destFile = new File(outDir, fname);
-                FileUtils.write(destFile, code);
-            } else {
-                System.out.println(code);
-            }
-        }
+        //TODO output code
+//        for (String cls : units.keySet()) {
+//            String code = units.get(cls).getJavaCode();
+//            if (outDir != null) {
+//                String fname = cls.replace(".", "/") + ".java";
+//                File destFile = new File(outDir, fname);
+//                FileUtils.write(destFile, code);
+//            } else {
+//                System.out.println(code);
+//            }
+//        }
     }
 
     public static void compile(File srcDir, File outDir) throws IOException {
