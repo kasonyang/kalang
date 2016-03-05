@@ -1218,7 +1218,10 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         String methodName = ctx.Identifier(1).getText();
         ExprNode node = getNodeById(id);
         if(node!=null){
-            return getInvocationExpr(node, methodName, ctx.params,null,ctx.Identifier(1).getSymbol());
+            InvocationExpr ie = getInvocationExpr(node, methodName, ctx.params,null,ctx.Identifier(1).getSymbol());
+            if(ie==null) return null;
+            mapAst(ie, ctx);
+            return ie;
         }else if(isClassId(id)){
             ClassNode ast = requireAst(id, idToken);
             if(ast!=null)
