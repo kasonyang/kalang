@@ -37,13 +37,13 @@ More examples could be found in [examples](https://github.com/kasonyang/kalang/t
 
 add the path`build/install/kalang/bin` to your `PATH` environment variable,and run
 
-    >kalang [SOURCE_DIR [OUTPUT_DIR]]
+    >kalang SOURCE_FILE 
 
-or
+For example:`kalang Helloworld.kl` would compile `Helloworld.kl` in current directory.
 
-    >kalang SOURCE_FILE [OUTPUT_DIR]
+More usages please run
 
-for example:`kalang Helloworld.kl` would compile `Helloworld.kl` to `Helloworld.java` in current directory.
+    >kalang -h
 
 # IDE support
 
