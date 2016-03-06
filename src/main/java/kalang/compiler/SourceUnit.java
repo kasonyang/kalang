@@ -752,6 +752,14 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         if(isPrimitive1 && isPrimitive2){
             BinaryExpr be = new BinaryExpr(expr1,expr2,op);
             expr = be;
+        }else if(Types.isNumber(type1) && Types.isNumber(type2)){
+            PrimitiveType t = SemanticAnalyzer.getMathType(type1, type2, op);
+            expr1 = BoxUtil.assign(expr1, type1, t);
+            expr2 = BoxUtil.assign(expr2, type2, t);
+            if(expr1==null || expr2 == null){
+                throw new UnknownError("cast fail");
+            }
+            expr = new BinaryExpr(expr1, expr2, op);
         }else{
             if(!Types.STRING_CLASS_TYPE.equals(type1)){
                 expr1 = checkBox(expr1,expr1.getType(),Types.STRING_CLASS_TYPE,ctx.expression(0).getStart());

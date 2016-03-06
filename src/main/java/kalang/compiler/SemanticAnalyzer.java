@@ -193,7 +193,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return tt;
     }
     
-    private PrimitiveType getPrimitiveType(Type t){
+    public static PrimitiveType getPrimitiveType(Type t){
         if(t instanceof PrimitiveType){
             return (PrimitiveType) t;
         }else if(t instanceof ClassType){
@@ -203,7 +203,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
     }
 
-    private Type getMathType(Type t1, Type t2, String op) {
+    public static PrimitiveType getMathType(Type t1, Type t2, String op) {
         PrimitiveType pt1= getPrimitiveType(t1);
         PrimitiveType pt2 = getPrimitiveType(t2);
         if(pt1==null){
