@@ -583,4 +583,14 @@ node.getSpecialClass();
         return visit(node.getArrayExpr()) + ".length";
     }
 
+    @Override
+    public String visitUnknownFieldExpr(UnknownFieldExpr node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String visitUnknownInvocationExpr(UnknownInvocationExpr node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }
