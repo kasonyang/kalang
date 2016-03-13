@@ -182,9 +182,13 @@ public class KalangCompiler extends AstLoader {
     public void setCompileErrrorHandler(@Nonnull CompileErrorHandler compileErrrorHandler) {
         this.compileErrrorHandler = compileErrrorHandler;
     }
+    
+    protected CompilationUnit newCompilationUnit(String className,String source){
+        return new CompilationUnit(className, source,this);
+    }
 
     private CompilationUnit createCompilationUnit(String className, String src) {
-        CompilationUnit unit = new CompilationUnit(className, src,this);
+        CompilationUnit unit = newCompilationUnit(className, src);
         compilationUnits.put(className, unit);
         unit.setParsingErrorHandler(sourceParsingErrorhandler);
         unit.setSemanticErrorHandler(astSemanticErrorHandler);

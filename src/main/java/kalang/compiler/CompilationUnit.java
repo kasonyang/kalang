@@ -19,14 +19,14 @@ import static kalang.compiler.CompilePhase.*;
  */
 public class CompilationUnit {
 
-    private final SourceUnit sourceUnit;
+    private SourceUnit sourceUnit;
 
-    private final SemanticAnalyzer semanticAnalyzer;
+    private SemanticAnalyzer semanticAnalyzer;
     
     @Nonnull
-    private final ClassNode ast;
-    private final AstLoader astLoader;
-    private final CommonTokenStream tokens;
+    private ClassNode ast;
+    private AstLoader astLoader;
+    private CommonTokenStream tokens;
     
     private int compilingPhase;
     private SourceParsingErrorHandler parsingErrorHandler;
@@ -34,12 +34,16 @@ public class CompilationUnit {
     private CodeGenerator codeGenerator;
 
     public CompilationUnit(@Nonnull String className,@Nonnull String source,@Nonnull AstLoader astLoader) {
-        tokens = TokenStreamFactory.createTokenStream(source);
-        sourceUnit = SourceUnitFactory.createSourceUnit(className, tokens);
+        this.astLoader = astLoader;
+        init(className,source);
+    }
+    
+    private void init(String className, String source){
+        tokens =createTokenStream(source);
+        sourceUnit = createSourceUnit(className, tokens);
         sourceUnit.importPackage("java.lang");
         sourceUnit.importPackage("java.util");
-        ast = sourceUnit.getAst();
-        this.astLoader = astLoader;
+        ast = sourceUnit.getAst();        
         semanticAnalyzer = new SemanticAnalyzer(astLoader);
     }
 
@@ -47,7 +51,15 @@ public class CompilationUnit {
         this(className, source, AstLoader.BASE_AST_LOADER);
     }
     
-    private void doCompilePhase(int phase){
+    protected CommonTokenStream createTokenStream(String source){
+        return TokenStreamFactory.createTokenStream(source);
+    }
+    
+    protected SourceUnit createSourceUnit(String className,CommonTokenStream tokens){
+        return SourceUnitFactory.createSourceUnit(className, tokens);
+    }
+    
+    protected void doCompilePhase(int phase){
         if(phase==PHASE_INITIALIZE){
             
         }else if(phase==PHASE_PARSING){
