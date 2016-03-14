@@ -18,7 +18,7 @@ public class KalangCompiler extends AstLoader {
     private HashMap<String, CompilationUnit> compilationUnits = new HashMap<>();
 
     @Nonnull
-    private final HashMap<String, String> sources = new HashMap();
+    private final HashMap<String, KalangSource> sources = new HashMap();
     
     private int compilingPhase;
 
@@ -29,35 +29,12 @@ public class KalangCompiler extends AstLoader {
 
     @Nullable
     private SourceLoader sourceLoader;
-
-    @Nonnull
-    private AstSemanticErrorHandler astSemanticErrorHandler = new AstSemanticErrorHandler() {
-        @Override
-        public void handleAstSemanticError(AstSemanticError error) {
-            reportAstNodeError(error.getDescription(), error.classNode.name, error.node);
-            compileTargetPhase = PHASE_SEMANTIC;
-        }
-    };
     
     @Nonnull
-    private SourceParsingErrorHandler sourceParsingErrorhandler = new SourceParsingErrorHandler() {
-        @Override
-        public void handleSemanticError(SourceParsingException see) {
-            AstBuilder parser = see.getAstBuilder();
-            OffsetRange offsetRange = see.getOffset();
-            reportError(see.getDescription(), parser.getClassName(), offsetRange);
-            compileTargetPhase = PHASE_PARSING;
-        }
-    };
-    
-    @Nonnull
-    private CompileErrorHandler compileErrrorHandler = new CompileErrorHandler() {
-        @Override
-        public void handleCompileError(CompileError error) {
-            System.err.println(error.toString());
-        }
-    };
-    
+    private CompileErrorHandler compileErrorHandler = (e) -> {
+        reportError(e);
+        compileTargetPhase = compilingPhase;
+     };
 
     public KalangCompiler() {
     }
@@ -87,33 +64,22 @@ public class KalangCompiler extends AstLoader {
      * @param source the source of class
      */
     public void addSource(String className, String source) {
-        sources.put(className, source);
-        compilationUnits.put(className, createCompilationUnit(className, source));
+        KalangSource src = new KalangSource(className, source);
+        sources.put(className, src);
+        compilationUnits.put(className, createCompilationUnit(src));
     }
 
     @Nonnull
-    public AstSemanticErrorHandler getAstSemanticErrorHandler() {
-        return astSemanticErrorHandler;
-    }
-
-    public void setAstSemanticErrorHandler(@Nonnull AstSemanticErrorHandler astSemanticErrorHandler) {
-        this.astSemanticErrorHandler = astSemanticErrorHandler;
-    }
+    
 
     protected void semanticAnalysis() {
         for (CompilationUnit cunit : compilationUnits.values()) {
-            cunit.semanticAnalysis(astSemanticErrorHandler);
+            cunit.semanticAnalysis(compileErrorHandler);
         }
     }
 
-    public void reportError(String msg, String className, OffsetRange loc) {
-        String src = sources.get(className);
-        CompileError ce = new CompileError(msg, className, src, loc);
-        compileErrrorHandler.handleCompileError(ce);
-    }
-
-    public void reportAstNodeError(String msg, String className, AstNode node) {
-        reportError(msg, className, node.offset);
+    public void reportError(CompileError error) {
+        compileErrorHandler.handleCompileError(error);
     }
     
     public void setCompileTargetPhase(int targetPhase){
@@ -144,14 +110,14 @@ public class KalangCompiler extends AstLoader {
         if (this.sourceLoader != null) {
             String source = sourceLoader.loadSource(className);
             if (source != null) {
-                return createCompilationUnit(className, source).getAst();
+                return createCompilationUnit(new KalangSource(className, source)).getAst();
             }
         }
         return astLoader.findAst(className);
     }
 
     @Nonnull
-    public HashMap<String, String> getSources() {
+    public HashMap<String, KalangSource> getSources() {
         return sources;
     }
 
@@ -164,34 +130,24 @@ public class KalangCompiler extends AstLoader {
     public CompilationUnit getCompilationUnit(@Nonnull String className){
         return compilationUnits.get(className);
     }
-    
-    @Nonnull
-    public SourceParsingErrorHandler getSourceParsingErrorhandler() {
-        return sourceParsingErrorhandler;
-    }
-
-    public void setSourceParsingErrorhandler(@Nonnull SourceParsingErrorHandler sourceParsingErrorhandler) {
-        this.sourceParsingErrorhandler = sourceParsingErrorhandler;
-    }
 
     @Nonnull
     public CompileErrorHandler getCompileErrrorHandler() {
-        return compileErrrorHandler;
+        return compileErrorHandler;
     }
 
-    public void setCompileErrrorHandler(@Nonnull CompileErrorHandler compileErrrorHandler) {
-        this.compileErrrorHandler = compileErrrorHandler;
+    public void setCompileErrorHandler(@Nonnull CompileErrorHandler compileErrrorHandler) {
+        this.compileErrorHandler = compileErrrorHandler;
     }
     
-    protected CompilationUnit newCompilationUnit(String className,String source){
-        return new CompilationUnit(className, source,this);
+    protected CompilationUnit newCompilationUnit(KalangSource source){
+        return new CompilationUnit(source,this);
     }
 
-    private CompilationUnit createCompilationUnit(String className, String src) {
-        CompilationUnit unit = newCompilationUnit(className, src);
-        compilationUnits.put(className, unit);
-        unit.setParsingErrorHandler(sourceParsingErrorhandler);
-        unit.setSemanticErrorHandler(astSemanticErrorHandler);
+    private CompilationUnit createCompilationUnit(KalangSource source) {
+        CompilationUnit unit = newCompilationUnit(source);
+        compilationUnits.put(source.getClassName(), unit);
+        unit.setErrorHandler(compileErrorHandler);
         unit.setCodeGenerator(codeGenerator);
         unit.compile(compilingPhase);
         return unit;

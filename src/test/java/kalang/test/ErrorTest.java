@@ -23,14 +23,15 @@ public class ErrorTest {
 	
     KalangCompiler kc;
 
-    AstSemanticErrorHandler allowErrorHandler = new AstSemanticErrorHandler() {
-        @Override
-        public void handleAstSemanticError(AstSemanticError error) {
-            //kc.reportAstNodeError(error.getDescription(), error.getClassNode().name, error.getNode());
+    CompileErrorHandler allowErrorHandler = (e) -> {
+        if(e instanceof AstSemanticError){
+            AstSemanticError error = (AstSemanticError) e;
             System.out.println("on error:" + error.getDescription());
-                  eCode = error.getErrorCode();
+            eCode = error.getErrorCode();
             errMsg =error.getDescription();
             kc.setCompileTargetPhase(CompilePhase.PHASE_SEMANTIC);
+        }else{
+            System.err.println(e.getDescription());
         }
     };
     
@@ -38,17 +39,15 @@ public class ErrorTest {
 
         @Override
         public void handleCompileError(CompileError error) {
-            fail(error.description);
+            fail(error.getDescription());
         }
     };
 	
-    private void compile(AstSemanticErrorHandler errorHandler,CompileErrorHandler compileErrorHandler,String dir,String...name) throws IOException{
+    private void compile(CompileErrorHandler compileErrorHandler,String dir,String...name) throws IOException{
         eCode = -1;
         kc = new KalangCompiler(new JavaAstLoader());
-        if(errorHandler!=null)
-            kc.setAstSemanticErrorHandler(errorHandler);
         if(compileErrorHandler!=null){
-            kc.setCompileErrrorHandler(compileErrorHandler);
+            kc.setCompileErrorHandler(compileErrorHandler);
         }
         for(String n : name){
             File src = new File(dir,n+".kl");//.readLines().join("\r\n");
@@ -61,11 +60,11 @@ public class ErrorTest {
 	
     private void cp(String... name) throws IOException{
         this.errMsg = null;
-        compile(null,strictErrorHandler,srcDir,name);
+        compile(strictErrorHandler,srcDir,name);
     }
 	
     private void ecp(String... name) throws IOException{
-        compile(allowErrorHandler,null,errSrcDir,name);
+        compile(allowErrorHandler,errSrcDir,name);
     }
 	
     @Test
@@ -93,7 +92,7 @@ public class ErrorTest {
 	
     @Test
     public void toolTest() throws IOException{
-        kalang.tool.MainCompiler.main(new String[]{this.errSrcDir,outDir});
+        //kalang.tool.MainCompiler.main(new String[]{this.errSrcDir,outDir});
     }
 	
 

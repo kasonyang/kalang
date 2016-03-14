@@ -98,8 +98,8 @@ public class MainCompiler {
         KalangCompiler cpl = new KalangCompiler(astLoader,new FileSystemSourceLoader(srcDir));
         int size = sources.size();
         HashMap<String, Source> sourcesMap = new HashMap<>();
-        cpl.setCompileErrrorHandler((CompileError error) -> {
-            String cname = error.className;
+        cpl.setCompileErrorHandler((CompileError error) -> {
+            String cname = error.getSource().getClassName();
             String fn = sourcesMap.get(cname).fileName;
             System.err.println(fn + ":" + error);
         });

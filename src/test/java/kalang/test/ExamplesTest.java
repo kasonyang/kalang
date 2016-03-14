@@ -28,7 +28,7 @@ public class ExamplesTest extends FileSystemCompiler{
     @Override
     public void handleCompileError(CompileError error) {
         super.handleCompileError(error);
-        fail(error.description);
+        fail(error.getDescription());
     }
     
     

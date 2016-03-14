@@ -16,7 +16,7 @@ import java.util.*;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class AstSemanticError {
+public class AstSemanticError extends CompileError{
 
     public static final int UNRESOLVED_NAME = 1,
             CLASS_NOT_FOUND = 2,
@@ -30,13 +30,12 @@ public class AstSemanticError {
 
     ClassNode classNode;
     AstNode node;
-    String description;
     int errorCode;
 
-    AstSemanticError(String description, int errorCode, AstNode node, ClassNode clazz) {
+    AstSemanticError(String description,KalangSource source, int errorCode, AstNode node, ClassNode clazz) {
+        super(description, source, node.offset);
         this.classNode = clazz;
         this.node = node;
-        this.description = description;
         this.errorCode = errorCode;
     }
 
@@ -46,10 +45,6 @@ public class AstSemanticError {
 
     public AstNode getNode() {
         return node;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public int getErrorCode() {

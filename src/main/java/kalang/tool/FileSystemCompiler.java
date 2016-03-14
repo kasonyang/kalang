@@ -58,7 +58,7 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
         URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
         JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
         kalangCompiler = new KalangCompiler(astLoader);
-        kalangCompiler.setCompileErrrorHandler(this);
+        kalangCompiler.setCompileErrorHandler(this);
         kalangCompiler.setCodeGenerator(codeGenerator);
         for (String srcName : sourceFiles.keySet()) {
             File f = sourceFiles.get(srcName);
@@ -77,7 +77,7 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
 
     @Override
     public void handleCompileError(CompileError error) {
-        String cname = error.className;
+        String cname = error.getSource().getClassName();
         File fn = sourceFiles.get(cname);
         System.err.println(fn + ":" + error);
         kalangCompiler.setCompileTargetPhase(kalangCompiler.getCurrentCompilePhase());

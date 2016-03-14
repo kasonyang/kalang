@@ -8,6 +8,7 @@ package kalang.test;
 import kalang.ast.AstNode;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.AstBuilder;
+import kalang.compiler.KalangSource;
 import kalang.util.ParseTreeNavigator;
 import kalang.util.AstBuilderFactory;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -27,10 +28,11 @@ public class CompilantUnitTest {
     
     @Test
     public void test(){
-        AstBuilder sp = AstBuilderFactory.createAstBuilder("Test", "class{"
+        KalangSource source = new KalangSource("Test", "class{"
                 + "void main(){"
                 + "}"
                 + "}");
+        AstBuilder sp = AstBuilderFactory.createAstBuilder(source);
         sp.compile();
         ParseTreeNavigator treeNav = new ParseTreeNavigator(sp.getParseTree());
         ParseTree tree = treeNav.getParseTree(0);

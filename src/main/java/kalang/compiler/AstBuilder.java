@@ -146,18 +146,17 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private KalangParser parser;
     
-    private SourceParsingErrorHandler semanticErrorHandler = new SourceParsingErrorHandler() {
-        @Override
-        public void handleSemanticError(SourceParsingException see) {
-            System.err.println(see);
-        }
+    private CompileErrorHandler semanticErrorHandler = (error) ->{
+        System.err.println(error);
     };
     
-    public SourceParsingErrorHandler getSemanticErrorHandler() {
+    private final KalangSource source;
+    
+    public CompileErrorHandler getSemanticErrorHandler() {
         return semanticErrorHandler;
     }
 
-    public void setSemanticErrorHandler(SourceParsingErrorHandler semanticErrorHandler) {
+    public void setSemanticErrorHandler(CompileErrorHandler semanticErrorHandler) {
         this.semanticErrorHandler = semanticErrorHandler;
     }
     
@@ -239,8 +238,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
     }
 
-    public AstBuilder(@Nonnull String className, @Nonnull KalangParser parser) {
-        this.className = className;
+    public AstBuilder(@Nonnull KalangSource source, @Nonnull KalangParser parser) {
+        this.source = source;
+        this.className = source.getClassName();
         classAst.name = className;
         this.classPath = "";
         this.parser = parser;
@@ -597,13 +597,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     public void reportError(String msg, Token token) {
-        SourceParsingException ex = new SourceParsingException(msg, OffsetRangeHelper.getOffsetRange(token), this);
-        semanticErrorHandler.handleSemanticError(ex);
+        SourceParsingException ex = new SourceParsingException(msg, source ,OffsetRangeHelper.getOffsetRange(token), this);
+        semanticErrorHandler.handleCompileError(ex);
     }
 
     public void reportError(String msg,ParserRuleContext tree) {
-        SourceParsingException ex = new SourceParsingException(msg, OffsetRangeHelper.getOffsetRange(tree), this);
-        semanticErrorHandler.handleSemanticError(ex);
+        SourceParsingException ex = new SourceParsingException(msg,source ,OffsetRangeHelper.getOffsetRange(tree), this);
+        semanticErrorHandler.handleCompileError(ex);
     }
 
     @Override

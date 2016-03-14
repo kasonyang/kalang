@@ -74,17 +74,16 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     private AstSemanticErrorReporter err;
 
-    private AstSemanticErrorHandler errHandler;
+    private CompileErrorHandler errHandler;
 
     private Stack<Map<Type,AstNode>> exceptionStack = new Stack();
+    private KalangSource source;
 
-    SemanticAnalyzer(AstLoader astLoader) {
+    SemanticAnalyzer(KalangSource source,AstLoader astLoader) {
         this.astLoader = astLoader;
-        errHandler = new AstSemanticErrorHandler() {
-            @Override
-            public void handleAstSemanticError(AstSemanticError error) {
+        this.source = source;
+        errHandler = (error) -> {
                 System.err.println(error.toString());
-            }
         };
     }
     
@@ -92,7 +91,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return Types.ROOT_TYPE;
     }
 
-    public void setAstSemanticErrorHandler(AstSemanticErrorHandler handler) {
+    public void setAstSemanticErrorHandler(CompileErrorHandler handler) {
         errHandler = handler;
     }
 
@@ -124,10 +123,10 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     public void check(ClassNode clz) {
-        err = new AstSemanticErrorReporter(clz, new AstSemanticErrorReporter.AstSemanticReporterCallback() {
+        err = new AstSemanticErrorReporter(clz,source ,new AstSemanticErrorReporter.AstSemanticReporterCallback() {
             @Override
             public void handleAstSemanticError(AstSemanticError error) {
-                errHandler.handleAstSemanticError(error);
+                errHandler.handleCompileError(error);
             }
         });
         this.fields = new HashMap();

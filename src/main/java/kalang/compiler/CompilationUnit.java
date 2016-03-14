@@ -37,47 +37,46 @@ public class CompilationUnit {
     private CommonTokenStream tokens;
     
     private int compilingPhase;
-    private SourceParsingErrorHandler parsingErrorHandler;
-    private AstSemanticErrorHandler semanticErrorHandler;
     
+    private CompileErrorHandler errorHandler;
 
-    public CompilationUnit(@Nonnull String className,@Nonnull String source,@Nonnull AstLoader astLoader) {
+    public CompilationUnit(@Nonnull KalangSource source,@Nonnull AstLoader astLoader) {
         this.astLoader = astLoader;
-        init(className,source);
+        init(source);
     }
     
-    private void init(String className, String source){
-        lexer = createLexer(source);
+    private void init(KalangSource source){
+        lexer = createLexer(source.getText());
         tokens = createTokenStream(lexer);
         parser = createParser(tokens);
-        astBuilder = createAstBuilder(className, tokens);
+        astBuilder = createAstBuilder(source, tokens);
         astBuilder.importPackage("java.lang");
         astBuilder.importPackage("java.util");
         ast = astBuilder.getAst();        
-        semanticAnalyzer = new SemanticAnalyzer(astLoader);
+        semanticAnalyzer = new SemanticAnalyzer(source,astLoader);
     }
 
-    public CompilationUnit(@Nonnull String className,@Nonnull String source,CompileConfiguration configuration) {
-        this(className, source, AstLoader.BASE_AST_LOADER);
+    public CompilationUnit(@Nonnull KalangSource source,CompileConfiguration configuration) {
+        this( source, AstLoader.BASE_AST_LOADER);
     }
     
     protected CommonTokenStream createTokenStream(KalangLexer lexer){
         return TokenStreamFactory.createTokenStream(lexer);
     }
     
-    protected AstBuilder createAstBuilder(String className,CommonTokenStream tokens){
-        return AstBuilderFactory.createAstBuilder(className, tokens);
+    protected AstBuilder createAstBuilder(KalangSource source , CommonTokenStream tokens){
+        return AstBuilderFactory.createAstBuilder(source, tokens);
     }
     
     protected void doCompilePhase(int phase){
         if(phase==PHASE_INITIALIZE){
             
         }else if(phase==PHASE_PARSING){
-            parseMeta(parsingErrorHandler);
+            parseMeta(errorHandler);
         }else if(phase == PHASE_BUILDAST){
-            parseBody(parsingErrorHandler);
+            parseBody(errorHandler);
         }else if(phase==PHASE_SEMANTIC){
-            semanticAnalysis(semanticErrorHandler);
+            semanticAnalysis(errorHandler);
         }else if(phase == PHASE_CLASSGEN){
             if(codeGenerator==null){
                 throw new IllegalStateException("CodeGenerator is missing");
@@ -93,20 +92,20 @@ public class CompilationUnit {
         }
     }
     
-    protected void parseMeta(SourceParsingErrorHandler semanticErrorHandler){
+    protected void parseMeta(CompileErrorHandler semanticErrorHandler){
         parse(semanticErrorHandler, AstBuilder.PARSING_PHASE_META);
     }
     
-    public void parseBody(SourceParsingErrorHandler semanticErrorHandler){
+    public void parseBody(CompileErrorHandler semanticErrorHandler){
         parse(semanticErrorHandler, AstBuilder.PARSING_PHASE_ALL);
     }
 
-    protected void parse(SourceParsingErrorHandler semanticErrorHandler, int targetParsingPhase) {
+    protected void parse(CompileErrorHandler semanticErrorHandler, int targetParsingPhase) {
         astBuilder.setSemanticErrorHandler(semanticErrorHandler);
         astBuilder.compile(targetParsingPhase,astLoader);
     }
 
-    protected void semanticAnalysis(AstSemanticErrorHandler handler) {
+    protected void semanticAnalysis(CompileErrorHandler handler) {
         semanticAnalyzer.setAstSemanticErrorHandler(handler);
         semanticAnalyzer.check(ast);
     }
@@ -136,12 +135,12 @@ public class CompilationUnit {
         return tokens;
     }
 
-    public void setParsingErrorHandler(SourceParsingErrorHandler parsingErrorHandler) {
-        this.parsingErrorHandler = parsingErrorHandler;
+    public CompileErrorHandler getErrorHandler() {
+        return errorHandler;
     }
 
-    public void setSemanticErrorHandler(AstSemanticErrorHandler semanticErrorHandler) {
-        this.semanticErrorHandler = semanticErrorHandler;
+    public void setErrorHandler(CompileErrorHandler errorHandler) {
+        this.errorHandler = errorHandler;
     }
 
     public CodeGenerator getCodeGenerator() {

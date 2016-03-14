@@ -1,32 +1,41 @@
 package kalang.compiler;
 
-public class CompileError  extends RuntimeException  {
+public abstract class CompileError  extends RuntimeException  {
     /**
      * the position where the error occurs
      */
-     public OffsetRange offset;
-     /**
-      * the class name that the error occurs from
-      */
-     public String className;
-     public String source;
+     protected OffsetRange offset;
+     
+     protected KalangSource source;
+     
      /**
       * the error description 
       */
-     public String description;
-     public  CompileError(String description,String className,String src,OffsetRange offset) {
+     protected String description;
+     
+     public  CompileError(String description,KalangSource source,OffsetRange offset) {
          super(description);
          this.description = description;
          this.offset = offset;
-         this.className=className;
-         this.source=src;
-         
+         this.source = source;
     }
 
     @Override
     public String toString() {
-        return String.format("CompileError: %s(%d:%d):%s", className,offset.startLine,offset.startLineColumn,description);
+        return String.format("CompileError: %s(%d:%d):%s", source.getClassName(),offset.startLine,offset.startLineColumn,description);
     }
-     
+
+    public OffsetRange getOffset() {
+        return offset;
+    }
+
+    public KalangSource getSource() {
+        return source;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+    
 }
  

@@ -20,6 +20,8 @@ import kalang.core.Type;
  */
 public class AstSemanticErrorReporter{
 
+    private KalangSource source;
+
     void uncaughtException(AstNode expr, String exType) {
         fail("Uncaught exception:" + exType, UNCAUGHT_EXCEPTION, expr);
     }
@@ -32,9 +34,10 @@ public class AstSemanticErrorReporter{
 
     ClassNode clazz;
 
-    public AstSemanticErrorReporter(ClassNode clazz, AstSemanticReporterCallback handler) {
+    public AstSemanticErrorReporter(ClassNode clazz, KalangSource source,AstSemanticReporterCallback handler) {
         this.handler = handler;
         this.clazz = clazz;
+        this.source = source;
     }
 
     public void unsupported(String op, AstNode node) {
@@ -42,7 +45,7 @@ public class AstSemanticErrorReporter{
     }
 
     public void fail(String msg, int errorCode, AstNode node) {
-        AstSemanticError ase = new AstSemanticError(msg, errorCode,node,clazz);
+        AstSemanticError ase = new AstSemanticError(msg, source ,errorCode,node,clazz);
         handler.handleAstSemanticError(ase);
     }
 

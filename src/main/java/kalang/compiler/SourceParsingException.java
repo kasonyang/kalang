@@ -17,37 +17,23 @@ import org.antlr.v4.runtime.Token;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class SourceParsingException extends RuntimeException{
+public class SourceParsingException extends CompileError{
     
-    private OffsetRange offset;
-    
-    private final AstBuilder compilantUnit;
-    
-    private String description;
+    private final AstBuilder astBuilder;
 
-    public SourceParsingException(String description,OffsetRange offset,AstBuilder compilantUnit) {
-        super(description);
-        this.offset = offset;
-        this.compilantUnit = compilantUnit;
-        this.description = description;
+    public SourceParsingException(String description,KalangSource source,OffsetRange offset,AstBuilder astBuilder) {
+        super(description, source, offset);
+        this.astBuilder = astBuilder;
     }
 
 
     public AstBuilder getAstBuilder() {
-        return compilantUnit;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public OffsetRange getOffset() {
-        return offset;
+        return astBuilder;
     }
 
     @Override
     public String toString() {
-        return "SourceParsingException{" + "offset=" + offset + ", compilantUnit=" + compilantUnit + ", description=" + description + '}';
+        return "SourceParsingException{" + "offset=" + offset + ", compilantUnit=" + astBuilder + ", description=" + description + '}';
     }
 
 }
