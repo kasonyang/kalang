@@ -101,7 +101,7 @@ public class CompilationUnit {
     }
 
     protected void parse(CompileErrorHandler semanticErrorHandler, int targetParsingPhase) {
-        astBuilder.setSemanticErrorHandler(semanticErrorHandler);
+        astBuilder.setErrorHandler(semanticErrorHandler);
         astBuilder.compile(targetParsingPhase,astLoader);
     }
 

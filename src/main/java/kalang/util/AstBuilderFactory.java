@@ -45,16 +45,12 @@ public class AstBuilderFactory {
             @Override
             public void reportError(Parser recognizer, RecognitionException e) {
                 String msg = AntlrErrorString.exceptionString(recognizer, e);
-//                RuleContext ctx = e.getCtx();
-//                while(ctx!=null && !(ctx instanceof ParserRuleContext)){
-//                    ctx = ctx.getParent();
-//                }
-                sp.reportError(msg, e.getOffendingToken());
-//                if(ctx!=null){
-//                    sp.reportError(msg, e.getOffendingToken(), (ParserRuleContext) ctx);
-//                }else{
-//                    sp.reportError(msg, e.getOffendingToken(),null);
-//                }
+                RuleContext ctx = e.getCtx();
+                if(ctx instanceof ParserRuleContext){
+                    sp.reportSyntaxError(msg, (ParserRuleContext) e.getCtx(), e.getOffendingToken());
+                }else{
+                    sp.reportSyntaxError(msg, RuleContext.EMPTY, e.getOffendingToken());
+                }
             }
         });
         return sp;

@@ -146,18 +146,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private KalangParser parser;
     
-    private CompileErrorHandler semanticErrorHandler = (error) ->{
+    private CompileErrorHandler errorHandler = (error) ->{
         System.err.println(error);
     };
     
     private final KalangSource source;
     
-    public CompileErrorHandler getSemanticErrorHandler() {
-        return semanticErrorHandler;
+    public CompileErrorHandler getErrorHandler() {
+        return errorHandler;
     }
 
-    public void setSemanticErrorHandler(CompileErrorHandler semanticErrorHandler) {
-        this.semanticErrorHandler = semanticErrorHandler;
+    public void setErrorHandler(CompileErrorHandler errorHandler) {
+        this.errorHandler = errorHandler;
     }
     
     public ParserRuleContext getParseTree(){
@@ -596,14 +596,19 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         mapAst(vds,ctx);
     }
     
+    public void reportSyntaxError(String desc,ParserRuleContext rule,Token token){
+        SyntaxError syntaxError = new SyntaxError(desc, source, rule, token);
+        errorHandler.handleCompileError(syntaxError);
+    }
+    
     public void reportError(String msg, Token token) {
         SourceParsingException ex = new SourceParsingException(msg, source ,OffsetRangeHelper.getOffsetRange(token), this);
-        semanticErrorHandler.handleCompileError(ex);
+        errorHandler.handleCompileError(ex);
     }
 
     public void reportError(String msg,ParserRuleContext tree) {
         SourceParsingException ex = new SourceParsingException(msg,source ,OffsetRangeHelper.getOffsetRange(tree), this);
-        semanticErrorHandler.handleCompileError(ex);
+        errorHandler.handleCompileError(ex);
     }
 
     @Override
