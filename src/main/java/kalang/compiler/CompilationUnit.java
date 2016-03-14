@@ -7,11 +7,15 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
+import kalang.antlr.KalangLexer;
+import kalang.antlr.KalangParser;
 import kalang.ast.ClassNode;
-import kalang.util.SourceUnitFactory;
+import kalang.util.AstBuilderFactory;
 import kalang.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
 import static kalang.compiler.CompilePhase.*;
+import kalang.util.LexerFactory;
+import org.antlr.v4.runtime.TokenStream;
 
 /**
  *
@@ -19,9 +23,13 @@ import static kalang.compiler.CompilePhase.*;
  */
 public class CompilationUnit {
 
-    private SourceUnit sourceUnit;
-
+    private KalangLexer lexer;
+    private KalangParser parser;
+    private AstBuilder astBuilder;
+    
     private SemanticAnalyzer semanticAnalyzer;
+    
+    private CodeGenerator codeGenerator;
     
     @Nonnull
     private ClassNode ast;
@@ -31,7 +39,7 @@ public class CompilationUnit {
     private int compilingPhase;
     private SourceParsingErrorHandler parsingErrorHandler;
     private AstSemanticErrorHandler semanticErrorHandler;
-    private CodeGenerator codeGenerator;
+    
 
     public CompilationUnit(@Nonnull String className,@Nonnull String source,@Nonnull AstLoader astLoader) {
         this.astLoader = astLoader;
@@ -39,11 +47,13 @@ public class CompilationUnit {
     }
     
     private void init(String className, String source){
-        tokens =createTokenStream(source);
-        sourceUnit = createSourceUnit(className, tokens);
-        sourceUnit.importPackage("java.lang");
-        sourceUnit.importPackage("java.util");
-        ast = sourceUnit.getAst();        
+        lexer = createLexer(source);
+        tokens = createTokenStream(lexer);
+        parser = createParser(tokens);
+        astBuilder = createAstBuilder(className, tokens);
+        astBuilder.importPackage("java.lang");
+        astBuilder.importPackage("java.util");
+        ast = astBuilder.getAst();        
         semanticAnalyzer = new SemanticAnalyzer(astLoader);
     }
 
@@ -51,12 +61,12 @@ public class CompilationUnit {
         this(className, source, AstLoader.BASE_AST_LOADER);
     }
     
-    protected CommonTokenStream createTokenStream(String source){
-        return TokenStreamFactory.createTokenStream(source);
+    protected CommonTokenStream createTokenStream(KalangLexer lexer){
+        return TokenStreamFactory.createTokenStream(lexer);
     }
     
-    protected SourceUnit createSourceUnit(String className,CommonTokenStream tokens){
-        return SourceUnitFactory.createSourceUnit(className, tokens);
+    protected AstBuilder createAstBuilder(String className,CommonTokenStream tokens){
+        return AstBuilderFactory.createAstBuilder(className, tokens);
     }
     
     protected void doCompilePhase(int phase){
@@ -84,16 +94,16 @@ public class CompilationUnit {
     }
     
     protected void parseMeta(SourceParsingErrorHandler semanticErrorHandler){
-        parse(semanticErrorHandler, SourceUnit.PARSING_PHASE_META);
+        parse(semanticErrorHandler, AstBuilder.PARSING_PHASE_META);
     }
     
     public void parseBody(SourceParsingErrorHandler semanticErrorHandler){
-        parse(semanticErrorHandler, SourceUnit.PARSING_PHASE_ALL);
+        parse(semanticErrorHandler, AstBuilder.PARSING_PHASE_ALL);
     }
 
     protected void parse(SourceParsingErrorHandler semanticErrorHandler, int targetParsingPhase) {
-        sourceUnit.setSemanticErrorHandler(semanticErrorHandler);
-        sourceUnit.compile(targetParsingPhase,astLoader);
+        astBuilder.setSemanticErrorHandler(semanticErrorHandler);
+        astBuilder.compile(targetParsingPhase,astLoader);
     }
 
     protected void semanticAnalysis(AstSemanticErrorHandler handler) {
@@ -107,8 +117,8 @@ public class CompilationUnit {
     }
 
     @Nonnull
-    public SourceUnit getSourceUnit() {
-        return sourceUnit;
+    public AstBuilder getAstBuilder() {
+        return astBuilder;
     }
 
     @Nonnull
@@ -140,6 +150,14 @@ public class CompilationUnit {
 
     public void setCodeGenerator(CodeGenerator codeGenerator) {
         this.codeGenerator = codeGenerator;
+    }
+
+    protected KalangLexer createLexer(String source) {
+        return LexerFactory.createLexer(source);
+    }
+
+    protected KalangParser createParser(TokenStream tokenStream) {
+        return new KalangParser(tokenStream);
     }
 
 }

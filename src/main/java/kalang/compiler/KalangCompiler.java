@@ -43,7 +43,7 @@ public class KalangCompiler extends AstLoader {
     private SourceParsingErrorHandler sourceParsingErrorhandler = new SourceParsingErrorHandler() {
         @Override
         public void handleSemanticError(SourceParsingException see) {
-            SourceUnit parser = see.getSourceUnit();
+            AstBuilder parser = see.getAstBuilder();
             OffsetRange offsetRange = see.getOffset();
             reportError(see.getDescription(), parser.getClassName(), offsetRange);
             compileTargetPhase = PHASE_PARSING;

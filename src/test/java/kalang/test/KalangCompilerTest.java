@@ -29,7 +29,7 @@ public class KalangCompilerTest {
         assert unit != null;
         CommonTokenStream ts = unit.getTokenStream();
         List<Token> tokens = ts.getTokens();
-        testTokenNavigator(tokens.toArray(new Token[0]),unit.getSourceUnit().getParseTree());
+        testTokenNavigator(tokens.toArray(new Token[0]),unit.getAstBuilder().getParseTree());
     }
     
     private void testTokenNavigator(Token[] tokens,ParseTree tree){

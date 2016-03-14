@@ -107,7 +107,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisitor {
+public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisitor {
     
     public static final int 
             PARSING_PHASE_META = 1,
@@ -239,7 +239,7 @@ public class SourceUnit extends AbstractParseTreeVisitor implements KalangVisito
         }
     }
 
-    public SourceUnit(@Nonnull String className, @Nonnull KalangParser parser) {
+    public AstBuilder(@Nonnull String className, @Nonnull KalangParser parser) {
         this.className = className;
         classAst.name = className;
         this.classPath = "";

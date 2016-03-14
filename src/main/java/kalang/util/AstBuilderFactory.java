@@ -6,7 +6,7 @@ import java.net.*;
 import java.util.*;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
-import kalang.compiler.SourceUnit;
+import kalang.compiler.AstBuilder;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
@@ -20,25 +20,25 @@ import org.antlr.v4.runtime.TokenStream;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class SourceUnitFactory {
+public class AstBuilderFactory {
     
-    public static SourceUnit createSourceUnit(String clsName,KalangLexer lexer){
-        return SourceUnitFactory.createSourceUnit(
+    public static AstBuilder createAstBuilder(String clsName,KalangLexer lexer){
+        return AstBuilderFactory.createAstBuilder(
                 clsName
                 ,TokenStreamFactory.createTokenStream(lexer)
         );
     }
     
-    public static SourceUnit createSourceUnit(String clsName,String source){
-        return SourceUnitFactory.createSourceUnit(
+    public static AstBuilder createAstBuilder(String clsName,String source){
+        return AstBuilderFactory.createAstBuilder(
                 clsName
                 ,TokenStreamFactory.createTokenStream(source)
         );
     }
         
-    public static SourceUnit createSourceUnit(String clsName,TokenStream tokens){
+    public static AstBuilder createAstBuilder(String clsName,TokenStream tokens){
         KalangParser p = new KalangParser(tokens);
-        SourceUnit sp = new SourceUnit(clsName, p);
+        AstBuilder sp = new AstBuilder(clsName, p);
         p.setErrorHandler(new DefaultErrorStrategy() {
 
             @Override
