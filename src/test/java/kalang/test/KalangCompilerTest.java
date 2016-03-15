@@ -28,7 +28,9 @@ public class KalangCompilerTest {
         CompilationUnit unit = kc.getCompilationUnit("Test");
         assert unit != null;
         CommonTokenStream ts = unit.getTokenStream();
+        //the tokens contains tokens in all channels
         List<Token> tokens = ts.getTokens();
+        assertEquals(5, ts.size());
         testTokenNavigator(tokens.toArray(new Token[0]),unit.getAstBuilder().getParseTree());
     }
     
@@ -45,6 +47,7 @@ public class KalangCompilerTest {
         assertEquals("}",tokenNav.getCurrentToken().getText());
         
         assertEquals("}", treeNav.getParseTree(tokenNav.getCurrentToken()).getText());
+        assertEquals(3, tokenNav.getCurrentTokenIndex());
         
     }
 }
