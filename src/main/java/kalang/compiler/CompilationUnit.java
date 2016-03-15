@@ -55,10 +55,6 @@ public class CompilationUnit {
         ast = astBuilder.getAst();        
         semanticAnalyzer = new SemanticAnalyzer(source,astLoader);
     }
-
-    public CompilationUnit(@Nonnull KalangSource source,CompileConfiguration configuration) {
-        this( source, AstLoader.BASE_AST_LOADER);
-    }
     
     protected CommonTokenStream createTokenStream(KalangLexer lexer){
         return TokenStreamFactory.createTokenStream(lexer);
@@ -158,5 +154,19 @@ public class CompilationUnit {
     protected KalangParser createParser(TokenStream tokenStream) {
         return new KalangParser(tokenStream);
     }
+
+    public KalangLexer getLexer() {
+        return lexer;
+    }
+
+    public KalangParser getParser() {
+        return parser;
+    }
+
+    public CommonTokenStream getTokens() {
+        return tokens;
+    }
+    
+    
 
 }
