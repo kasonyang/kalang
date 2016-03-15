@@ -25,9 +25,13 @@ public class TokenUtilTest {
         List<Token> tokens = ts.getTokens();
         assertEquals(0, tokens.size());
         ts.consume();
-        //why is it two?
-        assertEquals(2, ts.size());
-        int consumeSize = 1;
+        ts.consume();
+        assertEquals("}", ts.LT(1).getText());
+        assertEquals("{", ts.LT(-1).getText());
+        assertEquals("class", ts.LT(-2).getText());
+        //why is it 4?
+        assertEquals(4, ts.size());
+        int consumeSize = 2;
         while(ts.LA(1)!=IntStream.EOF){
             ts.consume();
             consumeSize++;
