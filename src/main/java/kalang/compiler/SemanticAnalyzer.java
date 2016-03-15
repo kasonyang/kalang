@@ -77,9 +77,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     private CompileErrorHandler errHandler;
 
     private Stack<Map<Type,AstNode>> exceptionStack = new Stack();
-    private KalangSource source;
+    private CompilationUnit source;
 
-    SemanticAnalyzer(KalangSource source,AstLoader astLoader) {
+    SemanticAnalyzer(CompilationUnit source,AstLoader astLoader) {
         this.astLoader = astLoader;
         this.source = source;
         errHandler = (error) -> {

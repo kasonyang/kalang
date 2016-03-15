@@ -150,7 +150,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         System.err.println(error);
     };
     
-    private final KalangSource source;
+    private final CompilationUnit source;
     
     public CompileErrorHandler getErrorHandler() {
         return errorHandler;
@@ -238,9 +238,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
     }
 
-    public AstBuilder(@Nonnull KalangSource source, @Nonnull KalangParser parser) {
+    public AstBuilder(@Nonnull CompilationUnit source, @Nonnull KalangParser parser) {
         this.source = source;
-        this.className = source.getClassName();
+        this.className = source.getSource().getClassName();
         classAst.name = className;
         this.classPath = "";
         this.parser = parser;

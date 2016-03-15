@@ -6,31 +6,31 @@ public abstract class CompileError  extends RuntimeException  {
      */
      protected OffsetRange offset;
      
-     protected KalangSource source;
+     protected CompilationUnit compilationUnit;
      
      /**
       * the error description 
       */
      protected String description;
      
-     public  CompileError(String description,KalangSource source,OffsetRange offset) {
+     public  CompileError(String description,CompilationUnit source,OffsetRange offset) {
          super(description);
          this.description = description;
          this.offset = offset;
-         this.source = source;
+         this.compilationUnit = source;
     }
 
     @Override
     public String toString() {
-        return String.format("CompileError: %s(%d:%d):%s", source.getClassName(),offset.startLine,offset.startLineColumn,description);
+        return String.format("CompileError: %s(%d:%d):%s", compilationUnit.getSource().getClassName(),offset.startLine,offset.startLineColumn,description);
     }
 
     public OffsetRange getOffset() {
         return offset;
     }
 
-    public KalangSource getSource() {
-        return source;
+    public CompilationUnit getCompilationUnit() {
+        return compilationUnit;
     }
 
     public String getDescription() {

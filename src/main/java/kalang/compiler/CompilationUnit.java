@@ -39,6 +39,7 @@ public class CompilationUnit {
     private int compilingPhase;
     
     private CompileErrorHandler errorHandler;
+    private KalangSource source;
 
     public CompilationUnit(@Nonnull KalangSource source,@Nonnull AstLoader astLoader) {
         this.astLoader = astLoader;
@@ -46,21 +47,22 @@ public class CompilationUnit {
     }
     
     private void init(KalangSource source){
+        this.source = source;
         lexer = createLexer(source.getText());
         tokens = createTokenStream(lexer);
         parser = createParser(tokens);
-        astBuilder = createAstBuilder(source, tokens);
+        astBuilder = createAstBuilder(this, tokens);
         astBuilder.importPackage("java.lang");
         astBuilder.importPackage("java.util");
         ast = astBuilder.getAst();        
-        semanticAnalyzer = new SemanticAnalyzer(source,astLoader);
+        semanticAnalyzer = new SemanticAnalyzer(this,astLoader);
     }
     
     protected CommonTokenStream createTokenStream(KalangLexer lexer){
         return TokenStreamFactory.createTokenStream(lexer);
     }
     
-    protected AstBuilder createAstBuilder(KalangSource source , CommonTokenStream tokens){
+    protected AstBuilder createAstBuilder(CompilationUnit source , CommonTokenStream tokens){
         return AstBuilderFactory.createAstBuilder(source, tokens);
     }
     
@@ -166,7 +168,9 @@ public class CompilationUnit {
     public CommonTokenStream getTokens() {
         return tokens;
     }
-    
-    
+
+    public KalangSource getSource() {
+        return source;
+    }
 
 }

@@ -7,6 +7,7 @@ import java.util.*;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import kalang.compiler.AstBuilder;
+import kalang.compiler.CompilationUnit;
 import kalang.compiler.KalangSource;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -23,21 +24,21 @@ import org.antlr.v4.runtime.TokenStream;
  */
 public class AstBuilderFactory {
     
-    public static AstBuilder createAstBuilder(KalangSource source,KalangLexer lexer){
+    public static AstBuilder createAstBuilder(CompilationUnit source,KalangLexer lexer){
         return AstBuilderFactory.createAstBuilder(
                 source
                 ,TokenStreamFactory.createTokenStream(lexer)
         );
     }
     
-    public static AstBuilder createAstBuilder(KalangSource source){
+    public static AstBuilder createAstBuilder(CompilationUnit source){
         return AstBuilderFactory.createAstBuilder(
                 source
-                ,TokenStreamFactory.createTokenStream(source.getText())
+                ,TokenStreamFactory.createTokenStream(source.getSource().getText())
         );
     }
         
-    public static AstBuilder createAstBuilder(KalangSource source,TokenStream tokens){
+    public static AstBuilder createAstBuilder(CompilationUnit source,TokenStream tokens){
         KalangParser p = new KalangParser(tokens);
         AstBuilder sp = new AstBuilder(source, p);
         p.setErrorHandler(new DefaultErrorStrategy() {

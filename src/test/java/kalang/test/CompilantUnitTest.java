@@ -8,6 +8,9 @@ package kalang.test;
 import kalang.ast.AstNode;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.AstBuilder;
+import kalang.compiler.AstLoader;
+import kalang.compiler.CompilationUnit;
+import kalang.compiler.CompilePhase;
 import kalang.compiler.KalangSource;
 import kalang.util.ParseTreeNavigator;
 import kalang.util.AstBuilderFactory;
@@ -32,9 +35,10 @@ public class CompilantUnitTest {
                 + "void main(){"
                 + "}"
                 + "}");
-        AstBuilder sp = AstBuilderFactory.createAstBuilder(source);
-        sp.compile();
-        ParseTreeNavigator treeNav = new ParseTreeNavigator(sp.getParseTree());
+        CompilationUnit cu = new CompilationUnit(source, AstLoader.BASE_AST_LOADER);
+        cu.compile(CompilePhase.PHASE_PARSING);
+        AstBuilder astBuilder = cu.getAstBuilder();
+        ParseTreeNavigator treeNav = new ParseTreeNavigator(astBuilder.getParseTree());
         ParseTree tree = treeNav.getParseTree(0);
         assertNotNull(tree);
         ParseTree treeMd = treeNav.getParseTree(2);

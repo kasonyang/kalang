@@ -32,8 +32,8 @@ public class AstSemanticError extends CompileError{
     AstNode node;
     int errorCode;
 
-    AstSemanticError(String description,KalangSource source, int errorCode, AstNode node, ClassNode clazz) {
-        super(description, source, node.offset);
+    AstSemanticError(String description,CompilationUnit compilationUnit, int errorCode, AstNode node, ClassNode clazz) {
+        super(description, compilationUnit, node.offset);
         this.classNode = clazz;
         this.node = node;
         this.errorCode = errorCode;

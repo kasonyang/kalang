@@ -20,7 +20,7 @@ import kalang.core.Type;
  */
 public class AstSemanticErrorReporter{
 
-    private KalangSource source;
+    private CompilationUnit source;
 
     void uncaughtException(AstNode expr, String exType) {
         fail("Uncaught exception:" + exType, UNCAUGHT_EXCEPTION, expr);
@@ -34,7 +34,7 @@ public class AstSemanticErrorReporter{
 
     ClassNode clazz;
 
-    public AstSemanticErrorReporter(ClassNode clazz, KalangSource source,AstSemanticReporterCallback handler) {
+    public AstSemanticErrorReporter(ClassNode clazz, CompilationUnit source,AstSemanticReporterCallback handler) {
         this.handler = handler;
         this.clazz = clazz;
         this.source = source;

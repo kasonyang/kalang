@@ -99,7 +99,7 @@ public class MainCompiler {
         int size = sources.size();
         HashMap<String, Source> sourcesMap = new HashMap<>();
         cpl.setCompileErrorHandler((CompileError error) -> {
-            String cname = error.getSource().getClassName();
+            String cname = error.getCompilationUnit().getSource().getClassName();
             String fn = sourcesMap.get(cname).fileName;
             System.err.println(fn + ":" + error);
         });

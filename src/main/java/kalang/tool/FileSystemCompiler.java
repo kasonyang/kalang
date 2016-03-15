@@ -77,7 +77,7 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
 
     @Override
     public void handleCompileError(CompileError error) {
-        String cname = error.getSource().getClassName();
+        String cname = error.getCompilationUnit().getSource().getClassName();
         File fn = sourceFiles.get(cname);
         System.err.println(fn + ":" + error);
         kalangCompiler.setCompileTargetPhase(kalangCompiler.getCurrentCompilePhase());

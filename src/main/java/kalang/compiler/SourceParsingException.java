@@ -21,7 +21,7 @@ public class SourceParsingException extends CompileError{
     
     private final AstBuilder astBuilder;
 
-    public SourceParsingException(String description,KalangSource source,OffsetRange offset,AstBuilder astBuilder) {
+    public SourceParsingException(String description,CompilationUnit source,OffsetRange offset,AstBuilder astBuilder) {
         super(description, source, offset);
         this.astBuilder = astBuilder;
     }

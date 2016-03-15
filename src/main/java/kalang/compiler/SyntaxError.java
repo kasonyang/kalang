@@ -17,7 +17,7 @@ public class SyntaxError extends CompileError{
     private final ParserRuleContext rule;
     private final Token token;
 
-    public SyntaxError(String description, KalangSource source,ParserRuleContext rule,Token token) {
+    public SyntaxError(String description, CompilationUnit source,ParserRuleContext rule,Token token) {
         super(description, source,OffsetRangeHelper.getOffsetRange(token));
         this.rule = rule;
         this.token = token;
