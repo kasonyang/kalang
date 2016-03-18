@@ -25,10 +25,12 @@ public class KalangCompiler extends AstLoader {
     @Nonnull
     private AstLoader astLoader = AstLoader.BASE_AST_LOADER;
     
-    private CodeGenerator codeGenerator = new Ast2Java();
+    private KalangCompiler myself = this;
 
     @Nullable
     private SourceLoader sourceLoader;
+    
+    private final CompileConfiguration configuration;
     
     @Nonnull
     private CompileErrorHandler compileErrorHandler = (e) -> {
@@ -37,24 +39,13 @@ public class KalangCompiler extends AstLoader {
      };
 
     public KalangCompiler() {
+        this(new DefaultCompileConfiguration());
     }
 
-    public KalangCompiler(@Nonnull AstLoader astLoader,@Nonnull SourceLoader sourceLoader) {
-        this.astLoader = astLoader;
-        this.sourceLoader = sourceLoader;
-    }
-
-    public KalangCompiler(@Nonnull SourceLoader sourceLoader, @Nonnull AstLoader astLoader) {
-        this.astLoader = astLoader;
-        this.sourceLoader = sourceLoader;
-    }
-
-    public KalangCompiler(@Nonnull SourceLoader sourceLoader) {
-        this.sourceLoader = sourceLoader;
-    }
-
-    public KalangCompiler(@Nonnull AstLoader astLoader) {
-        this.astLoader = astLoader;
+    public KalangCompiler(@Nonnull CompileConfiguration configuration) {
+        this.configuration = configuration;
+        this.astLoader = configuration.getAstLoader();
+        this.sourceLoader = configuration.getSourceLoader();
     }
 
     /**
@@ -141,14 +132,21 @@ public class KalangCompiler extends AstLoader {
     }
     
     protected CompilationUnit newCompilationUnit(KalangSource source){
-        return new CompilationUnit(source,this);
+        AstLoader that = this;
+        return new CompilationUnit(source,new CompileConfigurationProxy(configuration){
+            @Override
+            public AstLoader getAstLoader() {
+                return that;
+            }
+            
+        });
     }
 
     private CompilationUnit createCompilationUnit(KalangSource source) {
         CompilationUnit unit = newCompilationUnit(source);
         compilationUnits.put(source.getClassName(), unit);
         unit.setErrorHandler(compileErrorHandler);
-        unit.setCodeGenerator(codeGenerator);
+        //unit.setCodeGenerator(codeGenerator);
         unit.compile(compilingPhase);
         return unit;
     }
@@ -165,14 +163,6 @@ public class KalangCompiler extends AstLoader {
 
     public int getCurrentCompilePhase() {
         return compilingPhase;
-    }
-
-    public CodeGenerator getCodeGenerator() {
-        return codeGenerator;
-    }
-
-    public void setCodeGenerator(CodeGenerator codeGenerator) {
-        this.codeGenerator = codeGenerator;
     }
 
 }

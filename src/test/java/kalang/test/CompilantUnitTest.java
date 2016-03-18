@@ -11,6 +11,7 @@ import kalang.compiler.AstBuilder;
 import kalang.compiler.AstLoader;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.CompilePhase;
+import kalang.compiler.DefaultCompileConfiguration;
 import kalang.compiler.KalangSource;
 import kalang.util.ParseTreeNavigator;
 import kalang.util.AstBuilderFactory;
@@ -35,7 +36,7 @@ public class CompilantUnitTest {
                 + "void main(){"
                 + "}"
                 + "}");
-        CompilationUnit cu = new CompilationUnit(source, AstLoader.BASE_AST_LOADER);
+        CompilationUnit cu = new CompilationUnit(source,new DefaultCompileConfiguration());
         cu.compile(CompilePhase.PHASE_PARSING);
         AstBuilder astBuilder = cu.getAstBuilder();
         ParseTreeNavigator treeNav = new ParseTreeNavigator(astBuilder.getParseTree());

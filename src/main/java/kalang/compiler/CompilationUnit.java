@@ -41,29 +41,23 @@ public class CompilationUnit {
     private CompileErrorHandler errorHandler;
     private KalangSource source;
 
-    public CompilationUnit(@Nonnull KalangSource source,@Nonnull AstLoader astLoader) {
-        this.astLoader = astLoader;
-        init(source);
+    public CompilationUnit(@Nonnull KalangSource source,CompileConfiguration configuration) {
+        init(source,configuration);
     }
     
-    private void init(KalangSource source){
+    private void init(KalangSource source,CompileConfiguration configuration){
         this.source = source;
-        lexer = createLexer(source.getText());
-        tokens = createTokenStream(lexer);
-        parser = createParser(tokens);
-        astBuilder = createAstBuilder(this, tokens);
+        this.astLoader = configuration.getAstLoader();
+        lexer = configuration.createLexer(this,source.getText());
+        tokens = configuration.createTokenStream(this,lexer);
+        parser = configuration.createParser(this,tokens);
+        astBuilder = configuration.createAstBuilder(this,parser);
+        //should move to configuration?
         astBuilder.importPackage("java.lang");
         astBuilder.importPackage("java.util");
         ast = astBuilder.getAst();        
-        semanticAnalyzer = new SemanticAnalyzer(this,astLoader);
-    }
-    
-    protected CommonTokenStream createTokenStream(KalangLexer lexer){
-        return TokenStreamFactory.createTokenStream(lexer);
-    }
-    
-    protected AstBuilder createAstBuilder(CompilationUnit source , CommonTokenStream tokens){
-        return AstBuilderFactory.createAstBuilder(source, tokens);
+        semanticAnalyzer = configuration.createSemanticAnalyzer(this,astLoader);
+        codeGenerator = configuration.createCodeGenerator(this);
     }
     
     protected void doCompilePhase(int phase){
@@ -143,18 +137,6 @@ public class CompilationUnit {
 
     public CodeGenerator getCodeGenerator() {
         return codeGenerator;
-    }
-
-    public void setCodeGenerator(CodeGenerator codeGenerator) {
-        this.codeGenerator = codeGenerator;
-    }
-
-    protected KalangLexer createLexer(String source) {
-        return LexerFactory.createLexer(source);
-    }
-
-    protected KalangParser createParser(TokenStream tokenStream) {
-        return new KalangParser(tokenStream);
     }
 
     public KalangLexer getLexer() {

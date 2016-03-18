@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import kalang.compiler.CompileError;
 import kalang.tool.FileSystemCompiler;
-import kalang.tool.MainCompiler;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

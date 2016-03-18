@@ -10,10 +10,12 @@ import java.util.logging.Logger;
 import kalang.ast.ClassNode;
 import kalang.compiler.Ast2Class;
 import kalang.compiler.Ast2Java;
+import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.CompileError;
 import kalang.compiler.CompileErrorHandler;
+import kalang.compiler.DefaultCompileConfiguration;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
 import org.apache.commons.io.FileUtils;
@@ -57,9 +59,20 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
     public void compile() throws IOException {
         URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
         JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
-        kalangCompiler = new KalangCompiler(astLoader);
+        kalangCompiler = new KalangCompiler(new DefaultCompileConfiguration(){
+            @Override
+            public AstLoader getAstLoader() {
+                return astLoader;
+            }
+
+            @Override
+            public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
+                return codeGenerator;
+            }
+            
+        });
         kalangCompiler.setCompileErrorHandler(this);
-        kalangCompiler.setCodeGenerator(codeGenerator);
+        //kalangCompiler.setCodeGenerator(codeGenerator);
         for (String srcName : sourceFiles.keySet()) {
             File f = sourceFiles.get(srcName);
             kalangCompiler.addSource(srcName, FileUtils.readFileToString(f));
