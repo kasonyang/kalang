@@ -109,6 +109,10 @@ stat:
     |returnStat
     |tryStat
     |throwStat
+    |errorousStat
+;
+errorousStat:
+    expression
 ;
 throwStat:
     'throw' expression ';'
@@ -209,6 +213,7 @@ expression
     |   expression ('&&'|'||') expression #exprMidOp
     |   expression '?' expression ':' expression #exprQuestion
     |   Identifier #exprIdentifier 
+    |   expression '.' #errorousMemberExpr
     |   <assoc=right> expression
          ( '=' 
         |   '+='

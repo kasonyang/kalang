@@ -128,6 +128,16 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitStat(KalangParser.StatContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#errorousStat}.
+	 * @param ctx the parse tree
+	 */
+	void enterErrorousStat(KalangParser.ErrorousStatContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#errorousStat}.
+	 * @param ctx the parse tree
+	 */
+	void exitErrorousStat(KalangParser.ErrorousStatContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#throwStat}.
 	 * @param ctx the parse tree
 	 */
@@ -435,6 +445,18 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExprGetField(KalangParser.ExprGetFieldContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code errorousMemberExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code errorousMemberExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code exprInc}
 	 * labeled alternative in {@link KalangParser#expression}.

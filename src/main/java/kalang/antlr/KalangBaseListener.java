@@ -160,6 +160,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterErrorousStat(KalangParser.ErrorousStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErrorousStat(KalangParser.ErrorousStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterThrowStat(KalangParser.ThrowStatContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -491,6 +503,18 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprGetField(KalangParser.ExprGetFieldContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

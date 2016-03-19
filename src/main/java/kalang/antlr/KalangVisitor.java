@@ -83,6 +83,12 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStat(KalangParser.StatContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KalangParser#errorousStat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitErrorousStat(KalangParser.ErrorousStatContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KalangParser#throwStat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -264,6 +270,13 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExprGetField(KalangParser.ExprGetFieldContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code errorousMemberExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprInc}
 	 * labeled alternative in {@link KalangParser#expression}.

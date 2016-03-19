@@ -1276,4 +1276,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
     }
 
+    @Override
+    public Object visitErrorousStat(KalangParser.ErrorousStatContext ctx) {
+        reportSyntaxError("missing ';'", ctx, ctx.stop);
+        return null;
+    }
+
+    @Override
+    public Object visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx) {
+        reportSyntaxError("identifier excepted", ctx, ctx.stop);
+        return null;
+    }
+
 }
