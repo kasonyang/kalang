@@ -41,4 +41,14 @@ public class UnknownInvocationExpr extends ExprNode{
         return Types.ROOT_TYPE;
     }
 
+    @Override
+    public List<AstNode> getChildren() {
+        LinkedList<AstNode> ls = new LinkedList();
+        ls.add(target);
+        ls.addAll(Arrays.asList(arguments));
+        return ls;
+    }
+    
+    
+
 }

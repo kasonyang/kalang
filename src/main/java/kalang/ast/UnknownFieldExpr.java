@@ -34,4 +34,11 @@ public class UnknownFieldExpr extends ExprNode{
         return Types.ROOT_TYPE;
     }
 
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.singletonList(target);
+    }
+    
+    
+
 }
