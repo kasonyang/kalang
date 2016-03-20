@@ -66,6 +66,14 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         
         if(node==null) return null;
         
+        if(node instanceof UnknownFieldExpr){
+            return visitUnknownFieldExpr((UnknownFieldExpr)node);
+        }
+        
+        if(node instanceof UnknownInvocationExpr){
+            return visitUnknownInvocationExpr((UnknownInvocationExpr)node);
+        }
+        
         if(node instanceof ArrayLengthExpr){
             return visitArrayLengthExpr((ArrayLengthExpr) node);
         }

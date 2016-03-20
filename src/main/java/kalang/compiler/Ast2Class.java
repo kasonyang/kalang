@@ -43,6 +43,8 @@ import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.PrimitiveCastExpr;
 import kalang.ast.Statement;
+import kalang.ast.UnknownFieldExpr;
+import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
@@ -971,6 +973,16 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             throw new UnsupportedOperationException(op);
         }
         md.visitLabel(stopLabel);
+    }
+
+    @Override
+    public Object visitUnknownFieldExpr(UnknownFieldExpr node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Object visitUnknownInvocationExpr(UnknownInvocationExpr node) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

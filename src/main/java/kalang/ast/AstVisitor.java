@@ -199,5 +199,17 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
         visitChildren(node);
         return null;
     }
+
+    @Override
+    public T visitUnknownFieldExpr(UnknownFieldExpr node) {
+        visitChildren(node);
+        return null;
+    }
+
+    @Override
+    public T visitUnknownInvocationExpr(UnknownInvocationExpr node) {
+        visitChildren(node);
+        return null;
+    }
     
 }

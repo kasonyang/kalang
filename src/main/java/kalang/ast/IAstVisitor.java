@@ -1,6 +1,10 @@
 package kalang.ast;
 public interface IAstVisitor<T>{
     
+    public T visitUnknownFieldExpr(UnknownFieldExpr node);
+    
+    public T visitUnknownInvocationExpr(UnknownInvocationExpr node);
+    
     public T visitClassNode(ClassNode node);
     
     public T visitMethodNode(MethodNode node);
