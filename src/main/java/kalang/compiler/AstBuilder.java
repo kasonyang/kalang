@@ -285,6 +285,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private void mapAst(@Nonnull AstNode node,@Nonnull ParserRuleContext tree){
          node.offset = OffsetRangeHelper.getOffsetRange(tree);
     }
+    
+    private void mapAst(@Nonnull AstNode node,@Nonnull Token token){
+        node.offset = OffsetRangeHelper.getOffsetRange(token);
+    }
 
     @Override
     public MultiStmtExpr visitMapExpr(KalangParser.MapExprContext ctx) {
@@ -866,7 +870,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private boolean isDefindedId(String id){
         if(isClassId(id)) return true;
-        if(getNodeById(id)!=null) return true;
+        if(getNodeById(id,null)!=null) return true;
         return false;
     }
     
@@ -877,25 +881,30 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Nullable
-    private ExprNode getNodeById(@Nonnull String name) {
+    private ExprNode getNodeById(@Nonnull String name,@Nullable Token token) {
         if (vtb.exist(name)) {
             VarExpr ve = new VarExpr();
             LocalVarNode declStmt = vtb.get(name); //vars.indexOf(vo);
             ve.setVar(declStmt);
+            if(token!=null) mapAst(ve, token);
             return ve;
         } else {
             //find parameters
             if (method != null && method.parameters != null) {
                 for (ParameterNode p : method.parameters) {
                     if (p.name.equals(name)) {
-                        return new VarExpr(p);
+                        VarExpr ve = new VarExpr(p);
+                        if(token!=null) mapAst(ve, token);
+                        return ve;
                     }
                 }
             }
             if (classAst.fields != null) {
                 for (FieldNode f : classAst.fields) {
                     if (f.name!=null && f.name.equals(name)) {
-                        return new FieldExpr(new ThisExpr(Types.getClassType(classAst)), f);
+                        FieldExpr fe = new FieldExpr(new ThisExpr(Types.getClassType(classAst)), f);
+                        if(token!=null) mapAst(fe, token);
+                        return fe;
                     }
                 }
             }
@@ -1060,7 +1069,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitExprIdentifier(ExprIdentifierContext ctx) {
         String name = ctx.Identifier().getText();
-        ExprNode expr = this.getNodeById(name);
+        ExprNode expr = this.getNodeById(name,ctx.Identifier().getSymbol());
         if (expr == null) {
             this.reportError(name + " is undefined!", ctx);
             return null;
@@ -1216,7 +1225,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Token idToken = ctx.Identifier(0).getSymbol();
         String id = idToken.getText();
         String methodName = ctx.Identifier(1).getText();
-        ExprNode node = getNodeById(id);
+        ExprNode node = getNodeById(id,idToken);
         if(node!=null){
             ExprNode ie = getInvocationExpr(node, methodName, ctx.params,null,ctx.Identifier(1).getSymbol(),ctx);
             if(ie==null) return null;
@@ -1253,7 +1262,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Token idToken = ctx.Identifier(0).getSymbol();
         String id = idToken.getText();
         String fieldName = ctx.Identifier(1).getText();
-        ExprNode expr = getNodeById(id);
+        ExprNode expr = getNodeById(id,idToken);
         if(expr!=null){
             return getFieldLikedExpr(expr, fieldName,ctx);
         }else{
