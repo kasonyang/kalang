@@ -81,7 +81,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     private Stack<Map<Type,AstNode>> exceptionStack = new Stack();
     private CompilationUnit source;
 
-    SemanticAnalyzer(CompilationUnit source,AstLoader astLoader) {
+    public SemanticAnalyzer(CompilationUnit source,AstLoader astLoader) {
         this.astLoader = astLoader;
         this.source = source;
         errHandler = (error) -> {
