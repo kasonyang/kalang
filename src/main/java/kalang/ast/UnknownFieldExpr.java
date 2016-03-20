@@ -15,10 +15,13 @@ public class UnknownFieldExpr extends ExprNode{
     private ExprNode target;
     
     private String fieldName;
+    
+    private ClassNode specialClass;
 
-    public UnknownFieldExpr(ExprNode target, String fieldName) {
+    public UnknownFieldExpr(ExprNode target,ClassNode specialClass, String fieldName) {
         this.target = target;
         this.fieldName = fieldName;
+        this.specialClass = specialClass;
     }
 
     public ExprNode getTarget() {
@@ -38,7 +41,10 @@ public class UnknownFieldExpr extends ExprNode{
     public List<AstNode> getChildren() {
         return Collections.singletonList(target);
     }
-    
+
+    public ClassNode getSpecialClass() {
+        return specialClass;
+    }
     
 
 }

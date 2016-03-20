@@ -26,7 +26,7 @@ public class ClassLoaderTest {
             Method m = mds[i];
             Object ret;
             try{
-                ret = m.invoke(inst, null);
+                ret = m.invoke(inst, (Object[]) null);
             }catch(Exception ex){
                 System.err.println("Exception in method:" + m.getName());
                 ex.printStackTrace();

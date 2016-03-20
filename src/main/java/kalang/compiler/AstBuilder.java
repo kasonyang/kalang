@@ -822,7 +822,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode ret;
         ExprNode expr = visitExpression(ctx.expression());
         String name = ctx.Identifier().getText();
-        ret = getFieldLikedExpr(expr, name,ctx);
+        Type type = expr.getType();
+        ret = getFieldLikedExpr(expr, type,name,ctx);
         return ret;
     }
 
@@ -1240,17 +1241,25 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return null;
     }
     
-    protected ExprNode getFieldLikedExpr(ExprNode expr,String fieldName,ParserRuleContext rule){
+    protected ExprNode getFieldLikedExpr(@Nullable ExprNode expr,Type type,String fieldName,ParserRuleContext rule){
         ExprNode ret;
-        Type exprType = expr.getType();
+        if(!(type instanceof  ClassType)){
+            reportError("unsupported type", rule);
+            return null;
+        }
+        ClassType exprType = (ClassType) type;
         if ((exprType instanceof ArrayType)
                 && fieldName.equals("length")) {
             ret = new ArrayLengthExpr(expr);
         } else {
             try {
-                ret = FieldExpr.create(expr, fieldName);
+                if(expr==null){
+                    ret = FieldExpr.createStaticFieldExpr(exprType.getClassNode(), fieldName);
+                }else{
+                    ret = FieldExpr.create(expr, fieldName);
+                }
             } catch (FieldNotFoundException ex) {
-                ret = new UnknownFieldExpr(expr, fieldName);
+                ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
             }
         }
         mapAst(ret, rule);
@@ -1264,16 +1273,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         String fieldName = ctx.Identifier(1).getText();
         ExprNode expr = getNodeById(id,idToken);
         if(expr!=null){
-            return getFieldLikedExpr(expr, fieldName,ctx);
+            return getFieldLikedExpr(expr,expr.getType() ,fieldName,ctx);
         }else{
             ClassNode fieldClazz = requireAst(idToken);
             if(fieldClazz==null) return null;
-            try {
-                return FieldExpr.createStaticFieldExpr(fieldClazz,fieldName);
-            } catch (FieldNotFoundException ex) {
-                reportError("field not found:" + fieldName, idToken);
-                return null;
-            }
+            return getFieldLikedExpr(null, Types.getClassType(fieldClazz), fieldName, ctx);
         }
     }
 

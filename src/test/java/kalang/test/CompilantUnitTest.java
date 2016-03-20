@@ -5,18 +5,12 @@
  */
 package kalang.test;
 
-import kalang.ast.AstNode;
-import kalang.compiler.JavaAstLoader;
 import kalang.compiler.AstBuilder;
-import kalang.compiler.AstLoader;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.CompilePhase;
 import kalang.compiler.DefaultCompileConfiguration;
 import kalang.compiler.KalangSource;
 import kalang.util.ParseTreeNavigator;
-import kalang.util.AstBuilderFactory;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Test;
 import static org.junit.Assert.*;
