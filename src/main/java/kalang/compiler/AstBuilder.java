@@ -87,6 +87,7 @@ import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
+import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
@@ -693,7 +694,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public InvocationExpr visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
+    public ExprNode visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
         String methodName;
         Token id;
         ClassNode specialClass = null;
@@ -713,11 +714,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }else{
             specialClass = this.classAst;
         }
-        InvocationExpr ie = this.getInvocationExpr(
+        ExprNode ie = this.getInvocationExpr(
                 null, methodName, ctx.params,specialClass,id);
         if(ie==null) return null;
-        if(!Modifier.isStatic(ie.getMethod().modifier)){
-            ie.setTarget(new ThisExpr(Types.getClassType(classAst)));
+        if(ie instanceof InvocationExpr){
+            InvocationExpr invoke = (InvocationExpr) ie;
+            if(!Modifier.isStatic(invoke.getMethod().modifier)){
+                invoke.setTarget(new ThisExpr(Types.getClassType(classAst)));
+            }
         }
         mapAst(ie, ctx);
         return ie;
@@ -784,7 +788,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return expr;
     }
 
-    private @Nullable InvocationExpr getInvocationExpr(ExprNode expr, String methodName, List<ExpressionContext> argumentsCtx,@Nullable ClassNode specialClass,Token id) {
+    private @Nullable ExprNode getInvocationExpr(ExprNode expr, String methodName, List<ExpressionContext> argumentsCtx,@Nullable ClassNode specialClass,Token id) {
         ExprNode target = (ExprNode) expr;
         ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
         InvocationExpr is = null;
@@ -795,14 +799,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 is = InvocationExpr.create(target, methodName,args);
             }
         } catch (MethodNotFoundException ex) {
-                reportError("method not foud:" + methodName, id);
+            return new UnknownInvocationExpr(target, methodName, args);
+            //reportError("method not foud:" + methodName, id);
         }
         return is;
     }
 
     @Override
     public AstNode visitExprInvocation(ExprInvocationContext ctx) {
-        InvocationExpr ei = this.getInvocationExpr(
+        ExprNode ei = this.getInvocationExpr(
                 visitExpression(ctx.target), ctx.Identifier().getText(), ctx.params,null,ctx.Identifier().getSymbol());
         if(ei==null) return null;
         mapAst(ei, ctx);
@@ -1231,7 +1236,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         String methodName = ctx.Identifier(1).getText();
         ExprNode node = getNodeById(id);
         if(node!=null){
-            InvocationExpr ie = getInvocationExpr(node, methodName, ctx.params,null,ctx.Identifier(1).getSymbol());
+            ExprNode ie = getInvocationExpr(node, methodName, ctx.params,null,ctx.Identifier(1).getSymbol());
             if(ie==null) return null;
             mapAst(ie, ctx);
             return ie;

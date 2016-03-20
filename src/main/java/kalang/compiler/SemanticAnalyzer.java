@@ -44,6 +44,8 @@ import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.ThrowStmt;
+import kalang.ast.UnknownFieldExpr;
+import kalang.ast.UnknownInvocationExpr;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -560,5 +562,24 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         returned = true;
         return ret;
     }
+
+    @Override
+    public Type visitUnknownInvocationExpr(UnknownInvocationExpr node) {
+        String type = "";
+        ExprNode target = node.getTarget();
+        if(target!=null){
+            type = target.getType().getName();
+        }
+        err.methodNotFound(node,type,node.getMethodName(), null);
+        return getDefaultType();
+    }
+
+    @Override
+    public Type visitUnknownFieldExpr(UnknownFieldExpr node) {
+        err.fieldNotFound(node, node.getFieldName());
+        return getDefaultType();
+    }
+    
+    
 
 }
