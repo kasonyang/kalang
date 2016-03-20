@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.Token;
 /**
  *
@@ -19,8 +20,12 @@ public class TokenNavigator {
     
     private final int[] startOffset;
     private int currentTokenIndex = 0;
+    
+    public TokenNavigator(@Nonnull List<Token> tokens){
+        this(tokens.toArray(new Token[0]));
+    }
 
-    public TokenNavigator(Token[] tokens) {
+    public TokenNavigator(@Nonnull Token[] tokens) {
         this.tokens = tokens;
         startOffset = new int[tokens.length];
         if(tokens.length>0){
@@ -39,6 +44,38 @@ public class TokenNavigator {
         int oldCaret = this.caretOffset;
         this.caretOffset = caretOffset;
         return oldCaret;
+    }
+    
+    protected void nextIndex(Integer channel,int increment){
+        int nextId = -1;
+        int newIdx = currentTokenIndex;
+        while(nextId==-1){
+            newIdx+=increment;
+            if(newIdx>=tokens.length){
+                throw new IndexOutOfBoundsException("index out of bouds:"+newIdx);
+            }
+            if(channel!=null && !channel.equals(tokens[newIdx].getChannel())){
+                continue;
+            }
+            break;
+        }
+        currentTokenIndex = newIdx;
+    }
+    
+    public void next(){
+        nextIndex(null,1);
+    }
+    
+    public void next(int channel){
+        nextIndex(channel,1);
+    }
+    
+    public void previous(){
+        nextIndex(null, -1);
+    }
+    
+    public void previous(int channel){
+        nextIndex(channel, -1);
     }
     
     public Token getCurrentToken(){

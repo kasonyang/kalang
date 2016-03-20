@@ -1,6 +1,7 @@
 package kalang.test;
 
 import java.util.List;
+import kalang.antlr.KalangLexer;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.KalangCompiler;
 import kalang.util.ParseTreeNavigator;
@@ -40,9 +41,16 @@ public class KalangCompilerTest {
         assertEquals(0,tokenNav.getCurrentTokenIndex());
         assertEquals("class", treeNav.getParseTree(tokenNav.getCurrentToken()).getText());
         
+        
+        
+        
+        
         tokenNav.move(5);
         assertEquals("{", tokenNav.getCurrentToken().getText());
         assertEquals(1,tokenNav.getCurrentTokenIndex());
+        tokenNav.next(KalangLexer.DEFAULT_TOKEN_CHANNEL);
+        assertEquals("}", tokenNav.getCurrentToken().getText());
+        
         tokenNav.move(8);
         assertEquals("}",tokenNav.getCurrentToken().getText());
         
