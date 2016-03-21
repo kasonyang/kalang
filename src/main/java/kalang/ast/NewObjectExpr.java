@@ -34,7 +34,8 @@ public class NewObjectExpr extends ExprNode{
     }
     
     private void initDefaultConstructor(ExprNode[] args) throws MethodNotFoundException{
-        constructor = InvocationExpr.create(this, "<init>",args);
+        constructor = 
+                ObjectInvokeExpr.create(this, "<init>",args);
     }
     
     @Override

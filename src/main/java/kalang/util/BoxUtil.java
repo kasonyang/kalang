@@ -8,6 +8,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import kalang.ast.ClassReference;
+import kalang.ast.ObjectInvokeExpr;
+import kalang.ast.StaticInvokeExpr;
 import kalang.compiler.MathType;
 import kalang.compiler.MethodNotFoundException;
 import kalang.core.ArrayType;
@@ -121,7 +124,7 @@ public class BoxUtil {
         }
         InvocationExpr inv;
         try {
-            inv = InvocationExpr.createStatic(classType.getClassNode(), "valueOf", new ExprNode[]{expr});
+            inv = StaticInvokeExpr.create(new ClassReference( classType.getClassNode()), "valueOf", new ExprNode[]{expr});
         } catch (MethodNotFoundException ex) {
             throw new RuntimeException(ex);
         }
@@ -131,7 +134,7 @@ public class BoxUtil {
     private static ExprNode castObject2Primitive(ExprNode expr, Type fromType, Type toType) {
         InvocationExpr inv;
         try {
-            inv = InvocationExpr.create(expr,toType + "Value");
+            inv = ObjectInvokeExpr.create(expr,toType + "Value",null);
         } catch (MethodNotFoundException ex) {
             throw new RuntimeException(ex);
         }
@@ -145,7 +148,7 @@ public class BoxUtil {
     private static ExprNode castObject2String(ExprNode expr) {
         InvocationExpr inv;
         try {
-            inv = InvocationExpr.create(expr, "toString");
+            inv = ObjectInvokeExpr.create(expr, "toString",null);
         } catch (MethodNotFoundException ex) {
             throw new RuntimeException(ex);
         }

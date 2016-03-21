@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import kalang.ast.ExprStmt;
 import kalang.ast.FieldNode;
 import kalang.ast.InvocationExpr;
+import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.ThisExpr;
 import kalang.ast.ParameterExpr;
 import kalang.ast.ParameterNode;
@@ -100,7 +101,7 @@ public class AstUtil {
                }
                body.statements.add(
                        new ExprStmt(
-                               new InvocationExpr(
+                               new ObjectInvokeExpr(
                                        new ThisExpr(Types.getClassType(clazzNode)), 
                                        clazzNode.parent,
                                        m,
@@ -223,7 +224,7 @@ public class AstUtil {
        ClassType clsType = Types.getClassType(clazz);
        ThisExpr thisExpr = new ThisExpr(clsType);
         return new ExprStmt(
-                InvocationExpr.create(thisExpr, clazz.parent, "<init>", null)
+                ObjectInvokeExpr.create(thisExpr, clazz.parent, "<init>", null)
         );
     }
 }

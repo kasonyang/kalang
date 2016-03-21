@@ -82,11 +82,14 @@ import javax.annotation.Nullable;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
+import kalang.ast.ClassReference;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
+import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.ParameterNode;
+import kalang.ast.StaticInvokeExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
@@ -325,7 +328,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ExprNode[] args = new ExprNode[]{k,v};
             InvocationExpr iv;
             try {
-                iv = InvocationExpr.create(ve, "put",args);
+                iv = ObjectInvokeExpr.create(ve, "put",args);
             } catch (MethodNotFoundException ex) {
                 throw new RuntimeException(ex);
             }
@@ -356,7 +359,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         for (ExpressionContext e : ctx.expression()) {
             InvocationExpr iv;
             try {
-                iv = InvocationExpr.create(ve,"add",new ExprNode[]{visitExpression(e)});
+                iv = ObjectInvokeExpr.create(ve,"add",new ExprNode[]{visitExpression(e)});
             } catch (MethodNotFoundException ex) {
                 throw new RuntimeException(ex);
             }
@@ -719,15 +722,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }else{
             specialClass = this.classAst;
         }
-        ExprNode ie = this.getInvocationExpr(
-                null, methodName, ctx.params,specialClass,id,ctx);
-        if(ie==null) return null;
-        if(ie instanceof InvocationExpr){
-            InvocationExpr invoke = (InvocationExpr) ie;
-            if(!Modifier.isStatic(invoke.getMethod().modifier)){
-                invoke.setTarget(new ThisExpr(Types.getClassType(classAst)));
-            }
-        }
+        ExprNode[] args = visitAll(ctx.params).toArray(new ExprNode[0]);
+        ExprNode ie = getImplicitInvokeExpr(methodName,args,ctx);
         return ie;
     }
 
@@ -782,7 +778,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
             InvocationExpr ie;
             try {
-                ie = InvocationExpr.create(expr1, "concat",new ExprNode[]{expr2});
+                ie = ObjectInvokeExpr.create(expr1, "concat",new ExprNode[]{expr2});
             } catch (MethodNotFoundException ex) {
                 throw new RuntimeException(ex);
             }
@@ -791,29 +787,52 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         mapAst(expr, ctx);
         return expr;
     }
-
-    private @Nullable ExprNode getInvocationExpr(ExprNode expr, String methodName, List<ExpressionContext> argumentsCtx,@Nullable ClassNode specialClass,Token id,ParserRuleContext ctx) {
-        ExprNode target = (ExprNode) expr;
-        ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
-        ExprNode is = null;
+    
+    private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
+        ExprNode expr;
         try {
-            if(specialClass!=null){
-                is = InvocationExpr.create(target,specialClass,methodName, args);
+            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(classAst, methodName, args);
+            if(Modifier.isStatic(ms.selectedMethod.modifier)){
+                expr = new StaticInvokeExpr(new ClassReference(classAst), ms.selectedMethod, ms.appliedArguments);
             }else{
-                is = InvocationExpr.create(target, methodName,args);
+                expr = new ObjectInvokeExpr(new ThisExpr(Types.getClassType(classAst)), classAst, ms.selectedMethod, ms.appliedArguments);
             }
         } catch (MethodNotFoundException ex) {
-            is = new UnknownInvocationExpr(target, methodName, args);
-            //reportError("method not foud:" + methodName, id);
+            expr = new UnknownInvocationExpr(null, methodName, args);
         }
-        mapAst(is, ctx);
-        return is;
+        mapAst(expr, ctx);
+        return expr;
+    }
+    
+    private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,List<ExpressionContext> argumentsCtx,ParserRuleContext ctx){
+        ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
+        ExprNode expr;
+        try {
+            expr = ObjectInvokeExpr.create(target, methodName, args);
+        } catch (MethodNotFoundException ex) {
+            expr= new UnknownInvocationExpr(target,methodName,args);
+        }
+        mapAst(expr, ctx);
+        return expr;
+    }
+    
+    private  ExprNode getStaticInvokeExpr(ClassReference clazz,String methodName,List<ExpressionContext> argumentsCtx,ParserRuleContext ctx){
+        ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
+        ExprNode expr;
+        try {
+            expr = StaticInvokeExpr.create(clazz, methodName, args);
+        } catch (MethodNotFoundException ex) {
+            //TODO bug here
+            expr = new UnknownInvocationExpr(null, methodName, args);
+        }
+        mapAst(expr, ctx);
+        return expr;
     }
 
     @Override
     public AstNode visitExprInvocation(ExprInvocationContext ctx) {
-        ExprNode ei = this.getInvocationExpr(
-                visitExpression(ctx.target), ctx.Identifier().getText(), ctx.params,null,ctx.Identifier().getSymbol(),ctx);
+        ExprNode ei = getObjectInvokeExpr(
+                visitExpression(ctx.target), ctx.Identifier().getText(), ctx.params,ctx);
         return ei;
     }
 
@@ -1228,13 +1247,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         String methodName = ctx.Identifier(1).getText();
         ExprNode node = getNodeById(id,idToken);
         if(node!=null){
-            ExprNode ie = getInvocationExpr(node, methodName, ctx.params,null,ctx.Identifier(1).getSymbol(),ctx);
+            ExprNode ie = getObjectInvokeExpr(node, methodName, ctx.params,ctx);
             if(ie==null) return null;
             return ie;
         }else if(isClassId(id)){
             ClassNode ast = requireAst(id, idToken);
             if(ast!=null)
-                return getInvocationExpr(null, methodName, ctx.params, ast,ctx.Identifier(1).getSymbol(),ctx);
+                return getStaticInvokeExpr(new ClassReference(ast), methodName, ctx.params,ctx);
         }else{
             reportError("unknown identifier:" + id,idToken);
         }

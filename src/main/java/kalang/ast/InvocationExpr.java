@@ -8,32 +8,26 @@ import kalang.core.*;
 import kalang.util.AstUtil;
 
 public class InvocationExpr extends ExprNode {
+    
+    public static class MethodSelection{
+        public MethodNode selectedMethod;
+        public ExprNode[] appliedArguments;
 
-    public static InvocationExpr create(ExprNode target, ClassNode specialClass,MethodNode methodNode) {
-        return new InvocationExpr(target,specialClass, methodNode, null);
+        public MethodSelection(MethodNode selectedMethod, ExprNode[] appliedArguments) {
+            this.selectedMethod = selectedMethod;
+            this.appliedArguments = appliedArguments;
+        }
+        
     }
-
-    /**
-     * The target object to invoke
-     */
-    protected ExprNode target;
 
     /**
      * The method name of invocation
      */
     //protected String methodName;
     protected ExprNode[] arguments;
-    private ClassNode specialClass;
+    
     private MethodNode method;
 
-    public static InvocationExpr createStatic(ClassNode clazz, String methodName, ExprNode[] args) throws MethodNotFoundException {
-        return create(null, clazz, methodName, args);
-    }
-
-    public static InvocationExpr create(@Nonnull ExprNode target, String methodName) throws MethodNotFoundException {
-        return create(target, methodName, null);
-    }
-    
      /**
      *  select the method for invocation expression,and apply ast transform if needed
      * @param specialClass
@@ -41,11 +35,11 @@ public class InvocationExpr extends ExprNode {
      * @param types
      * @return the selected method,or null
      */
-    private static InvocationExpr applyMethod(ExprNode target,ClassNode specialClass,String methodName, ExprNode[] args) throws MethodNotFoundException {
+    public static MethodSelection applyMethod(ClassNode specialClass,String methodName, ExprNode[] args) throws MethodNotFoundException {
         Type[] types = AstUtil.getExprTypes(args);
         MethodNode md = AstUtil.getMethod(specialClass, methodName, types);
         if (md != null) {
-            return new InvocationExpr(target,specialClass,md, args);
+            return new MethodSelection(md, args);
         } else {
             MethodNode[] methods = AstUtil.getMethodsByName(specialClass, methodName);
             int matchedCount = 0;
@@ -65,32 +59,18 @@ public class InvocationExpr extends ExprNode {
             } else if (matchedCount > 1) {
                 throw new MethodNotFoundException("the method " + methodName + " is ambiguous");
             }
-            return new InvocationExpr(target,specialClass,matchedMethod, matchedParams);
+            return new MethodSelection(matchedMethod, matchedParams);
         }
     }
 
-    public static InvocationExpr create(@Nonnull ExprNode target, String methodName, @Nullable ExprNode[] arguments) throws MethodNotFoundException {
-        ClassType targetType = (ClassType) target.getType();
-        ClassNode clazz = targetType.getClassNode();
-        return create(target, clazz, methodName, arguments);
-    }
-
-    public static InvocationExpr create(
-            @Nullable ExprNode target,@Nonnull ClassNode specialClass, String methodName, @Nullable ExprNode[] args) throws MethodNotFoundException {
-        return applyMethod(target,specialClass,methodName, args);
-    }
-
-    public InvocationExpr(ExprNode target,@Nonnull ClassNode specialClass ,MethodNode method, ExprNode[] args) {
-        this.target = target;
+    public InvocationExpr(MethodNode method, ExprNode[] args) {
         this.method = method;
         this.arguments = args;
-        this.specialClass = specialClass;
     }
 
     @Override
     public List<AstNode> getChildren() {
         List<AstNode> ls = new LinkedList();
-        addChild(ls, getTarget());
         addChild(ls, getArguments());
         return ls;
     }
@@ -114,21 +94,6 @@ public class InvocationExpr extends ExprNode {
     }
 
     /**
-     * @return the target,null if method is static
-     */
-    public ExprNode getTarget() {
-        return target;
-    }
-
-    /**
-     * @param target the target to set
-     */
-    public void setTarget(ExprNode target) {
-        Objects.requireNonNull(target);
-        this.target = target;
-    }
-
-    /**
      * @return the arguments
      */
     public ExprNode[] getArguments() {
@@ -145,11 +110,6 @@ public class InvocationExpr extends ExprNode {
 
     public MethodNode getMethod() {
         return method;
-    }
-
-    @Nonnull
-    public ClassNode getSpecialClass() {
-        return specialClass;
     }
 
 }

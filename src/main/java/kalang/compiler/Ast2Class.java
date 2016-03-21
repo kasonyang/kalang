@@ -40,9 +40,11 @@ import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
+import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.PrimitiveCastExpr;
 import kalang.ast.Statement;
+import kalang.ast.StaticInvokeExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
@@ -522,25 +524,22 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitInvocationExpr(InvocationExpr node) {
         int opc;
         MethodNode method = node.getMethod();
-        String ownerClass = internalName(node.getMethod().classNode);
-        ExprNode target = node.getTarget();
-        if(target==null){
+        String ownerClass;// = internalName(node.getMethod().classNode);
+        if (node instanceof StaticInvokeExpr) {
             opc = INVOKESTATIC;
-        }else{
+            ownerClass = internalName(((StaticInvokeExpr) node).getInvokeClassType().getClassNode());
+        } else {
+            ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
+            ownerClass = internalName(oie.getSpecialClass());
+            ExprNode target = oie.getInvokeTarget();
             visit(target);
-            if(target instanceof ThisExpr){
-                ClassNode spcialClass = node.getSpecialClass();
-                if(spcialClass.equals(clazz)){
-                    opc = INVOKEVIRTUAL;
-                }else{
-                    opc = INVOKESPECIAL;
-                }
-            }else{
-                if(method.name.equals("<init>")){
-                    opc = INVOKESPECIAL;
-                }else{
-                    opc = INVOKEVIRTUAL;
-                }
+            ClassNode targetClazz = ((ClassType) target.getType()).getClassNode();
+            ClassNode spcialClass = oie.getSpecialClass();
+            if (!targetClazz.equals(spcialClass)
+                    || method.name.equals("<init>")) {
+                opc = INVOKESPECIAL;
+            } else {
+                opc = INVOKEVIRTUAL;
             }
         }
 //        String ownerName = 

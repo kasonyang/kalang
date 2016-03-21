@@ -302,13 +302,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
-        visitAll(node.getArguments());
-        ExprNode target = node.getTarget();
-        if(target!=null){
-            visit(target);
-        }
+        super.visitInvocationExpr(node);
         MethodNode invokeMethod = node.getMethod();
-        boolean inStaticMethod = target==null && Modifier.isStatic(this.method.modifier);
+        boolean inStaticMethod = Modifier.isStatic(node.getMethod().modifier) && Modifier.isStatic(this.method.modifier);
         if (inStaticMethod) {
             if(!requireStatic(invokeMethod.modifier, node)) return getDefaultType();
         }

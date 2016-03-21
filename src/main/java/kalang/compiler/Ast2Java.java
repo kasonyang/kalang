@@ -407,43 +407,38 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     @Override
     public String visitInvocationExpr(InvocationExpr node) {
         String invokeTarget = null;
-        if (node.getTarget() != null) {
-            invokeTarget = visit(node.getTarget());
-        }
-        String args = String.join(",", visitAll(node.getArguments()));//.join(",");
+        String fullCallName = null;
         String mname = node.getMethod().name;
-        if (mname.equals("<init>")) {
-            ClassNode specialClass = node.getSpecialClass();
-            if(cls.equals(specialClass)){
-                return "this(" + args + ")";
-            }else if(cls.isSubclassOf(specialClass)){
-                return "super(" + args + ")";
-            }else{
-                throw new UnsupportedOperationException();
-            }
-        } else {
-            if (invokeTarget != null && invokeTarget.length()>0) {
-                invokeTarget += ".";
-            }else{
-                ClassNode specialClass = node.getSpecialClass();
-node.getSpecialClass();
-                if(AstUtil.isStatic(node.getMethod().modifier)){
-                    invokeTarget = specialClass.name + ".";
+        if (node instanceof ObjectInvokeExpr) {
+            ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
+            invokeTarget = visit(oie.getInvokeTarget());
+            ClassNode specialClass =oie.getSpecialClass();
+            if(mname.equals("<init>")){
+                if(cls.equals(specialClass)){
+                    fullCallName = "this";
+                }else if(cls.isSubclassOf(specialClass)){
+                    fullCallName = "super";
                 }else{
-                    if(cls.equals(specialClass)){
-                        invokeTarget = "";
-                    }else{
-                        invokeTarget = "super.";
-                    }
+                    throw new UnsupportedOperationException();
                 }
+            }else{
+                fullCallName = invokeTarget + "." + mname;
+//                if(cls.equals(specialClass)){
+//                    invokeTarget = "this.";
+//                }else{
+//                    invokeTarget = "super.";
+//                }
             }
-            return invokeTarget
-                    + node.getMethod().name
-                    + "("
+        }else{
+            StaticInvokeExpr sie = (StaticInvokeExpr) node;
+            invokeTarget = sie.getInvokeClass().getReferencedClassNode().name;
+            fullCallName = invokeTarget + "." + mname;
+        }
+        String args = String.join(",", visitAll(node.getArguments()));
+            return fullCallName + "("
                     + args
                     + ")";
         }
-    }
 
     @Override
     public String visitUnaryExpr(UnaryExpr node) {
