@@ -1,6 +1,14 @@
 package kalang.ast;
 public interface IAstVisitor<T>{
     
+    public T visitSuperExpr(SuperExpr node);
+    
+    public T visitClassReference(ClassReference node);
+    
+    public T visitArrayLengthExpr(ArrayLengthExpr node);
+    
+    public T visitIncrementExpr(IncrementExpr node);
+    
     public T visitUnknownFieldExpr(UnknownFieldExpr node);
     
     public T visitUnknownInvocationExpr(UnknownInvocationExpr node);

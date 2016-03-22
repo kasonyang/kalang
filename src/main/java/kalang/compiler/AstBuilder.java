@@ -807,7 +807,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if(Modifier.isStatic(ms.selectedMethod.modifier)){
                 expr = new StaticInvokeExpr(new ClassReference(classAst), ms.selectedMethod, ms.appliedArguments);
             }else{
-                expr = new ObjectInvokeExpr(new ThisExpr(Types.getClassType(classAst)), classAst, ms.selectedMethod, ms.appliedArguments);
+                expr = new ObjectInvokeExpr(new ThisExpr(Types.getClassType(classAst)), ms.selectedMethod, ms.appliedArguments);
             }
         } catch (MethodNotFoundException ex) {
             expr = new UnknownInvocationExpr(null, methodName, args);

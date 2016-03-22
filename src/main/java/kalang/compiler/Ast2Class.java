@@ -49,6 +49,7 @@ import kalang.ast.PrimitiveCastExpr;
 import kalang.ast.Statement;
 import kalang.ast.StaticFieldExpr;
 import kalang.ast.StaticInvokeExpr;
+import kalang.ast.SuperExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
@@ -537,12 +538,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ownerClass = internalName(((StaticInvokeExpr) node).getInvokeClassType().getClassNode());
         } else {
             ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
-            ownerClass = internalName(oie.getSpecialClass());
+            ownerClass = internalName(oie.getInvokeTarget().getType());
             ExprNode target = oie.getInvokeTarget();
             visit(target);
             ClassNode targetClazz = ((ClassType) target.getType()).getClassNode();
-            ClassNode spcialClass = oie.getSpecialClass();
-            if (!targetClazz.equals(spcialClass)
+            if (target instanceof SuperExpr
                     || method.name.equals("<init>")) {
                 opc = INVOKESPECIAL;
             } else {
@@ -994,6 +994,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitClassReference(ClassReference node) {
         //do nothing
+        return null;
+    }
+
+    @Override
+    public Object visitSuperExpr(SuperExpr node) {
+        md.visitVarInsn(ALOAD, 0);
         return null;
     }
 

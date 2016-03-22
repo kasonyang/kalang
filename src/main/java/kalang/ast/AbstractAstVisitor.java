@@ -2,71 +2,15 @@ package kalang.ast;
 import java.util.*;
 public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
-    abstract public T visitClassReference(ClassReference node);
-    
-    abstract public T visitArrayLengthExpr(ArrayLengthExpr node);
-    
-    abstract public T visitIncrementExpr(IncrementExpr node);
-    
-    abstract public T visitClassNode(ClassNode node);
-    
-    abstract public T visitMethodNode(MethodNode node);
-    
-    abstract public T visitBlockStmt(BlockStmt node);
-    
-    abstract public T visitBreakStmt(BreakStmt node);
-    
-    abstract public T visitContinueStmt(ContinueStmt node);
-    
-    abstract public T visitExprStmt(ExprStmt node);
-    
-    abstract public T visitIfStmt(IfStmt node);
-    
-    abstract public T visitLoopStmt(LoopStmt node);
-    
-    abstract public T visitReturnStmt(ReturnStmt node);
-    
-    abstract public T visitVarDeclStmt(VarDeclStmt node);
-    
-    abstract public T visitTryStmt(TryStmt node);
-    
-    abstract public T visitCatchBlock(CatchBlock node);
-    
-    abstract public T visitThrowStmt(ThrowStmt node);
-    
-    abstract public T visitAssignExpr(AssignExpr node);
-    
-    abstract public T visitBinaryExpr(BinaryExpr node);
-    
-    abstract public T visitConstExpr(ConstExpr node);
-    
-    abstract public T visitElementExpr(ElementExpr node);
-    
-    abstract public T visitFieldExpr(FieldExpr node);
-    
-    abstract public T visitInvocationExpr(InvocationExpr node);
-    
-    abstract public T visitUnaryExpr(UnaryExpr node);
-    
-    abstract public T visitVarExpr(VarExpr node);
-    
-    abstract public T visitParameterExpr(ParameterExpr node);
-    
-    abstract public T visitCastExpr(CastExpr node);
-    
-    abstract public T visitPrimitiveCastExpr(PrimitiveCastExpr node);
-    
-    abstract public T visitNewArrayExpr(NewArrayExpr node);
-    
-    abstract public T visitThisExpr(ThisExpr node);
-    
-    abstract public T visitMultiStmtExpr(MultiStmtExpr node);
-    
     //abstract public T visitVarObject(VarObject node);
     
     public T visit(AstNode node){
         
         if(node==null) return null;
+        
+        if(node instanceof SuperExpr){
+            return visitSuperExpr((SuperExpr)node);
+        }
         
         if(node instanceof ClassReference){
             return visitClassReference((ClassReference) node);
@@ -235,14 +179,5 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         }
         return result;
     }
-
-    @Override
-    public abstract T visitLocalVarNode(LocalVarNode node);
-
-    @Override
-    public abstract T visitParameterNode(ParameterNode node);
-
-    @Override
-    public abstract T visitFieldNode(FieldNode node);
 
 }

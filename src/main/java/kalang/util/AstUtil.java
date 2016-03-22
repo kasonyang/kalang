@@ -21,6 +21,7 @@ import kalang.ast.ThisExpr;
 import kalang.ast.ParameterExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.Statement;
+import kalang.ast.SuperExpr;
 import kalang.ast.VarExpr;
 import kalang.compiler.MethodNotFoundException;
 import kalang.core.ClassType;
@@ -102,8 +103,7 @@ public class AstUtil {
                body.statements.add(
                        new ExprStmt(
                                new ObjectInvokeExpr(
-                                       new ThisExpr(Types.getClassType(clazzNode)), 
-                                       clazzNode.parent,
+                                       new SuperExpr(clazzNode), 
                                        m,
                                        params)
                        )
@@ -222,9 +222,9 @@ public class AstUtil {
     
     public static Statement createDefaultSuperConstructorCall(ClassNode clazz) throws MethodNotFoundException{
        ClassType clsType = Types.getClassType(clazz);
-       ThisExpr thisExpr = new ThisExpr(clsType);
+       SuperExpr thisExpr = new SuperExpr(clazz);
         return new ExprStmt(
-                ObjectInvokeExpr.create(thisExpr, clazz.parent, "<init>", null)
+                ObjectInvokeExpr.create(thisExpr, "<init>", null)
         );
     }
 }

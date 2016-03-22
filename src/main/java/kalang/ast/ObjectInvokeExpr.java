@@ -13,33 +13,29 @@ import kalang.core.Type;
  */
 public class ObjectInvokeExpr extends InvocationExpr{
 
-    public static ObjectInvokeExpr create(ExprNode target, ClassNode clazz, String methodName,ExprNode[] args) throws MethodNotFoundException {
+    public static ObjectInvokeExpr create(ExprNode target , String methodName,ExprNode[] args) throws MethodNotFoundException {
+        ClassType targetType = (ClassType) target.getType();
+        ClassNode clazz = targetType.getClassNode();
         MethodSelection ms = applyMethod(clazz, methodName, args);
-        return new ObjectInvokeExpr(target,clazz,ms.selectedMethod ,ms.appliedArguments);
+        return new ObjectInvokeExpr(target,ms.selectedMethod ,ms.appliedArguments);
     }
 
     private ExprNode invokeTarget;
     
-    public static ObjectInvokeExpr create(ExprNode target,String methodName,ExprNode[] args) throws MethodNotFoundException{
-        ClassType targetType = (ClassType) target.getType();
-        ClassNode clazz = targetType.getClassNode();
-        return create(target,clazz,methodName, args);
-    }
-    private final ClassNode specialClass;
+    //private final ClassNode specialClass;
 
-    public ObjectInvokeExpr(ExprNode invokeTarget,ClassNode specialClass, MethodNode method, ExprNode[] args) {
+    public ObjectInvokeExpr(ExprNode invokeTarget, MethodNode method, ExprNode[] args) {
         super(method, args);
         this.invokeTarget = invokeTarget;
-        this.specialClass = specialClass;
     }
 
     public ExprNode getInvokeTarget() {
         return invokeTarget;
     }
 
-    public ClassNode getSpecialClass() {
-        return specialClass;
-    }
+//    public ClassNode getSpecialClass() {
+//        return specialClass;
+//    }
 
     @Override
     public List<AstNode> getChildren() {

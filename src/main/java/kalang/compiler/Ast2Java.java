@@ -412,15 +412,8 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         if (node instanceof ObjectInvokeExpr) {
             ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
             invokeTarget = visit(oie.getInvokeTarget());
-            ClassNode specialClass =oie.getSpecialClass();
             if(mname.equals("<init>")){
-                if(cls.equals(specialClass)){
-                    fullCallName = "this";
-                }else if(cls.isSubclassOf(specialClass)){
-                    fullCallName = "super";
-                }else{
-                    throw new UnsupportedOperationException();
-                }
+                fullCallName = invokeTarget;
             }else{
                 fullCallName = invokeTarget + "." + mname;
 //                if(cls.equals(specialClass)){
@@ -591,6 +584,11 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     @Override
     public String visitClassReference(ClassReference node) {
         return node.getReferencedClassNode().name;
+    }
+
+    @Override
+    public String visitSuperExpr(SuperExpr node) {
+        return "super";
     }
 
 }
