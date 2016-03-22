@@ -7,7 +7,7 @@ import kalang.compiler.MethodNotFoundException;
 import kalang.core.*;
 import kalang.util.AstUtil;
 
-public class InvocationExpr extends ExprNode {
+public abstract class InvocationExpr extends ExprNode {
     
     public static class MethodSelection{
         public MethodNode selectedMethod;
@@ -66,13 +66,6 @@ public class InvocationExpr extends ExprNode {
     public InvocationExpr(MethodNode method, ExprNode[] args) {
         this.method = method;
         this.arguments = args;
-    }
-
-    @Override
-    public List<AstNode> getChildren() {
-        List<AstNode> ls = new LinkedList();
-        addChild(ls, getArguments());
-        return ls;
     }
 
     @Nonnull

@@ -40,5 +40,15 @@ public class ObjectInvokeExpr extends InvocationExpr{
     public ClassNode getSpecialClass() {
         return specialClass;
     }
+
+    @Override
+    public List<AstNode> getChildren() {
+        List<AstNode> list = new LinkedList();
+        addChild(list, invokeTarget);
+        addChild(list, arguments);
+        return list;
+    }
+    
+    
     
 }

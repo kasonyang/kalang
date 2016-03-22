@@ -26,5 +26,15 @@ public class StaticInvokeExpr extends InvocationExpr{
     public ClassReference getInvokeClass() {
         return invokeClass;
     }
+
+    @Override
+    public List<AstNode> getChildren() {
+        ArrayList<AstNode> list = new ArrayList();
+        addChild(list, invokeClass);
+        addChild(list, arguments);
+        return list;
+    }
+    
+    
     
 }
