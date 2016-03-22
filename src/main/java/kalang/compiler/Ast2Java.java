@@ -394,10 +394,10 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     public String visitFieldExpr(FieldExpr node) {
         String target;
         //TODO super field"?
-        if (node.getTarget() != null) {
-            target = visit(node.getTarget());
+        if (node instanceof ObjectFieldExpr) {
+            target = visit(((ObjectFieldExpr)node).getTarget());
         } else { //static field
-            target = node.getField().classNode.name;
+            target = ((StaticFieldExpr)node).getClassReference().getReferencedClassNode().name;
         }
         return target
                 + "."

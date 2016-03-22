@@ -87,8 +87,10 @@ import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
+import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.ParameterNode;
+import kalang.ast.StaticFieldExpr;
 import kalang.ast.StaticInvokeExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
@@ -946,7 +948,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if (classAst.fields != null) {
                 for (FieldNode f : classAst.fields) {
                     if (f.name!=null && f.name.equals(name)) {
-                        FieldExpr fe = new FieldExpr(new ThisExpr(Types.getClassType(classAst)), f);
+                        FieldExpr fe;
+                        if(Modifier.isStatic(f.modifier)){
+                            fe = new StaticFieldExpr(new ClassReference(classAst), f);
+                        }else{
+                            fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(classAst)), f);
+                        }
                         if(token!=null) mapAst(fe, token);
                         return fe;
                     }
@@ -1299,7 +1306,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ret = new ArrayLengthExpr(expr);
         } else {
             try {
-                ret = FieldExpr.create(expr, fieldName);
+                ret = ObjectFieldExpr.create(expr, fieldName);
             } catch (FieldNotFoundException ex) {
                 ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
             }
@@ -1311,7 +1318,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     protected ExprNode getStaticFieldExpr(ClassReference clazz,String fieldName,ParserRuleContext rule){
         ExprNode ret;
         try {
-            ret = FieldExpr.createStaticFieldExpr(clazz.getReferencedClassNode(), fieldName);
+            ret = StaticFieldExpr.create(clazz,fieldName);
         } catch (FieldNotFoundException ex) {
             ret = new UnknownFieldExpr(null, clazz.getReferencedClassNode(), fieldName);
         }

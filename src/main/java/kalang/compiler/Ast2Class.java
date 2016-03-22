@@ -29,6 +29,7 @@ import kalang.ast.UnaryExpr;
 import kalang.ast.VarExpr;
 import kalang.ast.VarObject;
 import java.io.*;
+import java.lang.reflect.Modifier;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
@@ -41,10 +42,12 @@ import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.NewObjectExpr;
+import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.PrimitiveCastExpr;
 import kalang.ast.Statement;
+import kalang.ast.StaticFieldExpr;
 import kalang.ast.StaticInvokeExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
@@ -174,7 +177,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 //init fields
                 List<FieldNode> fields = clazz.fields;
                 for(FieldNode f:fields){
-                    assignField(f, new ThisExpr(Types.getClassType(clazz)), f.initExpr);
+                    if(!Modifier.isStatic(f.modifier)){
+                        assignField(new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), f) , f.initExpr);
+                    }
                 }
                 for(int i=1;i<stmtsSize;i++){
                     visit(body.statements.get(i));
@@ -414,25 +419,24 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitVarInsn(type.getOpcode(ISTORE), vid);
     }
     
-    private void assignField(FieldNode fn,ExprNode target,ExprNode expr){
-            int opc = PUTFIELD;
-            if(AstUtil.isStatic(fn.modifier)){
-                opc = PUTSTATIC;
-            }else{
-                visit(target);
-            }
-            visit(expr);
-            md.visitFieldInsn(opc, 
-                    asmType(Types.getClassType(fn.classNode)).getInternalName()
-                    ,fn.name
-            , getTypeDescriptor(fn.type));
+    private void assignField(FieldExpr fieldExpr,ExprNode expr){
+        int opc = PUTFIELD;
+        FieldNode fn = fieldExpr.getField();
+        if (fieldExpr instanceof StaticFieldExpr) {
+            opc = PUTSTATIC;
+        } else {
+            visit(((ObjectFieldExpr) fieldExpr).getTarget());
+        }
+        visit(expr);
+        md.visitFieldInsn(opc,
+                asmType(Types.getClassType(fn.classNode)).getInternalName(), fn.name, getTypeDescriptor(fn.type));
     }
     
     private void assign(ExprNode to,ExprNode from){
         org.objectweb.asm.Type type = asmType(from.getType());
         if(to instanceof FieldExpr){
             FieldExpr toField = (FieldExpr) to;
-            assignField(toField.getField(), toField.getTarget(), from);
+            assignField(toField, from);
         }else if(to instanceof VarExpr){
             assignVarObject(((VarExpr) to).getVar(), from);
         }else if(to instanceof ElementExpr){
@@ -507,12 +511,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitFieldExpr(FieldExpr node) {
-        ExprNode target = node.getTarget();
-        int   opc = GETSTATIC;
+        int   opc ;
         String owner = internalName(node.getField().classNode);
-        if(target!=null){
+        if(node instanceof ObjectFieldExpr){
+            ExprNode target =((ObjectFieldExpr)node).getTarget();
             visit(target);
             opc = GETFIELD;
+        }else/* if(node instanceof StaticFieldExpr)*/{
+            opc = GETSTATIC;
         }
         md.visitFieldInsn(opc
                 ,owner
