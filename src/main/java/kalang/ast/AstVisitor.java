@@ -211,5 +211,11 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
         visitChildren(node);
         return null;
     }
+
+    @Override
+    public T visitClassReference(ClassReference node) {
+        visitChildren(node);
+        return null;
+    }
     
 }

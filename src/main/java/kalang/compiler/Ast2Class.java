@@ -35,6 +35,7 @@ import java.util.*;
 import javax.annotation.Nonnull;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
+import kalang.ast.ClassReference;
 import kalang.ast.ExprNode;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
@@ -982,6 +983,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitUnknownInvocationExpr(UnknownInvocationExpr node) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Object visitClassReference(ClassReference node) {
+        //do nothing
+        return null;
     }
 
 }

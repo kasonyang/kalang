@@ -852,7 +852,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode expr = visitExpression(ctx.expression());
         String name = ctx.Identifier().getText();
         Type type = expr.getType();
-        ret = getFieldLikedExpr(expr, type,name,ctx);
+        ret = getObjectFieldLikeExpr(expr,name,ctx);
         return ret;
     }
 
@@ -909,9 +909,23 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ClassNode targetClass = astLoader.getAst(id);
         return (targetClass!=null);
     }
+    
+    private AstNode requireNameDefined(String name,Token token){
+        AstNode n = getNodeById(name, token);
+        if(n==null){
+            reportError(name + " is undefined!", token);
+            return null;
+        }
+        return n;
+    }
 
     @Nullable
-    private ExprNode getNodeById(@Nonnull String name,@Nullable Token token) {
+    private AstNode getNodeById(@Nonnull String name,@Nullable Token token) {
+        if(isClassId(name)){
+            ClassReference clsRef = new ClassReference(requireAst(name,token));
+            mapAst(clsRef, token);
+            return clsRef;
+        }
         if (vtb.exist(name)) {
             VarExpr ve = new VarExpr();
             LocalVarNode declStmt = vtb.get(name); //vars.indexOf(vo);
@@ -1099,9 +1113,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitExprIdentifier(ExprIdentifierContext ctx) {
         String name = ctx.Identifier().getText();
-        ExprNode expr = this.getNodeById(name,ctx.Identifier().getSymbol());
+        AstNode expr = this.getNodeById(name,ctx.Identifier().getSymbol());
         if (expr == null) {
             this.reportError(name + " is undefined!", ctx);
+            return null;
+        }
+        if(expr instanceof ClassReference){
+            reportError("not an expression", ctx);
             return null;
         }
         mapAst(expr,ctx);
@@ -1255,23 +1273,22 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Token idToken = ctx.Identifier(0).getSymbol();
         String id = idToken.getText();
         String methodName = ctx.Identifier(1).getText();
-        ExprNode node = getNodeById(id,idToken);
-        if(node!=null){
-            ExprNode ie = getObjectInvokeExpr(node, methodName, ctx.params,ctx);
+        AstNode node = getNodeById(id,idToken);
+        if(node instanceof ExprNode){
+            ExprNode ie = getObjectInvokeExpr((ExprNode) node, methodName, ctx.params,ctx);
             if(ie==null) return null;
             return ie;
-        }else if(isClassId(id)){
-            ClassNode ast = requireAst(id, idToken);
-            if(ast!=null)
-                return getStaticInvokeExpr(new ClassReference(ast), methodName, ctx.params,ctx);
+        }else if(node instanceof ClassReference){
+            return getStaticInvokeExpr((ClassReference) node, methodName, ctx.params,ctx);
         }else{
             reportError("unknown identifier:" + id,idToken);
         }
         return null;
     }
     
-    protected ExprNode getFieldLikedExpr(@Nullable ExprNode expr,Type type,String fieldName,ParserRuleContext rule){
+    protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName,ParserRuleContext rule){
         ExprNode ret;
+        Type type = expr.getType();
         if(!(type instanceof  ClassType)){
             reportError("unsupported type", rule);
             return null;
@@ -1282,14 +1299,21 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ret = new ArrayLengthExpr(expr);
         } else {
             try {
-                if(expr==null){
-                    ret = FieldExpr.createStaticFieldExpr(exprType.getClassNode(), fieldName);
-                }else{
-                    ret = FieldExpr.create(expr, fieldName);
-                }
+                ret = FieldExpr.create(expr, fieldName);
             } catch (FieldNotFoundException ex) {
                 ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
             }
+        }
+        mapAst(ret, rule);
+        return ret;
+    }
+    
+    protected ExprNode getStaticFieldExpr(ClassReference clazz,String fieldName,ParserRuleContext rule){
+        ExprNode ret;
+        try {
+            ret = FieldExpr.createStaticFieldExpr(clazz.getReferencedClassNode(), fieldName);
+        } catch (FieldNotFoundException ex) {
+            ret = new UnknownFieldExpr(null, clazz.getReferencedClassNode(), fieldName);
         }
         mapAst(ret, rule);
         return ret;
@@ -1300,13 +1324,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Token idToken = ctx.Identifier(0).getSymbol();
         String id = idToken.getText();
         String fieldName = ctx.Identifier(1).getText();
-        ExprNode expr = getNodeById(id,idToken);
-        if(expr!=null){
-            return getFieldLikedExpr(expr,expr.getType() ,fieldName,ctx);
+        AstNode expr = getNodeById(id,idToken);
+        if(expr instanceof ExprNode){
+            ExprNode exprNode = (ExprNode) expr;
+            return getObjectFieldLikeExpr(exprNode,fieldName,ctx);
+        }else if(expr instanceof ClassReference){
+            return getStaticFieldExpr((ClassReference)expr, fieldName, ctx);
         }else{
-            ClassNode fieldClazz = requireAst(idToken);
-            if(fieldClazz==null) return null;
-            return getFieldLikedExpr(null, Types.getClassType(fieldClazz), fieldName, ctx);
+            reportError(id + " is undefined!", idToken);
+            return null;
         }
     }
 

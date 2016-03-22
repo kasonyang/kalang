@@ -2,6 +2,8 @@ package kalang.ast;
 import java.util.*;
 public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     
+    abstract public T visitClassReference(ClassReference node);
+    
     abstract public T visitArrayLengthExpr(ArrayLengthExpr node);
     
     abstract public T visitIncrementExpr(IncrementExpr node);
@@ -65,6 +67,10 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     public T visit(AstNode node){
         
         if(node==null) return null;
+        
+        if(node instanceof ClassReference){
+            return visitClassReference((ClassReference) node);
+        }
         
         if(node instanceof UnknownFieldExpr){
             return visitUnknownFieldExpr((UnknownFieldExpr)node);
