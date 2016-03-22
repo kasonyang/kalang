@@ -389,8 +389,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         VarExpr ve = new VarExpr(vo);
         IfStmt is = new IfStmt();
         is.setConditionExpr((ExprNode) visit(ctx.expression(0)));
-        is.setTrueBody(new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(1)))));
-        is.setFalseBody(new ExprStmt(new AssignExpr(ve, (ExprNode) visit(ctx.expression(2)))));
+        ExprNode trueExpr = (ExprNode) visit(ctx.expression(1));
+        ExprNode falseExpr = (ExprNode)  visit(ctx.expression(2));
+        is.setTrueBody(new ExprStmt(new AssignExpr(ve, trueExpr)));
+        is.setFalseBody(new ExprStmt(new AssignExpr(ve,falseExpr)));
+        Type trueType = trueExpr.getType();
+        Type falseType  = falseExpr.getType();
+        if(trueType.equals(falseType)){
+            vo.type = trueType;
+        }else{
+            //TODO get common type
+            vo.type = Types.ROOT_TYPE;
+        }
         mse.stmts.add(is);
         mse.reference = ve;
         mapAst(ve, ctx);

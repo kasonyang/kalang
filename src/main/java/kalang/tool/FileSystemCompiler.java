@@ -99,27 +99,35 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
     public KalangCompiler getKalangCompiler() {
         return kalangCompiler;
     }
+    
+    private String generateJavaCode(ClassNode classNode){
+        Ast2Java ast2Java = new Ast2Java();
+        ast2Java.generate(classNode);
+        return ast2Java.getCode();
+    }
+    
+    private byte[] generateClassBytes(ClassNode clazz){
+        Ast2Class ast2Class = new Ast2Class();
+        ast2Class.generate(clazz);
+        return ast2Class.getClassBytes();
+    }
 
     @Override
     public void generate(ClassNode classNode) {
-        Ast2Class ast2Class = new Ast2Class();
-        ast2Class.generate(classNode);
-        Ast2Java ast2Java = new Ast2Java();
-        ast2Java.generate(classNode);
         String cls = classNode.name;
         if (outputDir != null) {
                 String fname = cls.replace(".", "/");// + ".java";
                 File destFile = new File(outputDir, fname + ".java");
                 File classDest = new File(outputDir,fname + ".class");
                 try{
-                    FileUtils.write(destFile, ast2Java.getCode());
-                    FileUtils.writeByteArrayToFile(classDest, ast2Class.getClassBytes());
+                    FileUtils.write(destFile,generateJavaCode(classNode));
+                    FileUtils.writeByteArrayToFile(classDest,generateClassBytes(classNode));
                 }catch(IOException ex){
                     //TODO report io exception
                     System.err.println(ex.getMessage());
                 }
             } else {
-                System.out.println(ast2Java.getCode());
+                System.out.println(generateJavaCode(classNode));
             }
     }
 
