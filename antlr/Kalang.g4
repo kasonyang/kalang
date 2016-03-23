@@ -181,13 +181,10 @@ expression
     |   literal #exprLiteral
     | map #mapExpr
     | listOrArray # listOrArrayExpr
-    |   Identifier '.' Identifier #exprGetVarOrStaticField
     |   expression '.' Identifier #exprGetField
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
-|    Identifier '.' Identifier 
-        '(' (params+=expression (',' params+=expression)*)? ')'  #exprVarOrStaticInvocation
     |    target=expression '.' Identifier 
         '(' (params+=expression (',' params+=expression)*)? ')'  #exprInvocation
     |     (Identifier|key='this'|key='super') 

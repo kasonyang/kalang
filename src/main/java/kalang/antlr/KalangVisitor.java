@@ -187,13 +187,6 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCastExpr(KalangParser.CastExprContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exprGetVarOrStaticField}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprGetVarOrStaticField(KalangParser.ExprGetVarOrStaticFieldContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code exprMemberInvocation}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -284,13 +277,6 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExprInc(KalangParser.ExprIncContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code exprVarOrStaticInvocation}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprVarOrStaticInvocation(KalangParser.ExprVarOrStaticInvocationContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprQuestion}
 	 * labeled alternative in {@link KalangParser#expression}.

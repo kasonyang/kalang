@@ -843,19 +843,31 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitExprInvocation(ExprInvocationContext ctx) {
-        ExprNode ei = getObjectInvokeExpr(
-                visitExpression(ctx.target), ctx.Identifier().getText(), ctx.params,ctx);
-        return ei;
+        Object target = visit(ctx.target);
+        if(target==null) return null;
+        String mdName = ctx.Identifier().getText();
+        if(target instanceof ClassReference){
+            return getStaticInvokeExpr((ClassReference) target, mdName,ctx.params, ctx);
+        }else if(target instanceof ExprNode){
+            return getObjectInvokeExpr((ExprNode) target, mdName, ctx.params,ctx);
+        }else{
+            throw new UnknownError("unknown node:"+ target);
+        }
     }
 
     @Override
     public ExprNode visitExprGetField(ExprGetFieldContext ctx) {
-        ExprNode ret;
-        ExprNode expr = visitExpression(ctx.expression());
+        Object expr = visit(ctx.expression());
+        if(expr==null) return null;
         String name = ctx.Identifier().getText();
-        Type type = expr.getType();
-        ret = getObjectFieldLikeExpr(expr,name,ctx);
-        return ret;
+        if(expr instanceof ExprNode){
+            ExprNode exprNode = (ExprNode) expr;
+            return getObjectFieldLikeExpr(exprNode,name,ctx);
+        }else if(expr instanceof ClassReference){
+            return getStaticFieldExpr((ClassReference)expr, name, ctx);
+        }else{
+            throw new UnknownError("unknown node:" + expr);
+        }
     }
 
     @Override
@@ -1125,10 +1137,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             this.reportError(name + " is undefined!", ctx);
             return null;
         }
-        if(expr instanceof ClassReference){
-            reportError("not an expression", ctx);
-            return null;
-        }
+//        if(expr instanceof ClassReference){
+//            reportError("not an expression", ctx);
+//            return null;
+//        }
         mapAst(expr,ctx);
         return expr;
     }
@@ -1274,24 +1286,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         return expr;
     }
-
-    @Override
-    public Object visitExprVarOrStaticInvocation(KalangParser.ExprVarOrStaticInvocationContext ctx) {
-        Token idToken = ctx.Identifier(0).getSymbol();
-        String id = idToken.getText();
-        String methodName = ctx.Identifier(1).getText();
-        AstNode node = getNodeById(id,idToken);
-        if(node instanceof ExprNode){
-            ExprNode ie = getObjectInvokeExpr((ExprNode) node, methodName, ctx.params,ctx);
-            if(ie==null) return null;
-            return ie;
-        }else if(node instanceof ClassReference){
-            return getStaticInvokeExpr((ClassReference) node, methodName, ctx.params,ctx);
-        }else{
-            reportError("unknown identifier:" + id,idToken);
-        }
-        return null;
-    }
     
     protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName,ParserRuleContext rule){
         ExprNode ret;
@@ -1324,23 +1318,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         mapAst(ret, rule);
         return ret;
-    }
-
-    @Override
-    public Object visitExprGetVarOrStaticField(KalangParser.ExprGetVarOrStaticFieldContext ctx) {
-        Token idToken = ctx.Identifier(0).getSymbol();
-        String id = idToken.getText();
-        String fieldName = ctx.Identifier(1).getText();
-        AstNode expr = getNodeById(id,idToken);
-        if(expr instanceof ExprNode){
-            ExprNode exprNode = (ExprNode) expr;
-            return getObjectFieldLikeExpr(exprNode,fieldName,ctx);
-        }else if(expr instanceof ClassReference){
-            return getStaticFieldExpr((ClassReference)expr, fieldName, ctx);
-        }else{
-            reportError(id + " is undefined!", idToken);
-            return null;
-        }
     }
 
     @Override
