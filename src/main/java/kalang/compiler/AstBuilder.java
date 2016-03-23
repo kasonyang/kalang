@@ -157,7 +157,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         System.err.println(error);
     };
     
-    private final CompilationUnit source;
+    private final CompilationUnit compilationUnit;
     
     public CompileErrorHandler getErrorHandler() {
         return errorHandler;
@@ -245,9 +245,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
     }
 
-    public AstBuilder(@Nonnull CompilationUnit source, @Nonnull KalangParser parser) {
-        this.source = source;
-        this.className = source.getSource().getClassName();
+    public AstBuilder(@Nonnull CompilationUnit compilationUnit, @Nonnull KalangParser parser) {
+        this.compilationUnit = compilationUnit;
+        this.className = compilationUnit.getSource().getClassName();
         classAst.name = className;
         this.classPath = "";
         this.parser = parser;
@@ -618,17 +618,17 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     public void reportSyntaxError(String desc,ParserRuleContext rule,Token token){
-        SyntaxError syntaxError = new SyntaxError(desc, source, rule, token);
+        SyntaxError syntaxError = new SyntaxError(desc, compilationUnit, rule, token);
         errorHandler.handleCompileError(syntaxError);
     }
     
     public void reportError(String msg, Token token) {
-        SourceParsingException ex = new SourceParsingException(msg, source ,OffsetRangeHelper.getOffsetRange(token), this);
+        SourceParsingException ex = new SourceParsingException(msg, compilationUnit ,OffsetRangeHelper.getOffsetRange(token), this);
         errorHandler.handleCompileError(ex);
     }
 
     public void reportError(String msg,ParserRuleContext tree) {
-        SourceParsingException ex = new SourceParsingException(msg,source ,OffsetRangeHelper.getOffsetRange(tree), this);
+        SourceParsingException ex = new SourceParsingException(msg,compilationUnit ,OffsetRangeHelper.getOffsetRange(tree), this);
         errorHandler.handleCompileError(ex);
     }
 
