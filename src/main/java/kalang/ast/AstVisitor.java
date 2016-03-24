@@ -223,5 +223,11 @@ public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<
         visitChildren(node);
         return null;
     }
+
+    @Override
+    public T visitErrorousExpr(ErrorousExpr node) {
+        visitChildren(node);
+        return null;
+    }
     
 }

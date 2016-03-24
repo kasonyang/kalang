@@ -8,6 +8,10 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         
         if(node==null) return null;
         
+        if(node instanceof ErrorousExpr){
+            return visitErrorousExpr((ErrorousExpr) node);
+        }
+        
         if(node instanceof SuperExpr){
             return visitSuperExpr((SuperExpr)node);
         }

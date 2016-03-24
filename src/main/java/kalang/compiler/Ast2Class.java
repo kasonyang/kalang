@@ -37,6 +37,7 @@ import javax.annotation.Nonnull;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.ClassReference;
+import kalang.ast.ErrorousExpr;
 import kalang.ast.ExprNode;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
@@ -1001,6 +1002,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitSuperExpr(SuperExpr node) {
         md.visitVarInsn(ALOAD, 0);
         return null;
+    }
+
+    @Override
+    public Object visitErrorousExpr(ErrorousExpr node) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

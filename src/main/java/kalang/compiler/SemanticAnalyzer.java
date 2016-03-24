@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.ast.ArrayLengthExpr;
+import kalang.ast.ErrorousExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
@@ -571,6 +572,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public Type visitUnknownFieldExpr(UnknownFieldExpr node) {
         err.fieldNotFound(node, node.getFieldName());
         return getDefaultType();
+    }
+
+    @Override
+    public Type visitErrorousExpr(ErrorousExpr node) {
+        err.fail("not an expression",0, node);
+        return null;
     }
     
     

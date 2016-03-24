@@ -83,6 +83,7 @@ import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.ClassReference;
+import kalang.ast.ErrorousExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
@@ -554,7 +555,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     private ExprNode visitExpression(ExpressionContext expression) {
-        return (ExprNode) visit(expression);
+        Object node = visit(expression);
+        if(node instanceof ExprNode){
+            return (ExprNode) node;
+        }else if(node instanceof AstNode){
+            return new ErrorousExpr((AstNode)node);
+        }else{
+            throw new UnsupportedOperationException("unsupported node:" + node);
+        }
     }
 
     @Override

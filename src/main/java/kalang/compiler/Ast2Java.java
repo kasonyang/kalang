@@ -591,4 +591,9 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         return "super";
     }
 
+    @Override
+    public String visitErrorousExpr(ErrorousExpr node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }
