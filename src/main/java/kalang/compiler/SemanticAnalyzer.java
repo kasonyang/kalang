@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.ast.ArrayLengthExpr;
+import kalang.ast.ClassReference;
 import kalang.ast.ErrorousExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
@@ -560,9 +561,11 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitUnknownInvocationExpr(UnknownInvocationExpr node) {
         String type = "";
-        ExprNode target = node.getTarget();
-        if(target!=null){
-            type = target.getType().getName();
+        AstNode target = node.getTarget();
+        if(target instanceof ExprNode){
+            type =((ExprNode) target).getType().getName();
+        }else if(target instanceof ClassReference){
+            type = ((ClassReference)target).getReferencedClassNode().name;
         }
         err.methodNotFound(node,type,node.getMethodName(), null);
         return getDefaultType();

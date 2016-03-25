@@ -12,19 +12,19 @@ import kalang.core.Types;
  */
 public class UnknownFieldExpr extends ExprNode{
 
-    private ExprNode target;
+    private AstNode target;
     
     private String fieldName;
     
     private ClassNode specialClass;
 
-    public UnknownFieldExpr(ExprNode target,ClassNode specialClass, String fieldName) {
+    public UnknownFieldExpr(AstNode target,ClassNode specialClass, String fieldName) {
         this.target = target;
         this.fieldName = fieldName;
         this.specialClass = specialClass;
     }
 
-    public ExprNode getTarget() {
+    public AstNode getTarget() {
         return target;
     }
 

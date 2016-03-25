@@ -843,7 +843,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             expr = StaticInvokeExpr.create(clazz, methodName, args);
         } catch (MethodNotFoundException ex) {
             //TODO bug here
-            expr = new UnknownInvocationExpr(null, methodName, args);
+            expr = new UnknownInvocationExpr(clazz, methodName, args);
         }
         mapAst(expr, ctx);
         return expr;
@@ -1322,7 +1322,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         try {
             ret = StaticFieldExpr.create(clazz,fieldName);
         } catch (FieldNotFoundException ex) {
-            ret = new UnknownFieldExpr(null, clazz.getReferencedClassNode(), fieldName);
+            ret = new UnknownFieldExpr(clazz, clazz.getReferencedClassNode(), fieldName);
         }
         mapAst(ret, rule);
         return ret;

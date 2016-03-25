@@ -12,19 +12,19 @@ import kalang.core.Types;
  */
 public class UnknownInvocationExpr extends ExprNode{
     
-    private ExprNode target;
+    private AstNode target;
     
     private String methodName;
     
     private ExprNode[] arguments;
 
-    public UnknownInvocationExpr(ExprNode target, String methodName, ExprNode[] arguments) {
+    public UnknownInvocationExpr(AstNode target, String methodName, ExprNode[] arguments) {
         this.target = target;
         this.methodName = methodName;
         this.arguments = arguments;
     }
 
-    public ExprNode getTarget() {
+    public AstNode getTarget() {
         return target;
     }
 
