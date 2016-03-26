@@ -570,7 +570,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 opc 
                 ,ownerClass
                 ,method.name
-                ,getMethodDescriptor(node.getType(), method.name, AstUtil.getExprTypes(node.getArguments())), false);
+                ,getMethodDescriptor(method)
+        );
         return null;
     }
 
@@ -855,7 +856,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 INVOKESPECIAL
                 , t.getInternalName()
                 , "<init>"
-                ,getMethodDescriptor(node.getConstructor().getType(), node.getConstructor().getMethod().name, node.getConstructor().getArgumentTypes())
+                ,getMethodDescriptor(node.getConstructor().getMethod())
                 //,getTypeDescriptor(
                 //        AstUtil.getExprTypes(node.constructor.arguments))
                 , false);
