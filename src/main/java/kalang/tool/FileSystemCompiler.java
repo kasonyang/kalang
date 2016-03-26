@@ -13,6 +13,7 @@ import kalang.compiler.Ast2Java;
 import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
+import kalang.compiler.CompileConfiguration;
 import kalang.compiler.CompileError;
 import kalang.compiler.CompileErrorHandler;
 import kalang.compiler.DefaultCompileConfiguration;
@@ -55,11 +56,15 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
             Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    protected KalangCompiler createKalangCompiler(CompileConfiguration config){
+        return new KalangCompiler(config);
+    }
 
     public void compile() throws IOException {
         URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
         JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
-        kalangCompiler = new KalangCompiler(new DefaultCompileConfiguration(){
+        kalangCompiler = createKalangCompiler(new DefaultCompileConfiguration(){
             @Override
             public AstLoader getAstLoader() {
                 return astLoader;
@@ -72,7 +77,6 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
             
         });
         kalangCompiler.setCompileErrorHandler(this);
-        //kalangCompiler.setCodeGenerator(codeGenerator);
         for (String srcName : sourceFiles.keySet()) {
             File f = sourceFiles.get(srcName);
             kalangCompiler.addSource(srcName, FileUtils.readFileToString(f));
