@@ -9,7 +9,7 @@ import kalang.core.*;
  * BinaryExpr presents a binary operation, such as add,sub,multiply and so on
  * @author Kason Yang <i@kasonyang.com>
  */
-public class BinaryExpr extends ExprNode{
+public abstract class BinaryExpr extends ExprNode{
     
     public static final String
             //Math
@@ -57,11 +57,6 @@ public class BinaryExpr extends ExprNode{
         addChild(ls, getExpr1());
         addChild(ls, getExpr2());
         return ls;
-    }
-
-    @Override
-    public Type getType() {
-        return getType(getExpr1());
     }
 
     /**

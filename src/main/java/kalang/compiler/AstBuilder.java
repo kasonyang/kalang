@@ -83,10 +83,13 @@ import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.ClassReference;
+import kalang.ast.CompareExpr;
 import kalang.ast.ErrorousExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
+import kalang.ast.LogicExpr;
+import kalang.ast.MathExpr;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ObjectInvokeExpr;
@@ -423,7 +426,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Token op = ctx.op;
         if (op != null) {
             String opStr = op.getText();
-            BinaryExpr be = new BinaryExpr(to, cond, opStr);
+            BinaryExpr be = createBinaryExpr(to, cond, opStr);
             cond = be;
         }
         AssignExpr as = new AssignExpr(to, from);
@@ -746,6 +749,23 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode ie = getImplicitInvokeExpr(methodName,args,ctx);
         return ie;
     }
+    
+    private BinaryExpr createBinaryExpr(ExprNode expr1,ExprNode expr2,String op){
+        switch(op){
+            case "==":
+            case "!=":
+            case ">":
+            case ">=":
+            case "<":
+            case "<=":
+                return new CompareExpr(expr1, expr2, op);
+            case "&&":
+            case "||":
+                return new LogicExpr(expr1, expr2, op);
+            default:
+                return new MathExpr(expr1, expr2, op);
+        }
+    }
 
     @Override
     public AssignExpr visitExprAssign(ExprAssignContext ctx) {
@@ -754,7 +774,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode from = visitExpression(ctx.expression(1));
         if (assignOp.length() > 1) {
             String op = assignOp.substring(0, assignOp.length() - 1);
-            from = new BinaryExpr(to, from, op);
+            from = createBinaryExpr(to, from, op);
         }
         ExprNode fromExpr = (ExprNode) from;
         AssignableExpr toExpr = null;
@@ -779,7 +799,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         boolean isPrimitive2 = (type2 instanceof PrimitiveType);
         ExprNode expr;
         if(isPrimitive1 && isPrimitive2){
-            BinaryExpr be = new BinaryExpr(expr1,expr2,op);
+            BinaryExpr be = createBinaryExpr(expr1,expr2,op);
             expr = be;
         }else if(Types.isNumber(type1) && Types.isNumber(type2)){
             PrimitiveType t = SemanticAnalyzer.getMathType(type1, type2, op);
@@ -788,8 +808,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if(expr1==null || expr2 == null){
                 throw new UnknownError("cast fail");
             }
-            expr = new BinaryExpr(expr1, expr2, op);
-        }else{
+            expr = createBinaryExpr(expr1, expr2, op);
+        }else if(op.equals("==") || op.equals("!=")){
+            expr = createBinaryExpr(expr1, expr2, op);
+        }else if(op.equals("+")){
             if(!Types.STRING_CLASS_TYPE.equals(type1)){
                 expr1 = checkBox(expr1,expr1.getType(),Types.STRING_CLASS_TYPE,ctx.expression(0).getStart());
             }
@@ -803,6 +825,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 throw new RuntimeException(ex);
             }
             expr = ie;
+        }else{
+            throw new UnknownError("unknown binary expression");
         }
         mapAst(expr, ctx);
         return expr;

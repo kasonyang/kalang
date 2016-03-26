@@ -42,6 +42,7 @@ import kalang.ast.ExprNode;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
+import kalang.ast.MathExpr;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ObjectInvokeExpr;
@@ -285,7 +286,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 }else if(T_D==t){
                     md.visitInsn(DCMPL);
                 }else{
-                    throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
+                    if(T_A==t && op.equals("==")){
+                        md.visitJumpInsn(IF_ACMPEQ,trueLabel);
+                        md.visitJumpInsn(GOTO, falseLabel);
+                    }else if(T_A==t && op.equals("!=")){
+                        md.visitJumpInsn(IF_ACMPNE,trueLabel);
+                        md.visitJumpInsn(GOTO, falseLabel);
+                    }else{
+                        throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
+                    }
                 }
                 int opc = -1;
                 switch(op){
@@ -498,7 +507,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitConstExpr(ConstExpr node) {
-        md.visitLdcInsn(node.getValue());
+        Object v = node.getValue();
+        if(v==null){
+            md.visitInsn(ACONST_NULL);
+        }else{
+            md.visitLdcInsn(node.getValue());
+        }
         return null;
     }
 
@@ -862,7 +876,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         Type exprType = node.getExpr().getType();
         ConstExpr ce = getConstX(exprType, node.isIsDesc() ? -1 : 1);
-        BinaryExpr be = new BinaryExpr(node.getExpr(),ce, "+");
+        BinaryExpr be = new MathExpr(node.getExpr(),ce, "+");
         AssignExpr addOne = new AssignExpr(node.getExpr(),be);
         visit(addOne);
         pop(exprType);

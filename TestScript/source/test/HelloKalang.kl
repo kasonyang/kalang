@@ -3,6 +3,14 @@ class{
     int fieldTest(){
         return f;
     }
+    int nullTest(){
+        String s = null;
+        if(s==null){
+            s = "test";
+        }
+        if(s!=null) return 6;
+        else return 1;
+    }
     int test(){
         return 6;
     }

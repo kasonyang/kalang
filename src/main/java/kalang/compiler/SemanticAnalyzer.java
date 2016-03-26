@@ -159,7 +159,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public Type visit(AstNode node) {
         if(node==null) return null;
         if (node instanceof Statement && returned) {
-            err.fail("unabled to reach statement", AstSemanticError.LACKS_OF_STATEMENT, node);
+            err.fail("unable to reach statement", AstSemanticError.LACKS_OF_STATEMENT, node);
             return null;
         }
         Object ret = super.visit(node);
@@ -225,6 +225,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         Type t;
         switch (op) {
             case "==":
+            case "!=":
                 if (Types.isNumber(t1)) {
                     if (!Types.isNumber(t2)) {
                         err.failedToCast(node, t2.getName(), Types.INT_CLASS_TYPE.getName());
@@ -400,7 +401,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitIfStmt(IfStmt node) {
-        if(!requireBoolean(node, visit(node.getConditionExpr()))) return getDefaultType();
+        if(!requireBoolean(node.getConditionExpr())) return getDefaultType();
         if (node.getTrueBody() != null) {
             visit(node.getTrueBody());
         }
@@ -489,9 +490,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return true;
     }
 
-    boolean requireBoolean(AstNode node) {
-        Type t = visit(node);
-        return requireBoolean(node, t);
+    boolean requireBoolean(ExprNode node) {
+        visit(node);
+        return requireBoolean(node, node.getType());
     }
 
     boolean requireBoolean(AstNode node, Type t) {
