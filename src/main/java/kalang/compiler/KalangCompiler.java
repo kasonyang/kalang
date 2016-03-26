@@ -22,18 +22,18 @@ public class KalangCompiler extends AstLoader {
     
     private int compilingPhase;
 
-    @Nonnull
-    private AstLoader astLoader = AstLoader.BASE_AST_LOADER;
+    //@Nonnull
+    //private AstLoader astLoader = AstLoader.BASE_AST_LOADER;
     
     private KalangCompiler myself = this;
 
-    @Nullable
-    private SourceLoader sourceLoader;
+    //@Nullable
+    //private SourceLoader sourceLoader;
     
-    private final CompileConfiguration configuration;
+    protected CompileConfiguration configuration;
     
     @Nonnull
-    private CompileErrorHandler compileErrorHandler = (e) -> {
+    protected CompileErrorHandler compileErrorHandler = (e) -> {
         reportError(e);
         compileTargetPhase = compilingPhase;
      };
@@ -44,8 +44,8 @@ public class KalangCompiler extends AstLoader {
 
     public KalangCompiler(@Nonnull CompileConfiguration configuration) {
         this.configuration = configuration;
-        this.astLoader = configuration.getAstLoader();
-        this.sourceLoader = configuration.getSourceLoader();
+        //this.astLoader = configuration.getAstLoader();
+        //this.sourceLoader = configuration.getSourceLoader();
     }
 
     /**
@@ -98,13 +98,14 @@ public class KalangCompiler extends AstLoader {
         if (compilationUnits.containsKey(className)) {
             return compilationUnits.get(className).getAst();
         }
-        if (this.sourceLoader != null) {
+        SourceLoader sourceLoader = configuration.getSourceLoader();
+        if (sourceLoader != null) {
             String source = sourceLoader.loadSource(className);
             if (source != null) {
                 return createCompilationUnit(new KalangSource(className, source)).getAst();
             }
         }
-        return astLoader.findAst(className);
+        return configuration.getAstLoader().findAst(className);
     }
 
     @Nonnull
@@ -149,16 +150,6 @@ public class KalangCompiler extends AstLoader {
         //unit.setCodeGenerator(codeGenerator);
         unit.compile(compilingPhase);
         return unit;
-    }
-
-    @Nonnull
-    public AstLoader getAstLoader() {
-        return astLoader;
-    }
-
-    @Nullable
-    public SourceLoader getSourceLoader() {
-        return sourceLoader;
     }
 
     public int getCurrentCompilePhase() {

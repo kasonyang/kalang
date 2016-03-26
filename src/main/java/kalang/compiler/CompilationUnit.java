@@ -29,8 +29,6 @@ public class CompilationUnit {
     
     private SemanticAnalyzer semanticAnalyzer;
     
-    private CodeGenerator codeGenerator;
-    
     @Nonnull
     private ClassNode ast;
     private AstLoader astLoader;
@@ -40,6 +38,7 @@ public class CompilationUnit {
     
     private CompileErrorHandler errorHandler;
     private KalangSource source;
+    private CompileConfiguration configuration;
 
     public CompilationUnit(@Nonnull KalangSource source,CompileConfiguration configuration) {
         init(source,configuration);
@@ -57,7 +56,7 @@ public class CompilationUnit {
         astBuilder.importPackage("java.util");
         ast = astBuilder.getAst();        
         semanticAnalyzer = configuration.createSemanticAnalyzer(this,astLoader);
-        codeGenerator = configuration.createCodeGenerator(this);
+        this.configuration = configuration;
     }
     
     protected void doCompilePhase(int phase){
@@ -70,6 +69,7 @@ public class CompilationUnit {
         }else if(phase==PHASE_SEMANTIC){
             semanticAnalysis(errorHandler);
         }else if(phase == PHASE_CLASSGEN){
+            CodeGenerator codeGenerator = configuration.createCodeGenerator(this);
             if(codeGenerator==null){
                 throw new IllegalStateException("CodeGenerator is missing");
             }
@@ -133,10 +133,6 @@ public class CompilationUnit {
 
     public void setErrorHandler(CompileErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
-    }
-
-    public CodeGenerator getCodeGenerator() {
-        return codeGenerator;
     }
 
     public KalangLexer getLexer() {

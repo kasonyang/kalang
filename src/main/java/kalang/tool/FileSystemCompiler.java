@@ -26,26 +26,45 @@ import org.apache.commons.io.FileUtils;
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
+public class FileSystemCompiler extends KalangCompiler implements CompileErrorHandler,CodeGenerator{
 
     private Map<String, File> sourceFiles = new HashMap<>();
 
     private List<URL> classPaths = new LinkedList<>();
 
     private File outputDir;
-    private KalangCompiler kalangCompiler;
+
+    public FileSystemCompiler() {
+        super();
+        super.configuration =  new DefaultCompileConfiguration(){
+            @Override
+            public AstLoader getAstLoader() {
+                URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
+        JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
+                return astLoader;
+            }
+
+            @Override
+            public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
+                return codeGenerator;
+            }
+            
+        };
+        super.compileErrorHandler = this;
+    }
     
     private CodeGenerator codeGenerator = this;
 
-    public void addSource(String className, File file) {
+    public void addSource(File srcDir, File file) throws IOException {
+        String className = ClassNameUtil.getClassName(srcDir, file);
         sourceFiles.put(className, file);
+        super.addSource(className, FileUtils.readFileToString(file));
     }
 
-    public void addSourceDir(File sourceDir) {
+    public void addSourceDir(File sourceDir) throws IOException {
         Collection<File> files = FileUtils.listFiles(sourceDir, new String[]{"kl"}, true);
         for (File f : files) {
-            String clsName = ClassNameUtil.getClassName(sourceDir, f);
-            addSource(clsName, f);
+            addSource(sourceDir , f);
         }
     }
 
@@ -56,32 +75,10 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
             Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    protected KalangCompiler createKalangCompiler(CompileConfiguration config){
-        return new KalangCompiler(config);
-    }
 
-    public void compile() throws IOException {
-        URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
-        JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
-        kalangCompiler = createKalangCompiler(new DefaultCompileConfiguration(){
-            @Override
-            public AstLoader getAstLoader() {
-                return astLoader;
-            }
-
-            @Override
-            public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-                return codeGenerator;
-            }
-            
-        });
-        kalangCompiler.setCompileErrorHandler(this);
-        for (String srcName : sourceFiles.keySet()) {
-            File f = sourceFiles.get(srcName);
-            kalangCompiler.addSource(srcName, FileUtils.readFileToString(f));
-        }
-        kalangCompiler.compile();
+    @Override
+    public void compile() {
+        super.compile();
     }
 
     public File getOutputDir() {
@@ -97,13 +94,9 @@ public class FileSystemCompiler implements CompileErrorHandler,CodeGenerator{
         String cname = error.getCompilationUnit().getSource().getClassName();
         File fn = sourceFiles.get(cname);
         System.err.println(fn + ":" + error);
-        kalangCompiler.setCompileTargetPhase(kalangCompiler.getCurrentCompilePhase());
+        setCompileTargetPhase(getCurrentCompilePhase());
     }
-
-    public KalangCompiler getKalangCompiler() {
-        return kalangCompiler;
-    }
-    
+      
     private String generateJavaCode(ClassNode classNode){
         Ast2Java ast2Java = new Ast2Java();
         ast2Java.generate(classNode);

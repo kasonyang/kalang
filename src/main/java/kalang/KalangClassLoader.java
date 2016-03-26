@@ -26,18 +26,18 @@ public class KalangClassLoader extends ClassLoader implements CodeGenerator{
 
     public KalangClassLoader(File sourceDir) {
         compiler = new FileSystemCompiler();
-        compiler.addSourceDir(sourceDir);
-        compiler.setCodeGenerator(this);
+        try {
+            compiler.addSourceDir(sourceDir);
+        } catch (IOException ex) {
+            Logger.getLogger(KalangClassLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         if(!initialized){
-            try {
-                compiler.compile();
-            } catch (IOException ex) {
-                Logger.getLogger(KalangClassLoader.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            compiler.setCodeGenerator(this);
+            compiler.compile();
         }
         if(loadedClasses.containsKey(name)){
             return loadedClasses.get(name);

@@ -32,7 +32,7 @@ public class Compiler {
         formatter.printHelp(APP_NAME, OPTIONS);
     }
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) throws ParseException, IOException {
         DefaultParser parser = new DefaultParser();
         CommandLine cli = parser.parse(OPTIONS, args);
         if (args.length == 0 || cli.hasOption("h")) {
@@ -65,15 +65,10 @@ public class Compiler {
             if(srcFile.isDirectory()){
                 fsc.addSourceDir(srcFile);
             }else{
-                String clsName = ClassNameUtil.getClassName(currentDir,srcFile);
-                fsc.addSource(clsName , srcFile);
+                fsc.addSource(currentDir , srcFile);
             }
         }
-        try {
-            fsc.compile();
-        } catch (IOException ex) {
-            System.err.println("IO Error:" + ex.getMessage());
-        }
+        fsc.compile();
     }
 
 }
