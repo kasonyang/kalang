@@ -56,12 +56,13 @@ public class KalangCompiler extends AstLoader {
      */
     public void addSource(String className, String source) {
         KalangSource src = new KalangSource(className, source);
-        sources.put(className, src);
-        compilationUnits.put(className, createCompilationUnit(src));
+        addSource(src);
     }
-
-    @Nonnull
-    
+    public void addSource(KalangSource source){
+        String className = source.getClassName();
+        sources.put(className, source);
+        compilationUnits.put(className, createCompilationUnit(source));
+    }
 
     protected void semanticAnalysis() {
         for (CompilationUnit cunit : compilationUnits.values()) {

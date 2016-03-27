@@ -14,6 +14,7 @@ import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.CompileConfiguration;
+import kalang.compiler.CompileConfigurationProxy;
 import kalang.compiler.CompileError;
 import kalang.compiler.CompileErrorHandler;
 import kalang.compiler.DefaultCompileConfiguration;
@@ -35,12 +36,16 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
     private File outputDir;
 
     public FileSystemCompiler() {
+        this(new DefaultCompileConfiguration());
+    }
+
+    public FileSystemCompiler(CompileConfiguration config) {
         super();
-        super.configuration =  new DefaultCompileConfiguration(){
+        super.configuration =  new CompileConfigurationProxy(config){
             @Override
             public AstLoader getAstLoader() {
                 URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
-        JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
+                JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
                 return astLoader;
             }
 
