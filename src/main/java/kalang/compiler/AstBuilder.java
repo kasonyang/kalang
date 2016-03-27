@@ -992,7 +992,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             paths.add(classPath);
             paths.addAll(importPaths);
             for (String p : paths) {
-                String clsName = p + "." + id;
+                String clsName;
+                if(p!=null && p.length()>0){
+                    clsName = p + "." + id;
+                }else{
+                    clsName = id;
+                }
                 ClassNode cls = astLoader.getAst(clsName);
                 if (cls != null) {
                     return clsName;
