@@ -72,7 +72,7 @@ public class AstLoader {
         }
     }
 
-    //TODO should be removed?
+    //TODO should  createArrayAst be removed?
     private ClassNode createArrayAst(ClassNode ast) {
         ClassNode clazz = ClassNode.create();
         FieldNode field = clazz.createField();
