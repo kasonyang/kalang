@@ -7,6 +7,7 @@ import java.util.*;
 import kalang.compiler.MethodNotFoundException;
 import kalang.core.ClassType;
 import kalang.core.Type;
+import kalang.util.AstUtil;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -17,6 +18,10 @@ public class ObjectInvokeExpr extends InvocationExpr{
         ClassType targetType = (ClassType) target.getType();
         ClassNode clazz = targetType.getClassNode();
         MethodSelection ms = applyMethod(clazz, methodName, args);
+        MethodNode md = ms.selectedMethod;
+        if(AstUtil.isStatic(md.modifier)){
+            throw new MethodNotFoundException(methodName + " is static");
+        }
         return new ObjectInvokeExpr(target,ms.selectedMethod ,ms.appliedArguments);
     }
 
@@ -26,6 +31,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
 
     public ObjectInvokeExpr(ExprNode invokeTarget, MethodNode method, ExprNode[] args) {
         super(method, args);
+        //TODO check non-static
         this.invokeTarget = invokeTarget;
     }
 

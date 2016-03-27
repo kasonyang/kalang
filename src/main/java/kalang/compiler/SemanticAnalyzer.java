@@ -37,6 +37,7 @@ import kalang.ast.VarObject;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.ClassReference;
 import kalang.ast.ErrorousExpr;
@@ -108,6 +109,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
      * @param node
      * @return the assignable expression when assignable ,or null
      */
+    @Nullable
     private ExprNode checkAssign(ExprNode expr, Type from, Type to, AstNode node) {
         expr = BoxUtil.assign(expr, from, to);
         if (expr == null) {
@@ -117,6 +119,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return expr;
     }
 
+    @Nullable
     public ClassNode loadAst(String name, AstNode node) {
         ClassNode ast = this.astLoader.getAst(name);
         if (ast == null) {
@@ -141,9 +144,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         this.clazz = clz;
         visit(clazz);
         if (clazz.interfaces.size() > 0) {
-            for (ClassNode itf : clazz.interfaces) {
-                //assert itf != null;
-                ClassNode itfNode = itf;
+            for (ClassNode itfNode : clazz.interfaces) {
                 if (itfNode == null) {
                     continue;
                 }
@@ -179,7 +180,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 ){
             err.failedToCast(node, et.getName(), node.getToType().getName());
         }
-        return node.getToType();
+        return null;
     }
 
     @Override
@@ -196,6 +197,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return tt;
     }
     
+    @Nullable
     public static PrimitiveType getPrimitiveType(Type t){
         if(t instanceof PrimitiveType){
             return (PrimitiveType) t;
@@ -285,29 +287,29 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitElementExpr(ElementExpr node) {
-        Type type = visit(node.getArrayExpr());
-        if(!requireArray(node, type)) return getDefaultType();
-        return type.getComponentType();
+        super.visitElementExpr(node);
+        requireArray(node, node.getArrayExpr().getType());
+        return null;
     }
 
-    @Override
-    public Type visitFieldExpr(FieldExpr node) {
-        super.visitFieldExpr(node);
-        FieldNode field = node.getField();
-        if (isStatic(method.modifier)) {
-            if(!requireStatic(field.modifier, node)) return getDefaultType();
-        }
-        return field.type;
-    }
+//    @Override
+//    public Type visitFieldExpr(FieldExpr node) {
+//        super.visitFieldExpr(node);
+//        if (isStatic(method.modifier)) {
+//            FieldNode field = node.getField();
+//            requireStatic(field.modifier, node);
+//        }
+//        return null;
+//    }
 
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
         super.visitInvocationExpr(node);
-        MethodNode invokeMethod = node.getMethod();
-        boolean inStaticMethod = Modifier.isStatic(node.getMethod().modifier) && Modifier.isStatic(this.method.modifier);
-        if (inStaticMethod) {
-            if(!requireStatic(invokeMethod.modifier, node)) return getDefaultType();
-        }
+       MethodNode invokeMethod = node.getMethod();
+//        boolean inStaticMethod = Modifier.isStatic(node.getMethod().modifier) && Modifier.isStatic(this.method.modifier);
+//        if (inStaticMethod) {
+//            if(!requireStatic(invokeMethod.modifier, node)) return getDefaultType();
+//        }
         for(Type et:invokeMethod.exceptionTypes){
             this.exceptionStack.peek().put(et,node);
         }
@@ -454,16 +456,10 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         for(Type k:uncaught.keySet()){
             err.uncaughtException(uncaught.get(k),k.getName());
         }
-        boolean needReturn;
-//        if(isSpecialMethod(node)){
-//            needReturn = isSpecialMethodNeedReturn(node);
-//        }else{
-            needReturn = (
-                    node.type != null
-                    && !node.type.equals(Types.VOID_TYPE)
-                    );
-//        }
-       
+        boolean needReturn = (
+            node.type != null
+            && !node.type.equals(Types.VOID_TYPE)
+        );
         if (node.body != null && needReturn && !returned) {
             err.fail("Missing return statement in method:" + mStr, AstSemanticError.LACKS_OF_STATEMENT, node);
         }
@@ -583,7 +579,5 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         err.fail("not an expression",0, node);
         return null;
     }
-    
-    
 
 }

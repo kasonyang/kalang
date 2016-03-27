@@ -20,6 +20,7 @@ public class ObjectFieldExpr extends FieldExpr{
 
     public ObjectFieldExpr(ExprNode target, FieldNode field) {
         super(field);
+        //TODO check non-static
         this.target = target;
     }
     
@@ -40,6 +41,9 @@ public class ObjectFieldExpr extends FieldExpr{
         ClassType classType = (ClassType) type;
         ClassNode clazz = classType.getClassNode();
         FieldNode field = getField(clazz, fieldName);
+        if(AstUtil.isStatic(field.modifier)){
+            throw new FieldNotFoundException(fieldName + " is static");
+        }
         return new ObjectFieldExpr(target,field);
     }
 
