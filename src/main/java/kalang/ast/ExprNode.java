@@ -16,6 +16,7 @@ public abstract class ExprNode extends AstNode{
     /**
      * @return the type
      */
+    @Nonnull
     public abstract Type getType();
     
     protected static Type getType(ExprNode expr){

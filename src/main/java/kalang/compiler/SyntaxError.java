@@ -15,20 +15,26 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class SyntaxError extends CompileError{
 
     private final ParserRuleContext rule;
-    private final Token token;
+    private final Token start;
+    private final Token stop;
 
-    public SyntaxError(String description, CompilationUnit source,ParserRuleContext rule,Token token) {
-        super(description, source,OffsetRangeHelper.getOffsetRange(token));
+    public SyntaxError(String description, CompilationUnit source,ParserRuleContext rule,Token start,Token stop) {
+        super(description, source,OffsetRangeHelper.getOffsetRange(start,stop));
         this.rule = rule;
-        this.token = token;
+        this.start = start;
+        this.stop = stop;
     }
 
     public ParserRuleContext getRule() {
         return rule;
     }
 
-    public Token getToken() {
-        return token;
+    public Token getStart() {
+        return start;
+    }
+
+    public Token getStop() {
+        return stop;
     }
 
 }

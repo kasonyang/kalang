@@ -32,7 +32,7 @@ public class ErrorTest {
             kc.setCompileTargetPhase(CompilePhase.PHASE_SEMANTIC);
         }else if(e instanceof SyntaxError){
             SyntaxError error = (SyntaxError) e;
-            String errorToken =  error.getToken().getText();
+            String errorToken =  error.getStart().getText();
             System.err.println("syntax error on token:" + errorToken);
         }else{
             System.err.println(e.getDescription());

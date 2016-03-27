@@ -12,36 +12,16 @@ public class ElementExpr extends AssignableExpr{
     
     protected ExprNode index;
     
-    
-    public ElementExpr(){
-        
-    }
-    
-    
     public ElementExpr(ExprNode target,ExprNode key){
-        
-        
             this.arrayExpr = target;
-        
             this.index = key;
-        
     }
     
-    
-    public static ElementExpr create(){
-        ElementExpr node = new ElementExpr();
-        
-        return node;
-    }
-    
-    
+    @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
-        addChild(ls, getArrayExpr());
-        
-        addChild(ls, getIndex());
-        
+        addChild(ls, arrayExpr);
+        addChild(ls, index);
         return ls;
     }
 

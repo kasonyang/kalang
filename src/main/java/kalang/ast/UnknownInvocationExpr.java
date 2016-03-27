@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.core.Type;
 import kalang.core.Types;
 /**
@@ -18,12 +19,13 @@ public class UnknownInvocationExpr extends ExprNode{
     
     private ExprNode[] arguments;
 
-    public UnknownInvocationExpr(AstNode target, String methodName, ExprNode[] arguments) {
+    public UnknownInvocationExpr(@Nullable AstNode target, String methodName, ExprNode[] arguments) {
         this.target = target;
         this.methodName = methodName;
         this.arguments = arguments;
     }
 
+    @Nullable
     public AstNode getTarget() {
         return target;
     }

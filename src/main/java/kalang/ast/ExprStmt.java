@@ -8,44 +8,17 @@ public class ExprStmt extends Statement{
     
     protected ExprNode expr;
     
-    
-    public ExprStmt(){
-        
-    }
-    
-    
     public ExprStmt(ExprNode expr){
-        
-        
             this.expr = expr;
-        
     }
     
-    
-    public static ExprStmt create(){
-        ExprStmt node = new ExprStmt();
-        
-        return node;
-    }
-    
+    @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls, getExpr());
-        
         return ls;
     }
     
-    public String toString(){
-        String str = "ExprStmt{\r\n";
-        
-        if(getExpr()!=null){
-            str += "  expr:" + getExpr().toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
-
     /**
      * @return the expr
      */
