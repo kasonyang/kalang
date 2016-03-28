@@ -154,6 +154,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             interfaces = internalName(node.interfaces.toArray(new ClassNode[0]));
         }
         classWriter.visit(V1_5, access,internalName(node.name), sign, internalName(parentName),interfaces);
+        //TODO set source file of ClassNode
+        classWriter.visitSource(node.name + ".kl", null);
         visitChildren(node);
         classWriter.visitEnd();
         return null;
@@ -169,6 +171,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             varIdCounter = 1;
         }
         BlockStmt body = node.body;
+        visitAll(node.parameters);
         if(body!=null){
             if(AstUtil.isConstructor(node)){//constructor
                 int stmtsSize = body.statements.size();
@@ -189,7 +192,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     visit(body.statements.get(i));
                 }
             }else{
-                visitChildren(node);
+                visitAll(body.statements);
             }
             if(node.type.equals(VOID_TYPE)){
                 md.visitInsn(RETURN);
