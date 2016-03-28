@@ -87,6 +87,7 @@ import kalang.ast.CompareExpr;
 import kalang.ast.ErrorousExpr;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
+import kalang.ast.InstanceOfExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.LogicExpr;
 import kalang.ast.MathExpr;
@@ -1357,6 +1358,21 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public Object visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx) {
         reportSyntaxError("identifier excepted", ctx, ctx.stop , ctx.stop);
         return null;
+    }
+
+    @Override
+    public Object visitExprInstanceOf(KalangParser.ExprInstanceOfContext ctx) {
+        ExprNode expr = visitExpression(ctx.expression());
+        Token ts = ctx.Identifier().getSymbol();
+        AstNode tnode = getNodeById(ts.getText(), ts);
+        if(tnode instanceof ClassReference){
+            InstanceOfExpr ie = new InstanceOfExpr(expr, (ClassReference)tnode);
+            mapAst(ie, ctx);
+            return ie;
+        }else{
+            reportError("unsupported type", ts);
+            return null;
+        }
     }
 
 }

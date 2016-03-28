@@ -250,6 +250,13 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExprLiteral(KalangParser.ExprLiteralContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code exprInstanceOf}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprInstanceOf(KalangParser.ExprInstanceOfContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code exprParen}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree

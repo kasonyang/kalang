@@ -1,6 +1,8 @@
 package kalang.ast;
 public interface IAstVisitor<T>{
     
+    public T visitInstanceOfExpr(InstanceOfExpr node);
+    
     public T visitErrorousExpr(ErrorousExpr node);
     
     public T visitSuperExpr(SuperExpr node);

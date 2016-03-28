@@ -472,6 +472,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterExprInstanceOf(KalangParser.ExprInstanceOfContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExprInstanceOf(KalangParser.ExprInstanceOfContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprParen(KalangParser.ExprParenContext ctx) { }
 	/**
 	 * {@inheritDoc}

@@ -202,7 +202,7 @@ expression
     |   expression ('+'|'-') expression #exprMidOp
     |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression #exprMidOp
     |   expression ('<=' | '>=' | '>' | '<') expression #exprMidOp
-    //|   expression INSTANCEOF type
+    |   expression INSTANCEOF Identifier  #exprInstanceOf
     |   expression ('=='|'!=') expression #exprMidOp
     |   expression '&' expression #exprMidOp
     |   expression '^' expression #exprMidOp
