@@ -156,6 +156,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         //TODO set source file of ClassNode
         classWriter.visitSource(node.name + ".kl", null);
         visitChildren(node);
+        //init static fields
+        md = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+        for(FieldNode f:node.fields){
+            if(AstUtil.isStatic(f.modifier)){
+                assignField(f,null,f.initExpr);
+            }
+        }
+        md.visitInsn(RETURN);
+        md.visitMaxs(1, 1);
         classWriter.visitEnd();
         return null;
     }
@@ -429,17 +438,26 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitVarInsn(type.getOpcode(ISTORE), vid);
     }
     
-    private void assignField(FieldExpr fieldExpr,ExprNode expr){
+    private void assignField(FieldNode fn,ExprNode target,ExprNode expr){
         int opc = PUTFIELD;
-        FieldNode fn = fieldExpr.getField();
-        if (fieldExpr instanceof StaticFieldExpr) {
+        if (AstUtil.isStatic(fn.modifier)) {
             opc = PUTSTATIC;
         } else {
-            visit(((ObjectFieldExpr) fieldExpr).getTarget());
+            visit(target);
         }
         visit(expr);
         md.visitFieldInsn(opc,
                 asmType(Types.getClassType(fn.classNode)).getInternalName(), fn.name, getTypeDescriptor(fn.type));
+    }
+    
+    private void assignField(FieldExpr fieldExpr,ExprNode expr){
+        if(fieldExpr instanceof StaticFieldExpr){
+            assignField(fieldExpr.getField(), null, expr);
+        }else if(fieldExpr instanceof ObjectFieldExpr){
+            assignField(fieldExpr.getField(), ((ObjectFieldExpr) fieldExpr).getTarget(), expr);
+        }else{
+            throw new UnsupportedOperationException();
+        }
     }
     
     private void assign(ExprNode to,ExprNode from){
@@ -829,8 +847,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitFieldNode(FieldNode fieldNode) {
-        //TODO initialize static field
-        classWriter.visitField(0, fieldNode.name, getTypeDescriptor(fieldNode.type), null, null);
+        classWriter.visitField(fieldNode.modifier, fieldNode.name, getTypeDescriptor(fieldNode.type), null, null);
         return null;
     }
 

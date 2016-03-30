@@ -1,7 +1,11 @@
 class{
     int f = 6;
+    static int  sf = 6;
     int fieldTest(){
         return f;
+    }
+    int fieldStaticTest(){
+        return sf;
     }
     int nullTest(){
         String s = null;
