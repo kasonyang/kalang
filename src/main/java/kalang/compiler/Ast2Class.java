@@ -38,12 +38,14 @@ import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.AstNode;
 import kalang.ast.ClassReference;
+import kalang.ast.CompareExpr;
 import kalang.ast.ErrorousExpr;
 import kalang.ast.ExprNode;
 import kalang.ast.FieldNode;
 import kalang.ast.IncrementExpr;
 import kalang.ast.InstanceOfExpr;
 import kalang.ast.LocalVarNode;
+import kalang.ast.LogicExpr;
 import kalang.ast.MathExpr;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ObjectFieldExpr;
@@ -258,70 +260,34 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
     
-    private void doIfBinaryInsn(ExprNode expr1,ExprNode expr2,String op,Label trueLabel,Label falseLabel){
-        if(op.equals("&&")){
-            visit(expr1);
-            md.visitJumpInsn(IFEQ, falseLabel);
-            visit(expr2);
-            md.visitJumpInsn(IFEQ, falseLabel);
-            md.visitJumpInsn(GOTO, trueLabel);
-        }else if(op.equals("||")){
-            visit(expr1);
-            md.visitJumpInsn(IFNE,trueLabel);
-            visit(expr2);
-            md.visitJumpInsn(IFNE, trueLabel);
-            md.visitJumpInsn(GOTO, falseLabel);
-        }else{
-            Type type = expr1.getType();
-            visit(expr1);
-            visit(expr2);
-            int t = getT(type);
-            if(T_I == t){
-                int opc = -1;
-                switch(op){
-                    case "==" : opc =IF_ICMPEQ;break;
-                    case ">"    : opc = IF_ICMPGT;break;
-                    case ">=" : opc = IF_ICMPGE;break;
-                    case "<"   : opc = IF_ICMPLT;break;
-                    case "<=" : opc = IF_ICMPLE;break;
-                    case "!=" : opc = IF_ICMPNE;break;
-                    default:
-                        throw  new UnsupportedOperationException("Unsupported operation:" + op);
-                }
-                md.visitJumpInsn(opc, trueLabel);
-                md.visitJumpInsn(GOTO,falseLabel);
-            }else{//type is not int
-                if(T_L==t){
-                    md.visitInsn(LCMP);
-                }else if(T_F==t){
-                    md.visitInsn(FCMPL);
-                }else if(T_D==t){
-                    md.visitInsn(DCMPL);
-                }else{
-                    if(T_A==t && op.equals("==")){
-                        md.visitJumpInsn(IF_ACMPEQ,trueLabel);
-                        md.visitJumpInsn(GOTO, falseLabel);
-                    }else if(T_A==t && op.equals("!=")){
-                        md.visitJumpInsn(IF_ACMPNE,trueLabel);
-                        md.visitJumpInsn(GOTO, falseLabel);
-                    }else{
-                        throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
-                    }
-                }
-                int opc = -1;
-                switch(op){
-                    case "==" : opc =IFEQ;break;
-                    case ">"    : opc = IFGT;break;
-                    case ">=" : opc = IFGE;break;
-                    case "<"   : opc = IFLT;break;
-                    case "<=" : opc = IFLE;break;
-                    case "!=" : opc = IFNE;break;
-                    default:
-                        throw  new UnsupportedOperationException("Unsupported operation:" + op);
-                }
-                md.visitJumpInsn(opc, trueLabel);
-                md.visitJumpInsn(GOTO,falseLabel);
+    private void ifExpr(ExprNode condition,Label label){
+        if(condition instanceof LogicExpr){
+            LogicExpr be = (LogicExpr) condition;
+            ExprNode e1 = be.getExpr1();
+            ExprNode e2 = be.getExpr2();
+            String op = be.getOperation();
+            switch(op){
+                case "&&":
+                        Label nextLabel = new Label();
+                        Label stopLabel = new Label();
+                        ifExpr( e1 ,nextLabel);
+                        md.visitJumpInsn(GOTO, stopLabel);
+                        md.visitLabel(nextLabel);
+                        ifExpr(e2 , label);
+                        md.visitLabel(stopLabel);
+                    break;
+                case "||":
+                        ifExpr(e1, label);
+                        ifExpr(e2, label);
+                    break;
+                default:
+                    throw  new UnsupportedOperationException("Unsupported operation:" + op);
             }
+        }else if(condition instanceof CompareExpr){
+            ifCompare(((CompareExpr) condition).getExpr1(), ((CompareExpr) condition).getExpr2(), ((CompareExpr) condition).getOperation(), label);
+        }else{
+            visit(condition);
+            md.visitJumpInsn(IFNE, label);
         }
     }
 
@@ -333,19 +299,17 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         ExprNode condition = node.getConditionExpr();
         Statement trueBody = node.getTrueBody();
         Statement falseBody = node.getFalseBody();    
-        if(condition instanceof BinaryExpr){
-            BinaryExpr binCondition = (BinaryExpr) condition;
-            doIfBinaryInsn(binCondition.getExpr1(), binCondition.getExpr2(), binCondition.getOperation(), trueLabel, falseLabel);         }else{
-            visit(condition);
-            md.visitJumpInsn(IFEQ, falseLabel);
-        }
+        ifExpr(condition, trueLabel);
+        md.visitJumpInsn(GOTO, falseLabel);
         md.visitLabel(trueLabel);
         if(trueBody!=null){
             visit(trueBody);
         }
-        md.visitJumpInsn(GOTO, stopLabel);
-        md.visitLabel(falseLabel);
-        if(falseBody!=null){
+        if(falseBody==null){
+            md.visitLabel(falseLabel);
+        }else{
+            md.visitJumpInsn(GOTO, stopLabel);
+            md.visitLabel(falseLabel);
             visit(falseBody);
         }
         md.visitLabel(stopLabel);
@@ -508,14 +472,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             case BinaryExpr.OP_SHIFT_RIGHT:op = ISHR;break;
             default://logic expression
                 Label trueLabel = new Label();
-                Label falseLabel = new Label();
                 Label stopLabel = new Label();
-                doIfBinaryInsn(e1, e2,node.getOperation(), trueLabel, falseLabel);
+                ifExpr(node, trueLabel);
+                constFalse();
+                md.visitJumpInsn(GOTO, stopLabel);
                 md.visitLabel(trueLabel);
                 constTrue();
-                md.visitJumpInsn(GOTO, stopLabel);
-                md.visitLabel(falseLabel);
-                constFalse();
                 md.visitLabel(stopLabel);
                 return null;
         }
@@ -982,6 +944,57 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         visit(node.getExpr());
         md.visitTypeInsn(INSTANCEOF, internalName(node.getTarget().getReferencedClassNode()));
         return null;
+    }
+
+    private void ifCompare(ExprNode expr1, ExprNode expr2, String op, Label label) {
+        Type type = expr1.getType();
+        visit(expr1);
+        visit(expr2);
+        int t = getT(type);
+        if(T_I == t){
+            int opc = -1;
+            switch(op){
+                case "==" : opc =IF_ICMPEQ;break;
+                case ">"    : opc = IF_ICMPGT;break;
+                case ">=" : opc = IF_ICMPGE;break;
+                case "<"   : opc = IF_ICMPLT;break;
+                case "<=" : opc = IF_ICMPLE;break;
+                case "!=" : opc = IF_ICMPNE;break;
+                default:
+                    throw  new UnsupportedOperationException("Unsupported operation:" + op);
+            }
+            md.visitJumpInsn(opc, label);
+        }else if(T_A==t){//object type
+             if(op.equals("==")){
+                    md.visitJumpInsn(IF_ACMPEQ,label);
+            }else if(op.equals("!=")){
+                md.visitJumpInsn(IF_ACMPNE,label);
+            }else{
+                throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
+            }
+        }else{//type is not int,not object            
+            if(T_L==t){
+                md.visitInsn(LCMP);
+            }else if(T_F==t){
+                md.visitInsn(FCMPL);
+            }else if(T_D==t){
+                md.visitInsn(DCMPL);
+            }else{
+               throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
+            }
+            int opc = -1;
+            switch(op){
+                case "==" : opc =IFEQ;break;
+                case ">"    : opc = IFGT;break;
+                case ">=" : opc = IFGE;break;
+                case "<"   : opc = IFLT;break;
+                case "<=" : opc = IFLE;break;
+                case "!=" : opc = IFNE;break;
+                default:
+                    throw  new UnsupportedOperationException("Unsupported operation:" + op);
+            }
+            md.visitJumpInsn(opc, label);
+        }
     }
 
 }
