@@ -36,6 +36,7 @@ import java.util.*;
 import javax.annotation.Nonnull;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
+import kalang.ast.AstNode;
 import kalang.ast.ClassReference;
 import kalang.ast.ErrorousExpr;
 import kalang.ast.ExprNode;
@@ -77,6 +78,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     private ClassWriter classWriter;
     private MethodVisitor md;
+    
+    private Map<Integer,Label> lineLabels = new HashMap();
     
     private Map<VarObject,Integer> varIds = new HashMap<>();
     
@@ -917,6 +920,19 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     private void constX(Type type,int i) {
         constX(getConstX(type, i).getValue());
+    }
+
+    @Override
+    public Object visit(AstNode node) {
+        //TODO process  invalid line number
+        int lineNum = node.offset.startLine;
+        if(node instanceof Statement &&  !lineLabels.containsKey(lineNum)){
+            Label lb = new Label();
+            md.visitLabel(lb);
+            md.visitLineNumber(lineNum, lb);
+            lineLabels.put(lineNum, lb);
+        }
+        return super.visit(node);
     }
 
     @Override
