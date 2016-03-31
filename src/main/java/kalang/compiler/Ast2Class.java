@@ -894,7 +894,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visit(AstNode node) {
-        //TODO process  invalid line number
         int lineNum = node.offset.startLine;
         if(lineNum>0 && (node instanceof Statement || node instanceof ExprNode) &&  !lineLabels.containsKey(lineNum)){
             Label lb = new Label();
