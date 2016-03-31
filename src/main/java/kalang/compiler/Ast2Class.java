@@ -296,6 +296,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }
         }else if(condition instanceof CompareExpr){
             ifCompare(jumpOnTrue,((CompareExpr) condition).getExpr1(), ((CompareExpr) condition).getExpr2(), ((CompareExpr) condition).getOperation(), label);
+        }else if(condition instanceof UnaryExpr && ((UnaryExpr)condition).getOperation().equals("!")){
+            ifExpr(!jumpOnTrue, ((UnaryExpr)condition).getExpr(), label);
         }else{
             visit(condition);
             md.visitJumpInsn(jumpOnTrue ? IFNE : IFEQ, label);
