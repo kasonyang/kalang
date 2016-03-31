@@ -97,6 +97,7 @@ import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.StaticFieldExpr;
 import kalang.ast.StaticInvokeExpr;
+import kalang.ast.SuperExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
@@ -1272,7 +1273,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitExprSelfRef(ExprSelfRefContext ctx) {
-        ThisExpr expr = new ThisExpr(Types.getClassType(classAst));
+        String key = ctx.ref.getText();
+        AstNode expr;
+        if(key.equals("this")){
+            expr = new ThisExpr(Types.getClassType(classAst));
+        }else if(key.equals("super")){
+            expr = new SuperExpr(classAst);
+        }else{
+            throw new UnknownError();
+        }
         mapAst(expr, ctx);
         return expr;
     }

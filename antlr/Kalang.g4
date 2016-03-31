@@ -177,7 +177,6 @@ expression
         expression 
         RPAREN #exprParen
     |   ref=('this'|'super') #exprSelfRef
-    //|   'super'
     |   literal #exprLiteral
     | map #mapExpr
     | listOrArray # listOrArrayExpr
