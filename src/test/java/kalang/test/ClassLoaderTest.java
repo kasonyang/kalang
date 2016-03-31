@@ -32,7 +32,7 @@ public class ClassLoaderTest {
                 ex.printStackTrace();
                 continue;
             }
-            assertEquals(6, ret);
+            assertEquals("result of method["+m.getName() + "] should be 6",6, ret);
         }
         //Method md = hwCls.getMethod("test", null);
         //Object ret = md.invoke(null, null);

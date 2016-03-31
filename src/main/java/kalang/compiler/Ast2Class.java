@@ -260,7 +260,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
     
-    private void ifExpr(ExprNode condition,Label label){
+    private void ifExpr(boolean jumpOnTrue,ExprNode condition,Label label){
         if(condition instanceof LogicExpr){
             LogicExpr be = (LogicExpr) condition;
             ExprNode e1 = be.getExpr1();
@@ -268,40 +268,48 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             String op = be.getOperation();
             switch(op){
                 case "&&":
-                        Label nextLabel = new Label();
+                    if(jumpOnTrue){
                         Label stopLabel = new Label();
-                        ifExpr( e1 ,nextLabel);
-                        md.visitJumpInsn(GOTO, stopLabel);
-                        md.visitLabel(nextLabel);
-                        ifExpr(e2 , label);
+                        ifExpr(false,e1,stopLabel);
+                        ifExpr(false,e2,stopLabel);
+                        md.visitJumpInsn(GOTO, label);
                         md.visitLabel(stopLabel);
+                    }else{
+                        ifExpr(false, e1, label);
+                        ifExpr(false, e2, label);
+                    }
                     break;
                 case "||":
-                        ifExpr(e1, label);
-                        ifExpr(e2, label);
+                    if(jumpOnTrue){
+                        ifExpr(true, e1, label);
+                        ifExpr(true, e2, label);
+                    }else{
+                        Label stopLabel = new Label();
+                        ifExpr(true, e1, stopLabel);
+                        ifExpr(true, e2, stopLabel);
+                        md.visitJumpInsn(GOTO, label);
+                        md.visitLabel(stopLabel);
+                    }
                     break;
                 default:
                     throw  new UnsupportedOperationException("Unsupported operation:" + op);
             }
         }else if(condition instanceof CompareExpr){
-            ifCompare(((CompareExpr) condition).getExpr1(), ((CompareExpr) condition).getExpr2(), ((CompareExpr) condition).getOperation(), label);
+            ifCompare(jumpOnTrue,((CompareExpr) condition).getExpr1(), ((CompareExpr) condition).getExpr2(), ((CompareExpr) condition).getOperation(), label);
         }else{
             visit(condition);
-            md.visitJumpInsn(IFNE, label);
+            md.visitJumpInsn(jumpOnTrue ? IFNE : IFEQ, label);
         }
     }
 
     @Override
     public Object visitIfStmt(IfStmt node) {
         Label stopLabel = new Label();
-        Label trueLabel = new Label();
         Label falseLabel = new Label();
         ExprNode condition = node.getConditionExpr();
         Statement trueBody = node.getTrueBody();
         Statement falseBody = node.getFalseBody();    
-        ifExpr(condition, trueLabel);
-        md.visitJumpInsn(GOTO, falseLabel);
-        md.visitLabel(trueLabel);
+        ifExpr(false,condition,falseLabel);
         if(trueBody!=null){
             visit(trueBody);
         }
@@ -321,19 +329,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         visitAll(node.initStmts);
         Label startLabel = new Label();
         Label stopLabel = new Label();
-        Label bodyLabel = new Label();
         continueLabels.push(startLabel);
         breakLabels.push(stopLabel);
         md.visitLabel(startLabel);
         if(node.preConditionExpr!=null){
-            ifExpr(node.preConditionExpr,bodyLabel);
-            md.visitJumpInsn(GOTO, stopLabel);
+            ifExpr(false,node.preConditionExpr,stopLabel);
         }
-        md.visitLabel(bodyLabel);
         visit(node.loopBody);
         if(node.postConditionExpr!=null){
-            ifExpr(node.postConditionExpr, startLabel);
-            md.visitJumpInsn(GOTO, stopLabel);
+            ifExpr(false,node.postConditionExpr,stopLabel);
         }
         md.visitJumpInsn(GOTO, startLabel);
         md.visitLabel(stopLabel);
@@ -475,7 +479,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             default://logic expression
                 Label trueLabel = new Label();
                 Label stopLabel = new Label();
-                ifExpr(node, trueLabel);
+                ifExpr(true,node, trueLabel);
                 constFalse();
                 md.visitJumpInsn(GOTO, stopLabel);
                 md.visitLabel(trueLabel);
@@ -948,7 +952,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
 
-    private void ifCompare(ExprNode expr1, ExprNode expr2, String op, Label label) {
+    private void ifCompare(boolean jumpOnTrue,ExprNode expr1, ExprNode expr2, String op, Label label) {
         Type type = expr1.getType();
         visit(expr1);
         visit(expr2);
@@ -956,21 +960,33 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if(T_I == t){
             int opc = -1;
             switch(op){
-                case "==" : opc =IF_ICMPEQ;break;
-                case ">"    : opc = IF_ICMPGT;break;
-                case ">=" : opc = IF_ICMPGE;break;
-                case "<"   : opc = IF_ICMPLT;break;
-                case "<=" : opc = IF_ICMPLE;break;
-                case "!=" : opc = IF_ICMPNE;break;
+                case "==" :
+                    opc = jumpOnTrue ? IF_ICMPEQ : IF_ICMPNE;
+                    break;
+                case ">"    : 
+                    opc =jumpOnTrue ? IF_ICMPGT : IF_ICMPLE;
+                    break;
+                case ">=" : 
+                    opc =jumpOnTrue ? IF_ICMPGE : IF_ICMPLT;
+                    break;
+                case "<"   : 
+                    opc = jumpOnTrue ? IF_ICMPLT : IF_ICMPGE;
+                    break;
+                case "<=" : 
+                    opc =jumpOnTrue ? IF_ICMPLE : IF_ICMPGT;
+                    break;
+                case "!=" : 
+                    opc = jumpOnTrue ? IF_ICMPNE : IF_ACMPEQ;
+                    break;
                 default:
                     throw  new UnsupportedOperationException("Unsupported operation:" + op);
             }
             md.visitJumpInsn(opc, label);
         }else if(T_A==t){//object type
              if(op.equals("==")){
-                    md.visitJumpInsn(IF_ACMPEQ,label);
+                md.visitJumpInsn(jumpOnTrue ? IF_ACMPEQ : IF_ACMPNE,label);
             }else if(op.equals("!=")){
-                md.visitJumpInsn(IF_ACMPNE,label);
+                md.visitJumpInsn(jumpOnTrue ? IF_ACMPNE:IF_ACMPEQ,label);
             }else{
                 throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
             }
@@ -986,12 +1002,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }
             int opc = -1;
             switch(op){
-                case "==" : opc =IFEQ;break;
-                case ">"    : opc = IFGT;break;
-                case ">=" : opc = IFGE;break;
-                case "<"   : opc = IFLT;break;
-                case "<=" : opc = IFLE;break;
-                case "!=" : opc = IFNE;break;
+                case "==" : opc =jumpOnTrue ? IFEQ : IFNE;break;
+                case ">"    : opc =jumpOnTrue ? IFGT : IFLE ;break;
+                case ">=" : opc =jumpOnTrue ? IFGE : IFLT ;break;
+                case "<"   : opc =jumpOnTrue ? IFLT:IFGE;break;
+                case "<=" : opc =jumpOnTrue ? IFLE:IFGT;break;
+                case "!=" : opc =jumpOnTrue ? IFNE:IFEQ;break;
                 default:
                     throw  new UnsupportedOperationException("Unsupported operation:" + op);
             }
