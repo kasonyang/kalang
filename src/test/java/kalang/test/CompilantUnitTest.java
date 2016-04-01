@@ -29,7 +29,7 @@ public class CompilantUnitTest {
         KalangSource source = new KalangSource("Test", "class{"
                 + "void main(){"
                 + "}"
-                + "}");
+                + "}","Test.kl");
         CompilationUnit cu = new CompilationUnit(source,new DefaultCompileConfiguration());
         cu.compile(CompilePhase.PHASE_PARSING);
         AstBuilder astBuilder = cu.getAstBuilder();

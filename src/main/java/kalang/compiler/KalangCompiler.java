@@ -53,9 +53,10 @@ public class KalangCompiler extends AstLoader {
      * 
      * @param className the name of class
      * @param source the source of class
+     * @param fileName the file name of source
      */
-    public void addSource(String className, String source) {
-        KalangSource src = new KalangSource(className, source);
+    public void addSource(String className, String source,String fileName) {
+        KalangSource src = new KalangSource(className, source,fileName);
         addSource(src);
     }
     public void addSource(KalangSource source){
@@ -101,9 +102,9 @@ public class KalangCompiler extends AstLoader {
         }
         SourceLoader sourceLoader = configuration.getSourceLoader();
         if (sourceLoader != null) {
-            String source = sourceLoader.loadSource(className);
+            KalangSource source = sourceLoader.loadSource(className);
             if (source != null) {
-                return createCompilationUnit(new KalangSource(className, source)).getAst();
+                return createCompilationUnit(source).getAst();
             }
         }
         return configuration.getAstLoader().findAst(className);

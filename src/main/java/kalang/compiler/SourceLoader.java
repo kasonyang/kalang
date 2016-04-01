@@ -9,6 +9,6 @@ import javax.annotation.Nullable;
 public interface SourceLoader {
     
     @Nullable
-    String loadSource(@Nonnull String className);
+    KalangSource loadSource(@Nonnull String className);
     
 }

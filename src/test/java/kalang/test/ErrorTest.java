@@ -56,7 +56,7 @@ public class ErrorTest {
         for(String n : name){
             File src = new File(dir,n+".kl");//.readLines().join("\r\n");
             String source = FileUtils.readFileToString(src);
-            kc.addSource(n,source);
+            kc.addSource(n,source,n+".kl");
         }
         kc.compile();
         //

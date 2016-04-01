@@ -54,7 +54,7 @@ public class DefaultCompileConfiguration implements CompileConfiguration{
     public SourceLoader getSourceLoader() {
         return new SourceLoader() {
             @Override
-            public String loadSource(String className) {
+            public KalangSource loadSource(String className) {
                 return null;
             }
         };

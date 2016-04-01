@@ -24,7 +24,7 @@ public class KalangCompilerTest {
     @Test
     public void test(){
         KalangCompiler kc = new KalangCompiler();
-        kc.addSource("Test", "class{  }");
+        kc.addSource("Test", "class{  }","Test.kl");
         kc.compile();
         CompilationUnit unit = kc.getCompilationUnit("Test");
         assert unit != null;

@@ -6,8 +6,10 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.compiler.KalangSource;
 import kalang.compiler.SourceLoader;
 import kalang.util.FilePathUtil;
+import kalang.util.KalangSourceUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
@@ -24,12 +26,12 @@ class FileSystemSourceLoader implements SourceLoader {
     }
     
     @Override
-    public String loadSource(String className) {
+    public KalangSource loadSource(String className) {
         String fn = className.replace(".", "/") + ".kl";
         File srcFile = new File(srcDir,fn);
         if(FilePathUtil.existFile(srcFile)){
             try {
-                return FileUtils.readFileToString(srcFile);
+                return KalangSourceUtil.create(srcDir,srcFile);
             } catch (IOException ex) {
                 Logger.getLogger(FileSystemSourceLoader.class.getName()).log(Level.SEVERE, null, ex);
                 return null;

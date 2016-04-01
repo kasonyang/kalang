@@ -63,7 +63,7 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
     public void addSource(File srcDir, File file) throws IOException {
         String className = ClassNameUtil.getClassName(srcDir, file);
         sourceFiles.put(className, file);
-        super.addSource(className, FileUtils.readFileToString(file));
+        super.addSource(className, FileUtils.readFileToString(file),file.getName());
     }
 
     public void addSourceDir(File sourceDir) throws IOException {
