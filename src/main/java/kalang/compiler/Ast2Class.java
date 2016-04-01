@@ -162,14 +162,20 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         classWriter.visitSource(node.name + ".kl", null);
         visitChildren(node);
         //init static fields
-        md = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+        List<FieldNode> staticFields = new LinkedList();
         for(FieldNode f:node.fields){
             if(AstUtil.isStatic(f.modifier)){
-                assignField(f,null,f.initExpr);
+                staticFields.add(f);
             }
         }
-        md.visitInsn(RETURN);
-        md.visitMaxs(1, 1);
+        if(staticFields.size()>0){
+            md = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+            for(FieldNode f:staticFields){
+                assignField(f,null,f.initExpr);
+            }
+            md.visitInsn(RETURN);
+            md.visitMaxs(1, 1);
+        }
         classWriter.visitEnd();
         return null;
     }
