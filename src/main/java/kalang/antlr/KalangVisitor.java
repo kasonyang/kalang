@@ -17,6 +17,18 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCompilantUnit(KalangParser.CompilantUnitContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KalangParser#scriptDef}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitScriptDef(KalangParser.ScriptDefContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KalangParser#classDef}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassDef(KalangParser.ClassDefContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KalangParser#importDecl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

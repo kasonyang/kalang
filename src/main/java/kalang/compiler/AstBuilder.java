@@ -32,6 +32,7 @@ import kalang.ast.ReturnStmt;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -510,30 +511,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitCompilantUnit(CompilantUnitContext ctx) {
-        this.visitAll(ctx.importDecl());
         classAst.name = this.className;
-        classAst.modifier = parseModifier(ctx.varModifier());
-        Token clsType = ctx.classType;
-        if(clsType!=null){
-            if (clsType.getText().equals("interface")) {
-                classAst.isInterface = true;
-            }
-        }
-        if (ctx.parentClass != null) {
-            classAst.parent =  requireAst(ctx.parentClass);
-        }else{
-            classAst.parent = Types.ROOT_TYPE.getClassNode();
-        }
-        if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
-            for (Token itf : ctx.interfaces) {
-                ClassNode itfClassNode = requireAst(itf);
-                if(itfClassNode!=null){
-                    classAst.interfaces.add(itfClassNode);
-                }
-            }
-        }
-        visitClassBody(ctx.classBody());
-        mapAst(classAst, ctx);
+        visitChildren(ctx);
         return null;
     }
 
@@ -1382,6 +1361,72 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             reportError("unsupported type", ts);
             return null;
         }
+    }
+
+    @Override
+    public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
+        classAst.modifier = Modifier.PUBLIC;
+        classAst.parent = Types.ROOT_TYPE.getClassNode();
+        List<MethodDeclContext> mds = ctx.methodDecl();
+        if(mds!=null){
+            for(MethodDeclContext m:mds){
+                visit(m);
+            }
+        }
+        MethodNode mm = classAst.createMethodNode();
+        mm.name = "main";
+        mm.modifier = Modifier.PUBLIC  + Modifier.STATIC;
+        mm.type = Types.VOID_TYPE;
+        //TODO throws exception
+        mm.exceptionTypes = Collections.singletonList(Types.EXCEPTION_CLASS_TYPE);
+        ParameterNode pn = ParameterNode.create(mm);
+        pn.name = "args";
+        pn.type = Types.getArrayType(Types.STRING_CLASS_TYPE);
+        mm.parameters = Collections.singletonList(pn);
+        method = mm;
+        List<StatContext> stats = ctx.stat();
+        List<Statement> ss = new LinkedList<>();
+        this.newVarStack();
+        if(stats!=null){
+            for(StatContext s:stats){
+                Object statement = visit(s);
+                if(statement!=null){
+                    ss.add((Statement)statement);
+                }
+            }
+        }
+        this.popVarStack();
+        BlockStmt body = new BlockStmt();
+        body.statements.addAll(ss);
+        mm.body = body;
+        return null;
+    }
+
+    @Override
+    public Object visitClassDef(KalangParser.ClassDefContext ctx) {
+        classAst.modifier = parseModifier(ctx.varModifier());
+        Token clsType = ctx.classType;
+        if(clsType!=null){
+            if (clsType.getText().equals("interface")) {
+                classAst.isInterface = true;
+            }
+        }
+        if (ctx.parentClass != null) {
+            classAst.parent =  requireAst(ctx.parentClass);
+        }else{
+            classAst.parent = Types.ROOT_TYPE.getClassNode();
+        }
+        if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
+            for (Token itf : ctx.interfaces) {
+                ClassNode itfClassNode = requireAst(itf);
+                if(itfClassNode!=null){
+                    classAst.interfaces.add(itfClassNode);
+                }
+            }
+        }
+        visitClassBody(ctx.classBody());
+        mapAst(classAst, ctx);
+        return null;
     }
 
 }

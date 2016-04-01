@@ -38,6 +38,12 @@ grammar Kalang;
 
 compilantUnit:
     importDecl*
+    (classDef | scriptDef)
+;
+scriptDef:
+        (methodDecl | stat)*
+;
+classDef:
     varModifier?
     (
         classType='class'
@@ -47,6 +53,7 @@ compilantUnit:
     ( 'implements' interfaces+=Identifier ( ',' interfaces+=Identifier)* )?
     '{' classBody '}'
 ;
+
 importDecl:
    'import' (root='\\')? 
     path+=Identifier ('\\' path+=Identifier)*
