@@ -58,7 +58,7 @@ public class AstLoader {
         ClassNode ast = findAst(name);
         if(ast==null) throw new AstNotFoundException(className);
         if(isArray){
-            return createArrayAst(ast);
+            return createArrayAst(ast.name);
         }
         return ast;
     }
@@ -73,18 +73,16 @@ public class AstLoader {
     }
 
     //TODO should  createArrayAst be removed?
-    private ClassNode createArrayAst(ClassNode ast) {
+    public static ClassNode createArrayAst(String component) {
         ClassNode clazz = ClassNode.create();
         FieldNode field = clazz.createField();
         field.modifier = Modifier.PUBLIC;
         field.type = Types.INT_TYPE;
         field.name = "length";
         field.initExpr = null;
-        clazz.name = ast.name + "[]";
+        clazz.name = component + "[]";
         clazz.isArray = true;
-        if(ast.parent!=null){
-            clazz.parent = createArrayAst(ast.parent);
-        }
+        clazz.parent = BASE_AST_LOADER.getAst("java.lang.Object");
         return clazz;
     }
 

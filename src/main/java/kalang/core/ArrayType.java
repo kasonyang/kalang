@@ -20,7 +20,7 @@ public class ArrayType extends ClassType{
 
     public ArrayType(Type componentType) {
         //TODO should not hard code
-        super(AstLoader.BASE_AST_LOADER.getAst("java.lang.Object"));
+        super(AstLoader.createArrayAst("java.lang.Object"));
         this.componentType = componentType;
     }
     
@@ -43,19 +43,6 @@ public class ArrayType extends ClassType{
     public Type getComponentType() {
         return componentType;
     }
-
-//    @Override
-//    public boolean isCastableTo(Type targetType) {
-//        if(targetType instanceof ArrayType){
-//            return componentType.isCastableTo(((ArrayType)targetType).getComponentType());
-//        }
-//        return false;
-//    }
-
-//    @Override
-//    public ExprNode cast(Type targetType, ExprNode from) {
-//        return from;
-//    }
 
     @Override
     public FieldNode[] getFields() {
