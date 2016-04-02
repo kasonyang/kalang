@@ -16,6 +16,7 @@ import kalang.compiler.KalangSource;
 import kalang.compiler.SourceLoader;
 import kalang.tool.FileSystemCompiler;
 import kalang.tool.FileSystemSourceLoader;
+import org.apache.commons.io.FileUtils;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -81,6 +82,13 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
             Logger.getLogger(KalangClassLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
         sourceLoader.addSourceDir(path);
+    }
+    
+    public Class parseFile(String className,File file) throws IOException{
+        String code = FileUtils.readFileToString(file);
+        compiler.addSource(className, code, file.getName());
+        compiler.compile();
+        return loadedClasses.get(className);
     }
     
 }

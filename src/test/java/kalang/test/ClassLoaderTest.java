@@ -1,6 +1,7 @@
 package kalang.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import kalang.KalangClassLoader;
@@ -15,12 +16,18 @@ public class ClassLoaderTest {
     
     public ClassLoaderTest() {
     }
+    
+    @Test
+    public void testFiles() throws IOException{
+        KalangClassLoader clsLoader = new KalangClassLoader();
+        Class clazz = clsLoader.parseFile("test.HelloKalang", new File("TestScript/source/test/HelloKalang.kl"));
+        assertNotNull(clazz);
+    }
 
     @Test
     public void test() throws Exception{
         testClass("test.HelloKalang");
         testClass("test.HelloScript");
-        
     }
     public void testClass(String className) throws Exception{
         KalangClassLoader clsLoader = new KalangClassLoader();
