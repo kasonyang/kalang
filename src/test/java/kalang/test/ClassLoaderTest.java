@@ -23,8 +23,9 @@ public class ClassLoaderTest {
         
     }
     public void testClass(String className) throws Exception{
-        KalangClassLoader clsLoader = new KalangClassLoader(new File("TestScript/source"));
-        clsLoader.setOutputDir(new File("build/ClassLoaderTest"));
+        KalangClassLoader clsLoader = new KalangClassLoader();
+        clsLoader.addClassPath(new File("TestScript/source"));
+        //clsLoader.setOutputDir(new File("build/ClassLoaderTest"));
         Class<?> hwCls = clsLoader.loadClass(className);
         Object inst = hwCls.newInstance();
         Method[] mds = hwCls.getDeclaredMethods();

@@ -17,24 +17,33 @@ import org.apache.commons.io.IOCase;
  *  The class load source from file system.
  * @author Kason Yang <i@kasonyang.com>
  */
-class FileSystemSourceLoader implements SourceLoader {
+public class FileSystemSourceLoader implements SourceLoader {
 
-    private final File srcDir;
+    private final List<File> srcDirs = new ArrayList<>();
+
+    public FileSystemSourceLoader() {
+    }
     
-    FileSystemSourceLoader(File srcDir) {
-        this.srcDir = srcDir;
+    public FileSystemSourceLoader(File[] srcDir) {
+        this.srcDirs.addAll(Arrays.asList(srcDir));
+    }
+    
+    public void addSourceDir(File dir){
+        srcDirs.add(dir);
     }
     
     @Override
     public KalangSource loadSource(String className) {
         String fn = className.replace(".", "/") + ".kl";
-        File srcFile = new File(srcDir,fn);
-        if(FilePathUtil.existFile(srcFile)){
-            try {
-                return KalangSourceUtil.create(srcDir,srcFile);
-            } catch (IOException ex) {
-                Logger.getLogger(FileSystemSourceLoader.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
+        for(File s:srcDirs){
+            File srcFile = new File(s,fn);
+            if(FilePathUtil.existFile(srcFile)){
+                try {
+                    return KalangSourceUtil.create(s,srcFile);
+                } catch (IOException ex) {
+                    Logger.getLogger(FileSystemSourceLoader.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
             }
         }
         return null;

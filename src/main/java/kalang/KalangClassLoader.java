@@ -10,43 +10,58 @@ import kalang.ast.ClassNode;
 import kalang.compiler.Ast2Class;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
+import kalang.compiler.DefaultCompileConfiguration;
 import kalang.compiler.KalangCompiler;
+import kalang.compiler.KalangSource;
+import kalang.compiler.SourceLoader;
 import kalang.tool.FileSystemCompiler;
+import kalang.tool.FileSystemSourceLoader;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class KalangClassLoader extends ClassLoader implements CodeGenerator{
+public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
 
-    private final FileSystemCompiler compiler;
-    
-    private boolean initialized = false;
+    private final KalangCompiler compiler;
     
     private final HashMap<String,Class> loadedClasses = new HashMap<>();
+    private final FileSystemSourceLoader sourceLoader;
 
-    public KalangClassLoader(File sourceDir) {
-        compiler = new FileSystemCompiler();
-        try {
-            compiler.addSourceDir(sourceDir);
-        } catch (IOException ex) {
-            Logger.getLogger(KalangClassLoader.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public KalangClassLoader() {
+        this(new File[0]);
+    }
+
+    public KalangClassLoader(File[] sourceDir) {
+        super(new URL[0]);
+        sourceLoader = new FileSystemSourceLoader(sourceDir);
+        CodeGenerator cg = this;
+        compiler = new KalangCompiler(new DefaultCompileConfiguration(){
+            @Override
+            public SourceLoader getSourceLoader() {
+                return sourceLoader;
+            }
+
+            @Override
+            public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
+                return cg;
+            }
+            
+        });
     }
     
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if(!initialized){
-            compiler.setCodeGenerator(this);
+        Class clazz = loadedClasses.get(name);
+        if(clazz!=null) return clazz;
+        KalangSource src = sourceLoader.loadSource(name);
+        //TODO cache compiled classes
+        if(src!=null){
+            compiler.addSource(src);
             compiler.compile();
         }
-        if(loadedClasses.containsKey(name)){
-            return loadedClasses.get(name);
-        }
+        clazz = loadedClasses.get(name);
+        if(clazz!=null) return clazz;
         return super.findClass(name);
-    }
-
-    public void setOutputDir(File dir){
-        compiler.setOutputDir(dir);
     }
 
     @Override
@@ -57,6 +72,15 @@ public class KalangClassLoader extends ClassLoader implements CodeGenerator{
         String name = classNode.name;
         Class<?> clazz = defineClass(name, bs,0,bs.length);
         loadedClasses.put(name, clazz);
+    }
+
+    public void addClassPath(File path) {
+        try {
+            super.addURL(path.toURI().toURL());
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(KalangClassLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        sourceLoader.addSourceDir(path);
     }
     
 }
