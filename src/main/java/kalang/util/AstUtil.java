@@ -32,11 +32,14 @@ public class AstUtil {
 
 
    public static String getMethodDescriptor(String name, Type[] types, String className) {
-       List<String> typeStrList = new ArrayList<>(types.length);
-       for(Type t:types){
-           typeStrList.add(t.getName());
-       }
-        String typeStr = String.join(",", typeStrList);
+        String typeStr = "";
+        if(types!=null){
+             List<String> typeStrList = new ArrayList<>(types.length);
+             for(Type t:types){
+                 typeStrList.add(t.getName());
+             }
+              typeStr = String.join(",", typeStrList);
+        }
         String str = String.format("%s(%s)", name, typeStr);
         if (className != null) {
             str = String.format("%s#%s", className, str);

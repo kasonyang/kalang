@@ -564,7 +564,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }else if(target instanceof ClassReference){
             type = ((ClassReference)target).getReferencedClassNode().name;
         }
-        err.methodNotFound(node,type,node.getMethodName(), null);
+        err.methodNotFound(node,type,node.getMethodName(),AstUtil.getExprTypes(node.getArguments()));
         return getDefaultType();
     }
 

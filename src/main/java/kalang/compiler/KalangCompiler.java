@@ -34,7 +34,7 @@ public class KalangCompiler extends AstLoader {
     
     @Nonnull
     protected CompileErrorHandler compileErrorHandler = (e) -> {
-        reportError(e);
+        System.err.println(e.toString());
         compileTargetPhase = compilingPhase;
      };
 
