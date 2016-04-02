@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.MethodNotFoundException;
 import kalang.core.ClassType;
 import kalang.core.Type;
@@ -14,7 +15,7 @@ import kalang.util.AstUtil;
  */
 public class ObjectInvokeExpr extends InvocationExpr{
 
-    public static ObjectInvokeExpr create(ExprNode target , String methodName,ExprNode[] args) throws MethodNotFoundException {
+    public static ObjectInvokeExpr create(ExprNode target , String methodName,ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException {
         ClassType targetType = (ClassType) target.getType();
         ClassNode clazz = targetType.getClassNode();
         MethodSelection ms = applyMethod(clazz, methodName, args);

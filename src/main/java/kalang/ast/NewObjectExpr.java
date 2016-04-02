@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.MethodNotFoundException;
 import kalang.core.ClassType;
 import kalang.core.Type;
@@ -23,17 +24,17 @@ public class NewObjectExpr extends ExprNode{
         this.constructor = constructor;
     }
     
-    public NewObjectExpr(ClassType objectType,ExprNode[] args) throws MethodNotFoundException {
+    public NewObjectExpr(ClassType objectType,ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException {
         this.objectType = objectType;
         initDefaultConstructor(args);
     }
     
-    public NewObjectExpr(ClassType objectType) throws MethodNotFoundException {
+    public NewObjectExpr(ClassType objectType) throws MethodNotFoundException, AmbiguousMethodException {
         this.objectType = objectType;
         initDefaultConstructor(null);
     }
     
-    private void initDefaultConstructor(ExprNode[] args) throws MethodNotFoundException{
+    private void initDefaultConstructor(ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException{
         constructor = 
                 ObjectInvokeExpr.create(this, "<init>",args);
     }

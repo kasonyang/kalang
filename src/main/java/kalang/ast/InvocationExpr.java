@@ -3,6 +3,7 @@ package kalang.ast;
 import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.MethodNotFoundException;
 import kalang.core.*;
 import kalang.util.AstUtil;
@@ -35,7 +36,7 @@ public abstract class InvocationExpr extends ExprNode {
      * @param types
      * @return the selected method,or null
      */
-    public static MethodSelection applyMethod(ClassNode specialClass,String methodName, ExprNode[] args) throws MethodNotFoundException {
+    public static MethodSelection applyMethod(ClassNode specialClass,String methodName, ExprNode[] args) throws MethodNotFoundException,AmbiguousMethodException {
         Type[] types = AstUtil.getExprTypes(args);
         MethodNode md = AstUtil.getMethod(specialClass, methodName, types);
         if (md != null) {
@@ -57,7 +58,7 @@ public abstract class InvocationExpr extends ExprNode {
             if (matchedCount < 1) {
                 throw new MethodNotFoundException(methodName);
             } else if (matchedCount > 1) {
-                throw new MethodNotFoundException("the method " + methodName + " is ambiguous");
+                throw new AmbiguousMethodException("the method " + methodName + " is ambiguous");
             }
             return new MethodSelection(matchedMethod, matchedParams);
         }

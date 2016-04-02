@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import kalang.ast.ClassReference;
 import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.StaticInvokeExpr;
+import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.MathType;
 import kalang.compiler.MethodNotFoundException;
 import kalang.core.ArrayType;
@@ -125,7 +126,7 @@ public class BoxUtil {
         InvocationExpr inv;
         try {
             inv = StaticInvokeExpr.create(new ClassReference( classType.getClassNode()), "valueOf", new ExprNode[]{expr});
-        } catch (MethodNotFoundException ex) {
+        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
             throw new RuntimeException(ex);
         }
         return inv;
@@ -135,7 +136,7 @@ public class BoxUtil {
         InvocationExpr inv;
         try {
             inv = ObjectInvokeExpr.create(expr,toType + "Value",null);
-        } catch (MethodNotFoundException ex) {
+        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
             throw new RuntimeException(ex);
         }
         return inv;
@@ -149,7 +150,7 @@ public class BoxUtil {
         InvocationExpr inv;
         try {
             inv = ObjectInvokeExpr.create(expr, "toString",null);
-        } catch (MethodNotFoundException ex) {
+        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
             throw new RuntimeException(ex);
         }
         return inv;

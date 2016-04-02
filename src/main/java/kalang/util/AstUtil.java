@@ -23,6 +23,7 @@ import kalang.ast.ParameterNode;
 import kalang.ast.Statement;
 import kalang.ast.SuperExpr;
 import kalang.ast.VarExpr;
+import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.MethodNotFoundException;
 import kalang.core.ClassType;
 import kalang.core.Type;
@@ -223,7 +224,7 @@ public class AstUtil {
         return false;
     }
     
-    public static Statement createDefaultSuperConstructorCall(ClassNode clazz) throws MethodNotFoundException{
+    public static Statement createDefaultSuperConstructorCall(ClassNode clazz) throws MethodNotFoundException, AmbiguousMethodException{
        ClassType clsType = Types.getClassType(clazz);
        SuperExpr thisExpr = new SuperExpr(clazz);
         return new ExprStmt(

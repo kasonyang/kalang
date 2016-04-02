@@ -233,7 +233,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                         if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
                             try {
                                 bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(classAst));
-                            } catch (MethodNotFoundException ex) {
+                            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                                 reportError("default constructor not found", body.start);
                             }
                         }
@@ -390,7 +390,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         NewObjectExpr newExpr;
         try {
             newExpr = new NewObjectExpr(Types.MAP_IMPL_CLASS_TYPE);
-        } catch (MethodNotFoundException ex) {
+        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
             throw new RuntimeException(ex);
         }
         vo.initExpr = newExpr;
@@ -407,7 +407,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             InvocationExpr iv;
             try {
                 iv = ObjectInvokeExpr.create(ve, "put",args);
-            } catch (MethodNotFoundException ex) {
+            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                 throw new RuntimeException(ex);
             }
             ExprStmt es = new ExprStmt(iv);
@@ -428,7 +428,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         NewObjectExpr newExpr;
         try {
             newExpr = new NewObjectExpr(Types.LIST_IMPL_CLASS_TYPE);
-        } catch (MethodNotFoundException ex) {
+        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
             throw new RuntimeException(ex);
         }
         vo.initExpr = newExpr;
@@ -438,7 +438,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             InvocationExpr iv;
             try {
                 iv = ObjectInvokeExpr.create(ve,"add",new ExprNode[]{visitExpression(e)});
-            } catch (MethodNotFoundException ex) {
+            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                 throw new RuntimeException(ex);
             }
             mse.stmts.add(new ExprStmt(iv));
@@ -614,7 +614,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }else if(node instanceof AstNode){
             return new ErrorousExpr((AstNode)node);
         }else{
-            throw new UnsupportedOperationException("unsupported node:" + node);
+            return new ErrorousExpr();
         }
     }
 
@@ -681,6 +681,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public void reportSyntaxError(String desc,ParserRuleContext rule,Token start,Token stop){
         SyntaxError syntaxError = new SyntaxError(desc, compilationUnit, rule, start,stop);
         errorHandler.handleCompileError(syntaxError);
+    }
+    
+    public void methodIsAmbigurous(Token token , String className,String methodName,ExprNode[] params){
+        Type[] types = AstUtil.getExprTypes(params);
+        reportError("method is ambigurous:" + AstUtil.getMethodDescriptor(methodName, types, className), token);
+    }
+    
+    public void methodNotFound(Token token , String className,String methodName,ExprNode[] params){
+        Type[] types = AstUtil.getExprTypes(params);
+        reportError("method not found:" + AstUtil.getMethodDescriptor(methodName, types, className), token);
     }
     
     public void reportError(String msg, Token token) {
@@ -862,7 +872,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             InvocationExpr ie;
             try {
                 ie = ObjectInvokeExpr.create(expr1, "concat",new ExprNode[]{expr2});
-            } catch (MethodNotFoundException ex) {
+            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                 throw new RuntimeException(ex);
             }
             expr = ie;
@@ -884,6 +894,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         } catch (MethodNotFoundException ex) {
             expr = new UnknownInvocationExpr(null, methodName, args);
+        } catch (AmbiguousMethodException ex) {
+            methodNotFound(ctx.start, classAst.name, methodName, args);
+            return null;
         }
         mapAst(expr, ctx);
         return expr;
@@ -896,6 +909,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             expr = ObjectInvokeExpr.create(target, methodName, args);
         } catch (MethodNotFoundException ex) {
             expr= new UnknownInvocationExpr(target,methodName,args);
+        } catch(AmbiguousMethodException ex){
+            methodIsAmbigurous(ctx.start, target.getType().getName(), methodName, args);
+            return null;
         }
         mapAst(expr, ctx);
         return expr;
@@ -908,6 +924,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             expr = StaticInvokeExpr.create(clazz, methodName, args);
         } catch (MethodNotFoundException ex) {
             expr = new UnknownInvocationExpr(clazz, methodName , args);
+        } catch(AmbiguousMethodException ex){
+            methodIsAmbigurous(ctx.start, classAst.name, methodName, args);
+            return null;
         }
         mapAst(expr, ctx);
         return expr;
@@ -1147,6 +1166,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
         ClassType clsType = requireClassType(ctx.Identifier().getSymbol());
+        if(clsType==null) return null;
         ExprNode[] params = visitAll(ctx.params).toArray(new ExprNode[0]);
         NewObjectExpr newExpr;
         try {
@@ -1154,7 +1174,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {
-            reportError("construcotr not found", ctx.Identifier().getSymbol());
+            methodNotFound(ctx.Identifier().getSymbol(), clsType.getName(), "<init>", params);
+            return null;
+        } catch(AmbiguousMethodException ex){
+            methodIsAmbigurous(ctx.Identifier().getSymbol(), clsType.getName(), "<init>", params);
             return null;
         }
     }
