@@ -864,10 +864,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             expr = createBinaryExpr(expr1, expr2, op);
         }else if(op.equals("+")){
             if(!Types.STRING_CLASS_TYPE.equals(type1)){
-                expr1 = checkBox(expr1,expr1.getType(),Types.STRING_CLASS_TYPE,ctx.expression(0).getStart());
+                expr1 = BoxUtil.castToString(expr1);
             }
             if(!Types.STRING_CLASS_TYPE.equals(type2)){
-                expr2 = checkBox(expr2,expr2.getType(),Types.STRING_CLASS_TYPE,ctx.expression(1).getStart());
+                expr2 = BoxUtil.castToString(expr2);
+            }
+            if(expr1==null || expr2 == null){
+                reportError("unsupported types", ctx);
+                return null;
             }
             InvocationExpr ie;
             try {

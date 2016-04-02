@@ -32,9 +32,10 @@ public class BoxUtil {
             CAST_PRIMITIVE = 1,
             CAST_PRIMITIVE_TO_OBJECT = 2,
             CAST_OBJECT_TO_PRIMITIVE = 3,
-            CAST_NOTHING = 4,
-            CAST_OBJECT_TO_STRING = 5,
-            CAST_PRIMITIVE_TO_STRING = 6;
+            CAST_NOTHING = 4
+            //CAST_OBJECT_TO_STRING = 5,
+            //CAST_PRIMITIVE_TO_STRING = 6
+            ;
 
     @Nullable
     public static ExprNode assign(@Nonnull ExprNode expr, @Nonnull Type fromType,@Nonnull Type toType) {
@@ -48,10 +49,10 @@ public class BoxUtil {
                 return castPrimitive(expr,(PrimitiveType) fromType, (PrimitiveType)toType);
             case CAST_PRIMITIVE_TO_OBJECT:
                 return castPrimitive2Object(expr, (PrimitiveType) fromType);
-            case CAST_PRIMITIVE_TO_STRING:
-                return castPrimitive2String(expr, (PrimitiveType) fromType);
-            case CAST_OBJECT_TO_STRING:
-                return castObject2String(expr);
+            //case CAST_PRIMITIVE_TO_STRING:
+            //    return castPrimitive2String(expr, (PrimitiveType) fromType);
+            //case CAST_OBJECT_TO_STRING:
+            //    return castObject2String(expr);
             case CAST_UNSUPPORTED:
                 return null;
             default:
@@ -81,9 +82,9 @@ public class BoxUtil {
             if (fromType.equals(Types.NULL_TYPE)) {
                 return CAST_NOTHING;
             }
-            if (toType.equals(Types.STRING_CLASS_TYPE)) {
-                return CAST_PRIMITIVE_TO_STRING;
-            }
+//            if (toType.equals(Types.STRING_CLASS_TYPE)) {
+//                return CAST_PRIMITIVE_TO_STRING;
+//            }
             PrimitiveType toPriType = Types.getPrimitiveType((ClassType) toType);
             if (toPriType == null) {
                 return CAST_UNSUPPORTED;
@@ -102,15 +103,16 @@ public class BoxUtil {
             if (fromPrimitive.equals(toType)) {
                 return CAST_OBJECT_TO_PRIMITIVE;
             }
-        } else if (
-                (
-                fromType instanceof ClassType
-                || fromType instanceof ArrayType
-                )
-                && toType.equals(Types.STRING_CLASS_TYPE)
-                ) {
-            return CAST_OBJECT_TO_STRING;
-        }
+        } 
+//        else if (
+//                (
+//                fromType instanceof ClassType
+//                || fromType instanceof ArrayType
+//                )
+//                && toType.equals(Types.STRING_CLASS_TYPE)
+//                ) {
+//            return CAST_OBJECT_TO_STRING;
+//        }
         return CAST_UNSUPPORTED;
     }
 
@@ -154,6 +156,17 @@ public class BoxUtil {
             throw new RuntimeException(ex);
         }
         return inv;
+    }
+    
+    public static ExprNode castToString(ExprNode expr){
+        Type fromType = expr.getType();
+        if(fromType instanceof PrimitiveType){
+            return castPrimitive2String(expr, (PrimitiveType) fromType);
+        }else if(fromType instanceof ClassType){
+            return castObject2String(expr);
+        }else{
+            return null;
+        }
     }
 
 }
