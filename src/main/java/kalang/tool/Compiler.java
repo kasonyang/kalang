@@ -2,6 +2,12 @@ package kalang.tool;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import kalang.KalangClassLoader;
 import kalang.util.ClassNameUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -25,6 +31,7 @@ public class Compiler {
         OPTIONS.addOption("cp", true, "compile classpath");
         OPTIONS.addOption("s", true, "source directory");
         OPTIONS.addOption("o", true, "output directory");
+        OPTIONS.addOption("run", true, "run the class with special name");
     }
 
     public static void printUsage() {
@@ -39,36 +46,88 @@ public class Compiler {
             printUsage();
             return;
         }
-        FileSystemCompiler fsc = new FileSystemCompiler();
-        if (cli.hasOption("cp")) {
-            String cps = cli.getOptionValue("cp");
-            for (String cp : cps.split(";")) {
-                File cpFile = new File(cp);
-                if (cpFile.exists()) {
-                    fsc.addClassPath(new File(cp));
+        if(cli.hasOption("run")){
+            run(cli);
+            return;
+        }else{
+            FileSystemCompiler fsc = new FileSystemCompiler();
+            File[] cps = parseClassPath(cli);
+            if(cps!=null){
+                for (File cp : cps) {
+                        fsc.addClassPath(cp);
                 }
             }
+            String outPath = ".";
+            if (cli.hasOption("s")) {
+                String srcPath = cli.getOptionValue("s");
+                fsc.addSourceDir(new File(srcPath));
+            }
+            if (cli.hasOption("o")) {
+                outPath = cli.getOptionValue("o");
+            }
+            fsc.setOutputDir(new File(outPath));
+            File currentDir = new File(".");
+            String[] srcs = cli.getArgs();
+            for(String s:srcs){
+                File srcFile = new File(s);
+                if(srcFile.isDirectory()){
+                    fsc.addSourceDir(srcFile);
+                }else{
+                    fsc.addSource(currentDir , srcFile);
+                }
+            }
+            fsc.compile();
         }
-        String outPath = ".";
-        if (cli.hasOption("s")) {
-            String srcPath = cli.getOptionValue("s");
-            fsc.addSourceDir(new File(srcPath));
+    }
+    
+    private static File[] parseClassPath(CommandLine cli){
+        if (cli.hasOption("cp")) {
+            String[] cps = cli.getOptionValue("cp").split(";");
+            File[] file = new File[cps.length];
+            for (int i=0;i<cps.length;i++) {
+                file[i] = new File(cps[i]);
+            }
+            return file;
         }
-        if (cli.hasOption("o")) {
-            outPath = cli.getOptionValue("o");
-        }
-        fsc.setOutputDir(new File(outPath));
-        File currentDir = new File(".");
-        String[] srcs = cli.getArgs();
-        for(String s:srcs){
-            File srcFile = new File(s);
-            if(srcFile.isDirectory()){
-                fsc.addSourceDir(srcFile);
-            }else{
-                fsc.addSource(currentDir , srcFile);
+        return null;
+    }
+    
+    public static void run(CommandLine cli){
+        String clsName = cli.getOptionValue("run");
+        KalangClassLoader kcl = new KalangClassLoader();
+        kcl.addClassPath(new File("."));
+        File[] cps = parseClassPath(cli);
+        if(cps!=null){
+            for(File c:cps){
+                kcl.addClassPath(c);
             }
         }
-        fsc.compile();
+        Class<?> clazz;
+        try {
+             clazz = kcl.loadClass(clsName);
+        } catch (ClassNotFoundException ex) {
+            System.err.println("Class not found!");
+            return;
+        }
+        Method mm;
+        try {
+            mm = clazz.getMethod("main",Class.forName("[Ljava.lang.String;"));
+        } catch (NoSuchMethodException ex) {
+            System.err.println("main method not found!");
+            return;
+        } catch (SecurityException | ClassNotFoundException ex) {
+            Logger.getLogger(Compiler.class.getName()).log(Level.SEVERE, null, ex);
+            return;
+        }
+        if(!Modifier.isStatic(mm.getModifiers())){
+            System.out.println("main method is not static");
+            return;
+        }
+        try {
+            mm.invoke(null,new Object[]{cli.getArgs()});
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            ex.printStackTrace();
+        }
     }
 
 }
