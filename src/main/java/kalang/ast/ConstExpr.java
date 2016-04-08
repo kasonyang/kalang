@@ -10,46 +10,9 @@ public class ConstExpr extends ExprNode{
     
     protected Type constType;
     
-    
-    public ConstExpr(){
-        
-    }
-    
-    
     public ConstExpr(Object value,Type type){
-        
-        
             this.value = value;
-        
             this.constType = type;
-        
-    }
-    
-    
-    public static ConstExpr create(){
-        ConstExpr node = new ConstExpr();
-        
-        return node;
-    }
-    
-    public List<AstNode> getChildren(){
-        List<AstNode> ls = new LinkedList();
-        
-        return ls;
-    }
-    
-    public String toString(){
-        String str = "ConstExpr{\r\n";
-        
-        if(getValue()!=null){
-            str += "  value:" + getValue().toString()+"\r\n";
-        }
-        
-        if(getConstType()!=null){
-            str += "  type:" + getConstType().toString()+"\r\n";
-        }
-        
-        return str+"}";
     }
 
     @Override

@@ -79,4 +79,10 @@ class{
             return 6;
         }
     }
+    
+    int dynamicInvoke() throws Exception{
+        return ((Integer)this->not()).intValue();
+    }
+    
+    
 }

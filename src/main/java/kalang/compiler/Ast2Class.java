@@ -441,6 +441,17 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
     }
     
+    private void astore(ExprNode expr){
+        org.objectweb.asm.Type type = asmType( ((ArrayType)expr.getType()).getComponentType());
+        md.visitInsn(type.getOpcode(IASTORE));
+    }
+    
+    private void assignArrayElement(ExprNode array,ExprNode key,ExprNode value){
+        visit(array);
+        visit(key);
+        astore(value);
+    }
+    
     private void assign(ExprNode to,ExprNode from){
         org.objectweb.asm.Type type = asmType(from.getType());
         if(to instanceof FieldExpr){
@@ -450,10 +461,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             assignVarObject(((VarExpr) to).getVar(), from);
         }else if(to instanceof ElementExpr){
             ElementExpr elementExpr = (ElementExpr) to;
-            visit(elementExpr.getArrayExpr());
-            visit(elementExpr.getIndex());
-            visit(from);
-            md.visitInsn(type.getOpcode(IASTORE));
+            assignArrayElement(elementExpr.getArrayExpr(), elementExpr.getIndex(), from);
         }else{
             throw new UnknownError("unknown expression:" + to);
         }
@@ -651,6 +659,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             md.visitIntInsn(op, opr);
         }else{
             md.visitTypeInsn(ANEWARRAY, internalName(t));
+        }
+        //TODO maybe fill
+        ExprNode[] initExprs = node.getInitExprs();
+        if(initExprs!=null && initExprs.length>0){
+            for(int i=0;i<initExprs.length;i++){
+                md.visitInsn(DUP);
+                constX(i);
+                astore(initExprs[i]);
+            }
         }
         return null;
     }

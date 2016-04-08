@@ -400,9 +400,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         for (int i = 0; i < ids.size(); i++) {
             ExpressionContext e = ctx.expression(i);
             ExprNode v = (ExprNode) visit(e);
-            ConstExpr k = new ConstExpr();
-            k.setConstType(Types.STRING_CLASS_TYPE);// STRING_CLASS_NAME;
-            k.setValue(ctx.Identifier(i).getText());
+            ConstExpr k = new ConstExpr(ctx.Identifier(i).getText(),Types.STRING_CLASS_TYPE);
             ExprNode[] args = new ExprNode[]{k,v};
             InvocationExpr iv;
             try {
@@ -922,7 +920,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     private  ExprNode getStaticInvokeExpr(ClassReference clazz,String methodName,List<ExpressionContext> argumentsCtx,ParserRuleContext ctx){
-        ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
+        return getStaticInvokeExpr(clazz, methodName, visitAll(argumentsCtx).toArray(new ExprNode[0]), ctx);
+    }
+    
+    private  ExprNode getStaticInvokeExpr(ClassReference clazz,String methodName, ExprNode[] argumentsCtx,ParserRuleContext ctx){
+        ExprNode[] args = argumentsCtx;
         ExprNode expr;
         try {
             expr = StaticInvokeExpr.create(clazz, methodName, args);
@@ -941,12 +943,35 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Object target = visit(ctx.target);
         if(target==null) return null;
         String mdName = ctx.Identifier().getText();
-        if(target instanceof ClassReference){
-            return getStaticInvokeExpr((ClassReference) target, mdName,ctx.params, ctx);
-        }else if(target instanceof ExprNode){
-            return getObjectInvokeExpr((ExprNode) target, mdName, ctx.params,ctx);
+        String refKey = ctx.refKey.getText();
+        if(refKey.equals(".")){
+            if(target instanceof ClassReference){
+                return getStaticInvokeExpr((ClassReference) target, mdName,ctx.params, ctx);
+            }else if(target instanceof ExprNode){
+                return getObjectInvokeExpr((ExprNode) target, mdName, ctx.params,ctx);
+            }else{
+                throw new UnknownError("unknown node:"+ target);
+            }
+        }else if(refKey.equals("->")){
+            ExprNode[] invokeArgs = new ExprNode[3];
+            ExprNode[] params = new ExprNode[ctx.params.size()];
+            if(target instanceof ClassReference){
+                invokeArgs[0] = BoxUtil.newNullExpr();
+            }else if(target instanceof ExprNode){
+                invokeArgs[0] = ((ExprNode) target);
+            }
+            invokeArgs[1] = BoxUtil.newStringExpr(mdName);
+            for(int i=0;i<params.length;i++){
+                params[i] = visitExpression(ctx.params.get(i));
+            }
+            invokeArgs[2] = BoxUtil.castExprsToArrayExpr(Types.ROOT_TYPE, params.length, params);
+            ClassNode dispatcherAst = getAst("kalang.runtime.invoke.MethodDispatcher");
+            if(dispatcherAst==null){
+                throw new RuntimeException("Runtime library is required!");
+            }
+            return getStaticInvokeExpr(new ClassReference(dispatcherAst), "invokeMethod", invokeArgs, ctx);
         }else{
-            throw new UnknownError("unknown node:"+ target);
+            throw new UnsupportedOperationException(refKey);
         }
     }
 
@@ -955,6 +980,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Object expr = visit(ctx.expression());
         if(expr==null) return null;
         String name = ctx.Identifier().getText();
+        String refKey = ctx.refKey.getText();
+        //TODO impl invoke field
         if(expr instanceof ExprNode){
             ExprNode exprNode = (ExprNode) expr;
             return getObjectFieldLikeExpr(exprNode,name,ctx);
@@ -1076,7 +1103,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public ConstExpr visitLiteral(LiteralContext ctx) {
-        ConstExpr ce = new ConstExpr();
+        ConstExpr ce = new ConstExpr(null,null);
         String t = ctx.getText();
         if (ctx.IntegerLiteral() != null) {
             ce.setConstType(Types.INT_TYPE);

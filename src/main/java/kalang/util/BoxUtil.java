@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.ast.ClassReference;
+import kalang.ast.ConstExpr;
+import kalang.ast.NewArrayExpr;
 import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.StaticInvokeExpr;
 import kalang.compiler.AmbiguousMethodException;
@@ -167,6 +169,19 @@ public class BoxUtil {
         }else{
             return null;
         }
+    }
+    
+    public static NewArrayExpr castExprsToArrayExpr(Type type,int size, ExprNode[] exprs){
+        NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(size, Types.INT_TYPE),exprs);
+        return ae;
+    }
+    
+    public static ConstExpr newNullExpr(){
+        return new ConstExpr(null, Types.NULL_TYPE);
+    }
+
+    public static ExprNode newStringExpr(String value) {
+        return new ConstExpr(value, Types.STRING_CLASS_TYPE);
     }
 
 }
