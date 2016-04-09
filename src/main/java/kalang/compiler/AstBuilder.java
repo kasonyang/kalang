@@ -815,12 +815,69 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 return new MathExpr(expr1, expr2, op);
         }
     }
+    
+    protected ExprNode createFieldExpr(ExprGetFieldContext to,ExpressionContext fromCtx){
+        String refKey = to.refKey.getText();
+        ExpressionContext exp = to.expression();
+        String fname = to.Identifier().getText();
+        AssignableExpr toExpr;
+        Object expr = visit(exp);
+        if(refKey.equals(".")){
+            ExprNode fieldExpr;
+            if(expr instanceof ExprNode){
+                ExprNode exprNode = (ExprNode) expr;
+                fieldExpr = getObjectFieldLikeExpr(exprNode,fname,to);
+            }else if(expr instanceof ClassReference){
+                fieldExpr = getStaticFieldExpr((ClassReference)expr, fname, to);
+            }else{
+                throw new UnknownError("unknown node:" + expr);
+            }
+            if(fromCtx==null){
+                return fieldExpr;
+            }else{
+                if(fieldExpr instanceof AssignableExpr){
+                    toExpr = (AssignableExpr) fieldExpr;
+                }else{
+                    reportError("unsupported", to);
+                    return null;
+                }
+                return new AssignExpr(toExpr,visitExpression(fromCtx));
+            }
+        }else if(refKey.equals("->")){
+            ClassNode ast = getAst("kalang.runtime.dynamic.FieldVisitor");
+            if(ast==null) throw new UnknownError();
+            ExprNode[] params;
+            String methodName;
+            if(fromCtx==null){
+                params = new ExprNode[2];
+                methodName = "get";
+            }else{
+                params = new ExprNode[3];
+                methodName = "set";
+            }
+            if(expr instanceof ClassReference){
+                params[0] = null;
+            }else if(expr instanceof ExprNode){
+                params[0] = (ExprNode) expr;
+            }
+            params[1] = BoxUtil.newStringExpr(fname);
+            if(fromCtx!=null) params[2] = visitExpression(fromCtx);
+            return getStaticInvokeExpr(new ClassReference(ast),methodName,params, to);
+        }else{
+            throw new UnsupportedOperationException(refKey);
+        }
+    }
 
     @Override
-    public AssignExpr visitExprAssign(ExprAssignContext ctx) {
+    public ExprNode visitExprAssign(ExprAssignContext ctx) {
         String assignOp = ctx.getChild(1).getText();
-        ExprNode to = visitExpression(ctx.expression(0));
-        ExprNode from = visitExpression(ctx.expression(1));
+        ExpressionContext toCtx = ctx.expression(0);
+        ExpressionContext fromCtx = ctx.expression(1);
+        if(toCtx instanceof ExprGetFieldContext){
+            return createFieldExpr((ExprGetFieldContext)toCtx,fromCtx);
+        }
+        ExprNode to = visitExpression(toCtx);
+        ExprNode from = visitExpression(fromCtx);
         if (assignOp.length() > 1) {
             String op = assignOp.substring(0, assignOp.length() - 1);
             from = createBinaryExpr(to, from, op);
@@ -977,19 +1034,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public ExprNode visitExprGetField(ExprGetFieldContext ctx) {
-        Object expr = visit(ctx.expression());
-        if(expr==null) return null;
-        String name = ctx.Identifier().getText();
-        String refKey = ctx.refKey.getText();
-        //TODO impl invoke field
-        if(expr instanceof ExprNode){
-            ExprNode exprNode = (ExprNode) expr;
-            return getObjectFieldLikeExpr(exprNode,name,ctx);
-        }else if(expr instanceof ClassReference){
-            return getStaticFieldExpr((ClassReference)expr, name, ctx);
-        }else{
-            throw new UnknownError("unknown node:" + expr);
-        }
+        return createFieldExpr(ctx, null);
     }
 
     @Override
@@ -1379,8 +1424,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return ret;
     }
     
-    protected ExprNode getStaticFieldExpr(ClassReference clazz,String fieldName,ParserRuleContext rule){
-        ExprNode ret;
+    protected AssignableExpr getStaticFieldExpr(ClassReference clazz,String fieldName,ParserRuleContext rule){
+        AssignableExpr ret;
         try {
             ret = StaticFieldExpr.create(clazz,fieldName);
         } catch (FieldNotFoundException ex) {

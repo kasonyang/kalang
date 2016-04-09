@@ -3493,30 +3493,12 @@ public class KalangParser extends Parser {
 						break;
 					case 12:
 						{
-						_localctx = new ExprGetFieldContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new ExprInvocationContext(new ExpressionContext(_parentctx, _parentState));
+						((ExprInvocationContext)_localctx).target = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(497);
 						if (!(precpred(_ctx, 25))) throw new FailedPredicateException(this, "precpred(_ctx, 25)");
 						setState(498);
-						((ExprGetFieldContext)_localctx).refKey = _input.LT(1);
-						_la = _input.LA(1);
-						if ( !(_la==T__6 || _la==DOT) ) {
-							((ExprGetFieldContext)_localctx).refKey = (Token)_errHandler.recoverInline(this);
-						} else {
-							consume();
-						}
-						setState(499);
-						match(Identifier);
-						}
-						break;
-					case 13:
-						{
-						_localctx = new ExprInvocationContext(new ExpressionContext(_parentctx, _parentState));
-						((ExprInvocationContext)_localctx).target = _prevctx;
-						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(500);
-						if (!(precpred(_ctx, 24))) throw new FailedPredicateException(this, "precpred(_ctx, 24)");
-						setState(501);
 						((ExprInvocationContext)_localctx).refKey = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !(_la==T__6 || _la==DOT) ) {
@@ -3524,39 +3506,57 @@ public class KalangParser extends Parser {
 						} else {
 							consume();
 						}
-						setState(502);
+						setState(499);
 						match(Identifier);
-						setState(503);
+						setState(500);
 						match(LPAREN);
-						setState(512);
+						setState(509);
 						_la = _input.LA(1);
 						if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__3) | (1L << BOOLEAN) | (1L << BYTE) | (1L << CHAR) | (1L << DOUBLE) | (1L << FLOAT) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << VOID) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral) | (1L << NullLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 							{
-							setState(504);
+							setState(501);
 							((ExprInvocationContext)_localctx).expression = expression(0);
 							((ExprInvocationContext)_localctx).params.add(((ExprInvocationContext)_localctx).expression);
-							setState(509);
+							setState(506);
 							_errHandler.sync(this);
 							_la = _input.LA(1);
 							while (_la==COMMA) {
 								{
 								{
-								setState(505);
+								setState(502);
 								match(COMMA);
-								setState(506);
+								setState(503);
 								((ExprInvocationContext)_localctx).expression = expression(0);
 								((ExprInvocationContext)_localctx).params.add(((ExprInvocationContext)_localctx).expression);
 								}
 								}
-								setState(511);
+								setState(508);
 								_errHandler.sync(this);
 								_la = _input.LA(1);
 							}
 							}
 						}
 
-						setState(514);
+						setState(511);
 						match(RPAREN);
+						}
+						break;
+					case 13:
+						{
+						_localctx = new ExprGetFieldContext(new ExpressionContext(_parentctx, _parentState));
+						pushNewRecursionContext(_localctx, _startState, RULE_expression);
+						setState(512);
+						if (!(precpred(_ctx, 24))) throw new FailedPredicateException(this, "precpred(_ctx, 24)");
+						setState(513);
+						((ExprGetFieldContext)_localctx).refKey = _input.LT(1);
+						_la = _input.LA(1);
+						if ( !(_la==T__6 || _la==DOT) ) {
+							((ExprGetFieldContext)_localctx).refKey = (Token)_errHandler.recoverInline(this);
+						} else {
+							consume();
+						}
+						setState(514);
+						match(Identifier);
 						}
 						break;
 					case 14:
@@ -4021,8 +4021,8 @@ public class KalangParser extends Parser {
 		"\n\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37"+
 		"\3\37\5\37\u01d6\n\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37"+
 		"\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37"+
-		"\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37"+
-		"\7\37\u01fe\n\37\f\37\16\37\u0201\13\37\5\37\u0203\n\37\3\37\3\37\3\37"+
+		"\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\7\37\u01fb\n\37"+
+		"\f\37\16\37\u01fe\13\37\5\37\u0200\n\37\3\37\3\37\3\37\3\37\3\37\3\37"+
 		"\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\7\37\u0212\n\37\f\37"+
 		"\16\37\u0215\13\37\3 \5 \u0218\n \3 \3 \3 \3 \3 \3 \3 \3 \7 \u0222\n "+
 		"\f \16 \u0225\13 \5 \u0227\n \3 \3 \3!\3!\3!\3!\3!\7!\u0230\n!\f!\16!"+
@@ -4172,18 +4172,18 @@ public class KalangParser extends Parser {
 		"\6\2\2\u01eb\u01ec\7P\2\2\u01ec\u01ed\5<\37\2\u01ed\u01ee\7Q\2\2\u01ee"+
 		"\u01ef\5<\37\7\u01ef\u0212\3\2\2\2\u01f0\u01f1\f\3\2\2\u01f1\u01f2\t\f"+
 		"\2\2\u01f2\u0212\5<\37\3\u01f3\u01f4\f\33\2\2\u01f4\u01f5\t\r\2\2\u01f5"+
-		"\u0212\7m\2\2\u01f6\u01f7\f\32\2\2\u01f7\u01f8\t\r\2\2\u01f8\u01f9\7m"+
-		"\2\2\u01f9\u0202\7B\2\2\u01fa\u01ff\5<\37\2\u01fb\u01fc\7I\2\2\u01fc\u01fe"+
-		"\5<\37\2\u01fd\u01fb\3\2\2\2\u01fe\u0201\3\2\2\2\u01ff\u01fd\3\2\2\2\u01ff"+
-		"\u0200\3\2\2\2\u0200\u0203\3\2\2\2\u0201\u01ff\3\2\2\2\u0202\u01fa\3\2"+
-		"\2\2\u0202\u0203\3\2\2\2\u0203\u0204\3\2\2\2\u0204\u0212\7C\2\2\u0205"+
+		"\u01f6\7m\2\2\u01f6\u01ff\7B\2\2\u01f7\u01fc\5<\37\2\u01f8\u01f9\7I\2"+
+		"\2\u01f9\u01fb\5<\37\2\u01fa\u01f8\3\2\2\2\u01fb\u01fe\3\2\2\2\u01fc\u01fa"+
+		"\3\2\2\2\u01fc\u01fd\3\2\2\2\u01fd\u0200\3\2\2\2\u01fe\u01fc\3\2\2\2\u01ff"+
+		"\u01f7\3\2\2\2\u01ff\u0200\3\2\2\2\u0200\u0201\3\2\2\2\u0201\u0212\7C"+
+		"\2\2\u0202\u0203\f\32\2\2\u0203\u0204\t\r\2\2\u0204\u0212\7m\2\2\u0205"+
 		"\u0206\f\30\2\2\u0206\u0207\7F\2\2\u0207\u0208\5<\37\2\u0208\u0209\7G"+
 		"\2\2\u0209\u0212\3\2\2\2\u020a\u020b\f\24\2\2\u020b\u0212\t\5\2\2\u020c"+
 		"\u020d\f\f\2\2\u020d\u020e\7#\2\2\u020e\u0212\7m\2\2\u020f\u0210\f\4\2"+
 		"\2\u0210\u0212\7J\2\2\u0211\u01c7\3\2\2\2\u0211\u01ca\3\2\2\2\u0211\u01cd"+
 		"\3\2\2\2\u0211\u01d8\3\2\2\2\u0211\u01db\3\2\2\2\u0211\u01de\3\2\2\2\u0211"+
 		"\u01e1\3\2\2\2\u0211\u01e4\3\2\2\2\u0211\u01e7\3\2\2\2\u0211\u01ea\3\2"+
-		"\2\2\u0211\u01f0\3\2\2\2\u0211\u01f3\3\2\2\2\u0211\u01f6\3\2\2\2\u0211"+
+		"\2\2\u0211\u01f0\3\2\2\2\u0211\u01f3\3\2\2\2\u0211\u0202\3\2\2\2\u0211"+
 		"\u0205\3\2\2\2\u0211\u020a\3\2\2\2\u0211\u020c\3\2\2\2\u0211\u020f\3\2"+
 		"\2\2\u0212\u0215\3\2\2\2\u0213\u0211\3\2\2\2\u0213\u0214\3\2\2\2\u0214"+
 		"=\3\2\2\2\u0215\u0213\3\2\2\2\u0216\u0218\5\24\13\2\u0217\u0216\3\2\2"+
@@ -4202,7 +4202,7 @@ public class KalangParser extends Parser {
 		"E\3\2\2\2AINRTX\\`hksz\u0081\u0084\u008d\u0093\u0099\u009d\u00a4\u00aa"+
 		"\u00b0\u00b8\u00bb\u00c4\u00c7\u00cb\u00d4\u00d9\u00e2\u00ec\u00fc\u0108"+
 		"\u0112\u011f\u0126\u012e\u0132\u0136\u0142\u014e\u0152\u0158\u015a\u0173"+
-		"\u0177\u017b\u0185\u01a2\u01aa\u01ad\u01b8\u01bb\u01c5\u01d5\u01ff\u0202"+
+		"\u0177\u017b\u0185\u01a2\u01aa\u01ad\u01b8\u01bb\u01c5\u01d5\u01fc\u01ff"+
 		"\u0211\u0213\u0217\u0223\u0226\u0231\u0236\u023d";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());

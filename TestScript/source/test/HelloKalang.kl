@@ -84,5 +84,9 @@ class{
         return ((Integer)this->not()).intValue();
     }
     
+    int dynamicField() throws Exception{
+        this->f = 6;
+        return (Integer)this->f;
+    }
     
 }

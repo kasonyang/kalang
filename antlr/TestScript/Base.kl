@@ -88,4 +88,11 @@ class{
         var q = true;
         var s = q ? "true" : "false";
     }
+    void dynamicInvoke() throws Exception{
+        this->questionExpr();
+    }
+    void dynamicField() throws Exception{
+        this->f1;
+        this->f1 = 1;
+    }
 }

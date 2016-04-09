@@ -10,7 +10,7 @@ import kalang.core.Types;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class UnknownFieldExpr extends ExprNode{
+public class UnknownFieldExpr extends AssignableExpr{
 
     private AstNode target;
     

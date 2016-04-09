@@ -187,12 +187,12 @@ expression
     |   literal #exprLiteral
     | map #mapExpr
     | listOrArray # listOrArrayExpr
-    |   expression refKey=('.'|'->') Identifier #exprGetField
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
     |    target=expression refKey=('.'|'->') Identifier 
         '(' (params+=expression (',' params+=expression)*)? ')'  #exprInvocation
+    |   expression refKey=('.'|'->') Identifier #exprGetField
     |     (Identifier|key='this'|key='super') 
         '(' (params+=expression (',' params+=expression)*)? ')'   #exprMemberInvocation
     |  expression '[' expression ']' #exprGetArrayElement    
