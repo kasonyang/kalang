@@ -44,6 +44,7 @@ scriptDef:
         (methodDecl | stat)*
 ;
 classDef:
+    annotation*
     varModifier?
     (
         classType='class'
@@ -74,6 +75,7 @@ fieldDecl:
    varModifier? varDecl (',' varDecl)* ';'
 ;
 methodDecl:
+   annotation*
    varModifier? 
    (
      (type name=Identifier )
@@ -82,6 +84,15 @@ methodDecl:
    '('    (     varDecl   (',' varDecl)*     )?      ')'
    ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
    ( stat | ';')
+;
+annotation:
+    '@' annotationType=Identifier 
+        ( '('  
+            (
+                ( annotationValueKey+=Identifier '=' annotationValue+=literal (',' annotationValueKey+=Identifier '=' annotationValue+=literal)* ) 
+                | annotationDefaultValue=literal
+            )?
+         ')'  )?
 ;
 type:
     singleType

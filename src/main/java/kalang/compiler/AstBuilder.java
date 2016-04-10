@@ -81,6 +81,7 @@ import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
 import javax.annotation.Nullable;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
+import kalang.ast.AnnotationNode;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.ClassReference;
@@ -537,6 +538,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
         method = classAst.createMethodNode();
+        method.annotations.addAll(getAnnotations(ctx.annotation()));
         String name;
         Type type;
         int mdf = parseModifier(ctx.varModifier());
@@ -1500,9 +1502,21 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         mm.body = body;
         return null;
     }
+    
+    protected List<AnnotationNode> getAnnotations(@Nullable List<KalangParser.AnnotationContext> ctxs){
+        List<AnnotationNode> list = new LinkedList<>();
+        if(ctxs!=null){
+            for(KalangParser.AnnotationContext an:ctxs){
+                AnnotationNode anNode = visitAnnotation(an);
+                if(anNode!=null) list.add(anNode);
+            }
+        }
+        return list;
+    }
 
     @Override
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
+        classAst.annotations.addAll(getAnnotations(ctx.annotation()));
         classAst.modifier = parseModifier(ctx.varModifier());
         Token clsType = ctx.classType;
         if(clsType!=null){
@@ -1526,6 +1540,29 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         visitClassBody(ctx.classBody());
         mapAst(classAst, ctx);
         return null;
+    }
+
+    @Override
+    public AnnotationNode visitAnnotation(KalangParser.AnnotationContext ctx) {
+        ClassNode anType = requireAst(ctx.annotationType);
+        if(anType==null) return null;
+        List<Token> vk = ctx.annotationValueKey;
+        LiteralContext dv = ctx.annotationDefaultValue;
+        AnnotationNode anNode = new AnnotationNode(anType);
+        if(vk!=null && vk.size()>0){
+            List<LiteralContext> anValues = ctx.annotationValue;
+            int ksize = vk.size();
+            for(int i=0;i<ksize;i++){
+                String kname = vk.get(i).getText();
+                ConstExpr value = visitLiteral(anValues.get(i));
+                anNode.values.put(kname, value);
+            }
+        }else if(dv!=null){
+            ConstExpr defaultValue = visitLiteral(dv);
+            anNode.values.put("value", defaultValue);
+        }
+        //TODO validate values
+        return anNode;
     }
 
 }

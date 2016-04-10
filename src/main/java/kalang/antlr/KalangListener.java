@@ -88,6 +88,16 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitMethodDecl(KalangParser.MethodDeclContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#annotation}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnnotation(KalangParser.AnnotationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#annotation}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnnotation(KalangParser.AnnotationContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#type}.
 	 * @param ctx the parse tree
 	 */

@@ -4,7 +4,7 @@
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
-public class ClassNode extends AstNode{
+public class ClassNode extends AstNode implements Annotationable{
     
     public int modifier;
     
@@ -22,6 +22,7 @@ public class ClassNode extends AstNode{
     
     public boolean isArray;
     
+    public final List<AnnotationNode> annotations = new LinkedList<>();
     
     public ClassNode(){
         
@@ -108,6 +109,11 @@ public class ClassNode extends AstNode{
             }
         }
         return false;
+    }
+
+    @Override
+    public AnnotationNode[] getAnnotations() {
+        return annotations.toArray(new AnnotationNode[0]);
     }
     
 }

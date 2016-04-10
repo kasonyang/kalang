@@ -59,6 +59,12 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitMethodDecl(KalangParser.MethodDeclContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KalangParser#annotation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAnnotation(KalangParser.AnnotationContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KalangParser#type}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

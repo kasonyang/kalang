@@ -95,4 +95,8 @@ class{
         this->f1;
         this->f1 = 1;
     }
+    @Override
+    public String toString(){
+        return "test";
+    }
 }

@@ -34,6 +34,7 @@ import java.nio.*;
 import java.net.*;
 import java.util.*;
 import javax.annotation.Nonnull;
+import kalang.ast.AnnotationNode;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.AstNode;
@@ -66,6 +67,7 @@ import kalang.core.Type;
 import kalang.core.Types;
 import static kalang.core.Types.*;
 import kalang.util.AstUtil;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -143,11 +145,31 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return inames;
     }
     
+    protected void annotation(Object obj,AnnotationNode[] annotations){
+        for(AnnotationNode an:annotations){
+            AnnotationVisitor av;
+            String desc = getTypeDescriptor(Types.getClassType(an.getAnnotationType()));
+            //TODO set annotation visible
+            boolean isVisible = true;
+            if(obj instanceof ClassWriter){
+                av = ((ClassWriter)obj).visitAnnotation(desc,isVisible);
+            }else if(obj instanceof MethodVisitor){
+                av = ((MethodVisitor)obj).visitAnnotation(desc, isVisible);
+            }else{
+                throw new UnsupportedOperationException(obj.getClass().getName());
+            }
+            for(String v:an.values.keySet()){
+                av.visit(v, an.values.get(v));
+            }
+        }
+    }
+    
     @Override
     public Object visitClassNode(ClassNode node) {        
         clazz = node;
         classInternalName = internalName(clazz);
         classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        annotation(classWriter, clazz.getAnnotations());
         String parentName = "java.lang.Object";
         if(node.parent!=null){
             parentName = node.parent.name;
@@ -184,6 +206,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitMethodNode(MethodNode node) {
         int access = node.modifier;
         md = classWriter.visitMethod(access, internalName(node.name),getMethodDescriptor(node), null,internalName(node.exceptionTypes.toArray(new Type[0])) );
+        annotation(md, node.getAnnotations());
         if(AstUtil.isStatic(node.modifier)){
             varIdCounter = 0;
         }else{

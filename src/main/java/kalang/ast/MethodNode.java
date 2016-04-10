@@ -2,7 +2,7 @@ package kalang.ast;
 import java.util.*;
 import javax.annotation.Nullable;
 import kalang.core.*;
-public class MethodNode extends AstNode{
+public class MethodNode extends AstNode implements Annotationable{
     
     public int modifier;
     
@@ -11,6 +11,8 @@ public class MethodNode extends AstNode{
     public String name;
     
     public List<ParameterNode> parameters;
+    
+    public final List<AnnotationNode> annotations = new LinkedList<>();
     
     @Nullable
     public BlockStmt body = null;
@@ -54,6 +56,11 @@ public class MethodNode extends AstNode{
         addChild(ls,parameters);
         addChild(ls,body);
         return ls;
+    }
+
+    @Override
+    public AnnotationNode[] getAnnotations() {
+        return annotations.toArray(new AnnotationNode[0]);
     }
     
 }
