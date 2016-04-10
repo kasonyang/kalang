@@ -35,9 +35,12 @@ import kalang.ast.VarDeclStmt;
 import kalang.ast.VarExpr;
 import kalang.ast.VarObject;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import kalang.ast.AnnotationNode;
+import kalang.ast.Annotationable;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.ClassReference;
 import kalang.ast.ErrorousExpr;
@@ -162,6 +165,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (node instanceof Statement && returned) {
             err.fail("unable to reach statement", AstSemanticError.LACKS_OF_STATEMENT, node);
             return null;
+        }
+        if(node instanceof Annotationable){
+            validateAnnotation(((Annotationable)node).getAnnotations());
         }
         Object ret = super.visit(node);
         if (ret instanceof Type) {
@@ -437,7 +443,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitMethodNode(MethodNode node) {
-        String mStr = AstUtil.getMethodDescriptor(node, this.clazz.name);
+        String mStr = AstUtil.getMethodDescriptor(node);
         if (methodDeclared.contains(mStr)) {
             err.unsupported("declare method duplicately:"+mStr, node);
             return getDefaultType();
@@ -578,6 +584,25 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public Type visitErrorousExpr(ErrorousExpr node) {
         err.fail("not an expression",0, node);
         return null;
+    }
+    
+    protected void validateAnnotation(AnnotationNode[] annotation){
+        for(AnnotationNode an:annotation) validateAnnotation(an);
+    }
+    
+    protected void validateAnnotation(AnnotationNode annotation){
+        MethodNode[] mds = annotation.getAnnotationType().getDeclaredMethodNodes();
+        Set<String> attrKeys = annotation.values.keySet();
+        List<String> missingValues = new LinkedList<>();
+        for(MethodNode m:mds){
+            String name = m.name;
+            if(!attrKeys.contains(name)){
+                missingValues.add(name);
+            }
+        }
+        if(missingValues.size()>0){
+            err.fail("Missing attribute for annotation:" + missingValues.toString(), -1, clazz);
+        }
     }
 
 }

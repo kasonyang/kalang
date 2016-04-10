@@ -42,7 +42,7 @@ public abstract class InvocationExpr extends ExprNode {
         if (md != null) {
             return new MethodSelection(md, args);
         } else {
-            MethodNode[] methods = AstUtil.getMethodsByName(specialClass, methodName);
+            MethodNode[] methods = AstUtil.getMethodsByName(specialClass.getMethods(), methodName);
             int matchedCount = 0;
             ExprNode[] matchedParams=null;
             MethodNode matchedMethod = null;

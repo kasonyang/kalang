@@ -215,14 +215,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             parsingPhase = PARSING_PHASE_META;
             this.compilationContext = parser.compilantUnit();
             visit(compilationContext);
-            if(AstUtil.getMethodsByName(classAst, "<init>").length<1){
+            if(AstUtil.getMethodsByName(classAst.getDeclaredMethodNodes(), "<init>").length<1){
                 AstUtil.createEmptyConstructor(classAst);
             }
         }
         if(targetPhase>=PARSING_PHASE_ALL
                 && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
-            for(MethodNode m:classAst.getMethodNodes()){
+            for(MethodNode m:classAst.getDeclaredMethodNodes()){
                 StatContext body = methodBodys.get(m);
                 if(body!=null){
                     method = m;
@@ -685,12 +685,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     public void methodIsAmbigurous(Token token , String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
-        reportError("method is ambigurous:" + AstUtil.getMethodDescriptor(methodName, types, className), token);
+        reportError("method is ambigurous:" + AstUtil.getMethodDescription(className,methodName, types), token);
     }
     
     public void methodNotFound(Token token , String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
-        reportError("method not found:" + AstUtil.getMethodDescriptor(methodName, types, className), token);
+        reportError("method not found:" + AstUtil.getMethodDescription(className,methodName, types), token);
     }
     
     public void reportError(String msg, Token token) {

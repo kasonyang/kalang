@@ -20,6 +20,7 @@ import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.util.AstUtil;
 
 /**
  * The class loads ast from java class
@@ -33,6 +34,19 @@ public class JavaAstLoader extends AstLoader {
     private ClassLoader javaClassLoader;
     
     private Map<String,ClassNode> loadedClasses  =new HashMap<>();
+    
+    private static String getMethodDescriptor(Executable m){
+        Class<?>[] pts = m.getParameterTypes();
+        String[] types = new String[pts.length];
+        for(int i=0;i<types.length;i++){
+            types[i] = pts[i].getName();
+        }
+        String returnType = "V";
+        if(m instanceof Method){
+            returnType = ((Method)m).getReturnType().getName();
+        }
+        return AstUtil.getMethodDescriptor(m.getName(),returnType, types);
+    }
 
     /**
      * build ast from java class
@@ -58,8 +72,26 @@ public class JavaAstLoader extends AstLoader {
             }
         }
         List<Executable> methods = new LinkedList();
-        methods.addAll(Arrays.asList(clz.getMethods()));
-        methods.addAll(Arrays.asList(clz.getConstructors()));
+        methods.addAll(Arrays.asList(clz.getDeclaredMethods()));
+        methods.addAll(Arrays.asList(clz.getDeclaredConstructors()));
+        Class[] itfs = clz.getInterfaces();
+        //TODO should default method of  interface becomes a declared method
+        //MethodNode[] mds = methods.toArray(new MethodNode[0]);
+        List<String> declaredMethods = new LinkedList<>();
+        for(Executable m:methods){
+            declaredMethods.add(getMethodDescriptor(m));
+        }
+        if(itfs!=null){
+            for(Class i:itfs){
+                for(Method m:i.getMethods()){
+                    if(
+                            m.isDefault() 
+                            && !declaredMethods.contains(getMethodDescriptor(m))){
+                        methods.add(m);
+                    }
+                }
+            }
+        }
         for (Executable m : methods) {
             MethodNode methodNode = cn.createMethodNode();
             for (Parameter p : m.getParameters()) {

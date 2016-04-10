@@ -32,24 +32,46 @@ import kalang.core.Types;
 public class AstUtil {
 
 
-   public static String getMethodDescriptor(String name, Type[] types, String className) {
-        String typeStr = "";
+    public static String getMethodDescriptor(String name,String returnType,String... paramTypes){
+        return String.format("%s(%s)%s", name,String.join(",", paramTypes),returnType);
+    }
+   public static String getMethodDescriptor(String name,Type returnType,Type[] types) {
+        List<String> typeStrList = new ArrayList<>(types.length);
         if(types!=null){
-             List<String> typeStrList = new ArrayList<>(types.length);
              for(Type t:types){
                  typeStrList.add(t.getName());
              }
-              typeStr = String.join(",", typeStrList);
         }
-        String str = String.format("%s(%s)", name, typeStr);
-        if (className != null) {
-            str = String.format("%s#%s", className, str);
-        }
-        return str;
+        return  getMethodDescriptor(name, returnType.getName(),typeStrList.toArray(new String[0]));
     }
+   
+   public static String getParametersDescription(Type[] types){
+       List<String> tys = new ArrayList<>(types.length);
+       for(Type t:types){
+           tys.add(t.getName());
+       }
+       return String.format("(%s)", String.join(",", tys));
+   }
+   
+   public static MethodNode getMethodByDescriptor(MethodNode[] mds,String descriptor){
+       for(MethodNode m:mds){
+           if(getMethodDescriptor(m).equals(descriptor)){
+               return m;
+           }
+       }
+       return null;
+   }
+   
+   public static String getMethodDescription(String className,String name,Type[] types) {
+       return String.format("%s#%s(%s)", className,name,getParametersDescription(types));
+   }
+   
+   public static String getMethodDescription(MethodNode node,String className){
+       return String.format("%s#%s(%s)", className,node.name,getParametersDescription(getParameterTypes(node)));
+   }
 
-    public static String getMethodDescriptor(MethodNode node, String className) {
-        return getMethodDescriptor(node.name, getParameterTypes(node), className);
+    public static String getMethodDescriptor(MethodNode node) {
+        return getMethodDescriptor(node.name, node.type, getParameterTypes(node));
     }
 
     public static FieldNode getField(ClassNode ast, String name) {
@@ -75,7 +97,7 @@ public class AstUtil {
     @Nonnull
     public static List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassNode theInterface) {
         List<MethodNode> list = new LinkedList();
-        for (MethodNode m : theInterface.getMethodNodes()) {
+        for (MethodNode m : theInterface.getMethods()) {
             String name = m.name;
             Type[] types = getParameterTypes(m);
             //MethodNode[] methods = getMethodsByName(theClass, name);
@@ -89,7 +111,7 @@ public class AstUtil {
     
     public static void createEmptyConstructor(ClassNode clazzNode){
        ClassNode parent = clazzNode.parent;
-       MethodNode[] methods = parent.getMethodNodes();
+       MethodNode[] methods = parent.getDeclaredMethodNodes();
        for(MethodNode m:methods){
            if(m.name.equals("<init>")){
                MethodNode mm = clazzNode.createMethodNode();
@@ -132,9 +154,9 @@ public class AstUtil {
         return names;
     }
 
-    public static MethodNode[] getMethodsByName(ClassNode cls, String methodName) {
+    public static MethodNode[] getMethodsByName(MethodNode[] mds, String methodName) {
         List<MethodNode> methods = new LinkedList();
-        for (MethodNode m : cls.getMethodNodes()) {
+        for (MethodNode m : mds) {
             if (m.name.equals(methodName)) {
                 methods.add(m);
             }
@@ -178,7 +200,7 @@ public class AstUtil {
     }
 
     public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types) {
-       MethodNode[] methods = getMethodsByName(cls, methodName);
+       MethodNode[] methods = getMethodsByName(cls.getMethods(), methodName);
         for(MethodNode m:methods){
            Type[] mdTypes = getParameterTypes(m);
            if(Arrays.equals(mdTypes, types)) return m;

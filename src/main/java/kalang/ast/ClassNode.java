@@ -4,6 +4,7 @@
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
+import kalang.util.AstUtil;
 public class ClassNode extends AstNode implements Annotationable{
     
     public int modifier;
@@ -93,8 +94,25 @@ public class ClassNode extends AstNode implements Annotationable{
         return md;
     }
     
-    public MethodNode[] getMethodNodes(){
+    public MethodNode[] getDeclaredMethodNodes(){
         return methods.toArray(new MethodNode[0]);
+    }
+    
+    public MethodNode[] getMethods(){
+        Map<String,MethodNode> mds = new HashMap<>();
+        if(parent!=null){
+            MethodNode[] parentMds = parent.getMethods();
+            for(MethodNode m:parentMds){
+                String descriptor = AstUtil.getMethodDescriptor(m);
+                mds.put(descriptor, m);
+            }
+        }
+        MethodNode[] decMds = getDeclaredMethodNodes();
+        for(MethodNode m:decMds){
+            String descriptor = AstUtil.getMethodDescriptor(m);
+            mds.put(descriptor, m);
+        }
+        return mds.values().toArray(new MethodNode[0]);        
     }
     
     public boolean isSubclassOf(ClassNode clazz){

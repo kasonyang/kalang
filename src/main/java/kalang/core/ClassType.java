@@ -54,7 +54,7 @@ public class ClassType extends Type{
 
     @Override
     public MethodNode[] getMethods() {
-        return clazz.getMethodNodes();
+        return clazz.getMethods();
     }
 
     @Override
