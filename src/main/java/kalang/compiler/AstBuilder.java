@@ -110,6 +110,7 @@ import kalang.core.Type;
 import kalang.core.Types;
 import kalang.util.BoxUtil;
 import kalang.util.OffsetRangeHelper;
+import kalang.util.StringLiteralUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -1167,8 +1168,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ce.setValue((Object) chars[1]);
         } else if (ctx.StringLiteral() != null) {
             ce.setConstType(Types.STRING_CLASS_TYPE);
-            //TODO parse string
-            ce.setValue(t.substring(1, t.length() - 1));
+            ce.setValue(StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
         } else {
             ce.setConstType(Types.NULL_TYPE);
         }

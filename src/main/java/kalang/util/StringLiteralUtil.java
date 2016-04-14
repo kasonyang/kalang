@@ -6,6 +6,7 @@ package kalang.util;
 public class StringLiteralUtil {
     
     public static String parse(String literal){
+        //TODO parse unicode
         char[] cs = literal.toCharArray();
         StringBuilder sb = new StringBuilder();
         int i = 0;
