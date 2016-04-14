@@ -159,6 +159,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 throw new UnsupportedOperationException(obj.getClass().getName());
             }
             for(String v:an.values.keySet()){
+                //TODO wrong implement
                 av.visit(v, an.values.get(v));
             }
         }
