@@ -258,6 +258,7 @@ literal
     |   CharacterLiteral 
     |   StringLiteral 
     |   BooleanLiteral 
+    |   Identifier '.' 'class'
     |   'null' 
     ;
 

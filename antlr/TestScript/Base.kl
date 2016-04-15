@@ -99,4 +99,7 @@ class{
     public String toString(){
         return "test";
     }
+    public String classConst(){
+        return Base.class.getName();
+    }
 }

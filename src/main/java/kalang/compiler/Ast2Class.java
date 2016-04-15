@@ -159,8 +159,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 throw new UnsupportedOperationException(obj.getClass().getName());
             }
             for(String v:an.values.keySet()){
-                //TODO wrong implement
-                av.visit(v, an.values.get(v));
+                Object javaConst = getJavaConst(an.values.get(v));
+                av.visit(v, javaConst);
             }
         }
     }
@@ -532,14 +532,33 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitInsn(at.getOpcode(op));
         return null;
     }
+    
+    protected Object getJavaConst(ConstExpr ce){
+        Type ct = ce.getConstType();
+        if(ct.equals(Types.NULL_TYPE)){
+            return null;
+        }else if(ct.equals(Types.CLASS_TYPE)){
+            return asmType(ct);
+        }else{
+            if(
+                    Types.isNumber(ct)
+                    || Types.isBoolean(ct)
+                    || ct.equals(Types.CHAR_CLASS_TYPE)
+                    || ct.equals(Types.STRING_CLASS_TYPE)
+                    ){
+                return ce.getValue();
+            }
+            throw new UnknownError("unknown const expr:" + ce);
+        }
+    }
 
     @Override
     public Object visitConstExpr(ConstExpr node) {
-        Object v = node.getValue();
+        Object v = getJavaConst(node);
         if(v==null){
             md.visitInsn(ACONST_NULL);
         }else{
-            md.visitLdcInsn(node.getValue());
+            md.visitLdcInsn(v);
         }
         return null;
     }

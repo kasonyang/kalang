@@ -186,6 +186,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     @Nullable
+    private ClassReference requireClassReference(@Nonnull Token token){
+        ClassNode ast = requireAst(token);
+        if(ast==null) return null;
+        return new ClassReference(ast);
+    }
+    
+    @Nullable
     private ClassType requireClassType(@Nonnull Token token){
         return requireClassType(token.getText(),token);
     }
@@ -1169,8 +1176,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         } else if (ctx.StringLiteral() != null) {
             ce.setConstType(Types.STRING_CLASS_TYPE);
             ce.setValue(StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
-        } else {
+        }else if(ctx.Identifier()!=null){
+            ClassReference cr = requireClassReference(ctx.Identifier().getSymbol());
+            ce.setConstType(Types.CLASS_TYPE);
+            ce.setValue(cr);
+        } else if(ctx.getText().equals("null")) {
             ce.setConstType(Types.NULL_TYPE);
+        }else{
+            throw new UnknownError("unknown literal:"+ctx.getText());
         }
         mapAst(ce,ctx);
         return ce;

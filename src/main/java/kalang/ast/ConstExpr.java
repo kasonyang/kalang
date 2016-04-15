@@ -48,4 +48,10 @@ public class ConstExpr extends ExprNode{
         Objects.requireNonNull(constType);
         this.constType = constType;
     }
+
+    @Override
+    public String toString() {
+        return "ConstExpr{" + "value=" + value + ", constType=" + constType + '}';
+    }
+    
 }

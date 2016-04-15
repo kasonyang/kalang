@@ -80,6 +80,7 @@ public class Types {
             ,MAP_IMPL_CLASS_TYPE
             ,LIST_IMPL_CLASS_TYPE
             ,EXCEPTION_CLASS_TYPE
+            ,CLASS_TYPE
             ;
             
     static {
@@ -99,6 +100,7 @@ public class Types {
             MAP_IMPL_CLASS_TYPE = getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
             LIST_IMPL_CLASS_TYPE = getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
             EXCEPTION_CLASS_TYPE = getClassType(astLoader.loadAst("java.lang.Exception"));
+            CLASS_TYPE = getClassType("java.lang.Class");
         } catch (AstNotFoundException ex) {
             //ex.printStackTrace();
             throw new RuntimeException(ex);
