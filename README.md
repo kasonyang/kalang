@@ -45,9 +45,6 @@ More usages please run
 
     >kalang -h
 
-# IDE support
-
-Netbeans [Kalang-support](https://github.com/kasonyang/kalang-support)
 
 #TODOs
 
