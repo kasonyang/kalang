@@ -32,6 +32,7 @@ public class Compiler {
         OPTIONS.addOption("s", true, "source directory");
         OPTIONS.addOption("o", true, "output directory");
         OPTIONS.addOption("run", true, "run the class with special name");
+        //OPTIONS.addOption("t",true,"set the output type,should be one of class,java");
     }
 
     public static void printUsage() {

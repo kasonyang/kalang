@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import kalang.ast.ClassNode;
 import kalang.compiler.Ast2Class;
 import kalang.compiler.Ast2Java;
+import kalang.compiler.Ast2JavaStub;
 import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
@@ -17,6 +18,7 @@ import kalang.compiler.CompileConfiguration;
 import kalang.compiler.CompileConfigurationProxy;
 import kalang.compiler.CompileError;
 import kalang.compiler.CompileErrorHandler;
+import kalang.compiler.CompilePhase;
 import kalang.compiler.DefaultCompileConfiguration;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
@@ -141,6 +143,29 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
         this.codeGenerator = codeGenerator;
     }
     
-    
+    public void generateJavaStub(File outputDir) {
+        int oldPhase = getCompileTargetPhase();
+        setCompileTargetPhase(CompilePhase.PHASE_BUILDAST);
+        super.compile();
+        HashMap<String, CompilationUnit> sourceAsts = getAllCompilationUnit();
+        for(Map.Entry<String, CompilationUnit> a:sourceAsts.entrySet()){
+            Ast2JavaStub a2js = new Ast2JavaStub();
+            a2js.generate(a.getValue().getAst());
+            String stubCode = a2js.getJavaStubCode();
+            String path = ClassNameUtil.getRelativePathOfClass(a.getValue().getAst().name, ".java");
+            if(outputDir==null){
+                System.out.println(stubCode);
+            }else{
+                File of = new File(outputDir,path);
+                try {
+                    FileUtils.writeStringToFile(of, stubCode,false);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+                
+        }
+        setCompileTargetPhase(oldPhase);
+    }
 
 }

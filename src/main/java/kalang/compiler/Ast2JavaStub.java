@@ -31,14 +31,26 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     @Override
     public Void visitMethodNode(MethodNode node) {
         sb.append(Modifier.toString(node.modifier))
-                .append(" native ")
+                .append(" ");
+        boolean isConstructor = "<init>".equals(node.name);
+        if(isConstructor){
+            sb.append(AstUtil.getClassNameWithoutPackage(node.classNode.name));
+        }else{
+            sb.append("native ")
                 .append(node.type)
                 .append(" ")
-                .append(node.name)
-                .append("(");
-         super.visitMethodNode(node);
-         sb.append(");\n");
-         return null;
+                .append(node.name);
+        }
+        sb.append("(");
+        super.visitMethodNode(node);
+        sb.append(")");
+        if(isConstructor){
+            sb.append("{}");
+        }else{
+            sb.append(";");
+        }
+        sb.append('\n');
+        return null;
     }
 
     @Override
