@@ -253,4 +253,23 @@ public class AstUtil {
                 ObjectInvokeExpr.create(thisExpr, "<init>", null)
         );
     }
+    
+    @Nullable
+    public static String getPackageName(String name){
+        int dotIdx = name.lastIndexOf('.');
+        if (dotIdx > 0) {
+            return name.substring(0, dotIdx);
+        }else{
+            return null;
+        }
+    }
+    
+    public static String getClassNameWithoutPackage(String name){
+        int dotIdx = name.lastIndexOf('.');
+        if (dotIdx > 0) {
+            return name.substring(dotIdx + 1);
+        }else{
+            return name;
+        }
+    }
 }
