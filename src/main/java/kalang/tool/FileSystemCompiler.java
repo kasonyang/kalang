@@ -131,7 +131,7 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
         this.codeGenerator = codeGenerator;
     }
     
-    public void generateJavaStub(File outputDir) {
+    public void generateJavaStub(OutputManager om) {
         int oldPhase = getCompileTargetPhase();
         setCompileTargetPhase(CompilePhase.PHASE_BUILDAST);
         super.compile();
@@ -140,13 +140,14 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
             Ast2JavaStub a2js = new Ast2JavaStub();
             a2js.generate(a.getValue().getAst());
             String stubCode = a2js.getJavaStubCode();
-            String path = ClassNameUtil.getRelativePathOfClass(a.getValue().getAst().name, "java");
-            if(outputDir==null){
+            String className = (a.getValue().getAst().name);
+            if(om==null){
                 System.out.println(stubCode);
-            }else{
-                File of = new File(outputDir,path);
+            }else{                
                 try {
-                    FileUtils.writeStringToFile(of, stubCode,false);
+                    OutputStream os = om.createOutputStream(className);
+                    //TODO should set encoding?
+                    os.write(stubCode.getBytes());
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
