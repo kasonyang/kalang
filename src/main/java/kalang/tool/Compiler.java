@@ -66,7 +66,7 @@ public class Compiler {
             if (cli.hasOption("o")) {
                 outPath = cli.getOptionValue("o");
             }
-            fsc.setOutputDir(new File(outPath));
+            fsc.setOutputManager(new FileSystemOutputManager(new File(outPath), "class"));
             File currentDir = new File(".");
             String[] srcs = cli.getArgs();
             for(String s:srcs){

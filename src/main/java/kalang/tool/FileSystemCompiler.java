@@ -34,8 +34,8 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
     private Map<String, File> sourceFiles = new HashMap<>();
 
     private List<URL> classPaths = new LinkedList<>();
-
-    private File outputDir;
+    
+    private OutputManager outputManager;
 
     public FileSystemCompiler() {
         this(new DefaultCompileConfiguration());
@@ -88,14 +88,6 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
         super.compile();
     }
 
-    public File getOutputDir() {
-        return outputDir;
-    }
-
-    public void setOutputDir(File outputDir) {
-        this.outputDir = outputDir;
-    }
-
     @Override
     public void handleCompileError(CompileError error) {
         String cname = error.getCompilationUnit().getSource().getClassName();
@@ -119,20 +111,16 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
     @Override
     public void generate(ClassNode classNode) {
         String cls = classNode.name;
-        if (outputDir != null) {
-                String fname = cls.replace(".", "/");// + ".java";
-                File destFile = new File(outputDir, fname + ".java");
-                File classDest = new File(outputDir,fname + ".class");
-                try{
-                    FileUtils.write(destFile,generateJavaCode(classNode));
-                    FileUtils.writeByteArrayToFile(classDest,generateClassBytes(classNode));
-                }catch(IOException ex){
-                    //TODO report io exception
-                    System.err.println(ex.getMessage());
-                }
-            } else {
-                System.out.println(generateJavaCode(classNode));
+        if (outputManager != null) {
+            try {
+                OutputStream os = outputManager.createOutputStream(cls);
+                //os.write(generateJavaCode(classNode).getBytes());
+                os.write(generateClassBytes(classNode));
+            } catch (IOException ex) {
+                //TODO handle ex
+                Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
     }
 
     public CodeGenerator getCodeGenerator() {
@@ -152,7 +140,7 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
             Ast2JavaStub a2js = new Ast2JavaStub();
             a2js.generate(a.getValue().getAst());
             String stubCode = a2js.getJavaStubCode();
-            String path = ClassNameUtil.getRelativePathOfClass(a.getValue().getAst().name, ".java");
+            String path = ClassNameUtil.getRelativePathOfClass(a.getValue().getAst().name, "java");
             if(outputDir==null){
                 System.out.println(stubCode);
             }else{
@@ -166,6 +154,14 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
                 
         }
         setCompileTargetPhase(oldPhase);
+    }
+
+    public OutputManager getOutputManager() {
+        return outputManager;
+    }
+
+    public void setOutputManager(OutputManager outputManager) {
+        this.outputManager = outputManager;
     }
 
 }

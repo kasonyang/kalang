@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import kalang.compiler.CompileError;
 import kalang.tool.FileSystemCompiler;
+import kalang.tool.FileSystemOutputManager;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -20,7 +21,7 @@ public class ExamplesTest extends FileSystemCompiler{
     public void testExamples() throws IOException {
         addSourceDir(new File("examples"));
         addSourceDir(new File("TestScript/source"));
-        setOutputDir(new File("build/examples"));
+        setOutputManager(new FileSystemOutputManager(new File("build/examples"),"class"));
         compile();
     }
 
