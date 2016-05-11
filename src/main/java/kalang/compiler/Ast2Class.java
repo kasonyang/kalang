@@ -194,7 +194,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if(staticFields.size()>0){
             md = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
             for(FieldNode f:staticFields){
-                assignField(f,null,f.initExpr);
+                if(f.initExpr!=null){
+                    assignField(f,null,f.initExpr);
+                }
             }
             md.visitInsn(RETURN);
             md.visitMaxs(1, 1);
@@ -228,7 +230,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 List<FieldNode> fields = clazz.fields;
                 for(FieldNode f:fields){
                     if(!Modifier.isStatic(f.modifier)){
-                        assignField(new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), f) , f.initExpr);
+                        if(f.initExpr!=null){
+                            assignField(new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), f) , f.initExpr);
+                        }
                     }
                 }
                 for(int i=1;i<stmtsSize;i++){
