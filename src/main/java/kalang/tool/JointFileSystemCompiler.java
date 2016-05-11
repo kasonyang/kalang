@@ -4,13 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import kalang.ast.ClassNode;
+import kalang.compiler.AstNotFoundException;
 import kalang.java.MemoryCompiler;
 import kalang.java.MemoryFileManager;
+import kalang.util.ClassNameUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -20,14 +24,16 @@ import org.apache.commons.io.FilenameUtils;
  */
 public class JointFileSystemCompiler extends FileSystemCompiler{
     
-    final List<File> javaFiles = new LinkedList();
+    final Map<String,File> javaFiles = new HashMap<>();
     
 
     @Override
     public void addSourceDir(File sourceDir) throws IOException {
         Collection<File> files = FileUtils.listFiles(sourceDir, new String[]{"java"}, true);
         if(files!=null){
-            javaFiles.addAll(files);
+            for(File f:files){
+                addSource(sourceDir, f);
+            }
         }
         super.addSourceDir(sourceDir);
     }
@@ -35,18 +41,39 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     @Override
     public void addSource(File srcDir, File file) throws IOException {
         if(file.getName().endsWith(".java")){
-            javaFiles.add(file);
+            String className = ClassNameUtil.getClassName(srcDir, file);
+            javaFiles.put(className,file);
         }else{
             super.addSource(srcDir, file);
         }
     }
+    
+    private ClassNode createMockClass(String className){
+        ClassNode node = new ClassNode();
+        node.name = className;
+        return node;
+    }
+
+    @Override
+    protected ClassNode findAst(String className) throws AstNotFoundException {
+        try{
+            return super.findAst(className);
+        }catch(AstNotFoundException ex){
+            if(javaFiles.containsKey(className)){
+                return createMockClass(className);
+            }
+            throw ex;
+        }
+    }
+    
+    
 
     @Override
     public void compile() {
         MemoryOutputManager om = new MemoryOutputManager();
         generateJavaStub(om);
         MemoryCompiler javaCompiler = new MemoryCompiler();
-        for(File f:javaFiles){
+        for(File f:javaFiles.values()){
             javaCompiler.addSourceFromFile(f);
         }
         String[] stubNames = om.getClassNames();

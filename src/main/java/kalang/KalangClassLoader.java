@@ -36,7 +36,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
         super(new URL[0]);
         sourceLoader = new FileSystemSourceLoader(sourceDir);
         CodeGenerator cg = this;
-        compiler = new KalangCompiler(new DefaultCompileConfiguration(){
+        compiler = new KalangCompiler(){
             @Override
             public SourceLoader getSourceLoader() {
                 return sourceLoader;
@@ -47,7 +47,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
                 return cg;
             }
             
-        });
+        };
     }
     
     @Override

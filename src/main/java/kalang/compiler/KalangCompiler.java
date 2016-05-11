@@ -5,13 +5,16 @@ import kalang.ast.ClassNode;
 import java.util.HashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import kalang.antlr.KalangLexer;
+import kalang.antlr.KalangParser;
 import static kalang.compiler.CompilePhase.*;
+import org.antlr.v4.runtime.CommonTokenStream;
 /**
  * The core compiler
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class KalangCompiler extends AstLoader {
+public class KalangCompiler extends AstLoader implements CompileConfiguration{
         
     private int compileTargetPhase = PHASE_ALL;
 
@@ -19,6 +22,8 @@ public class KalangCompiler extends AstLoader {
 
     @Nonnull
     private final HashMap<String, KalangSource> sources = new HashMap();
+    
+    protected CompileConfiguration configuration = new DefaultCompileConfiguration();
     
     private int compilingPhase;
 
@@ -30,7 +35,7 @@ public class KalangCompiler extends AstLoader {
     //@Nullable
     //private SourceLoader sourceLoader;
     
-    protected CompileConfiguration configuration;
+    //protected CompileConfiguration configuration;
     
     @Nonnull
     protected CompileErrorHandler compileErrorHandler = (e) -> {
@@ -39,13 +44,6 @@ public class KalangCompiler extends AstLoader {
      };
 
     public KalangCompiler() {
-        this(new DefaultCompileConfiguration());
-    }
-
-    public KalangCompiler(@Nonnull CompileConfiguration configuration) {
-        this.configuration = configuration;
-        //this.astLoader = configuration.getAstLoader();
-        //this.sourceLoader = configuration.getSourceLoader();
     }
 
     /**
@@ -100,14 +98,14 @@ public class KalangCompiler extends AstLoader {
         if (compilationUnits.containsKey(className)) {
             return compilationUnits.get(className).getAst();
         }
-        SourceLoader sourceLoader = configuration.getSourceLoader();
+        SourceLoader sourceLoader = getSourceLoader();
         if (sourceLoader != null) {
             KalangSource source = sourceLoader.loadSource(className);
             if (source != null) {
                 return createCompilationUnit(source).getAst();
             }
         }
-        return configuration.getAstLoader().findAst(className);
+        return getAstLoader().findAst(className);
     }
 
     @Nonnull
@@ -136,12 +134,11 @@ public class KalangCompiler extends AstLoader {
     
     protected CompilationUnit newCompilationUnit(KalangSource source){
         AstLoader that = this;
-        return new CompilationUnit(source,new CompileConfigurationProxy(configuration){
+        return new CompilationUnit(source,new CompileConfigurationProxy(this){
             @Override
             public AstLoader getAstLoader() {
                 return that;
-            }
-            
+            }            
         });
     }
 
@@ -156,6 +153,46 @@ public class KalangCompiler extends AstLoader {
 
     public int getCurrentCompilePhase() {
         return compilingPhase;
+    }
+
+    @Override
+    public KalangLexer createLexer(CompilationUnit compilationUnit, String source) {
+        return configuration.createLexer(compilationUnit, source);
+    }
+
+    @Override
+    public CommonTokenStream createTokenStream(CompilationUnit compilationUnit, KalangLexer lexer) {
+        return configuration.createTokenStream(compilationUnit, lexer);
+    }
+
+    @Override
+    public KalangParser createParser(CompilationUnit compilationUnit, CommonTokenStream tokenStream) {
+        return configuration.createParser(compilationUnit, tokenStream);
+    }
+
+    @Override
+    public AstBuilder createAstBuilder(CompilationUnit compilationUnit, KalangParser parser) {
+        return configuration.createAstBuilder(compilationUnit, parser);
+    }
+
+    @Override
+    public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
+        return configuration.createCodeGenerator(compilationUnit);
+    }
+
+    @Override
+    public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
+        return configuration.createSemanticAnalyzer(compilationUnit, astLoader);
+    }
+
+    @Override
+    public AstLoader getAstLoader() {
+        return configuration.getAstLoader();
+    }
+
+    @Override
+    public SourceLoader getSourceLoader() {
+        return configuration.getSourceLoader();
     }
 
 }
