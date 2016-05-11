@@ -35,6 +35,21 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
 
     private List<URL> classPaths = new LinkedList<>();
     
+    protected MultiClassLoader classLoader;
+    
+    public void addClassLoader(ClassLoader classLoader){
+        this.classLoader.addClassLoader(classLoader);
+    }
+    
+    public MultiClassLoader getClassLoader(){
+        //TODO bug?
+        if(classLoader == null){
+            URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[classPaths.size()]));
+            classLoader = new MultiClassLoader(pathClassLoader);
+        }
+        return classLoader;
+    }
+    
     private OutputManager outputManager;
 
     public FileSystemCompiler() {
@@ -46,8 +61,7 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
         super.configuration =  new CompileConfigurationProxy(config){
             @Override
             public AstLoader getAstLoader() {
-                URLClassLoader urlClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]));
-                JavaAstLoader astLoader = new JavaAstLoader(urlClassLoader);
+                JavaAstLoader astLoader = new JavaAstLoader(getClassLoader());
                 return astLoader;
             }
 

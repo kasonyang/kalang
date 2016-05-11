@@ -51,7 +51,7 @@ public class Compiler {
             run(cli);
             return;
         }else{
-            FileSystemCompiler fsc = new FileSystemCompiler();
+            FileSystemCompiler fsc = new JointFileSystemCompiler();
             File[] cps = parseClassPath(cli);
             if(cps!=null){
                 for (File cp : cps) {
