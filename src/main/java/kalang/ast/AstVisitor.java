@@ -1,6 +1,6 @@
 package kalang.ast;
 
-public class AstVisitor<T> extends AbstractAstVisitor<T> implements IAstVisitor<T>{
+public class AstVisitor<T> extends AbstractAstVisitor<T>{
     
     @Override
     public T visitClassNode(ClassNode node){

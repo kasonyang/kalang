@@ -38,12 +38,12 @@ public class PrimitiveType extends Type{
 
     @Override
     public FieldNode[] getFields() {
-        return null;
+        return new FieldNode[0];
     }
 
     @Override
     public MethodNode[] getMethods() {
-        return null;
+        return new MethodNode[0];
     }
 
 }

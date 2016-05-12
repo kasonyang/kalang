@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
 import kalang.util.ClassNameUtil;
 import org.apache.commons.io.FileUtils;
@@ -241,6 +243,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         int mdf = node.modifier;
         if (mname.equals("<init>")) {
             mdf = mdf & (~Modifier.STATIC);
+            Objects.requireNonNull(cls, "cls must be not null");
             int lastIdx = cls.name.lastIndexOf(".");
             if (lastIdx < 0) {
                 mname = cls.name;
@@ -395,8 +398,10 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         String target;
         if (node instanceof ObjectFieldExpr) {//object field
             target = visit(((ObjectFieldExpr)node).getTarget());
-        } else { //static field
+        } else if(node instanceof StaticFieldExpr) { //static field
             target = ((StaticFieldExpr)node).getClassReference().getReferencedClassNode().name;
+        }else{
+            throw Exceptions.unsupportedTypeException(node);
         }
         return target
                 + "."
@@ -421,10 +426,12 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
 //                    invokeTarget = "super.";
 //                }
             }
-        }else{
+        }else if(node instanceof StaticInvokeExpr){
             StaticInvokeExpr sie = (StaticInvokeExpr) node;
             invokeTarget = sie.getInvokeClass().getReferencedClassNode().name;
             fullCallName = invokeTarget + "." + mname;
+        }else{
+            throw Exceptions.unsupportedTypeException(node);
         }
         String args = String.join(",", visitAll(node.getArguments()));
             return fullCallName + "("

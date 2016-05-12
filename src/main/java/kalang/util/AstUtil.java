@@ -178,6 +178,7 @@ public class AstUtil {
      * @param target
      * @return array when matched,null when not
      */
+    @Nullable
     public static ExprNode[] matchTypes(ExprNode[] args,Type[] from, Type[] target) {
         if(args==null) return null;
         if(from==null || from.length==0){
@@ -211,6 +212,7 @@ public class AstUtil {
         return null;
     }
 
+    @Nullable
     public static Type[] getExprTypes(ExprNode[] exprs) {
         if(exprs==null) return null;
         Type[] types = new Type[exprs.length];
@@ -247,7 +249,6 @@ public class AstUtil {
     }
     
     public static Statement createDefaultSuperConstructorCall(ClassNode clazz) throws MethodNotFoundException, AmbiguousMethodException{
-       ClassType clsType = Types.getClassType(clazz);
        SuperExpr thisExpr = new SuperExpr(clazz);
         return new ExprStmt(
                 ObjectInvokeExpr.create(thisExpr, "<init>", null)

@@ -78,14 +78,16 @@ public class MemoryCompiler extends ClassLoader{
     }
     
     public void printDiagnostic(){
-        for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
-            System.out.println(diagnostic.getCode());
-            System.out.println(diagnostic.getKind());
-            System.out.println(diagnostic.getPosition());
-            System.out.println(diagnostic.getStartPosition());
-            System.out.println(diagnostic.getEndPosition());
-            System.out.println(diagnostic.getSource());
-            System.out.println(diagnostic.getMessage(null));
+        if(diagnosticCollector!=null){
+            for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
+                System.out.println(diagnostic.getCode());
+                System.out.println(diagnostic.getKind());
+                System.out.println(diagnostic.getPosition());
+                System.out.println(diagnostic.getStartPosition());
+                System.out.println(diagnostic.getEndPosition());
+                System.out.println(diagnostic.getSource());
+                System.out.println(diagnostic.getMessage(null));
+            }
         }
     }
     
@@ -103,11 +105,13 @@ public class MemoryCompiler extends ClassLoader{
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        Map<String, byte[]> bs = fileManager.getBytes();
-        if(bs!=null){
-            byte[] data = bs.get(name);
-            if(data!=null){
-                return defineClass(name, data,0,data.length);
+        if(fileManager!=null){
+            Map<String, byte[]> bs = fileManager.getBytes();
+            if(bs!=null){
+                byte[] data = bs.get(name);
+                if(data!=null){
+                    return defineClass(name, data,0,data.length);
+                }
             }
         }
         //TODO set classLoader

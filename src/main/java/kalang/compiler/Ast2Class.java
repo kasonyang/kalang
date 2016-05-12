@@ -66,6 +66,7 @@ import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import static kalang.core.Types.*;
+import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -481,7 +482,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private void assign(ExprNode to,ExprNode from){
-        org.objectweb.asm.Type type = asmType(from.getType());
         if(to instanceof FieldExpr){
             FieldExpr toField = (FieldExpr) to;
             assignField(toField, from);
@@ -604,7 +604,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if (node instanceof StaticInvokeExpr) {
             opc = INVOKESTATIC;
             ownerClass = internalName(((StaticInvokeExpr) node).getInvokeClassType().getClassNode());
-        } else {
+        } else if(node instanceof ObjectInvokeExpr) {
             ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
             ownerClass = internalName(oie.getInvokeTarget().getType());
             ExprNode target = oie.getInvokeTarget();
@@ -614,6 +614,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             } else {
                 opc = INVOKEVIRTUAL;
             }
+        }else{
+            throw Exceptions.unsupportedTypeException(node);
         }
         visitAll(node.getArguments());
         md.visitMethodInsn(

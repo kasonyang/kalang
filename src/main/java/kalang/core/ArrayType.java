@@ -51,7 +51,7 @@ public class ArrayType extends ClassType{
 
     @Override
     public MethodNode[] getMethods() {
-        return null;
+        return new MethodNode[0];
     }
 
 //    @Override

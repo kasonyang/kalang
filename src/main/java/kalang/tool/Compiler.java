@@ -90,7 +90,7 @@ public class Compiler {
             }
             return file;
         }
-        return null;
+        return new File[0];
     }
     
     public static void run(CommandLine cli){
