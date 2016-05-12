@@ -34,4 +34,8 @@ public class KalangSource {
         this.fileName = fileName;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
+
 }

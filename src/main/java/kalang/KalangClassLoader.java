@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.ast.ClassNode;
-import kalang.compiler.Ast2Class;
+import kalang.compiler.codegen.Ast2Class;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.DefaultCompileConfiguration;

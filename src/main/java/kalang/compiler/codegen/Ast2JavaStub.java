@@ -1,4 +1,4 @@
-package kalang.compiler;
+package kalang.compiler.codegen;
 
 import java.lang.reflect.Modifier;
 import kalang.ast.AbstractAstVisitor;
@@ -7,6 +7,7 @@ import kalang.ast.ClassNode;
 import kalang.ast.FieldNode;
 import kalang.ast.MethodNode;
 import kalang.ast.ParameterNode;
+import kalang.compiler.CodeGenerator;
 import kalang.util.AstUtil;
 
 /**

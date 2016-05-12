@@ -1,5 +1,5 @@
 
-package kalang.compiler;
+package kalang.compiler.codegen;
 import kalang.ast.AbstractAstVisitor;
 import kalang.ast.AssignExpr;
 import kalang.ast.AstVisitor;
@@ -60,6 +60,7 @@ import kalang.ast.SuperExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
+import kalang.compiler.CodeGenerator;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;

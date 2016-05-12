@@ -1,4 +1,4 @@
-package kalang.compiler;
+package kalang.compiler.codegen;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import kalang.compiler.CodeGenerator;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.exception.Exceptions;

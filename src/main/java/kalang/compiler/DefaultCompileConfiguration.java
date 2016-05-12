@@ -1,5 +1,6 @@
 
 package kalang.compiler;
+import kalang.compiler.codegen.Ast2Java;
 import java.io.*;
 import java.nio.*;
 import java.net.*;
