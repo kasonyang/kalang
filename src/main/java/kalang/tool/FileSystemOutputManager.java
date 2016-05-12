@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import kalang.util.ClassNameUtil;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -24,7 +25,8 @@ public class FileSystemOutputManager implements OutputManager{
     @Override
     public OutputStream createOutputStream(String className) throws IOException{
         String relativePath = ClassNameUtil.getRelativePathOfClass(className, extention);
-        return new FileOutputStream(new File(outputDir,relativePath));
+        File outputFile = new File(outputDir,relativePath);
+        return FileUtils.openOutputStream(outputFile, false);
     }
 
 }
