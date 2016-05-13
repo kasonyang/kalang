@@ -4,8 +4,8 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
-import kalang.compiler.AmbiguousMethodException;
-import kalang.compiler.MethodNotFoundException;
+import kalang.AmbiguousMethodException;
+import kalang.MethodNotFoundException;
 import kalang.util.AstUtil;
 /**
  *

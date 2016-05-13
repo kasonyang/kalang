@@ -2,7 +2,7 @@ package kalang.test;
 
 import kalang.ast.ClassNode;
 import kalang.compiler.AstLoader;
-import kalang.compiler.AstNotFoundException;
+import kalang.AstNotFoundException;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.Types;

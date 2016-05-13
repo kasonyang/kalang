@@ -1,4 +1,4 @@
-package kalang.compiler;
+package kalang.util;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,96 +25,96 @@ public class MathType   {
      public static final java.lang.String OP_DIV_STR="/";
      public static final java.lang.String OP_MOD_STR="%";
      public static boolean isFloatPoint(java.lang.String type) {
-         return ((type.equals(kalang.compiler.MathType.FLOAT_STR))||(type.equals(kalang.compiler.MathType.DOUBLE_STR)));
+         return ((type.equals(kalang.util.MathType.FLOAT_STR))||(type.equals(kalang.util.MathType.DOUBLE_STR)));
          
     }
      public static boolean isFloatPoint(int type) {
-         return ((type==kalang.compiler.MathType.FLOAT)||(type==kalang.compiler.MathType.DOUBLE));
+         return ((type==kalang.util.MathType.FLOAT)||(type==kalang.util.MathType.DOUBLE));
          
     }
      public static int getType(java.lang.String type) {
-         if((type.equals(kalang.compiler.MathType.INT_STR))) {
-             return kalang.compiler.MathType.INT;
+         if((type.equals(kalang.util.MathType.INT_STR))) {
+             return kalang.util.MathType.INT;
              
         }
-         if((type.equals(kalang.compiler.MathType.LONG_STR))) {
-             return kalang.compiler.MathType.LONG;
+         if((type.equals(kalang.util.MathType.LONG_STR))) {
+             return kalang.util.MathType.LONG;
              
         }
-         if((type.equals(kalang.compiler.MathType.FLOAT_STR))) {
-             return kalang.compiler.MathType.FLOAT;
+         if((type.equals(kalang.util.MathType.FLOAT_STR))) {
+             return kalang.util.MathType.FLOAT;
              
         }
-         if((type.equals(kalang.compiler.MathType.DOUBLE_STR))) {
-             return kalang.compiler.MathType.DOUBLE;
+         if((type.equals(kalang.util.MathType.DOUBLE_STR))) {
+             return kalang.util.MathType.DOUBLE;
              
         }
          return 0;
          
     }
      public static java.lang.String getTypeStr(int type) {
-         if((type==kalang.compiler.MathType.INT)) {
-             return kalang.compiler.MathType.INT_STR;
+         if((type==kalang.util.MathType.INT)) {
+             return kalang.util.MathType.INT_STR;
              
         }
-         if((type==kalang.compiler.MathType.LONG)) {
-             return kalang.compiler.MathType.LONG_STR;
+         if((type==kalang.util.MathType.LONG)) {
+             return kalang.util.MathType.LONG_STR;
              
         }
-         if((type==kalang.compiler.MathType.FLOAT)) {
-             return kalang.compiler.MathType.FLOAT_STR;
+         if((type==kalang.util.MathType.FLOAT)) {
+             return kalang.util.MathType.FLOAT_STR;
              
         }
-         if((type==kalang.compiler.MathType.DOUBLE)) {
-             return kalang.compiler.MathType.DOUBLE_STR;
+         if((type==kalang.util.MathType.DOUBLE)) {
+             return kalang.util.MathType.DOUBLE_STR;
              
         }
          return "";
          
     }
      public static int getOperation(java.lang.String op) {
-         if((op.equals(kalang.compiler.MathType.OP_ADD_STR))) {
-             return kalang.compiler.MathType.OP_ADD;
+         if((op.equals(kalang.util.MathType.OP_ADD_STR))) {
+             return kalang.util.MathType.OP_ADD;
              
         }
-         if((op.equals(kalang.compiler.MathType.OP_SUB_STR))) {
-             return kalang.compiler.MathType.OP_SUB;
+         if((op.equals(kalang.util.MathType.OP_SUB_STR))) {
+             return kalang.util.MathType.OP_SUB;
              
         }
-         if((op.equals(kalang.compiler.MathType.OP_MUL_STR))) {
-             return kalang.compiler.MathType.OP_MUL;
+         if((op.equals(kalang.util.MathType.OP_MUL_STR))) {
+             return kalang.util.MathType.OP_MUL;
              
         }
-         if((op.equals(kalang.compiler.MathType.OP_DIV_STR))) {
-             return kalang.compiler.MathType.OP_DIV;
+         if((op.equals(kalang.util.MathType.OP_DIV_STR))) {
+             return kalang.util.MathType.OP_DIV;
              
         }
-         if((op.equals(kalang.compiler.MathType.OP_MOD_STR))) {
-             return kalang.compiler.MathType.OP_MOD;
+         if((op.equals(kalang.util.MathType.OP_MOD_STR))) {
+             return kalang.util.MathType.OP_MOD;
              
         }
          return 0;
          
     }
      public static java.lang.String getOperationStr(int op) {
-         if((op==kalang.compiler.MathType.OP_ADD)) {
-             return kalang.compiler.MathType.OP_ADD_STR;
+         if((op==kalang.util.MathType.OP_ADD)) {
+             return kalang.util.MathType.OP_ADD_STR;
              
         }
-         if((op==kalang.compiler.MathType.OP_SUB)) {
-             return kalang.compiler.MathType.OP_SUB_STR;
+         if((op==kalang.util.MathType.OP_SUB)) {
+             return kalang.util.MathType.OP_SUB_STR;
              
         }
-         if((op==kalang.compiler.MathType.OP_MUL)) {
-             return kalang.compiler.MathType.OP_MUL_STR;
+         if((op==kalang.util.MathType.OP_MUL)) {
+             return kalang.util.MathType.OP_MUL_STR;
              
         }
-         if((op==kalang.compiler.MathType.OP_DIV)) {
-             return kalang.compiler.MathType.OP_DIV_STR;
+         if((op==kalang.util.MathType.OP_DIV)) {
+             return kalang.util.MathType.OP_DIV_STR;
              
         }
-         if((op==kalang.compiler.MathType.OP_MOD)) {
-             return kalang.compiler.MathType.OP_MOD_STR;
+         if((op==kalang.util.MathType.OP_MOD)) {
+             return kalang.util.MathType.OP_MOD_STR;
              
         }
          return "";
@@ -129,15 +129,15 @@ public class MathType   {
          
     }
      public static int getType(int type1,int type2,int op) {
-         if(((isFloatPoint(type1)||isFloatPoint(type2))||(op==kalang.compiler.MathType.OP_DIV))) {
-             return kalang.compiler.MathType.DOUBLE;
+         if(((isFloatPoint(type1)||isFloatPoint(type2))||(op==kalang.util.MathType.OP_DIV))) {
+             return kalang.util.MathType.DOUBLE;
              
         }
-         if(((type1==kalang.compiler.MathType.LONG)||(type2==kalang.compiler.MathType.LONG))) {
-             return kalang.compiler.MathType.LONG;
+         if(((type1==kalang.util.MathType.LONG)||(type2==kalang.util.MathType.LONG))) {
+             return kalang.util.MathType.LONG;
              
         }
-         return kalang.compiler.MathType.INT;
+         return kalang.util.MathType.INT;
          
     }
      

@@ -1,5 +1,5 @@
 
-package kalang.compiler;
+package kalang;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>

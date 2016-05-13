@@ -1,5 +1,5 @@
 
-package kalang.compiler;
+package kalang;
 import java.io.*;
 import java.nio.*;
 import java.net.*;
@@ -8,9 +8,9 @@ import java.util.*;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class FieldNotFoundException extends Exception{
+public class MethodNotFoundException extends Exception{
 
-    public FieldNotFoundException(String message) {
+    public MethodNotFoundException(String message) {
         super(message);
     }
     

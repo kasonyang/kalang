@@ -1,5 +1,9 @@
 package kalang.compiler;
 
+import kalang.MethodNotFoundException;
+import kalang.FieldNotFoundException;
+import kalang.AmbiguousMethodException;
+import kalang.AstNotFoundException;
 import javax.annotation.Nonnull;
 import kalang.ast.ClassNode;
 import kalang.ast.ElementExpr;

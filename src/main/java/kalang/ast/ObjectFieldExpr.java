@@ -6,7 +6,7 @@ import java.net.*;
 import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import kalang.compiler.FieldNotFoundException;
+import kalang.FieldNotFoundException;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.util.AstUtil;

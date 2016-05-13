@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.ast.ClassNode;
-import kalang.compiler.AstNotFoundException;
+import kalang.AstNotFoundException;
 import kalang.java.MemoryCompiler;
 import kalang.java.MemoryFileManager;
 import kalang.util.ClassNameUtil;

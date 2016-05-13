@@ -1,5 +1,6 @@
 package kalang.compiler;
 
+import kalang.AstNotFoundException;
 import java.util.HashMap;
 
 import kalang.ast.ClassNode;

@@ -1,4 +1,4 @@
-package kalang.compiler;
+package kalang;
 
 public class AstNotFoundException extends Exception {
 

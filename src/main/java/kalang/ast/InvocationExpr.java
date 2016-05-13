@@ -3,8 +3,8 @@ package kalang.ast;
 import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import kalang.compiler.AmbiguousMethodException;
-import kalang.compiler.MethodNotFoundException;
+import kalang.AmbiguousMethodException;
+import kalang.MethodNotFoundException;
 import kalang.core.*;
 import kalang.util.AstUtil;
 

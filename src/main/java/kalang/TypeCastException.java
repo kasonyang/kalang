@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package kalang.compiler;
+package kalang;
 import java.io.*;
 import java.nio.*;
 import java.net.*;

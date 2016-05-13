@@ -1,5 +1,6 @@
 package kalang.compiler;
 
+import kalang.AstNotFoundException;
 import kalang.ast.ClassNode;
 import kalang.ast.VarObject;
 import kalang.ast.MethodNode;

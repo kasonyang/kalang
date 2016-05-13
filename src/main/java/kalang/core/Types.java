@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.compiler.AstLoader;
-import kalang.compiler.AstNotFoundException;
+import kalang.AstNotFoundException;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;

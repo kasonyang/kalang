@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
-import kalang.compiler.FieldNotFoundException;
+import kalang.FieldNotFoundException;
 import kalang.util.AstUtil;
 /**
  *

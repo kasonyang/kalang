@@ -3,7 +3,7 @@ import java.util.*;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import kalang.compiler.FieldNotFoundException;
+import kalang.FieldNotFoundException;
 import kalang.core.*;
 import kalang.util.AstUtil;
 public abstract class FieldExpr extends AssignableExpr{

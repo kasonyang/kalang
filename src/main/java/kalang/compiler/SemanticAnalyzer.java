@@ -1,5 +1,6 @@
 package kalang.compiler;
 
+import kalang.util.MathType;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
