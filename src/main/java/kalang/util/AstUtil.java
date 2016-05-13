@@ -25,6 +25,12 @@ import kalang.ast.SuperExpr;
 import kalang.ast.VarExpr;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
+import kalang.ast.AssignExpr;
+import kalang.ast.ClassReference;
+import kalang.ast.FieldExpr;
+import kalang.ast.ObjectFieldExpr;
+import kalang.ast.ReturnStmt;
+import kalang.ast.StaticFieldExpr;
 import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -273,4 +279,58 @@ public class AstUtil {
             return name;
         }
     }
+    
+    public static void createGetter(ClassNode clazz,FieldNode field,int accessModifier){
+        String fn = field.name;
+        String getterName = "get" + NameUtil.firstCharToUpperCase(fn);
+        boolean isStatic = isStatic(field.modifier);
+        MethodNode getter = clazz.createMethodNode();
+        getter.offset = field.offset;
+        getter.name = getterName;
+        getter.modifier = accessModifier;
+        getter.type = field.getType();
+        BlockStmt body = new BlockStmt();
+        FieldExpr fe;
+        ClassReference cr = new ClassReference(clazz);
+        if(isStatic){
+            if(!isStatic(getter.modifier)){
+                getter.modifier |= Modifier.STATIC;
+            }
+            fe = new StaticFieldExpr(cr, field);
+        }else{
+            fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
+        }
+        body.statements.add(new ReturnStmt(fe));
+        getter.body = body;
+    }
+    
+    public static void createSetter(ClassNode clazz,FieldNode field,int accessModifier){
+        String fn = field.name;
+        String setterName = "set" + NameUtil.firstCharToUpperCase(fn);
+        boolean isStatic = isStatic(field.modifier);
+        MethodNode setter = clazz.createMethodNode();
+        setter.offset = field.offset;
+        setter.name = setterName;
+        setter.modifier = accessModifier;
+        setter.type = Types.VOID_TYPE;
+        ParameterNode param = ParameterNode.create(setter);
+        param.type = field.getType();
+        param.name = field.name;
+        setter.parameters.add(param);
+        BlockStmt body = new BlockStmt();
+        FieldExpr fe;
+        ExprNode paramVal = new ParameterExpr(param);
+        ClassReference cr = new ClassReference(clazz);
+        if(isStatic){
+            if(!isStatic(setter.modifier)){
+                setter.modifier |= Modifier.STATIC;
+            }
+            fe = new StaticFieldExpr(cr, field);
+        }else{
+            fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
+        }
+        body.statements.add(new ExprStmt(new AssignExpr(fe,paramVal)));
+        setter.body = body;
+    }
+    
 }

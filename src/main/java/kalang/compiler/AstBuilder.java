@@ -113,6 +113,7 @@ import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.util.BoxUtil;
+import kalang.util.ModifierUtil;
 import kalang.util.OffsetRangeHelper;
 import kalang.util.StringLiteralUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -543,6 +544,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             FieldNode fieldNode = classAst.createField();
             fieldNode.modifier = mdf;
             varDecl(vd,fieldNode);
+            //AstUtil.createGetter(classAst, fieldNode, mdf);
+            //AstUtil.createSetter(classAst, fieldNode, mdf);
         }
         return null;
     }
