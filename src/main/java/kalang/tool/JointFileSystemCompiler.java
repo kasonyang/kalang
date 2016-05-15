@@ -111,7 +111,12 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     }
 
     protected void handleJavaDiagnostic(Diagnostic<? extends JavaFileObject> d) {
-        System.err.println(d.getMessage(null));
+        JavaFileObject source = d.getSource();
+        if(source!=null){
+            System.err.println(source.getName() + ":" + d.getLineNumber());
+        }
+        
+        System.err.println(d.getKind() + ":" + d.getMessage(null));
     }
     
     
