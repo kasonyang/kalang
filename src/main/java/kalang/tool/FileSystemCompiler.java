@@ -34,7 +34,7 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
 
     private Map<String, File> sourceFiles = new HashMap<>();
 
-    private List<URL> classPaths = new LinkedList<>();
+    protected List<URL> classPaths = new LinkedList<>();
     
     protected MultiClassLoader classLoader;
     private List<File> sourcePaths = new LinkedList<>();

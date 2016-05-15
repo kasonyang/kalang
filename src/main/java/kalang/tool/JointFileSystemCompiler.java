@@ -3,6 +3,9 @@ package kalang.tool;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -105,6 +108,9 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
             }
             
         };
+        for(URL p:classPaths){
+            javaCompiler.addClassPath(p);
+        }
         for(File f:javaFiles.values()){
             javaCompiler.addSourceFromFile(f);
         }

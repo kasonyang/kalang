@@ -3,6 +3,8 @@ package kalang.java;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -22,6 +24,8 @@ import org.apache.commons.io.FileUtils;
 public class MemoryCompiler extends ClassLoader{
     
     protected final List<JavaFileObject> sources = new LinkedList<>();
+    
+    protected final List<URL> classPaths = new LinkedList<>();
     
     protected MemoryFileManager fileManager;
     private DiagnosticCollector<JavaFileObject> diagnosticCollector;
@@ -56,12 +60,14 @@ public class MemoryCompiler extends ClassLoader{
         for (JavaFileObject sf : sources) {
             jfiles.add(sf);
         }
-        //String[] options = new String[2];
-        //options[0] = "-d";
-        //options[1] = outputPath;//String.format("\"%s\"", outputPath);
+        List<String> options = new LinkedList<>();
+        String classPath = buildClassPathOption();
+        System.out.println("classpath:" + classPath);
+        options.add("-classpath");
+        options.add(classPath);
         StandardJavaFileManager sfm = compiler.getStandardFileManager(null, null, null);
         fileManager = createFileManager(sfm);
-        CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector, null, null, jfiles);
+        CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector,options, null, jfiles);
         return task.call();
     }
     
@@ -138,7 +144,21 @@ public class MemoryCompiler extends ClassLoader{
         return super.findClass(name);
     }
     
+    protected String buildClassPathOption(){
+        List<String> paths = new ArrayList<>(classPaths.size());
+        for(URL cp:classPaths){
+            try {
+                paths.add(new File(cp.toURI()).getAbsolutePath());
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(MemoryCompiler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return String.join(";", paths);
+    }
     
+    public void addClassPath(URL path){
+        classPaths.add(path);
+    }
     
 }
 
