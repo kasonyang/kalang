@@ -312,7 +312,11 @@ public class AstUtil {
         setter.offset = field.offset;
         setter.name = setterName;
         setter.modifier = accessModifier;
-        setter.type = Types.VOID_TYPE;
+        if(isStatic(accessModifier)){
+            setter.type = Types.VOID_TYPE;
+        }else{
+            setter.type = Types.getClassType(clazz);
+        }
         ParameterNode param = ParameterNode.create(setter);
         param.type = field.getType();
         param.name = field.name;
@@ -330,6 +334,9 @@ public class AstUtil {
             fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
         }
         body.statements.add(new ExprStmt(new AssignExpr(fe,paramVal)));
+        if(!isStatic(accessModifier)){
+            body.statements.add(new ReturnStmt(new ThisExpr(Types.getClassType(clazz))));
+        }
         setter.body = body;
     }
     

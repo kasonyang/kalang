@@ -112,8 +112,10 @@ import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
 import kalang.util.ModifierUtil;
+import kalang.util.NameUtil;
 import kalang.util.OffsetRangeHelper;
 import kalang.util.StringLiteralUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -542,10 +544,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         int mdf = this.parseModifier(ctx.varModifier());
         for(VarDeclContext vd:ctx.varDecl()){
             FieldNode fieldNode = classAst.createField();
-            fieldNode.modifier = mdf;
+            fieldNode.modifier =ModifierUtil.setPrivate(mdf);
             varDecl(vd,fieldNode);
-            //AstUtil.createGetter(classAst, fieldNode, mdf);
-            //AstUtil.createSetter(classAst, fieldNode, mdf);
+            AstUtil.createGetter(classAst, fieldNode, mdf);
+            AstUtil.createSetter(classAst, fieldNode, mdf);
         }
         return null;
     }
@@ -833,7 +835,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
     }
     
-    protected ExprNode createFieldExpr(ExprGetFieldContext to,ExpressionContext fromCtx){
+    protected ExprNode createFieldExpr(ExprGetFieldContext to,@Nullable ExpressionContext fromCtx){
         String refKey = to.refKey.getText();
         ExpressionContext exp = to.expression();
         String fname = to.Identifier().getText();
@@ -861,25 +863,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 return new AssignExpr(toExpr,visitExpression(fromCtx));
             }
         }else if(refKey.equals("->")){
-            ClassNode ast = getAst("kalang.runtime.dynamic.FieldVisitor");
-            if(ast==null) throw new UnknownError();
+            //ClassNode ast = getAst("kalang.runtime.dynamic.FieldVisitor");
+            //if(ast==null) throw new UnknownError();
             ExprNode[] params;
             String methodName;
             if(fromCtx==null){
-                params = new ExprNode[2];
-                methodName = "get";
+                params = new ExprNode[0];
+                methodName = "get" + NameUtil.firstCharToUpperCase(fname);
             }else{
-                params = new ExprNode[3];
-                methodName = "set";
+                params = new ExprNode[1];
+                methodName = "set" + NameUtil.firstCharToUpperCase(fname);
             }
-            if(expr instanceof ClassReference){
-                params[0] = null;
-            }else if(expr instanceof ExprNode){
-                params[0] = (ExprNode) expr;
+            if(expr instanceof ExprNode){
+                //params[0] = (ExprNode) expr;
+                if(fromCtx!=null) params[0] = visitExpression(fromCtx);
+                return getObjectInvokeExpr((ExprNode)expr, methodName, params, to);
+            }else{
+                //TODO handle static property
+                throw Exceptions.unsupportedTypeException(expr);
             }
-            params[1] = BoxUtil.newStringExpr(fname);
-            if(fromCtx!=null) params[2] = visitExpression(fromCtx);
-            return getStaticInvokeExpr(new ClassReference(ast),methodName,params, to);
+            //return getStaticInvokeExpr(new ClassReference(classAst),methodName,params, to);
         }else{
             throw new UnsupportedOperationException(refKey);
         }
@@ -980,6 +983,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,List<ExpressionContext> argumentsCtx,ParserRuleContext ctx){
         ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
+        return getObjectInvokeExpr(target, methodName, args, ctx);
+    }
+    
+    private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,ExprNode[] args,ParserRuleContext ctx){
         ExprNode expr;
         try {
             expr = ObjectInvokeExpr.create(target, methodName, args);
