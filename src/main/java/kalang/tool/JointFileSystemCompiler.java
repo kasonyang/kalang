@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaFileObject;
 import kalang.ast.ClassNode;
 import kalang.AstNotFoundException;
 import kalang.java.MemoryCompiler;
@@ -82,7 +85,10 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
             javaCompiler.addSourceFromString(n, code);
         }
         if(!javaCompiler.compile()){
-            javaCompiler.printDiagnostic();
+            DiagnosticCollector<JavaFileObject> dc = javaCompiler.getDiagnosticCollector();
+            for(Diagnostic<? extends JavaFileObject> d : dc.getDiagnostics()){
+                handleJavaDiagnostic(d);
+            }
             return;
         }
         Map<String, byte[]> bytes = javaCompiler.getFileManager().getBytes();
@@ -102,6 +108,10 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         }
         classLoader.addClassLoader(javaCompiler);
         super.compile();
+    }
+
+    protected void handleJavaDiagnostic(Diagnostic<? extends JavaFileObject> d) {
+        System.err.println(d.getMessage(null));
     }
     
     
