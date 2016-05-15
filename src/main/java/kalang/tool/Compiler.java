@@ -51,7 +51,7 @@ public class Compiler {
             run(cli);
             return;
         }else{
-            FileSystemCompiler fsc = new JointFileSystemCompiler();
+            JointFileSystemCompiler fsc = new JointFileSystemCompiler();
             File[] cps = parseClassPath(cli);
             if(cps!=null){
                 for (File cp : cps) {
@@ -61,7 +61,7 @@ public class Compiler {
             String outPath = ".";
             if (cli.hasOption("s")) {
                 String srcPath = cli.getOptionValue("s");
-                fsc.addSourceDir(new File(srcPath));
+                fsc.addKalangAndJavaSourceDir(new File(srcPath));
             }
             if (cli.hasOption("o")) {
                 outPath = cli.getOptionValue("o");
@@ -72,9 +72,10 @@ public class Compiler {
             for(String s:srcs){
                 File srcFile = new File(s);
                 if(srcFile.isDirectory()){
-                    fsc.addSourceDir(srcFile);
+                    fsc.addKalangAndJavaSourceDir(srcFile);
                 }else{
-                    fsc.addSource(currentDir , srcFile);
+                    //TODO here should be currenDir?
+                    fsc.addKalangOrJavaSource(currentDir , srcFile);
                 }
             }
             fsc.compile();

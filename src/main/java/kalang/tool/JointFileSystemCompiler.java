@@ -28,27 +28,32 @@ import org.apache.commons.io.FilenameUtils;
 public class JointFileSystemCompiler extends FileSystemCompiler{
     
     final Map<String,File> javaFiles = new HashMap<>();
-    
-
-    @Override
-    public void addSourceDir(File sourceDir) throws IOException {
+   
+    public void addJavaSourceDir(File sourceDir) throws IOException {
         Collection<File> files = FileUtils.listFiles(sourceDir, new String[]{"java"}, true);
         if(files!=null){
             for(File f:files){
-                addSource(sourceDir, f);
+                addJavaSource(sourceDir, f);
             }
         }
-        super.addSourceDir(sourceDir);
     }
-
-    @Override
-    public void addSource(File srcDir, File file) throws IOException {
+    
+    public void addKalangOrJavaSource(File dir,File file) throws IOException{
         if(file.getName().endsWith(".java")){
-            String className = ClassNameUtil.getClassName(srcDir, file);
-            javaFiles.put(className,file);
+            addJavaSource(dir, file);
         }else{
-            super.addSource(srcDir, file);
+            addSource(dir, file);
         }
+    }
+    
+    public void addKalangAndJavaSourceDir(File srcDir) throws IOException{
+        addSourceDir(srcDir);
+        addJavaSourceDir(srcDir);
+    }
+    
+    public void addJavaSource(File srcDir,File file){
+        String className = ClassNameUtil.getClassName(srcDir, file);
+        javaFiles.put(className,file);
     }
     
     private ClassNode createMockClass(String className){
