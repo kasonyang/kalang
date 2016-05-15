@@ -711,12 +711,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     public void reportError(String msg, Token token) {
-        SourceParsingException ex = new SourceParsingException(msg, compilationUnit ,OffsetRangeHelper.getOffsetRange(token), this);
+        SourceParsingError ex = new SourceParsingError(msg, compilationUnit ,OffsetRangeHelper.getOffsetRange(token), this);
         errorHandler.handleCompileError(ex);
     }
 
     public void reportError(String msg,ParserRuleContext tree) {
-        SourceParsingException ex = new SourceParsingException(msg,compilationUnit ,OffsetRangeHelper.getOffsetRange(tree), this);
+        SourceParsingError ex = new SourceParsingError(msg,compilationUnit ,OffsetRangeHelper.getOffsetRange(tree), this);
         errorHandler.handleCompileError(ex);
     }
 

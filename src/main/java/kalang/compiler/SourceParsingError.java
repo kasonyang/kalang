@@ -17,11 +17,11 @@ import org.antlr.v4.runtime.Token;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class SourceParsingException extends CompileError{
+public class SourceParsingError extends CompileError{
     
     private final AstBuilder astBuilder;
 
-    public SourceParsingException(String description,CompilationUnit source,OffsetRange offset,AstBuilder astBuilder) {
+    public SourceParsingError(String description,CompilationUnit source,OffsetRange offset,AstBuilder astBuilder) {
         super(description, source, offset);
         this.astBuilder = astBuilder;
     }
