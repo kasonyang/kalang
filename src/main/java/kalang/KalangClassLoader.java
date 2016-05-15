@@ -34,7 +34,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
 
     public KalangClassLoader(File[] sourceDir) {
         super(new URL[0]);
-        sourceLoader = new FileSystemSourceLoader(sourceDir);
+        sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});
         CodeGenerator cg = this;
         compiler = new KalangCompiler(){
             @Override

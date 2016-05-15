@@ -20,29 +20,35 @@ import org.apache.commons.io.IOCase;
 public class FileSystemSourceLoader implements SourceLoader {
 
     private final List<File> srcDirs = new ArrayList<>();
-
-    public FileSystemSourceLoader() {
-    }
     
-    public FileSystemSourceLoader(File[] srcDir) {
+    private final List<String> extentions = new ArrayList<>();
+    
+    public FileSystemSourceLoader(File[] srcDir,String[] extentions) {
         this.srcDirs.addAll(Arrays.asList(srcDir));
+        this.extentions.addAll(Arrays.asList(extentions));
     }
     
     public void addSourceDir(File dir){
         srcDirs.add(dir);
     }
     
+    public void addExtention(String ext){
+        extentions.add(ext);
+    }
+    
     @Override
     public KalangSource loadSource(String className) {
-        String fn = className.replace(".", "/") + ".kl";
-        for(File s:srcDirs){
-            File srcFile = new File(s,fn);
-            if(FilePathUtil.existFile(srcFile)){
-                try {
-                    return KalangSourceUtil.create(s,srcFile);
-                } catch (IOException ex) {
-                    Logger.getLogger(FileSystemSourceLoader.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
+        for(String e:extentions){
+            String fn = className.replace(".", "/") + "." + e;
+            for(File s:srcDirs){
+                File srcFile = new File(s,fn);
+                if(FilePathUtil.existFile(srcFile)){
+                    try {
+                        return KalangSourceUtil.create(s,srcFile);
+                    } catch (IOException ex) {
+                        Logger.getLogger(FileSystemSourceLoader.class.getName()).log(Level.SEVERE, null, ex);
+                        return null;
+                    }
                 }
             }
         }

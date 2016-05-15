@@ -7,6 +7,7 @@ import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -26,7 +27,7 @@ public class MemoryCompiler extends ClassLoader{
     private DiagnosticCollector<JavaFileObject> diagnosticCollector;
     
     public void addSourceFromFile(File file){
-        SimpleJavaFileObject s = new SimpleJavaFileObject(URI.create(file.getName()),SimpleJavaFileObject.Kind.SOURCE){             
+        SimpleJavaFileObject s = new SimpleJavaFileObject(file.toURI(),SimpleJavaFileObject.Kind.SOURCE){             
             @Override
             public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
                 String str = "";
@@ -43,12 +44,7 @@ public class MemoryCompiler extends ClassLoader{
     }
     
     public void addSourceFromString(String className,String content){
-        SimpleJavaFileObject s = new SimpleJavaFileObject(URI.create(className.replace(".", "/") + ".java"),JavaFileObject.Kind.SOURCE){
-            @Override
-            public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                return content;
-            }
-        };
+        SimpleJavaFileObject s =new StringJavaSource(className,content);
         sources.add(s);
     }
 
@@ -64,9 +60,33 @@ public class MemoryCompiler extends ClassLoader{
         //options[0] = "-d";
         //options[1] = outputPath;//String.format("\"%s\"", outputPath);
         StandardJavaFileManager sfm = compiler.getStandardFileManager(null, null, null);
-        fileManager = new MemoryFileManager((sfm));
+        fileManager = createFileManager(sfm);
         CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector, null, null, jfiles);
         return task.call();
+    }
+    
+    protected MemoryFileManager createFileManager(StandardJavaFileManager sfm){
+        return new MemoryFileManager((sfm)){
+            @Override
+            public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
+                JavaFileObject fo = super.getJavaFileForInput(location, className, kind);
+                if(fo!=null){
+                    return fo;
+                }
+                if(kind == JavaFileObject.Kind.SOURCE){
+                    String js = loadJavaSource(className);
+                    if(js!=null){
+                        return new StringJavaSource(className, js);
+                    }
+                }
+                return null;
+            }
+            
+        };
+    }
+    
+    protected String loadJavaSource(String className) throws IOException{
+        return null;
     }
 
     public MemoryFileManager getFileManager() {

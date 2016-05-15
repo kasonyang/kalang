@@ -19,6 +19,7 @@ import kalang.AstNotFoundException;
 import kalang.java.MemoryCompiler;
 import kalang.java.MemoryFileManager;
 import kalang.util.ClassNameUtil;
+import kalang.util.FilePathUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -29,6 +30,12 @@ import org.apache.commons.io.FilenameUtils;
 public class JointFileSystemCompiler extends FileSystemCompiler{
     
     final Map<String,File> javaFiles = new HashMap<>();
+    
+    final List<File> javaSourcePath = new LinkedList<>();
+    
+    public void addJavaSourcePath(File path){
+        javaSourcePath.add(path);
+    }
    
     public void addJavaSourceDir(File sourceDir) throws IOException {
         Collection<File> files = FileUtils.listFiles(sourceDir, new String[]{"java"}, true);
@@ -86,7 +93,18 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     public void compile() {
         MemoryOutputManager om = new MemoryOutputManager();
         generateJavaStub(om);
-        MemoryCompiler javaCompiler = new MemoryCompiler();
+        JointFileSystemCompiler that = this;
+        MemoryCompiler javaCompiler = new MemoryCompiler(){
+            @Override
+            protected String loadJavaSource(String className) throws IOException {
+                String js = super.loadJavaSource(className);
+                if(js!=null){
+                    return js;
+                }
+                return that.loadJavaSource(className);
+            }
+            
+        };
         for(File f:javaFiles.values()){
             javaCompiler.addSourceFromFile(f);
         }
@@ -132,8 +150,17 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     
     @Nullable
     protected String loadJavaSource(String className) throws IOException{
+        //System.out.println("try loading java source:" + className);
         if(javaFiles.containsKey(className)){
             return FileUtils.readFileToString(javaFiles.get(className), "utf-8");
+        }
+        for(File p:javaSourcePath){
+            if(!p.isDirectory()) continue;
+            File f = new File(p,ClassNameUtil.getRelativePathOfClass(className, "java"));
+            if(FilePathUtil.existFile(f)){
+                javaFiles.put(className, f);
+                return FileUtils.readFileToString(f, "utf-8");
+            }
         }
         return null;
     }

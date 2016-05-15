@@ -22,6 +22,7 @@ import kalang.compiler.CompilePhase;
 import kalang.compiler.DefaultCompileConfiguration;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
+import kalang.compiler.SourceLoader;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -36,6 +37,7 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
     private List<URL> classPaths = new LinkedList<>();
     
     protected MultiClassLoader classLoader;
+    private List<File> sourcePaths = new LinkedList<>();
     
     public void addClassLoader(ClassLoader classLoader){
         this.classLoader.addClassLoader(classLoader);
@@ -177,6 +179,15 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
 
     public void setOutputManager(OutputManager outputManager) {
         this.outputManager = outputManager;
+    }
+
+    @Override
+    public SourceLoader getSourceLoader() {
+        return new FileSystemSourceLoader(sourcePaths.toArray(new File[sourcePaths.size()]),new String[]{"kl","kalang"});
+    }
+    
+    public void addSourcePath(File path){
+        sourcePaths.add(path);
     }
 
 }

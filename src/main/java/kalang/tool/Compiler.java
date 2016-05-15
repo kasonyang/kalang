@@ -68,6 +68,8 @@ public class Compiler {
             }
             fsc.setOutputManager(new FileSystemOutputManager(new File(outPath), "class"));
             File currentDir = new File(".");
+            fsc.addJavaSourcePath(currentDir);
+            fsc.addSourcePath(currentDir);
             String[] srcs = cli.getArgs();
             for(String s:srcs){
                 File srcFile = new File(s);
