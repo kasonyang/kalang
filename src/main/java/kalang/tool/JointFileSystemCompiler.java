@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
@@ -67,8 +68,13 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         try{
             return super.findAst(className);
         }catch(AstNotFoundException ex){
-            if(javaFiles.containsKey(className)){
-                return createMockClass(className);
+            try {
+                String javaSource = loadJavaSource(className);
+                if(javaSource!=null){
+                    return createMockClass(className);
+                }  
+            } catch (IOException ex1) {
+                Logger.getLogger(JointFileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex1);
             }
             throw ex;
         }
@@ -124,6 +130,13 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         System.err.println(d.getKind() + ":" + d.getMessage(null));
     }
     
+    @Nullable
+    protected String loadJavaSource(String className) throws IOException{
+        if(javaFiles.containsKey(className)){
+            return FileUtils.readFileToString(javaFiles.get(className), "utf-8");
+        }
+        return null;
+    }
     
 
 }
