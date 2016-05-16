@@ -11,7 +11,7 @@ import org.junit.Test;
  *
  * @author Kason Yang <im@kasonyang.com>
  */
-public class JointCompilerTest extends JointFileSystemCompiler{
+public class JointCompilerTest extends JointCompilerTestCase{
     
     @Test
     public void test() throws IOException{
@@ -19,12 +19,5 @@ public class JointCompilerTest extends JointFileSystemCompiler{
         addJavaSourceDir(new File("TestScript/joint"));
         compile();
     }
-
-    @Override
-    public void handleCompileError(CompileError error) {
-        Assert.fail(error.toString());
-    }
-    
-    
 
 }

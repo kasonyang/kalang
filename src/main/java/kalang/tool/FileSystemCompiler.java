@@ -30,7 +30,7 @@ import org.apache.commons.io.FileUtils;
  * 
  * @author Kason Yang <i@kasonyang.com>
  */
-public class FileSystemCompiler extends KalangCompiler implements CompileErrorHandler,CodeGenerator{
+public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
 
     private Map<String, File> sourceFiles = new HashMap<>();
 
@@ -73,7 +73,15 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
             }
             
         };
-        super.compileErrorHandler = this;
+        super.setCompileErrorHandler(new CompileErrorHandler() {
+            @Override
+            public void handleCompileError(CompileError error) {
+                String cname = error.getCompilationUnit().getSource().getClassName();
+                File fn = sourceFiles.get(cname);
+                System.err.println(fn + ":" + error);
+                setCompileTargetPhase(getCurrentCompilePhase());
+            }
+        });
     }
     
     private CodeGenerator codeGenerator = this;
@@ -102,14 +110,6 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
     @Override
     public void compile() {
         super.compile();
-    }
-
-    @Override
-    public void handleCompileError(CompileError error) {
-        String cname = error.getCompilationUnit().getSource().getClassName();
-        File fn = sourceFiles.get(cname);
-        System.err.println(fn + ":" + error);
-        setCompileTargetPhase(getCurrentCompilePhase());
     }
       
     private String generateJavaCode(ClassNode classNode){

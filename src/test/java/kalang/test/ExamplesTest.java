@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class ExamplesTest extends FileSystemCompiler{
+public class ExamplesTest extends JointCompilerTestCase{
     
     public ExamplesTest() {
     }
@@ -24,13 +24,5 @@ public class ExamplesTest extends FileSystemCompiler{
         setOutputManager(new FileSystemOutputManager(new File("build/examples"),"class"));
         compile();
     }
-
-    @Override
-    public void handleCompileError(CompileError error) {
-        super.handleCompileError(error);
-        fail(error.getDescription());
-    }
-    
-    
     
 }
