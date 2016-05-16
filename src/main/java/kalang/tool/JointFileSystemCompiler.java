@@ -142,7 +142,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                 }
             }
         }
-        classLoader.addClassLoader(javaCompiler);
+        getClassLoader().addClassLoader(javaCompiler);
         super.compile();
     }
 
