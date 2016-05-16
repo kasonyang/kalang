@@ -149,7 +149,8 @@ public class FileSystemCompiler extends KalangCompiler implements CompileErrorHa
     
     public void generateJavaStub(OutputManager om) {
         int oldPhase = getCompileTargetPhase();
-        setCompileTargetPhase(CompilePhase.PHASE_BUILDAST);
+        //TODO here has a bug.It will ignore class reference in method body
+        setCompileTargetPhase(CompilePhase.PHASE_PARSING);
         super.compile();
         HashMap<String, CompilationUnit> sourceAsts = getAllCompilationUnit();
         for(Map.Entry<String, CompilationUnit> a:sourceAsts.entrySet()){
