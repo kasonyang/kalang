@@ -23,153 +23,17 @@ dependencies{
     compile 'commons-io:commons-io:2.5'
     compile 'commons-cli:commons-cli:1.3.1'
 }
-/*
-buildscript {
-    repositories {
-        mavenCentral()  
-    }
-}
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "com.github.jknack:handlebars:4.0.1"
-    }
-}
 
 
-import com.github.jknack.handlebars.Context
-import com.github.jknack.handlebars.Handlebars
-import com.github.jknack.handlebars.Template
-import com.github.jknack.handlebars.context.MapValueResolver
-import com.github.jknack.handlebars.io.ClassPathTemplateLoader
-import com.github.jknack.handlebars.io.TemplateLoader
-def fetchTemplate(String fileName,Map data){
-    Handlebars hb = new Handlebars();
-    def file = new File(fileName);
-    def cnt = file.readLines().join("\r\n");
-    def tpl = hb.compileInline(cnt);
-    Context context = Context
-    .newBuilder(data)
-    .resolver(MapValueResolver.INSTANCE)
-    .build();
-    return tpl.apply(context)
-}
-def templateFile(String simpleTplName,Map data,String outDir,String outName){
-    def dir = new File(outDir)
-    dir.mkdirs()
-    def tplFile = projectDir.getAbsolutePath() + "/script/tpl/${simpleTplName}"
-    new File(dir,outName).withWriter { w ->
-        def cnt = fetchTemplate(tplFile,data)
-        w.write(cnt)
-    }
-}
-def deleteFile(String file){
-    def f = new File(file);
-    if(f.exists()) f.delete();
-}
-def copyFile(String from,String to){
-    new File(from).withReader {is->
-        def cnt = is.readLines().join("\r\n")
-        def toFile = new File(to)
-        toFile.getParentFile().mkdirs()
-        toFile.withWriter { w->
-            w.write(cnt)
+//##maven-publish
+apply plugin: 'maven-publish'
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.kasonyang.kalang'
+            artifactId 'kalang-compiler'
+            version '0.0.2'
+            from components.java
         }
     }
 }
-
-
-
-
-def saveNodeFile(String srcDir,Map cls){
-    def name = cls.name + ".java";
-    String packageName = cls."package";
-    def pkgPath =srcDir + "/" + packageName.replace(".","/")
-    templateFile("Node.tpl",cls,pkgPath,name)
-}
-task "cleanAst"{
-    def srcDir = projectDir.getAbsolutePath() + "/src/main/groovy/jast/ast"
-    deleteFile srcDir
-}
-task "genAst"{
-    def srcDir = projectDir.getAbsolutePath() + "/src/main/groovy/"
-    def packageName = "jast.ast"
-    def packagePath = srcDir+ "/" + packageName.replace(".","/")
-    copyFile(projectDir.getAbsolutePath() + "/script/AstNode.java",packagePath+"/AstNode.java")
-    List<String> nodes = []
-    new File(projectDir.getAbsolutePath() + "/script/nodes").withReader { r ->
-        def cls = [:]
-        String lastSubClass
-        def trySaveNode = {
-            if(cls){
-                saveNodeFile(srcDir,cls)
-            }
-        }
-        r.readLines().each {String ln->
-            if(ln.length()==0 || ln.startsWith("//")){
-                return
-            }
-            if(ln.startsWith("#")||ln.startsWith("@")){
-                trySaveNode()
-                boolean isSubClass = ln.startsWith("@");
-                cls = [:];
-                cls.fields = []
-                cls.listFields = []
-                cls.childFields = []
-                cls."package"=(packageName)
-                if(ln.startsWith("##")){
-                    cls.name = (ln.substring(2));
-                    cls."parent" = (lastSubClass)
-                }else{
-                    cls.name=ln.substring(1);
-                    cls.parent=("AstNode")
-                }
-                if(isSubClass){
-                    lastSubClass = cls.name
-                }else{
-                    nodes.add(cls.name)
-                }
-            }else if(ln.startsWith("+")||ln.startsWith("-")){
-                def ps = ln.substring(1).split(":")
-                def fo = [:];
-                String type = ps[1];
-                String name = ps[0];
-                if(type.endsWith("*")){
-                    type = type.substring(0,type.length()-1)
-                    type = "List<${type}>"
-                    cls.listFields.add(name)
-                }
-                fo.name=name
-                fo.type = (type)
-                cls.fields.add(fo)
-                if(ln.startsWith("+")){
-                    cls.childFields.add(ps[0])
-                }
-            }
-        }
-        trySaveNode();
-    }
-    createVisitor(nodes,packageName,srcDir)
-}
-
-def createVisitor(List<String> nodes,String packageName,String srcDir){
-    def path = srcDir + "/" + packageName.replace(".","/")
-    def data = [:]
-    data.name = "IAstVisitor"
-    data."package" = packageName
-    data.nodes = nodes
-    templateFile("IVisitor.tpl",data,path,data.name + ".java")
-	
-    def vd = [:]
-    vd.name = "AbstractAstVisitor"
-    vd."package" = packageName
-    vd.nodes = nodes
-    vd."interface" = data.name
-    templateFile("AVisitor.tpl",vd,path,vd.name+".java")
-    vd."parent" = vd.name
-    vd.name = "AstVisitor"
-    templateFile("Visitor.tpl",vd,path,vd.name+".java")
-}
-*/
