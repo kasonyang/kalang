@@ -1,3 +1,6 @@
 class{
     JavaClass javaClass;
+    static void main(String[] args){
+        JavaClass.main(args);
+    }
 }

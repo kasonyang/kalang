@@ -74,9 +74,9 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     }
 
     @Override
-    protected ClassNode findAst(String className) throws AstNotFoundException {
+    public ClassNode loadAst(String className) throws AstNotFoundException {
         try{
-            return super.findAst(className);
+            return super.loadAst(className);
         }catch(AstNotFoundException ex){
             try {
                 String javaSource = loadJavaSource(className);
@@ -106,7 +106,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                 }
                 return that.loadJavaSource(className);
             }
-            
+
         };
         for(URL p:classPaths){
             javaCompiler.addClassPath(p);
