@@ -607,13 +607,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ownerClass = internalName(((StaticInvokeExpr) node).getInvokeClassType().getClassNode());
         } else if(node instanceof ObjectInvokeExpr) {
             ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
-            ownerClass = internalName(oie.getInvokeTarget().getType());
+            ClassType targetType = (ClassType) oie.getInvokeTarget().getType();
+            ownerClass = internalName(targetType);
             ExprNode target = oie.getInvokeTarget();
             visit(target);
             if (target instanceof SuperExpr || method.name.equals("<init>")) {
                 opc = INVOKESPECIAL;
             } else {
-                opc = INVOKEVIRTUAL;
+                opc = targetType.getClassNode().isInterface ?
+                        INVOKEINTERFACE : INVOKEVIRTUAL;
             }
         }else{
             throw Exceptions.unsupportedTypeException(node);
