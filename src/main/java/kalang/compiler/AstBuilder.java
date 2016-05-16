@@ -546,8 +546,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             FieldNode fieldNode = classAst.createField();
             fieldNode.modifier =ModifierUtil.setPrivate(mdf);
             varDecl(vd,fieldNode);
-            AstUtil.createGetter(classAst, fieldNode, mdf);
-            AstUtil.createSetter(classAst, fieldNode, mdf);
+            if(!AstUtil.hasGetter(classAst, fieldNode)){
+                AstUtil.createGetter(classAst, fieldNode, mdf);
+            }
+            if(!AstUtil.hasSetter(classAst, fieldNode)){
+                AstUtil.createSetter(classAst, fieldNode, mdf);
+            }
         }
         return null;
     }

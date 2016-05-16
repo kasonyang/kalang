@@ -280,6 +280,16 @@ public class AstUtil {
         }
     }
     
+    public static boolean hasSetter(ClassNode clazz,FieldNode field){
+        MethodNode method = getMethod(clazz, "set" + NameUtil.firstCharToUpperCase(field.name),new Type[]{ field.getType()});
+        return method !=null;
+    }
+    
+    public static boolean hasGetter(ClassNode clazz,FieldNode field){
+        MethodNode method = getMethod(clazz, "get" + NameUtil.firstCharToUpperCase(field.name) , null);
+        return method != null;
+    }
+    
     public static void createGetter(ClassNode clazz,FieldNode field,int accessModifier){
         String fn = field.name;
         String getterName = "get" + NameUtil.firstCharToUpperCase(fn);
