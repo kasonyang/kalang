@@ -479,12 +479,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         VarDeclStmt vds = new VarDeclStmt(vo);
         stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
-        IfStmt is = new IfStmt();
-        is.setConditionExpr((ExprNode) visit(ctx.expression(0)));
+        ExprNode conditionExpr = (ExprNode) visit(ctx.expression(0));
         ExprNode trueExpr = (ExprNode) visit(ctx.expression(1));
         ExprNode falseExpr = (ExprNode)  visit(ctx.expression(2));
-        is.setTrueBody(new ExprStmt(new AssignExpr(ve, trueExpr)));
-        is.setFalseBody(new ExprStmt(new AssignExpr(ve,falseExpr)));
+        IfStmt is = new IfStmt(conditionExpr
+                , new ExprStmt(new AssignExpr(ve, trueExpr))
+                , new ExprStmt(new AssignExpr(ve,falseExpr))
+        );
         Type trueType = trueExpr.getType();
         Type falseType  = falseExpr.getType();
         if(trueType.equals(falseType)){
@@ -516,9 +517,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             cond = be;
         }
         AssignExpr as = new AssignExpr(to, from);
-        IfStmt is = new IfStmt();
-        is.setConditionExpr(cond);
-        is.setTrueBody(new ExprStmt(as));
+        IfStmt is = new IfStmt(cond,new ExprStmt(as),null);
         mapAst(is,ctx);
         return is;
     }
@@ -615,15 +614,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitIfStat(IfStatContext ctx) {
-        IfStmt ifStmt = new IfStmt();
         ExprNode expr = visitExpression(ctx.expression());
-        ifStmt.setConditionExpr(expr);
+        Statement trueBody = null;
+        Statement falseBody = null;
         if (ctx.trueStmt != null) {
-            ifStmt.setTrueBody(visitStat(ctx.trueStmt));
+            trueBody=(visitStat(ctx.trueStmt));
         }
         if (ctx.falseStmt != null) {
-            ifStmt.setFalseBody(visitStat(ctx.falseStmt));
+            falseBody=(visitStat(ctx.falseStmt));
         }
+        IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
         return ifStmt;
     }

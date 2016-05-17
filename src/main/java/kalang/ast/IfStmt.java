@@ -1,8 +1,6 @@
-/*
-
-*/
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.core.*;
 public class IfStmt extends Statement{
     
@@ -12,58 +10,19 @@ public class IfStmt extends Statement{
     
     protected Statement falseBody;
     
-    
-    public IfStmt(){
-        
+    public IfStmt(ExprNode conditionExpr,@Nullable Statement trueBody,@Nullable Statement falseBody){
+        this.conditionExpr = conditionExpr;
+        this.trueBody = trueBody == null ? new BlockStmt() : trueBody;
+        this.falseBody = falseBody == null ? new BlockStmt() : falseBody;
     }
     
-    
-    public IfStmt(ExprNode conditionExpr,Statement trueBody,Statement falseBody){
-        
-        
-            this.conditionExpr = conditionExpr;
-        
-            this.trueBody = trueBody;
-        
-            this.falseBody = falseBody;
-        
-    }
-    
-    
-    public static IfStmt create(){
-        IfStmt node = new IfStmt();
-        
-        return node;
-    }
-    
+    @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
-        addChild(ls, getConditionExpr());
-        
-        addChild(ls, getTrueBody());
-        
-        addChild(ls, getFalseBody());
-        
+        addChild(ls, conditionExpr);
+        addChild(ls, trueBody);
+        addChild(ls, falseBody);
         return ls;
-    }
-    
-    public String toString(){
-        String str = "IfStmt{\r\n";
-        
-        if(getConditionExpr()!=null){
-            str += "  conditionExpr:" + getConditionExpr().toString()+"\r\n";
-        }
-        
-        if(getTrueBody()!=null){
-            str += "  trueBody:" + getTrueBody().toString()+"\r\n";
-        }
-        
-        if(getFalseBody()!=null){
-            str += "  falseBody:" + getFalseBody().toString()+"\r\n";
-        }
-        
-        return str+"}";
     }
 
     /**
