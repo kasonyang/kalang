@@ -27,16 +27,6 @@ public class KalangCompiler extends AstLoader implements CompileConfiguration{
     protected CompileConfiguration configuration = new DefaultCompileConfiguration();
     
     private int compilingPhase;
-
-    //@Nonnull
-    //private AstLoader astLoader = AstLoader.BASE_AST_LOADER;
-    
-    private KalangCompiler myself = this;
-
-    //@Nullable
-    //private SourceLoader sourceLoader;
-    
-    //protected CompileConfiguration configuration;
     
     @Nonnull
     protected CompileErrorHandler compileErrorHandler = (e) -> {
