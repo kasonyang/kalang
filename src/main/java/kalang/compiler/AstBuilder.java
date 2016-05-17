@@ -399,7 +399,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public MultiStmtExpr visitMap(KalangParser.MapContext ctx) {
-        MultiStmtExpr mse = MultiStmtExpr.create();
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = Types.MAP_IMPL_CLASS_TYPE;
@@ -410,7 +409,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             throw new RuntimeException(ex);
         }
         vo.initExpr = newExpr;
-        mse.stmts.add(vds);
+        List<Statement> stmts = new LinkedList<>();
+        stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
         List<TerminalNode> ids = ctx.Identifier();
         for (int i = 0; i < ids.size(); i++) {
@@ -425,9 +425,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 throw new RuntimeException(ex);
             }
             ExprStmt es = new ExprStmt(iv);
-            mse.stmts.add(es);
+            stmts.add(es);
         }
-        mse.reference = ve;
+        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
         mapAst(mse,ctx);
         //TODO set generic toType
         return mse;
@@ -435,7 +435,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public MultiStmtExpr visitListOrArray(KalangParser.ListOrArrayContext ctx) {
-        MultiStmtExpr mse = MultiStmtExpr.create();
+        List<Statement> stmts = new LinkedList<>();
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = Types.LIST_IMPL_CLASS_TYPE;
@@ -446,7 +446,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             throw new RuntimeException(ex);
         }
         vo.initExpr = newExpr;
-        mse.stmts.add(vds);
+        stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
         for (ExpressionContext e : ctx.expression()) {
             InvocationExpr iv;
@@ -455,9 +455,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                 throw new RuntimeException(ex);
             }
-            mse.stmts.add(new ExprStmt(iv));
+            stmts.add(new ExprStmt(iv));
         }
-        mse.reference = ve;
+        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
         //TODO set generic toType
         mapAst(mse,ctx);
         return mse;
@@ -474,10 +474,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
-        MultiStmtExpr mse = MultiStmtExpr.create();
+        List<Statement> stmts = new LinkedList<>();
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
-        mse.stmts.add(vds);
+        stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
         IfStmt is = new IfStmt();
         is.setConditionExpr((ExprNode) visit(ctx.expression(0)));
@@ -493,8 +493,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             //TODO get common type
             vo.type = Types.ROOT_TYPE;
         }
-        mse.stmts.add(is);
-        mse.reference = ve;
+        stmts.add(is);
+        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
         mapAst(ve, ctx);
         return mse;
     }

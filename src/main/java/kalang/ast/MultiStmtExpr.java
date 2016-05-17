@@ -1,63 +1,22 @@
-/*
-
-*/
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
 public class MultiStmtExpr extends ExprNode{
     
-    public List<Statement> stmts;
+    public final List<Statement> stmts = new LinkedList<>();
     
     public ExprNode reference;
     
-    
-    public MultiStmtExpr(){
-        
-            if(stmts == null) stmts = new LinkedList();
-        
-    }
-    
-    
     public MultiStmtExpr(List<Statement> stmts,ExprNode reference){
-        
-            if(stmts == null) stmts = new LinkedList();
-        
-        
-            this.stmts = stmts;
-        
-            this.reference = reference;
-        
+        this.stmts.addAll(stmts);
+        this.reference = reference;
     }
     
-    
-    public static MultiStmtExpr create(){
-        MultiStmtExpr node = new MultiStmtExpr();
-        
-        node.stmts = new LinkedList();
-        
-        return node;
-    }
-    
+    @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls,stmts);
-        
         return ls;
-    }
-    
-    public String toString(){
-        String str = "MultiStmtExpr{\r\n";
-        
-        if(stmts!=null){
-            str += "  stmts:" + stmts.toString()+"\r\n";
-        }
-        
-        if(reference!=null){
-            str += "  reference:" + reference.toString()+"\r\n";
-        }
-        
-        return str+"}";
     }
 
     @Override
