@@ -1,10 +1,6 @@
 
 package kalang.compiler;
 import kalang.compiler.codegen.Ast2Java;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
-import java.util.*;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import kalang.util.LexerFactory;
@@ -12,9 +8,9 @@ import kalang.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
-public class DefaultCompileConfiguration implements CompileConfiguration{
+public class DefaultCompileContext implements CompileContext{
 
     @Override
     public KalangLexer createLexer(CompilationUnit compilationUnit, String source) {
@@ -57,6 +53,17 @@ public class DefaultCompileConfiguration implements CompileConfiguration{
             @Override
             public KalangSource loadSource(String className) {
                 return null;
+            }
+        };
+    }
+
+    @Override
+    public CompileErrorHandler getCompileErrorHandler() {
+        return new CompileErrorHandler() {
+            @Override
+            public void handleCompileError(CompileError error) {
+                //TODO stop the compile 
+                System.err.println(error.toString());
             }
         };
     }

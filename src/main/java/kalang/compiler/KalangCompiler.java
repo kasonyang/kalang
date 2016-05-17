@@ -13,9 +13,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 /**
  * The core compiler
  * 
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
-public class KalangCompiler extends AstLoader implements CompileConfiguration{
+public class KalangCompiler extends AstLoader implements CompileContext{
         
     private int compileTargetPhase = PHASE_ALL;
 
@@ -24,7 +24,7 @@ public class KalangCompiler extends AstLoader implements CompileConfiguration{
     @Nonnull
     private final HashMap<String, KalangSource> sources = new HashMap();
     
-    protected CompileConfiguration configuration = new DefaultCompileConfiguration();
+    protected CompileContext compileContext = new DefaultCompileContext();
     
     private int compilingPhase;
     
@@ -33,8 +33,15 @@ public class KalangCompiler extends AstLoader implements CompileConfiguration{
         System.err.println(e.toString());
         compileTargetPhase = compilingPhase;
      };
+    
+    protected AstLoader astLoader;
 
     public KalangCompiler() {
+        this(new JavaAstLoader());
+    }
+
+    public KalangCompiler(AstLoader astLoader) {
+        this.astLoader = astLoader;
     }
 
     /**
@@ -96,7 +103,7 @@ public class KalangCompiler extends AstLoader implements CompileConfiguration{
                 return createCompilationUnit(source).getAst();
             }
         }
-        return getAstLoader().findAst(className);
+        return compileContext.getAstLoader().findAst(className);
     }
 
     @Nonnull
@@ -124,20 +131,12 @@ public class KalangCompiler extends AstLoader implements CompileConfiguration{
     }
     
     protected CompilationUnit newCompilationUnit(KalangSource source){
-        AstLoader that = this;
-        return new CompilationUnit(source,new CompileConfigurationProxy(this){
-            @Override
-            public AstLoader getAstLoader() {
-                return that;
-            }            
-        });
+        return new CompilationUnit(source,this);
     }
 
     private CompilationUnit createCompilationUnit(KalangSource source) {
         CompilationUnit unit = newCompilationUnit(source);
         compilationUnits.put(source.getClassName(), unit);
-        unit.setErrorHandler(compileErrorHandler);
-        //unit.setCodeGenerator(codeGenerator);
         unit.compile(compilingPhase);
         return unit;
     }
@@ -148,42 +147,47 @@ public class KalangCompiler extends AstLoader implements CompileConfiguration{
 
     @Override
     public KalangLexer createLexer(CompilationUnit compilationUnit, String source) {
-        return configuration.createLexer(compilationUnit, source);
+        return compileContext.createLexer(compilationUnit, source);
     }
 
     @Override
     public CommonTokenStream createTokenStream(CompilationUnit compilationUnit, KalangLexer lexer) {
-        return configuration.createTokenStream(compilationUnit, lexer);
+        return compileContext.createTokenStream(compilationUnit, lexer);
     }
 
     @Override
     public KalangParser createParser(CompilationUnit compilationUnit, CommonTokenStream tokenStream) {
-        return configuration.createParser(compilationUnit, tokenStream);
+        return compileContext.createParser(compilationUnit, tokenStream);
     }
 
     @Override
     public AstBuilder createAstBuilder(CompilationUnit compilationUnit, KalangParser parser) {
-        return configuration.createAstBuilder(compilationUnit, parser);
+        return compileContext.createAstBuilder(compilationUnit, parser);
     }
 
     @Override
     public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-        return configuration.createCodeGenerator(compilationUnit);
+        return compileContext.createCodeGenerator(compilationUnit);
     }
 
     @Override
     public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return configuration.createSemanticAnalyzer(compilationUnit, astLoader);
+        return compileContext.createSemanticAnalyzer(compilationUnit, astLoader);
     }
 
     @Override
-    public AstLoader getAstLoader() {
-        return configuration.getAstLoader();
+    public final AstLoader getAstLoader() {
+        return this;
     }
 
     @Override
     public SourceLoader getSourceLoader() {
-        return configuration.getSourceLoader();
+        return compileContext.getSourceLoader();
+    }
+
+    @Override
+    public CompileErrorHandler getCompileErrorHandler() {
+        return compileErrorHandler;
     }
 
 }

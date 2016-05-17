@@ -8,7 +8,7 @@ package kalang.test;
 import kalang.compiler.AstBuilder;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.CompilePhase;
-import kalang.compiler.DefaultCompileConfiguration;
+import kalang.compiler.DefaultCompileContext;
 import kalang.compiler.KalangSource;
 import kalang.util.ParseTreeNavigator;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -30,7 +30,7 @@ public class CompilantUnitTest {
                 + "void main(){"
                 + "}"
                 + "}","Test.kl");
-        CompilationUnit cu = new CompilationUnit(source,new DefaultCompileConfiguration());
+        CompilationUnit cu = new CompilationUnit(source,new DefaultCompileContext());
         cu.compile(CompilePhase.PHASE_PARSING);
         AstBuilder astBuilder = cu.getAstBuilder();
         ParseTreeNavigator treeNav = new ParseTreeNavigator(astBuilder.getParseTree());

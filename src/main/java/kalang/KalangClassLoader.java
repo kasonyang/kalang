@@ -1,7 +1,6 @@
 
 package kalang;
 import java.io.*;
-import java.nio.*;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -10,16 +9,14 @@ import kalang.ast.ClassNode;
 import kalang.compiler.codegen.Ast2Class;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
-import kalang.compiler.DefaultCompileConfiguration;
 import kalang.compiler.KalangCompiler;
 import kalang.compiler.KalangSource;
 import kalang.compiler.SourceLoader;
-import kalang.tool.FileSystemCompiler;
 import kalang.tool.FileSystemSourceLoader;
 import org.apache.commons.io.FileUtils;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
 

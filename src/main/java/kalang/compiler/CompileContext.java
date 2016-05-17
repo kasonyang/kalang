@@ -11,7 +11,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public interface CompileConfiguration {
+public interface CompileContext {
     
     KalangLexer createLexer(CompilationUnit compilationUnit,String source);
     
@@ -28,5 +28,7 @@ public interface CompileConfiguration {
     AstLoader getAstLoader();
 
     public SourceLoader getSourceLoader();
+    
+    public CompileErrorHandler getCompileErrorHandler();
 
 }

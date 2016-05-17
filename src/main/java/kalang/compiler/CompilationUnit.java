@@ -1,21 +1,11 @@
 package kalang.compiler;
 
-import java.io.*;
-import java.nio.*;
-import java.net.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import kalang.ast.ClassNode;
-import kalang.util.AstBuilderFactory;
-import kalang.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
 import static kalang.compiler.CompilePhase.*;
-import kalang.util.LexerFactory;
-import org.antlr.v4.runtime.TokenStream;
 
 /**
  *
@@ -23,53 +13,51 @@ import org.antlr.v4.runtime.TokenStream;
  */
 public class CompilationUnit {
 
-    private KalangLexer lexer;
-    private KalangParser parser;
-    private AstBuilder astBuilder;
+    private final KalangLexer lexer;
+    private final KalangParser parser;
+    private final AstBuilder astBuilder;
     
-    private SemanticAnalyzer semanticAnalyzer;
+    private final SemanticAnalyzer semanticAnalyzer;
     
     @Nonnull
-    private ClassNode ast;
-    private AstLoader astLoader;
-    private CommonTokenStream tokens;
+    private final ClassNode ast;
+    
+    private final CommonTokenStream tokens;
     
     private int compilingPhase;
     
-    private CompileErrorHandler errorHandler;
-    private KalangSource source;
-    private CompileConfiguration configuration;
-
-    public CompilationUnit(@Nonnull KalangSource source,CompileConfiguration configuration) {
-        init(source,configuration);
-    }
+    private final KalangSource source;
     
-    private void init(KalangSource source,CompileConfiguration configuration){
+    private final CompileContext context;
+
+    public CompilationUnit(@Nonnull KalangSource source,CompileContext context) {
         this.source = source;
-        this.astLoader = configuration.getAstLoader();
-        lexer = configuration.createLexer(this,source.getText());
-        tokens = configuration.createTokenStream(this,lexer);
-        parser = configuration.createParser(this,tokens);
-        astBuilder = configuration.createAstBuilder(this,parser);
+        this.context = context;
+        lexer = context.createLexer(this,source.getText());
+        tokens = context.createTokenStream(this,lexer);
+        parser = context.createParser(this,tokens);
+        astBuilder = context.createAstBuilder(this,parser);
         //should move to configuration?
         astBuilder.importPackage("java.lang");
         astBuilder.importPackage("java.util");
+        astBuilder.importPackage("java.net");
+        astBuilder.importPackage("java.io");
+        astBuilder.importPackage("java.nio");
         ast = astBuilder.getAst();        
-        semanticAnalyzer = configuration.createSemanticAnalyzer(this,astLoader);
-        this.configuration = configuration;
+        semanticAnalyzer = context.createSemanticAnalyzer(this,context.getAstLoader());
     }
     
     protected void doCompilePhase(int phase){
         if(phase==PHASE_INITIALIZE){
             
         }else if(phase==PHASE_PARSING){
-            parseMeta(errorHandler);
+            parseMeta(context.getCompileErrorHandler());
         }else if(phase == PHASE_BUILDAST){
-            parseBody(errorHandler);
+            parseBody(context.getCompileErrorHandler());
         }else if(phase==PHASE_SEMANTIC){
-            semanticAnalysis(errorHandler);
+            semanticAnalysis(context.getCompileErrorHandler());
         }else if(phase == PHASE_CLASSGEN){
-            CodeGenerator codeGenerator = configuration.createCodeGenerator(this);
+            CodeGenerator codeGenerator = context.createCodeGenerator(this);
             if(codeGenerator==null){
                 throw new IllegalStateException("CodeGenerator is missing");
             }
@@ -94,7 +82,7 @@ public class CompilationUnit {
 
     protected void parse(CompileErrorHandler semanticErrorHandler, int targetParsingPhase) {
         astBuilder.setErrorHandler(semanticErrorHandler);
-        astBuilder.compile(targetParsingPhase,astLoader);
+        astBuilder.compile(targetParsingPhase,context.getAstLoader());
     }
 
     protected void semanticAnalysis(CompileErrorHandler handler) {
@@ -118,21 +106,8 @@ public class CompilationUnit {
     }
 
     @Nonnull
-    public AstLoader getAstLoader() {
-        return astLoader;
-    }
-
-    @Nonnull
     public CommonTokenStream getTokenStream() {
         return tokens;
-    }
-
-    public CompileErrorHandler getErrorHandler() {
-        return errorHandler;
-    }
-
-    public void setErrorHandler(CompileErrorHandler errorHandler) {
-        this.errorHandler = errorHandler;
     }
 
     public KalangLexer getLexer() {

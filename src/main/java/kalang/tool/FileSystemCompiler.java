@@ -14,16 +14,16 @@ import kalang.compiler.codegen.Ast2JavaStub;
 import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
-import kalang.compiler.CompileConfiguration;
-import kalang.compiler.CompileConfigurationProxy;
+import kalang.compiler.CompileContextProxy;
 import kalang.compiler.CompileError;
 import kalang.compiler.CompileErrorHandler;
 import kalang.compiler.CompilePhase;
-import kalang.compiler.DefaultCompileConfiguration;
+import kalang.compiler.DefaultCompileContext;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
 import kalang.compiler.SourceLoader;
 import org.apache.commons.io.FileUtils;
+import kalang.compiler.CompileContext;
 
 /**
  * The FileSystemCompiler compile sources from file system.
@@ -55,12 +55,13 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
     private OutputManager outputManager;
 
     public FileSystemCompiler() {
-        this(new DefaultCompileConfiguration());
+        this(new DefaultCompileContext());
     }
 
-    public FileSystemCompiler(CompileConfiguration config) {
+    public FileSystemCompiler(CompileContext config) {
         super();
-        super.configuration =  new CompileConfigurationProxy(config){
+        super.compileContext =  new CompileContextProxy(config){
+            
             @Override
             public AstLoader getAstLoader() {
                 JavaAstLoader astLoader = new JavaAstLoader(getClassLoader());

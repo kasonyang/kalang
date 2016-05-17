@@ -11,11 +11,11 @@ import org.antlr.v4.runtime.CommonTokenStream;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class CompileConfigurationProxy implements CompileConfiguration{
+public class CompileContextProxy implements CompileContext{
     
-    private CompileConfiguration config;
+    private CompileContext config;
 
-    public CompileConfigurationProxy(CompileConfiguration config) {
+    public CompileContextProxy(CompileContext config) {
         this.config = config;
     }
 
@@ -57,6 +57,11 @@ public class CompileConfigurationProxy implements CompileConfiguration{
     @Override
     public SourceLoader getSourceLoader() {
         return config.getSourceLoader();
+    }
+
+    @Override
+    public CompileErrorHandler getCompileErrorHandler() {
+        return config.getCompileErrorHandler();
     }
     
 }
