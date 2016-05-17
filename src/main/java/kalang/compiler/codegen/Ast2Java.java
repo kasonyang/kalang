@@ -466,23 +466,23 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     @Override
     public String visitTryStmt(TryStmt node) {
         c("try");
-        if(node.execStmt instanceof BlockStmt){
-            visit(node.execStmt);
+        if(node.getExecStmt() instanceof BlockStmt){
+            visit(node.getExecStmt());
         }else{
             c("{");
-            visit(node.execStmt);
+            visit(node.getExecStmt());
             c("}");
         }     
-        for (CatchBlock c : node.catchStmts) {
+        for (CatchBlock c : node.getCatchStmts()) {
             visit(c);
         }
-        if (node.finallyStmt != null) {
+        if (node.getFinallyStmt() != null) {
             c("finally ");
-            if(node.finallyStmt instanceof BlockStmt){
-                 visit(node.finallyStmt);
+            if(node.getFinallyStmt() instanceof BlockStmt){
+                 visit(node.getFinallyStmt());
             }else{
                 c("{");
-                visit(node.finallyStmt);
+                visit(node.getFinallyStmt());
                 c("}");
             }           
         }

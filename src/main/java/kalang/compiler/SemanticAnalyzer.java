@@ -356,9 +356,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitTryStmt(TryStmt node) {
         this.exceptionStack.add(new HashMap<>());        
-        visit(node.execStmt);
+        visit(node.getExecStmt());
         boolean tryReturned = this.returned;
-        for(CatchBlock cs:node.catchStmts){
+        for(CatchBlock cs:node.getCatchStmts()){
             this.returned = false;
             visit(cs);
             tryReturned = tryReturned && this.returned;
@@ -368,7 +368,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             this.exceptionStack.peek().putAll(uncaught);
         }
         returned = false;
-        visit(node.finallyStmt);
+        visit(node.getFinallyStmt());
         this.returned = tryReturned || returned;
         return null;
     }

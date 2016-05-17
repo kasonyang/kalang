@@ -402,11 +402,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Label endLabel = new Label();
         Label stopLabel = new Label();
         md.visitLabel(startLabel);
-        visit(node.execStmt);
+        visit(node.getExecStmt());
         md.visitJumpInsn(GOTO, stopLabel);
         md.visitLabel(endLabel);
-        if(node.catchStmts!=null){
-            for(CatchBlock s:node.catchStmts){
+        if(node.getCatchStmts()!=null){
+            for(CatchBlock s:node.getCatchStmts()){
                 Label handler = new Label();
                 md.visitLabel(handler);
                 visit(s);
@@ -415,10 +415,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 md.visitTryCatchBlock(startLabel, endLabel, handler,type);
             }
         }
-        if(node.finallyStmt!=null){
+        if(node.getFinallyStmt()!=null){
             Label handler = new Label();
             md.visitLabel(handler);
-            visit(node.finallyStmt);
+            visit(node.getFinallyStmt());
             md.visitJumpInsn(GOTO, stopLabel);
             md.visitTryCatchBlock(startLabel, endLabel, handler, null);
         }
