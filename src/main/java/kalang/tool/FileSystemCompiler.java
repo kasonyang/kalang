@@ -55,12 +55,8 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
     private OutputManager outputManager;
 
     public FileSystemCompiler() {
-        this(new DefaultCompileContext());
-    }
-
-    public FileSystemCompiler(CompileContext config) {
         super();
-        super.compileContext =  new CompileContextProxy(config){
+        super.compileContext =  new CompileContextProxy(super.compileContext){
             
             @Override
             public AstLoader getAstLoader() {
