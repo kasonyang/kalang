@@ -460,18 +460,6 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterExprInvocation(KalangParser.ExprInvocationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -592,6 +580,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterListExpr(KalangParser.ListExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitListExpr(KalangParser.ListExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExprGetArrayElement(KalangParser.ExprGetArrayElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -623,30 +623,6 @@ public class KalangBaseListener implements KalangListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExprIncPre(KalangParser.ExprIncPreContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterMap(KalangParser.MapContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitMap(KalangParser.MapContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterListOrArray(KalangParser.ListOrArrayContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitListOrArray(KalangParser.ListOrArrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

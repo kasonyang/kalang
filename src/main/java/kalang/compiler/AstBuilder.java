@@ -389,16 +389,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public MultiStmtExpr visitMapExpr(KalangParser.MapExprContext ctx) {
-        return visitMap(ctx.map());
-    }
-
-    @Override
-    public MultiStmtExpr visitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) {
-        return visitListOrArray(ctx.listOrArray());
-    }
-
-    @Override
-    public MultiStmtExpr visitMap(KalangParser.MapContext ctx) {
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
         vo.type = Types.MAP_IMPL_CLASS_TYPE;
@@ -434,7 +424,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public MultiStmtExpr visitListOrArray(KalangParser.ListOrArrayContext ctx) {
+    public MultiStmtExpr visitListExpr(KalangParser.ListExprContext ctx) {
         List<Statement> stmts = new LinkedList<>();
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
@@ -464,12 +454,32 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
-        ExprNode size = visitExpression(ctx.expression());
+    public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
         Type type = parseSingleType(ctx.singleType());
+        ExprNode size;
+        if(ctx.size!=null){
+            size = visitExpression(ctx.size);
+        }else{
+            size =new ConstExpr(ctx.initExpr.size());
+        }
         NewArrayExpr nae = new NewArrayExpr(type,size);
         mapAst(nae, ctx);
-        return nae;
+        if(ctx.size!=null){
+            return nae;
+        }else{
+            List<Statement> initStmts = new LinkedList<>();
+            for(int i=0;i<ctx.initExpr.size();i++){
+                initStmts.add(
+                        new ExprStmt(
+                                new AssignExpr(
+                                        new ElementExpr(nae,new ConstExpr(i))
+                                        ,visitExpression(ctx.initExpr.get(i))
+                                )
+                        )
+                );
+            }
+            return new MultiStmtExpr(initStmts, nae);
+        }
     }
 
     @Override
@@ -1205,10 +1215,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitImportDecl(ImportDeclContext ctx) {
         String name = ctx.name.getText();
+        String delim = ctx.delim.getText();
         String prefix = "";
-        boolean relative = ctx.root == null || ctx.root.getText().length() == 0;
-        if (relative && this.classPath.length() > 0) {
-            prefix = this.classPath + ".";
+        if("\\".equals(delim)){
+            boolean relative = ctx.root == null || ctx.root.getText().length() == 0;
+            if (relative && this.classPath.length() > 0) {
+                prefix = this.classPath + ".";
+            }
         }
         if (ctx.path != null) {
             for (Token p : ctx.path) {
@@ -1223,7 +1236,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 key = ctx.alias.getText();
             }
             this.fullNames.put(key, prefix + name);
-        }
+        }        
         return null;
     }
 

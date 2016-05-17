@@ -276,13 +276,6 @@ public class KalangBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitExprInvocation(KalangParser.ExprInvocationContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -353,6 +346,13 @@ public class KalangBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitListExpr(KalangParser.ListExprContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitExprGetArrayElement(KalangParser.ExprGetArrayElementContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -368,20 +368,6 @@ public class KalangBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitExprIncPre(KalangParser.ExprIncPreContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitMap(KalangParser.MapContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitListOrArray(KalangParser.ListOrArrayContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -392,18 +392,6 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitExprAssign(KalangParser.ExprAssignContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code listOrArrayExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code listOrArrayExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitListOrArrayExpr(KalangParser.ListOrArrayExprContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code exprInvocation}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -524,6 +512,18 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitExprSelfOpPre(KalangParser.ExprSelfOpPreContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code listExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterListExpr(KalangParser.ListExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code listExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitListExpr(KalangParser.ListExprContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code exprGetArrayElement}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -559,26 +559,6 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExprIncPre(KalangParser.ExprIncPreContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link KalangParser#map}.
-	 * @param ctx the parse tree
-	 */
-	void enterMap(KalangParser.MapContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link KalangParser#map}.
-	 * @param ctx the parse tree
-	 */
-	void exitMap(KalangParser.MapContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link KalangParser#listOrArray}.
-	 * @param ctx the parse tree
-	 */
-	void enterListOrArray(KalangParser.ListOrArrayContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link KalangParser#listOrArray}.
-	 * @param ctx the parse tree
-	 */
-	void exitListOrArray(KalangParser.ListOrArrayContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#literal}.
 	 * @param ctx the parse tree

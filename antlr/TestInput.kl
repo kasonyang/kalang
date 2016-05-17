@@ -13,8 +13,8 @@ class{
         int i = 1;
         if(i==0) return;
         var l = i;
-        var emptyMap = {};
-        var map = {name:"kalang"};
+        var emptyMap = [];
+        var map = [name:"kalang"];
         var emptyList = [];
         var list = ["item"];
     }

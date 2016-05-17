@@ -45,8 +45,8 @@ class{
     void decl(){
         int i = 1;
         var l = i;
-        var emptyMap = {};
-        var map = {name:"kalang"};
+        var emptyMap = [:];
+        var map = [name:"kalang"];
         var emptyList = [];
         var list = ["item"];
     }

@@ -56,11 +56,20 @@ classDef:
 ;
 
 importDecl:
-   'import' (root='\\')? 
-    path+=Identifier ('\\' path+=Identifier)*
-    '\\'( 
-        (name=Identifier ('as' alias=Identifier)? )
-        |(name='*')
+   (
+        'import' (root='\\')? 
+        path+=Identifier ('\\' path+=Identifier)*
+        delim='\\' ( 
+            (name=Identifier ('as' alias=Identifier)? )
+            |(name='*')
+        ) 
+    |
+        'import' 
+        path+=Identifier ('.' path+=Identifier)*
+        delim='.' ( 
+            (name=Identifier ('as' alias=Identifier)? )
+            |(name='*')
+        )
     )
     ';'
 ;
@@ -96,7 +105,7 @@ annotation:
 ;
 type:
     singleType
-    | type  (arraySuffix= '[]' )
+    |baseType=type  ('[' ']' )
 ;
 singleType:
     Identifier
@@ -196,8 +205,10 @@ expression
         RPAREN #exprParen
     |   ref=('this'|'super') #exprSelfRef
     |   literal #exprLiteral
-    | map #mapExpr
-    | listOrArray # listOrArrayExpr
+    | ( '['  Identifier ':' expression ( ',' Identifier ':' expression)*  ']' 
+          | '[' ':' ']'
+      ) #mapExpr
+    | '[' ( expression ( ',' expression )* )? ']'  # listExpr
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
@@ -209,7 +220,9 @@ expression
     |  expression '[' expression ']' #exprGetArrayElement    
     |   NEW Identifier 
          '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
-    |   NEW singleType '[' expression ']'     #exprNewArray
+    |   ( 'new' singleType '[' size=expression ']' 
+            | 'new' singleType '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}'
+        )    #exprNewArray
     |   '(' type ')' expression #castExpr
     |   expression op=('++' | '--') #exprInc
     |   ( '+' | '-' ) expression #exprSelfOpPre
@@ -243,13 +256,6 @@ expression
         |   '%='
         )
         expression #exprAssign
-;
-map:
-singleType? '{' ( Identifier ':' expression ( ',' Identifier ':' expression)*)? '}'
-;
-listOrArray:
-'[]'
-| /* singleType? */ '[' ( expression ( ',' expression )* ) ']'
 ;
 
 literal
