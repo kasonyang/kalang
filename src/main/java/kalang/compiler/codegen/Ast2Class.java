@@ -539,7 +539,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     protected Object getJavaConst(ConstExpr ce){
-        Type ct = ce.getConstType();
+        Type ct = ce.getType();
         if(ct.equals(Types.NULL_TYPE)){
             return null;
         }else if(ct.equals(Types.CLASS_TYPE)){
@@ -957,7 +957,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             default:
                 throw new UnsupportedOperationException("unsupported type:" + type);
         }
-        return new ConstExpr(obj, type);
+        return new ConstExpr(obj);
     }
     private void constX(Object x){
         md.visitLdcInsn(x);

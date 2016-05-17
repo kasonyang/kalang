@@ -106,14 +106,15 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
 
     private String toJavaString(ConstExpr ce) {
         Object v = ce.getValue();
+        Type t = ce.getType();
         if (v instanceof String) {
             return "\"" + v + "\"";
-        } else if (ce.getConstType() == Types.CHAR_TYPE) {
+        } else if (Types.CHAR_TYPE.equals(t)) {
             return "'" + v + "'";
-        } else if(ce.getConstType() == Types.NULL_TYPE) {
+        } else if(Types.NULL_TYPE.equals(t)) {
             return "null";
         }else{
-            return v.toString();
+            return String.valueOf(v);
         }
     }
 

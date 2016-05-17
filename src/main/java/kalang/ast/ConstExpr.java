@@ -1,57 +1,62 @@
-/*
-
-*/
 package kalang.ast;
-import java.util.*;
+import javax.annotation.Nullable;
 import kalang.core.*;
+import kalang.exception.Exceptions;
 public class ConstExpr extends ExprNode{
     
+    @Nullable
     protected Object value;
     
     protected Type constType;
-    
-    public ConstExpr(Object value,Type type){
-            this.value = value;
-            this.constType = type;
+
+    public ConstExpr(@Nullable Object value) {
+        Type t;
+        if(value == null){
+            t = Types.NULL_TYPE;
+        }else{
+            java.lang.Class<? extends Object> vt = value.getClass();
+            if(vt.equals(Integer.class)){
+                t = Types.INT_TYPE;
+            }else if(vt.equals(Long.class)){
+                t = Types.LONG_TYPE;
+            }else if(vt.equals(Float.class)){
+                t = Types.FLOAT_TYPE;
+            }else if(vt.equals(Double.class)){
+                t = Types.DOUBLE_TYPE;
+            }else if(vt.equals(Byte.class)){
+                t = Types.BYTE_TYPE;
+            }else if(vt.equals(Boolean.class)){
+                t = Types.BOOLEAN_TYPE;
+            }else if(vt.equals(Short.class)){
+                t = Types.SHORT_TYPE;
+            }else if(vt.equals(Character.class)){
+                t = Types.CHAR_TYPE;
+            }else if(vt.equals(String.class)){
+                t = Types.STRING_CLASS_TYPE;
+            }else if(vt.equals(ClassReference.class)){
+                t = Types.CLASS_TYPE;
+            }else{
+                throw Exceptions.unsupportedTypeException(value);
+            }
+        }
+        constType = t;
+        this.value  = value;
     }
+    
+    
 
     @Override
     public Type getType() {
-        return getConstType();
+        return constType;
     }
 
     /**
      * @return the value
      */
+    @Nullable
     public Object getValue() {
         return value;
     }
 
-    /**
-     * @param value the value to set
-     */
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    /**
-     * @return the constType
-     */
-    public Type getConstType() {
-        return constType;
-    }
-
-    /**
-     * @param constType the constType to set
-     */
-    public void setConstType(Type constType) {
-        Objects.requireNonNull(constType);
-        this.constType = constType;
-    }
-
-    @Override
-    public String toString() {
-        return "ConstExpr{" + "value=" + value + ", constType=" + constType + '}';
-    }
     
 }

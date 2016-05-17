@@ -416,7 +416,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         for (int i = 0; i < ids.size(); i++) {
             ExpressionContext e = ctx.expression(i);
             ExprNode v = (ExprNode) visit(e);
-            ConstExpr k = new ConstExpr(ctx.Identifier(i).getText(),Types.STRING_CLASS_TYPE);
+            ConstExpr k = new ConstExpr(ctx.Identifier(i).getText());
             ExprNode[] args = new ExprNode[]{k,v};
             InvocationExpr iv;
             try {
@@ -1041,11 +1041,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ExprNode[] invokeArgs = new ExprNode[3];
             ExprNode[] params = new ExprNode[ctx.params.size()];
             if(target instanceof ClassReference){
-                invokeArgs[0] = BoxUtil.newNullExpr();
+                invokeArgs[0] = new ConstExpr(null);
             }else if(target instanceof ExprNode){
                 invokeArgs[0] = ((ExprNode) target);
             }
-            invokeArgs[1] = BoxUtil.newStringExpr(mdName);
+            invokeArgs[1] = new ConstExpr(mdName);
             for(int i=0;i<params.length;i++){
                 params[i] = visitExpression(ctx.params.get(i));
             }
@@ -1176,33 +1176,28 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public ConstExpr visitLiteral(LiteralContext ctx) {
-        ConstExpr ce = new ConstExpr(null,null);
         String t = ctx.getText();
+        Object v;
         if (ctx.IntegerLiteral() != null) {
-            ce.setConstType(Types.INT_TYPE);
-            ce.setValue((Object) Integer.parseInt(t));
+            v = ( Integer.parseInt(t));
         } else if (ctx.FloatingPointLiteral() != null) {
-            ce.setConstType(Types.FLOAT_TYPE);
-            ce.setValue((Object) Float.parseFloat(t));
+            v = ( Float.parseFloat(t));
         } else if (ctx.BooleanLiteral() != null) {
-            ce.setConstType(Types.BOOLEAN_TYPE);
-            ce.setValue((Object) Boolean.parseBoolean(t));
+            v = ( Boolean.parseBoolean(t));
         } else if (ctx.CharacterLiteral() != null) {
-            ce.setConstType(Types.CHAR_TYPE);
             char[] chars = t.toCharArray();
-            ce.setValue((Object) chars[1]);
+            v = ( chars[1]);
         } else if (ctx.StringLiteral() != null) {
-            ce.setConstType(Types.STRING_CLASS_TYPE);
-            ce.setValue(StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
+            v = (StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
         }else if(ctx.Identifier()!=null){
             ClassReference cr = requireClassReference(ctx.Identifier().getSymbol());
-            ce.setConstType(Types.CLASS_TYPE);
-            ce.setValue(cr);
+            v = (cr);
         } else if(ctx.getText().equals("null")) {
-            ce.setConstType(Types.NULL_TYPE);
+            v = null;
         }else{
             throw new UnknownError("unknown literal:"+ctx.getText());
         }
+        ConstExpr ce = new ConstExpr(v);
         mapAst(ce,ctx);
         return ce;
     }

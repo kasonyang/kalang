@@ -171,16 +171,8 @@ public class BoxUtil {
     }
     
     public static NewArrayExpr castExprsToArrayExpr(Type type,int size, ExprNode[] exprs){
-        NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(size, Types.INT_TYPE),exprs);
+        NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(size),exprs);
         return ae;
-    }
-    
-    public static ConstExpr newNullExpr(){
-        return new ConstExpr(null, Types.NULL_TYPE);
-    }
-
-    public static ExprNode newStringExpr(String value) {
-        return new ConstExpr(value, Types.STRING_CLASS_TYPE);
     }
 
 }
