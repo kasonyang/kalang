@@ -1,79 +1,31 @@
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.core.*;
 public class TryStmt extends Statement{
     
     public Statement execStmt;
     
-    public List<CatchBlock> catchStmts;
+    public final List<CatchBlock> catchStmts = new LinkedList<>();
     
+    @Nullable
     public Statement finallyStmt;
     
     
-    public TryStmt(){
-        
-            if(catchStmts == null) catchStmts = new LinkedList();
-        
+    public TryStmt(Statement execStmt,List<CatchBlock> catchStmts,@Nullable Statement finallyStmt){
+        if(catchStmts == null) catchStmts = new LinkedList();
+        this.execStmt = execStmt;
+        this.catchStmts.addAll(catchStmts);
+        this.finallyStmt = finallyStmt;
     }
     
-    
-    public TryStmt(Statement execStmt,List<CatchBlock> catchStmts,Statement finallyStmt){
-        
-            if(catchStmts == null) catchStmts = new LinkedList();
-        
-        
-            this.execStmt = execStmt;
-        
-            this.catchStmts = catchStmts;
-        
-            this.finallyStmt = finallyStmt;
-        
-    }
-    
-    
-    public static TryStmt create(){
-        TryStmt node = new TryStmt();
-        
-        node.catchStmts = new LinkedList();
-        
-        return node;
-    }
-    
-    protected void addChild(List<AstNode> list,List nodes){
-        if(nodes!=null) list.addAll(nodes);
-    }
-    
-    protected void addChild(List<AstNode> list,AstNode node){
-        if(node!=null) list.add(node);
-    }
-    
+    @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls,execStmt);
-        
         addChild(ls,catchStmts);
-        
         addChild(ls,finallyStmt);
-        
         return ls;
     }
     
-    public String toString(){
-        String str = "TryStmt{\r\n";
-        
-        if(execStmt!=null){
-            str += "  execStmt:" + execStmt.toString()+"\r\n";
-        }
-        
-        if(catchStmts!=null){
-            str += "  catchStmts:" + catchStmts.toString()+"\r\n";
-        }
-        
-        if(finallyStmt!=null){
-            str += "  finallyStmt:" + finallyStmt.toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
 }

@@ -1140,9 +1140,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             return clsRef;
         }
         if (vtb.exist(name)) {
-            VarExpr ve = new VarExpr();
-            LocalVarNode declStmt = vtb.get(name); //vars.indexOf(vo);
-            ve.setVar(declStmt);
+            LocalVarNode var = vtb.get(name); //vars.indexOf(vo);
+            VarExpr ve = new VarExpr(var);
             if(token!=null) mapAst(ve, token);
             return ve;
         } else {
@@ -1297,10 +1296,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitTryStat(TryStatContext ctx) {
-        TryStmt tryStmt = new TryStmt();
         this.newVarStack();
-        tryStmt.execStmt = visitStat(ctx.tryStmtList);
+        Statement tryExecStmt = visitStat(ctx.tryStmtList);
         this.popVarStack();
+        List<CatchBlock> tryCatchBlocks = new LinkedList<>();
+        Statement tryFinallyStmt = null;
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
                 String vName = ctx.catchVarNames.get(i).getText();
@@ -1309,17 +1309,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 LocalVarNode vo = new LocalVarNode();
                 vo.name = vName;
                 vo.type = requireClassType(vType, ctx.catchTypes.get(i).start);
-                Statement execStmt = visitStat(ctx.catchStmts.get(i));
-                CatchBlock catchStmt = new CatchBlock(vo,execStmt); 
+                Statement catchExecStmt = visitStat(ctx.catchStmts.get(i));
+                CatchBlock catchStmt = new CatchBlock(vo,catchExecStmt); 
                 this.popVarStack();
-                tryStmt.catchStmts.add(catchStmt);
+                tryCatchBlocks.add(catchStmt);
             }
         }
         if (ctx.finalStmtList != null) {
             this.newVarStack();
-            tryStmt.finallyStmt = visitStat(ctx.finalStmtList);
+            tryFinallyStmt = visitStat(ctx.finalStmtList);
             this.popVarStack();
         }
+        TryStmt tryStmt = new TryStmt(tryExecStmt,tryCatchBlocks,tryFinallyStmt);
         mapAst(tryStmt,ctx);
         return tryStmt;
     }

@@ -13,9 +13,9 @@ public class IncrementExpr extends ExprNode{
     
     protected AssignableExpr expr;
     
-    protected boolean isDesc = false;
+    protected boolean isDesc;
     
-    protected boolean isPrefix = false;
+    protected boolean isPrefix;
 
     @Override
     public List<AstNode> getChildren() {
@@ -29,7 +29,7 @@ public class IncrementExpr extends ExprNode{
     }
 
     public IncrementExpr(AssignableExpr expr) {
-        this.expr = expr;
+        this(expr, false, false);
     }
 
     @Override
