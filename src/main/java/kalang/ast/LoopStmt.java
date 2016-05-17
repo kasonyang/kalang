@@ -3,82 +3,39 @@
 */
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.core.*;
 public class LoopStmt extends Statement{
     
-    public List<Statement> initStmts;
+    public final List<Statement> initStmts = new LinkedList<>();
     
+    @Nullable
     public Statement loopBody;
     
+    @Nullable
     public ExprNode preConditionExpr;
     
+    @Nullable
     public ExprNode postConditionExpr;
     
     
-    public LoopStmt(){
-        
-            if(initStmts == null) initStmts = new LinkedList();
-        
+    public LoopStmt(@Nullable List<Statement> initStmts,@Nullable Statement loopBody,@Nullable ExprNode preConditionExpr,@Nullable ExprNode postConditionExpr){
+        if(initStmts!=null){
+            this.initStmts.addAll(initStmts);
+        }
+        this.loopBody = loopBody;
+        this.preConditionExpr = preConditionExpr;
+        this.postConditionExpr = postConditionExpr;
     }
     
-    
-    public LoopStmt(List<Statement> initStmts,Statement loopBody,ExprNode preConditionExpr,ExprNode postConditionExpr){
-        
-            if(initStmts == null) initStmts = new LinkedList();
-        
-        
-            this.initStmts = initStmts;
-        
-            this.loopBody = loopBody;
-        
-            this.preConditionExpr = preConditionExpr;
-        
-            this.postConditionExpr = postConditionExpr;
-        
-    }
-    
-    
-    public static LoopStmt create(){
-        LoopStmt node = new LoopStmt();
-        
-        node.initStmts = new LinkedList();
-        
-        return node;
-    }
-    
+    @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls,initStmts);
-        
         addChild(ls,loopBody);
-        
         addChild(ls,preConditionExpr);
-        
         addChild(ls,postConditionExpr);
-        
         return ls;
     }
     
-    public String toString(){
-        String str = "LoopStmt{\r\n";
-        
-        if(initStmts!=null){
-            str += "  initStmts:" + initStmts.toString()+"\r\n";
-        }
-        
-        if(loopBody!=null){
-            str += "  loopBody:" + loopBody.toString()+"\r\n";
-        }
-        
-        if(preConditionExpr!=null){
-            str += "  preConditionExpr:" + preConditionExpr.toString()+"\r\n";
-        }
-        
-        if(postConditionExpr!=null){
-            str += "  postConditionExpr:" + postConditionExpr.toString()+"\r\n";
-        }
-        
-        return str+"}";
-    }
 }

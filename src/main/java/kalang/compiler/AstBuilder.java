@@ -740,24 +740,27 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitWhileStat(WhileStatContext ctx) {
-        LoopStmt ws = new LoopStmt();
-        ws.preConditionExpr = visitExpression(ctx.expression());
+        
+        ExprNode preConditionExpr = visitExpression(ctx.expression());
+        Statement loopBody = null;
         if (ctx.stat() != null) {
-            ws.loopBody = visitStat(ctx.stat());
+            loopBody = visitStat(ctx.stat());
         }
+        LoopStmt ws = new LoopStmt(null,loopBody,preConditionExpr,null);
         mapAst(ws,ctx);
         return ws;
     }
 
     @Override
     public AstNode visitDoWhileStat(DoWhileStatContext ctx) {
-        LoopStmt ls = new LoopStmt();
+        Statement loopBody = null;
         if (ctx.stat() != null) {
             this.newVarStack();
-            ls.loopBody = visitStat(ctx.stat());
+            loopBody = visitStat(ctx.stat());
             this.popVarStack();
         }
-        ls.postConditionExpr = visitExpression(ctx.expression());
+        ExprNode postConditionExpr = visitExpression(ctx.expression());
+        LoopStmt ls = new LoopStmt(null,loopBody,null,postConditionExpr);
         mapAst(ls,ctx);
         return ls;
     }
@@ -765,11 +768,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitForStat(ForStatContext ctx) {
         this.newVarStack();
-        LoopStmt ls = LoopStmt.create();
         List<LocalVarNode> vars = visitLocalVarDecl(ctx.localVarDecl());
         VarDeclStmt vds = new VarDeclStmt(vars);
-        ls.initStmts.add(vds);
-        ls.preConditionExpr = (ExprNode) visit(ctx.expression());
+        ExprNode preConditionExpr = (ExprNode) visit(ctx.expression());
         BlockStmt bs =new BlockStmt();
         if (ctx.stat() != null) {
             Statement st = visitStat(ctx.stat());
@@ -780,8 +781,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if(ctx.expressions()!=null){
             bs.statements.addAll(visitExpressions(ctx.expressions()));
         }
-        ls.loopBody = bs;
         this.popVarStack();
+        LoopStmt ls = new LoopStmt(Collections.singletonList(vds), bs, preConditionExpr, null);
         mapAst(ls,ctx);
         return ls;
     }
