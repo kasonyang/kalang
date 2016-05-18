@@ -15,7 +15,7 @@ public class AstLoader {
     public static final AstLoader BASE_AST_LOADER = new JavaAstLoader();
 
     @Nonnull
-    private final HashMap<String, ClassNode> asts = new HashMap();
+    private final HashMap<String, ClassNode> cachedAsts = new HashMap();
 
     @Nullable
     private AstLoader parent = null;
@@ -29,38 +29,42 @@ public class AstLoader {
     }
 
     public void add(@Nonnull ClassNode clazz) {
-        asts.put(clazz.name, clazz);
+        cachedAsts.put(clazz.name, clazz);
     }
 
     @Nonnull
     protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
-        ClassNode ast = asts.get(className);
-        if(ast==null && this!=BASE_AST_LOADER){
+        ClassNode ast = null;
+        if(this!=BASE_AST_LOADER){
             ast = BASE_AST_LOADER.findAst(className);
         }
         if (ast == null) {
-            if (parent != null) {
-                return parent.findAst(className);
-            } else {
-                throw new AstNotFoundException(className);
-            }
+            throw new AstNotFoundException(className);
         }
         return ast;
     }
 
     @Nonnull
     public ClassNode loadAst(@Nonnull String className) throws AstNotFoundException {
-        boolean isArray = false;
-        String name = className;
-        if(name.endsWith("[]")){
-            isArray = true;
+        ClassNode ast = cachedAsts.get(className);
+        if(ast!=null) return ast;
+        if(parent!=null){
+            try{
+                ast = parent.loadAst(className);
+                if(ast!=null) return ast;
+            }catch(AstNotFoundException ex){
+                
+            }
+        }
+        if(className.endsWith("[]")){
+            String name = className;
             name = name.substring(0,name.length()-2);
+            ast = createArrayAst(loadAst(name).name);
+        }else{
+            ast = findAst(className);
+            if(ast==null) throw new AstNotFoundException(className);
         }
-        ClassNode ast = findAst(name);
-        if(ast==null) throw new AstNotFoundException(className);
-        if(isArray){
-            return createArrayAst(ast.name);
-        }
+        cachedAsts.put(className, ast);
         return ast;
     }
 
