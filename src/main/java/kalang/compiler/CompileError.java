@@ -22,7 +22,7 @@ public abstract class CompileError  extends RuntimeException  {
 
     @Override
     public String toString() {
-        return String.format("CompileError: %s(%d:%d):%s", compilationUnit.getSource().getClassName(),offset.startLine,offset.startLineColumn,description);
+        return String.format("%s:%d:%s", compilationUnit.getSource().getFileName(),offset.startLine,description);
     }
 
     public OffsetRange getOffset() {

@@ -7,14 +7,10 @@ package kalang.compiler;
 
 import kalang.ast.AstNode;
 import kalang.ast.ClassNode;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
-import java.util.*;
 
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class AstSemanticError extends CompileError{
 
