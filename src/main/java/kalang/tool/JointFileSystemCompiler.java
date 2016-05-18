@@ -3,9 +3,7 @@ package kalang.tool;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -20,15 +18,13 @@ import javax.tools.JavaFileObject;
 import kalang.ast.ClassNode;
 import kalang.AstNotFoundException;
 import kalang.java.MemoryCompiler;
-import kalang.java.MemoryFileManager;
 import kalang.util.ClassNameUtil;
 import kalang.util.FilePathUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang
  */
 public class JointFileSystemCompiler extends FileSystemCompiler{
     

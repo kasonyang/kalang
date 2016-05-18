@@ -56,6 +56,7 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
 
     public FileSystemCompiler() {
         super();
+        FileSystemCompiler that = this;
         super.compileContext =  new CompileContextProxy(super.compileContext){
             
             @Override
@@ -66,7 +67,7 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
 
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-                return codeGenerator;
+                return that;
             }
             
         };
@@ -80,8 +81,6 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
             }
         });
     }
-    
-    private CodeGenerator codeGenerator = this;
 
     public void addSource(File srcDir, File file) throws IOException {
         String className = ClassNameUtil.getClassName(srcDir, file);
@@ -102,11 +101,6 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
         } catch (MalformedURLException ex) {
             Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    @Override
-    public void compile() {
-        super.compile();
     }
       
     private String generateJavaCode(ClassNode classNode){
@@ -135,21 +129,13 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
             }
         }
     }
-
-    public CodeGenerator getCodeGenerator() {
-        return codeGenerator;
-    }
-
-    public void setCodeGenerator(CodeGenerator codeGenerator) {
-        this.codeGenerator = codeGenerator;
-    }
     
     public void generateJavaStub(OutputManager om) {
         int oldPhase = getCompileTargetPhase();
         //TODO here has a bug.It will ignore class reference in method body
         setCompileTargetPhase(CompilePhase.PHASE_PARSING);
         super.compile();
-        HashMap<String, CompilationUnit> sourceAsts = getAllCompilationUnit();
+        HashMap<String, CompilationUnit> sourceAsts = getCompilationUnits();
         for(Map.Entry<String, CompilationUnit> a:sourceAsts.entrySet()){
             Ast2JavaStub a2js = new Ast2JavaStub();
             a2js.generate(a.getValue().getAst());

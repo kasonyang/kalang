@@ -1,7 +1,6 @@
 package kalang.compiler;
 
 import kalang.AstNotFoundException;
-import kalang.ast.AstNode;
 import kalang.ast.ClassNode;
 import java.util.HashMap;
 import javax.annotation.Nonnull;
@@ -78,6 +77,11 @@ public class KalangCompiler extends AstLoader implements CompileContext{
     public int getCompileTargetPhase() {
         return compileTargetPhase;
     }
+    
+    public void compile(int targetPhase){
+        setCompileTargetPhase(targetPhase);
+        compile();
+    }
 
     /**
      * compile all sources
@@ -112,7 +116,7 @@ public class KalangCompiler extends AstLoader implements CompileContext{
     }
 
     @Nonnull
-    public HashMap<String, CompilationUnit> getAllCompilationUnit() {
+    public HashMap<String, CompilationUnit> getCompilationUnits() {
         return compilationUnits;
     }
     
