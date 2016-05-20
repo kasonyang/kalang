@@ -48,9 +48,9 @@ public class AstBuilderFactory {
                 String msg = AntlrErrorString.exceptionString(recognizer, e);
                 RuleContext ctx = e.getCtx();
                 if(ctx instanceof ParserRuleContext){
-                    sp.reportSyntaxError(msg, (ParserRuleContext) e.getCtx(), e.getOffendingToken(),e.getOffendingToken());
+                    sp.handleSyntaxError(msg, (ParserRuleContext) e.getCtx(), e.getOffendingToken(),e.getOffendingToken());
                 }else{
-                    sp.reportSyntaxError(msg, RuleContext.EMPTY, e.getOffendingToken(),e.getOffendingToken());
+                    sp.handleSyntaxError(msg, RuleContext.EMPTY, e.getOffendingToken(),e.getOffendingToken());
                 }
             }
         });

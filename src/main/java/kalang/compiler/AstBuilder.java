@@ -250,7 +250,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                             try {
                                 bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(classAst));
                             } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                                reportError("default constructor not found", body.start);
+                                AstBuilder.this.handleSyntaxError("default constructor not found", body.start);
                             }
                         }
                     }
@@ -310,7 +310,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         try {
             return astLoader.loadAst(id);
         } catch (AstNotFoundException ex) {
-            reportError("ast not found:" + id, token);
+            AstBuilder.this.handleSyntaxError("ast not found:" + id, token);
             return null;
         }
     }
@@ -514,7 +514,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitPostIfStmt(KalangParser.PostIfStmtContext ctx) {
         ExprNode leftExpr = visitExpression(ctx.expression(0));
         if (!(leftExpr instanceof AssignExpr)) {
-            this.reportError("AssignExpr required", ctx);
+            this.handleSyntaxError("AssignExpr required", ctx);
         }
         AssignExpr assignExpr = (AssignExpr) leftExpr;
         AssignableExpr to = assignExpr.getTo();
@@ -693,7 +693,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             declType = parseType(type);
         }
         if (isDefindedId(name)) {
-            reportError("the name is definded:" + name, ctx);
+            AstBuilder.this.handleSyntaxError("the name is definded:" + name, ctx);
         }
         vds.name = name;
         vds.type = declType;
@@ -709,29 +709,28 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         mapAst(vds,ctx);
     }
     
-    public void reportSyntaxError(String desc,ParserRuleContext rule,Token start,Token stop){
-        SyntaxError syntaxError = new SyntaxError(desc, compilationUnit, rule, start,stop);
-        errorHandler.handleCompileError(syntaxError);
-    }
-    
     public void methodIsAmbigurous(Token token , String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
-        reportError("method is ambigurous:" + AstUtil.getMethodDescription(className,methodName, types), token);
+        AstBuilder.this.handleSyntaxError("method is ambigurous:" + AstUtil.getMethodDescription(className,methodName, types), token);
     }
     
     public void methodNotFound(Token token , String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
-        reportError("method not found:" + AstUtil.getMethodDescription(className,methodName, types), token);
+        AstBuilder.this.handleSyntaxError("method not found:" + AstUtil.getMethodDescription(className,methodName, types), token);
     }
     
-    public void reportError(String msg, Token token) {
-        ParsingError ex = new ParsingError(msg, compilationUnit ,OffsetRangeHelper.getOffsetRange(token), this);
-        errorHandler.handleCompileError(ex);
+    public void handleSyntaxError(String msg, Token token) {
+        //TODO what does EMPTY means?
+        handleSyntaxError(msg, (ParserRuleContext.EMPTY), token, token);
     }
 
-    public void reportError(String msg,ParserRuleContext tree) {
-        ParsingError ex = new ParsingError(msg,compilationUnit ,OffsetRangeHelper.getOffsetRange(tree), this);
-        errorHandler.handleCompileError(ex);
+    public void handleSyntaxError(String msg,ParserRuleContext tree) {
+        handleSyntaxError(msg, tree, tree.start, tree.stop);
+    }
+    
+    public void handleSyntaxError(String desc,ParserRuleContext rule,Token start,Token stop){
+        SyntaxError syntaxError = new SyntaxError(desc, compilationUnit, rule, start,stop);
+        errorHandler.handleCompileError(syntaxError);
     }
 
     @Override
@@ -872,7 +871,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 if(fieldExpr instanceof AssignableExpr){
                     toExpr = (AssignableExpr) fieldExpr;
                 }else{
-                    reportError("unsupported", to);
+                    AstBuilder.this.handleSyntaxError("unsupported", to);
                     return null;
                 }
                 return new AssignExpr(toExpr,visitExpression(fromCtx));
@@ -924,7 +923,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             mapAst(aexpr, ctx);
             return aexpr;
         }else{
-            reportError("unsupported assign statement",ctx);
+            AstBuilder.this.handleSyntaxError("unsupported assign statement",ctx);
             return null;
         }
     }
@@ -960,7 +959,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 expr2 = BoxUtil.castToString(expr2);
             }
             if(expr1==null || expr2 == null){
-                reportError("unsupported types", ctx);
+                AstBuilder.this.handleSyntaxError("unsupported types", ctx);
                 return null;
             }
             InvocationExpr ie;
@@ -1137,7 +1136,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private AstNode requireNameDefined(String name,Token token){
         AstNode n = getNodeById(name, token);
         if(n==null){
-            reportError(name + " is undefined!", token);
+            AstBuilder.this.handleSyntaxError(name + " is undefined!", token);
             return null;
         }
         return n;
@@ -1357,7 +1356,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         String name = ctx.Identifier().getText();
         AstNode expr = this.getNodeById(name,ctx.Identifier().getSymbol());
         if (expr == null) {
-            this.reportError(name + " is undefined!", ctx);
+            this.handleSyntaxError(name + " is undefined!", ctx);
             return null;
         }
         mapAst(expr,ctx);
@@ -1430,7 +1429,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public IncrementExpr getIncrementExpr(ExpressionContext expressionContext,String op,boolean isPrefix){
         ExprNode expr = visitExpression(expressionContext);
         if(!(expr instanceof AssignableExpr)){
-            reportError("require assignable expression", expressionContext);
+            AstBuilder.this.handleSyntaxError("require assignable expression", expressionContext);
             return null;
         }
         boolean isDesc = op.equals("--");
@@ -1440,7 +1439,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private ExprNode checkBox(ExprNode expr1, Type fromType, Type toType,Token token) {
         ExprNode expr = BoxUtil.assign(expr1,fromType,toType);
         if(expr==null){
-            reportError("unable to cast " + fromType + " to " + toType, token);
+            AstBuilder.this.handleSyntaxError("unable to cast " + fromType + " to " + toType, token);
         }
         return expr;
     }
@@ -1449,7 +1448,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode ret;
         Type type = expr.getType();
         if(!(type instanceof  ClassType)){
-            reportError("unsupported type", rule);
+            AstBuilder.this.handleSyntaxError("unsupported type", rule);
             return null;
         }
         ClassType exprType = (ClassType) type;
@@ -1480,13 +1479,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public Object visitErrorousStat(KalangParser.ErrorousStatContext ctx) {
-        reportSyntaxError("missing ';'", ctx, ctx.start , ctx.stop);
+        handleSyntaxError("missing ';'", ctx, ctx.start , ctx.stop);
         return null;
     }
 
     @Override
     public Object visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx) {
-        reportSyntaxError("identifier excepted", ctx, ctx.stop , ctx.stop);
+        handleSyntaxError("identifier excepted", ctx, ctx.stop , ctx.stop);
         return null;
     }
 
@@ -1500,7 +1499,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             mapAst(ie, ctx);
             return ie;
         }else{
-            reportError("unsupported type", ts);
+            AstBuilder.this.handleSyntaxError("unsupported type", ts);
             return null;
         }
     }
