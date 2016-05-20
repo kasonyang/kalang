@@ -12,13 +12,13 @@ import kalang.util.AstUtil;
 import java.util.List;
 
 import java.util.Map;
-import static kalang.compiler.AstSemanticError.*;
+import static kalang.compiler.SemanticError.*;
 import kalang.core.Type;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class AstSemanticErrorReporter{
+public class SemanticErrorReporter{
 
     private CompilationUnit source;
 
@@ -27,14 +27,14 @@ public class AstSemanticErrorReporter{
     }
 
     public static interface AstSemanticReporterCallback{
-        void handleAstSemanticError(AstSemanticError error);
+        void handleAstSemanticError(SemanticError error);
     }
     
     AstSemanticReporterCallback handler;
 
     ClassNode clazz;
 
-    public AstSemanticErrorReporter(ClassNode clazz, CompilationUnit source,AstSemanticReporterCallback handler) {
+    public SemanticErrorReporter(ClassNode clazz, CompilationUnit source,AstSemanticReporterCallback handler) {
         this.handler = handler;
         this.clazz = clazz;
         this.source = source;
@@ -45,7 +45,7 @@ public class AstSemanticErrorReporter{
     }
 
     public void fail(String msg, int errorCode, AstNode node) {
-        AstSemanticError ase = new AstSemanticError(msg, source ,errorCode,node,clazz);
+        SemanticError ase = new SemanticError(msg, source ,errorCode,node,clazz);
         handler.handleAstSemanticError(ase);
     }
 

@@ -81,7 +81,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     private boolean returned;
 
-    private AstSemanticErrorReporter err;
+    private SemanticErrorReporter err;
 
     private CompileErrorHandler errHandler;
 
@@ -134,9 +134,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     public void check(ClassNode clz) {
-        err = new AstSemanticErrorReporter(clz,source ,new AstSemanticErrorReporter.AstSemanticReporterCallback() {
+        err = new SemanticErrorReporter(clz,source ,new SemanticErrorReporter.AstSemanticReporterCallback() {
             @Override
-            public void handleAstSemanticError(AstSemanticError error) {
+            public void handleAstSemanticError(SemanticError error) {
                 errHandler.handleCompileError(error);
             }
         });
@@ -164,7 +164,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public Type visit(AstNode node) {
         if(node==null) return null;
         if (node instanceof Statement && returned) {
-            err.fail("unable to reach statement", AstSemanticError.LACKS_OF_STATEMENT, node);
+            err.fail("unable to reach statement", SemanticError.LACKS_OF_STATEMENT, node);
             return null;
         }
         if(node instanceof Annotationable){
@@ -286,7 +286,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 t = getPrimitiveType(Types.getHigherType(t1, t2));
                 break;
             default:
-                err.fail("unsupport operation:" + op, AstSemanticError.UNSUPPORTED, node);
+                err.fail("unsupport operation:" + op, SemanticError.UNSUPPORTED, node);
                 return getDefaultType();
         }
         return t;
@@ -468,7 +468,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             && !node.type.equals(Types.VOID_TYPE)
         );
         if (node.body != null && needReturn && !returned) {
-            err.fail("Missing return statement in method:" + mStr, AstSemanticError.LACKS_OF_STATEMENT, node);
+            err.fail("Missing return statement in method:" + mStr, SemanticError.LACKS_OF_STATEMENT, node);
         }
         return null;
     }
@@ -525,7 +525,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     boolean requireStatic(Integer modifier, AstNode node) {
         boolean isStatic = isStatic(modifier);
         if (!isStatic) {
-            err.fail("couldn't refer non-static member in static context", AstSemanticError.UNSUPPORTED, node);
+            err.fail("couldn't refer non-static member in static context", SemanticError.UNSUPPORTED, node);
             return false;
         }
         return true;

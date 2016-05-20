@@ -9,7 +9,7 @@ import kalang.compiler.KalangCompiler;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
-import kalang.compiler.AstSemanticError;// as E;
+import kalang.compiler.SemanticError;// as E;
 //import kalang.tool.MainCompiler as TC;
 public class ErrorTest {
 	
@@ -24,8 +24,8 @@ public class ErrorTest {
     KalangCompiler kc;
 
     CompileErrorHandler allowErrorHandler = (e) -> {
-        if(e instanceof AstSemanticError){
-            AstSemanticError error = (AstSemanticError) e;
+        if(e instanceof SemanticError){
+            SemanticError error = (SemanticError) e;
             System.out.println("on error:" + error.getDescription());
             eCode = error.getErrorCode();
             errMsg =error.getDescription();
@@ -78,12 +78,12 @@ public class ErrorTest {
         ecp("SyntaxError");
 		
         ecp("ErrorAssign");
-        assertEquals( eCode , AstSemanticError.UNABLE_TO_CAST);
+        assertEquals(eCode , SemanticError.UNABLE_TO_CAST);
         //TODO catch sematic error
         //ecp("NotImplemented");
-        //assertEquals( eCode , AstSemanticError.CLASS_NOT_FOUND);
+        //assertEquals( eCode , SemanticError.CLASS_NOT_FOUND);
         ecp("NotImplemented","MyFace");
-        assertEquals( eCode , AstSemanticError.METHOD_NOT_IMPLEMENTED);
+        assertEquals(eCode , SemanticError.METHOD_NOT_IMPLEMENTED);
     }
 	
     @Test

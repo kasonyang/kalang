@@ -12,7 +12,7 @@ import kalang.ast.ClassNode;
  *
  * @author Kason Yang
  */
-public class AstSemanticError extends CompileError{
+public class SemanticError extends CompileError{
 
     public static final int UNRESOLVED_NAME = 1,
             CLASS_NOT_FOUND = 2,
@@ -28,7 +28,7 @@ public class AstSemanticError extends CompileError{
     AstNode node;
     int errorCode;
 
-    AstSemanticError(String description,CompilationUnit compilationUnit, int errorCode, AstNode node, ClassNode clazz) {
+    SemanticError(String description,CompilationUnit compilationUnit, int errorCode, AstNode node, ClassNode clazz) {
         super(description, compilationUnit, node.offset);
         this.classNode = clazz;
         this.node = node;
