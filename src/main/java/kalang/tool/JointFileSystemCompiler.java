@@ -17,8 +17,10 @@ import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 import kalang.ast.ClassNode;
 import kalang.AstNotFoundException;
+import kalang.compiler.KalangSource;
 import kalang.java.FileJavaSource;
 import kalang.java.MemoryCompiler;
+import kalang.java.StringJavaSource;
 import kalang.util.ClassNameUtil;
 import kalang.util.FilePathUtil;
 import org.apache.commons.io.FileUtils;
@@ -32,6 +34,8 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     final Map<String,File> javaFiles = new HashMap<>();
     
     final List<File> javaSourcePath = new LinkedList<>();
+    
+    final MemoryOutputManager javaStubManager = new MemoryOutputManager();
     
     public void addJavaSourcePath(File path){
         javaSourcePath.add(path);
@@ -87,13 +91,10 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
             throw ex;
         }
     }
-    
-    
 
     @Override
     public void compile() {
-        MemoryOutputManager om = new MemoryOutputManager();
-        generateJavaStub(om);
+        generateJavaStub(javaStubManager);
         JointFileSystemCompiler that = this;
         MemoryCompiler javaCompiler = new MemoryCompiler(){
             @Override
@@ -112,9 +113,9 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         for(File f:javaFiles.values()){
             javaCompiler.addSourceFromFile(f);
         }
-        String[] stubNames = om.getClassNames();
+        String[] stubNames = javaStubManager.getClassNames();
         for(String n:stubNames){
-            String code = new String(om.getBytes(n));
+            String code = new String(javaStubManager.getBytes(n));
             javaCompiler.addSourceFromString(n, code);
         }
         if(!javaCompiler.compile()){
@@ -166,7 +167,22 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                 return new FileJavaSource(f);
             }
         }
+        KalangSource klSource = getSourceLoader().loadSource(className);
+        if(klSource != null){
+            addSource(klSource);
+            //TODO here may generate stub repeatly
+            generateJavaStub(javaStubManager);
+            return getJavaStub(className);
+        }
         return null;
+    }
+    
+    @Nullable
+    protected JavaFileObject getJavaStub(String className){
+        byte[] data = javaStubManager.getBytes(className);
+        if(data==null) return null;
+        String code = new String(data);
+        return new StringJavaSource(className, code);
     }
     
 

@@ -38,8 +38,8 @@ public class CompilantUnitTest {
         assertNotNull(tree);
         ParseTree treeMd = treeNav.getParseTree(2);
         ParseTree treeMdEnd = treeNav.getParseTree(7);
-        System.out.println(treeMd);
-        System.out.println(treeMdEnd);
+        //System.out.println(treeMd);
+        //System.out.println(treeMdEnd);
         assertNotNull(treeMd);
         assertNotNull(treeMdEnd);
         //assertEquals(treeMd, treeMdEnd.getParent().getParent());
