@@ -15,6 +15,7 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import kalang.util.ClassNameUtil;
+import kalang.util.FilePathUtil;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -23,27 +24,28 @@ import org.apache.commons.io.FileUtils;
  */
 public class MemoryCompiler extends ClassLoader{
     
-    protected final List<JavaFileObject> sources = new LinkedList<>();
-    
+    protected final List<JavaFileObject> sources = new LinkedList<>();    
     protected final List<URL> classPaths = new LinkedList<>();
     
-    protected MemoryFileManager fileManager;
-    private DiagnosticCollector<JavaFileObject> diagnosticCollector;
+    protected final MemoryFileManager fileManager;
+    
+    private  DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
+    
+    protected final List<File> sourcePaths = new LinkedList<>();
+    private final JavaCompiler compiler;
+
+    public MemoryCompiler() {
+        compiler = ToolProvider.getSystemJavaCompiler();
+        StandardJavaFileManager sfm = compiler.getStandardFileManager(null, null, null);
+        fileManager = createFileManager(sfm);
+    }
+    
+    public void addSourcePath(File path){
+        sourcePaths.add(path);
+    }
     
     public void addSourceFromFile(File file){
-        SimpleJavaFileObject s = new SimpleJavaFileObject(file.toURI(),SimpleJavaFileObject.Kind.SOURCE){             
-            @Override
-            public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                String str = "";
-                Reader r = new FileReader(file);
-                BufferedReader br = new BufferedReader(r);
-                String line;
-                while((line=br.readLine())!=null){
-                    str += line + "\r\n";
-                }
-                return str;
-            }
-        };
+        SimpleJavaFileObject s =new FileJavaSource(file);
         sources.add(s);
     }
     
@@ -51,27 +53,23 @@ public class MemoryCompiler extends ClassLoader{
         SimpleJavaFileObject s =new StringJavaSource(className,content);
         sources.add(s);
     }
-
-    public  boolean compile() {
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        //TODO maybe null
-        diagnosticCollector = new DiagnosticCollector();
-        List<JavaFileObject> jfiles = new LinkedList<>();
-        for (JavaFileObject sf : sources) {
-            jfiles.add(sf);
-        }
+    
+    protected boolean compile(Collection<JavaFileObject> javaFileObjects){
         List<String> options = new LinkedList<>();
         String classPath = buildClassPathOption();
         System.out.println("classpath:" + classPath);
         options.add("-classpath");
         options.add(classPath);
-        StandardJavaFileManager sfm = compiler.getStandardFileManager(null, null, null);
-        fileManager = createFileManager(sfm);
-        CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector,options, null, jfiles);
+        diagnosticCollector = new DiagnosticCollector();
+        CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector,options, null, javaFileObjects);
         return task.call();
     }
+
+    public  boolean compile() {
+        return compile(sources);
+    }
     
-    protected MemoryFileManager createFileManager(StandardJavaFileManager sfm){
+    protected final MemoryFileManager createFileManager(StandardJavaFileManager sfm){
         return new MemoryFileManager((sfm)){
             @Override
             public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
@@ -80,9 +78,9 @@ public class MemoryCompiler extends ClassLoader{
                     return fo;
                 }
                 if(kind == JavaFileObject.Kind.SOURCE){
-                    String js = loadJavaSource(className);
+                    JavaFileObject js = loadJavaSource(className);
                     if(js!=null){
-                        return new StringJavaSource(className, js);
+                        return js;
                     }
                 }
                 return null;
@@ -91,7 +89,14 @@ public class MemoryCompiler extends ClassLoader{
         };
     }
     
-    protected String loadJavaSource(String className) throws IOException{
+    protected JavaFileObject loadJavaSource(String className) throws IOException{
+        String relativePath = ClassNameUtil.getRelativePathOfClass(className, "java");
+        for(File p:sourcePaths){
+            File sf = new File(p,relativePath);
+            if(FilePathUtil.existFile(sf)){
+                return new FileJavaSource(sf);
+            }
+        }
         return null;
     }
 
@@ -104,6 +109,7 @@ public class MemoryCompiler extends ClassLoader{
     }
     
     public void printDiagnostic(){
+        //TODO modify diagnostic 
         if(diagnosticCollector!=null){
             for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
                 System.out.println(diagnostic.getCode());
@@ -128,10 +134,9 @@ public class MemoryCompiler extends ClassLoader{
             }
         }
     }
-
-    @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if(fileManager!=null){
+    
+    protected Class getLoadedClass(String name){
+         if(fileManager!=null){
             Map<String, byte[]> bs = fileManager.getBytes();
             if(bs!=null){
                 byte[] data = bs.get(name);
@@ -139,7 +144,27 @@ public class MemoryCompiler extends ClassLoader{
                     return defineClass(name, data,0,data.length);
                 }
             }
+         }
+         return null;
+    }
+
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        Class clazz = getLoadedClass(name);
+        if(clazz==null){
+            JavaFileObject source;
+            try {
+                source = loadJavaSource(name);
+            } catch (IOException ex) {
+                source = null;
+            }
+            if(source!=null){
+                //TODO here may modify diagnotisc
+                compile(Collections.singleton(source));
+                clazz = getLoadedClass(name);
+            }
         }
+        if(clazz!=null) return clazz;
         //TODO set classLoader
         return super.findClass(name);
     }
