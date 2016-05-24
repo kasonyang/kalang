@@ -163,6 +163,9 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         for(URL p:classPaths){
             javaCompiler.addClassPath(p);
         }
+        for(File p : javaSourcePath){
+            javaCompiler.addSourcePath(p);
+        }
         for(Map.Entry<String, JavaFileObject> e:javaFiles.entrySet()){
             //TODO handle ex
             javaCompiler.addSource(e.getValue());
