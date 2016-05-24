@@ -9,17 +9,21 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
 import kalang.ast.ClassNode;
 import kalang.AstNotFoundException;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangSource;
-import kalang.java.FileJavaSource;
 import kalang.java.MemoryCompiler;
+import kalang.java.MemoryFileManager;
 import kalang.java.StringJavaSource;
+import kalang.java.StringJavaSourceBase;
 import kalang.util.ClassNameUtil;
 import kalang.util.FilePathUtil;
 import org.apache.commons.io.FileUtils;
@@ -30,7 +34,7 @@ import org.apache.commons.io.FileUtils;
  */
 public class JointFileSystemCompiler extends FileSystemCompiler{
     
-    final Map<String,File> javaFiles = new HashMap<>();
+    final Map<String,JavaFileObject> javaFiles = new HashMap<>();
     
     final List<File> javaSourcePath = new LinkedList<>();
     
@@ -63,9 +67,9 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         addJavaSourceDir(srcDir);
     }
     
-    public void addJavaSource(File srcDir,File file){
+    public void addJavaSource(File srcDir,File file) throws IOException{
         String className = ClassNameUtil.getClassName(srcDir, file);
-        javaFiles.put(className,file);
+        javaFiles.put(className,StringJavaSource.loadFromFile(srcDir, file));
     }
     
     private ClassNode createMockClass(String className){
@@ -100,12 +104,49 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                 return that.loadJavaSource(className);
             }
 
+            @Override
+            protected MemoryFileManager createFileManager(StandardJavaFileManager sfm) {
+                MemoryFileManager superFm = super.createFileManager(sfm);
+                return new MemoryFileManager(superFm){
+                    @Override
+                    public Iterable<JavaFileObject> list(JavaFileManager.Location location, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
+                        Iterable<JavaFileObject> superList = super.list(location, packageName, kinds, recurse);
+                        List<JavaFileObject> files = new LinkedList<>();
+                        if(superList!=null){
+                            superList.forEach(i -> files.add(i));
+                        }
+                        for(File p:JointFileSystemCompiler.this.sourcePaths){
+                            Collection<File> klFiles = FileUtils.listFiles(p, new String[]{"kl","kalang"}, recurse);
+                            klFiles.forEach(f -> {
+                                String className = ClassNameUtil.getClassName(p, f);
+                                files.add(
+                                    new StringJavaSourceBase(className){
+                                        @Override
+                                        protected CharSequence getContent() {
+                                            try {
+                                                return loadJavaSource(className).getCharContent(true);
+                                            } catch (IOException ex) {
+                                                //TODO handle ex
+                                                throw new RuntimeException(ex);
+                                            }
+                                        }
+                                    }
+                                );
+                            });
+                        }
+                        return files;
+                    }
+                    
+                };
+            }
+
         };
         for(URL p:classPaths){
             javaCompiler.addClassPath(p);
         }
-        for(File f:javaFiles.values()){
-            javaCompiler.addSourceFromFile(f);
+        for(Map.Entry<String, JavaFileObject> e:javaFiles.entrySet()){
+            //TODO handle ex
+            javaCompiler.addSource(e.getValue());
         }
         String[] stubNames = javaStubManager.getClassNames();
         for(String n:stubNames){
@@ -151,14 +192,15 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     protected JavaFileObject loadJavaSource(String className) throws IOException{
         //System.out.println("try loading java source:" + className);
         if(javaFiles.containsKey(className)){
-            return new FileJavaSource(javaFiles.get(className));
+            return (javaFiles.get(className));
         }
         for(File p:javaSourcePath){
             if(!p.isDirectory()) continue;
             File f = new File(p,ClassNameUtil.getRelativePathOfClass(className, "java"));
             if(FilePathUtil.existFile(f)){
-                javaFiles.put(className, f);
-                return new FileJavaSource(f);
+                StringJavaSource source = StringJavaSource.loadFromFile(p, f);
+                javaFiles.put(className, source);
+                return source;
             }
         }
         KalangSource klSource = getSourceLoader().loadSource(className);

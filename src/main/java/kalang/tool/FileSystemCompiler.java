@@ -37,7 +37,7 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
     protected List<URL> classPaths = new LinkedList<>();
     
     protected MultiClassLoader classLoader;
-    private List<File> sourcePaths = new LinkedList<>();
+    protected  final List<File> sourcePaths = new LinkedList<>();
     
     public void addClassLoader(ClassLoader classLoader){
         this.classLoader.addClassLoader(classLoader);
