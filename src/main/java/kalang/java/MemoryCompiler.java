@@ -5,11 +5,11 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -20,14 +20,14 @@ import org.apache.commons.io.FileUtils;
 
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class MemoryCompiler extends ClassLoader{
     
     protected final List<JavaFileObject> sources = new LinkedList<>();    
     protected final List<URL> classPaths = new LinkedList<>();
     
-    protected final MemoryFileManager fileManager;
+    protected MemoryFileManager fileManager;
     
     private  DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
     
@@ -36,17 +36,19 @@ public class MemoryCompiler extends ClassLoader{
 
     public MemoryCompiler() {
         compiler = ToolProvider.getSystemJavaCompiler();
-        StandardJavaFileManager sfm = compiler.getStandardFileManager(null, null, null);
-        fileManager = createFileManager(sfm);
     }
     
     public void addSourcePath(File path){
         sourcePaths.add(path);
     }
     
-    public void addSourceFromFile(File file){
-        SimpleJavaFileObject s =new FileJavaSource(file);
-        sources.add(s);
+    public void addSourceFromFile(String className,File file) throws IOException{
+        addSourceFromString(className, FileUtils.readFileToString(file, "utf-8"));
+    }
+    
+    public void addSourceFromFile(File root,File file) throws IOException{
+        String className = ClassNameUtil.getClassName(root, file);
+        addSourceFromFile(className, file);
     }
     
     public void addSourceFromString(String className,String content){
@@ -55,11 +57,14 @@ public class MemoryCompiler extends ClassLoader{
     }
     
     protected boolean compile(Collection<JavaFileObject> javaFileObjects){
+        StandardJavaFileManager sfm = compiler.getStandardFileManager(null, null, null);
+        fileManager = createFileManager(sfm);
         List<String> options = new LinkedList<>();
         String classPath = buildClassPathOption();
-        System.out.println("classpath:" + classPath);
-        options.add("-classpath");
-        options.add(classPath);
+        if(classPath!=null && !classPath.isEmpty()){
+            options.add("-classpath");
+            options.add(classPath);
+        }
         diagnosticCollector = new DiagnosticCollector();
         CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector,options, null, javaFileObjects);
         return task.call();
@@ -69,24 +74,10 @@ public class MemoryCompiler extends ClassLoader{
         return compile(sources);
     }
     
-    protected final MemoryFileManager createFileManager(StandardJavaFileManager sfm){
-        return new MemoryFileManager((sfm)){
-            @Override
-            public JavaFileObject getJavaFileForInput(JavaFileManager.Location location, String className, JavaFileObject.Kind kind) throws IOException {
-                JavaFileObject fo = super.getJavaFileForInput(location, className, kind);
-                if(fo!=null){
-                    return fo;
-                }
-                if(kind == JavaFileObject.Kind.SOURCE){
-                    JavaFileObject js = loadJavaSource(className);
-                    if(js!=null){
-                        return js;
-                    }
-                }
-                return null;
-            }
-
-        };
+    protected MemoryFileManager createFileManager(StandardJavaFileManager sfm){
+        FileSystemFileManager fsfm = new FileSystemFileManager(sfm);
+        sourcePaths.forEach(p -> fsfm.addSourcePath(p));
+        return new MemoryFileManager(fsfm);
     }
     
     protected JavaFileObject loadJavaSource(String className) throws IOException{
@@ -94,12 +85,13 @@ public class MemoryCompiler extends ClassLoader{
         for(File p:sourcePaths){
             File sf = new File(p,relativePath);
             if(FilePathUtil.existFile(sf)){
-                return new FileJavaSource(sf);
+                return new StringJavaSource(className, FileUtils.readFileToString(sf,"utf-8"));
             }
         }
         return null;
     }
 
+    @Nullable
     public MemoryFileManager getFileManager() {
         return fileManager;
     }
@@ -183,6 +175,10 @@ public class MemoryCompiler extends ClassLoader{
     
     public void addClassPath(URL path){
         classPaths.add(path);
+    }
+
+    public void addSource(JavaFileObject value) {
+        sources.add(value);
     }
     
 }
