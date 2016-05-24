@@ -85,7 +85,7 @@ public class MemoryCompiler extends ClassLoader{
                 }
                 return null;
             }
-            
+
         };
     }
     
@@ -110,15 +110,13 @@ public class MemoryCompiler extends ClassLoader{
     
     public void printDiagnostic(){
         //TODO modify diagnostic 
-        if(diagnosticCollector!=null){
-            for (Diagnostic<? extends JavaFileObject> diagnostic : diagnosticCollector.getDiagnostics()) {
-                System.out.println(diagnostic.getCode());
-                System.out.println(diagnostic.getKind());
-                System.out.println(diagnostic.getPosition());
-                System.out.println(diagnostic.getStartPosition());
-                System.out.println(diagnostic.getEndPosition());
-                System.out.println(diagnostic.getSource());
-                System.out.println(diagnostic.getMessage(null));
+        if (diagnosticCollector != null) {
+            for (Diagnostic<? extends JavaFileObject> d : diagnosticCollector.getDiagnostics()) {
+                JavaFileObject source = d.getSource();
+                if (source != null) {
+                    System.err.println(source.getName() + ":" + d.getLineNumber());
+                }
+                System.err.println(d.getKind() + ":" + d.getMessage(null));
             }
         }
     }
@@ -160,7 +158,9 @@ public class MemoryCompiler extends ClassLoader{
             }
             if(source!=null){
                 //TODO here may modify diagnotisc
-                compile(Collections.singleton(source));
+                if(!compile(Collections.singleton(source))){
+                    printDiagnostic();
+                }
                 clazz = getLoadedClass(name);
             }
         }

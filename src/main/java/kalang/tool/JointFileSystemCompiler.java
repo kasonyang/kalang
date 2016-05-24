@@ -9,14 +9,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 import kalang.ast.ClassNode;
 import kalang.AstNotFoundException;
+import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangSource;
 import kalang.java.FileJavaSource;
 import kalang.java.MemoryCompiler;
@@ -36,6 +35,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     final List<File> javaSourcePath = new LinkedList<>();
     
     final MemoryOutputManager javaStubManager = new MemoryOutputManager();
+    private MemoryCompiler javaCompiler;
     
     public void addJavaSourcePath(File path){
         javaSourcePath.add(path);
@@ -80,15 +80,9 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         try{
             return super.loadAst(className);
         }catch(AstNotFoundException ex){
-            try {
-                JavaFileObject javaSource = loadJavaSource(className);
-                if(javaSource!=null){
-                    return createMockClass(className);
-                }  
-            } catch (IOException ex1) {
-                Logger.getLogger(JointFileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex1);
-            }
-            throw ex;
+            if(javaCompiler==null) throw ex;
+            JavaAstLoader javaAstLoader = new JavaAstLoader(javaCompiler);
+            return javaAstLoader.loadAst(className);
         }
     }
 
@@ -96,7 +90,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     public void compile() {
         generateJavaStub(javaStubManager);
         JointFileSystemCompiler that = this;
-        MemoryCompiler javaCompiler = new MemoryCompiler(){
+        javaCompiler = new MemoryCompiler(){
             @Override
             protected JavaFileObject loadJavaSource(String className) throws IOException {
                 JavaFileObject js = super.loadJavaSource(className);
