@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -18,6 +20,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import kalang.ast.ClassNode;
 import kalang.AstNotFoundException;
+import kalang.compiler.CompilePhase;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangSource;
 import kalang.java.MemoryCompiler;
@@ -84,9 +87,20 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         try{
             return super.loadAst(className);
         }catch(AstNotFoundException ex){
-            if(javaCompiler==null) throw ex;
-            JavaAstLoader javaAstLoader = new JavaAstLoader(javaCompiler);
-            return javaAstLoader.loadAst(className);
+            try {
+                JavaFileObject js = loadJavaSource(className);
+                if(js==null) throw ex;
+                if(getCurrentCompilePhase()<CompilePhase.PHASE_BUILDAST){
+                    return createMockClass(className);
+                }
+                if(javaCompiler==null) throw ex;
+                JavaAstLoader javaAstLoader = new JavaAstLoader(javaCompiler);
+                return javaAstLoader.loadAst(className);
+            } catch (IOException ex1) {
+                //TODO handle ex
+                Logger.getLogger(JointFileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex1);
+                throw ex;
+            }
         }
     }
 
@@ -116,23 +130,28 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                             superList.forEach(i -> files.add(i));
                         }
                         for(File p:JointFileSystemCompiler.this.sourcePaths){
-                            Collection<File> klFiles = FileUtils.listFiles(p, new String[]{"kl","kalang"}, recurse);
-                            klFiles.forEach(f -> {
-                                String className = ClassNameUtil.getClassName(p, f);
-                                files.add(
-                                    new StringJavaSourceBase(className){
-                                        @Override
-                                        protected CharSequence getContent() {
-                                            try {
-                                                return loadJavaSource(className).getCharContent(true);
-                                            } catch (IOException ex) {
-                                                //TODO handle ex
-                                                throw new RuntimeException(ex);
+                            File dir = packageName !=null && !packageName.isEmpty()
+                        ? new File(p,packageName.replace('.', '/'))
+                        : p;
+                            if(dir.exists() && dir.isDirectory()){
+                                Collection<File> klFiles = FileUtils.listFiles(dir, new String[]{"kl","kalang"}, recurse);
+                                klFiles.forEach(f -> {
+                                    String className = ClassNameUtil.getClassName(p, f);
+                                    files.add(
+                                        new StringJavaSourceBase(className){
+                                            @Override
+                                            protected CharSequence getContent() {
+                                                try {
+                                                    return loadJavaSource(className).getCharContent(true);
+                                                } catch (IOException ex) {
+                                                    //TODO handle ex
+                                                    throw new RuntimeException(ex);
+                                                }
                                             }
                                         }
-                                    }
-                                );
-                            });
+                                    );
+                                });
+                            }
                         }
                         return files;
                     }
@@ -203,6 +222,8 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                 return source;
             }
         }
+        JavaFileObject js = getJavaStub(className);
+        if(js!=null) return js;
         KalangSource klSource = getSourceLoader().loadSource(className);
         if(klSource != null){
             addSource(klSource);

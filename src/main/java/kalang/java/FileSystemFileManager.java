@@ -51,8 +51,14 @@ public class FileSystemFileManager implements JavaFileManager{
         if(location==StandardLocation.SOURCE_PATH){
             List<JavaFileObject> list = new LinkedList<>();
             for(File p:sourcePaths){
-                Collection<File> files = FileUtils.listFiles(p, new String[]{"java"}, recurse);
-                if(files!=null) for(File f:files) list.add(StringJavaSource.loadFromFile(p,f));
+                File dir = packageName !=null && !packageName.isEmpty()
+                        ? new File(p,packageName.replace('.', '/'))
+                        : p;
+                if(dir.exists() && dir.isDirectory()){
+                    Collection<File> files = FileUtils.listFiles(dir, new String[]{"java"}, recurse);
+                    if(files!=null) for(File f:files) list.add(StringJavaSource.loadFromFile(p,f));
+                }
+                
             }
             if(superList!=null){
                 superList.forEach(i -> list.add(i));
