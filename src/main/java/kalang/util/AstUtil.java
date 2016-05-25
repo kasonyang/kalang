@@ -72,8 +72,24 @@ public class AstUtil {
        return String.format("%s#%s(%s)", className,name,getParametersDescription(types));
    }
    
+   public static String getMethodDescription(MethodNode node){
+       String className = "";
+       if(node.classNode!=null){
+           className = node.classNode.name + "#";
+       }
+       return String.format("%s%s(%s)", className,node.name,getParametersDescription(getParameterTypes(node)));
+   }
+   
    public static String getMethodDescription(MethodNode node,String className){
        return String.format("%s#%s(%s)", className,node.name,getParametersDescription(getParameterTypes(node)));
+   }
+   
+   public static String getMethodDescription(MethodNode[] methods,String delimiter){
+       List<String> list = new ArrayList<>(methods.length);
+       for(MethodNode m:methods){
+           list.add(getMethodDescription(m));
+       }
+       return String.join(delimiter, list);
    }
 
     public static String getMethodDescriptor(MethodNode node) {

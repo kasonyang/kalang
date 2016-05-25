@@ -43,24 +43,24 @@ public abstract class InvocationExpr extends ExprNode {
             return new MethodSelection(md, args);
         } else {
             MethodNode[] methods = AstUtil.getMethodsByName(specialClass.getMethods(), methodName);
-            int matchedCount = 0;
+            //int matchedCount = 0;
             ExprNode[] matchedParams=null;
-            MethodNode matchedMethod = null;
+            List<MethodNode> matchedMethod = new ArrayList(methods.length);
             for (MethodNode m : methods) {
                 Type[] mTypes = AstUtil.getParameterTypes(m);
                 ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
                 if (mp != null) {
-                    matchedCount++;
+                    //matchedCount++;
                     matchedParams = mp;
-                    matchedMethod = m;
+                    matchedMethod.add(m);
                 }
             }
-            if (matchedCount < 1) {
+            if (matchedMethod.isEmpty()) {
                 throw new MethodNotFoundException(methodName);
-            } else if (matchedCount > 1) {
-                throw new AmbiguousMethodException("the method " + methodName + " is ambiguous");
+            } else if (matchedMethod.size() > 1) {
+                throw new AmbiguousMethodException(matchedMethod);
             }
-            return new MethodSelection(matchedMethod, matchedParams);
+            return new MethodSelection(matchedMethod.get(0), matchedParams);
         }
     }
 
