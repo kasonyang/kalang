@@ -7,6 +7,7 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import kalang.ast.ClassNode;
 import kalang.compiler.codegen.Ast2Class;
 import kalang.compiler.codegen.Ast2Java;
@@ -36,11 +37,14 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
 
     protected List<URL> classPaths = new LinkedList<>();
     
+    @Nullable
     protected MultiClassLoader classLoader;
+    
     protected  final List<File> sourcePaths = new LinkedList<>();
     
+    @Deprecated
     public void addClassLoader(ClassLoader classLoader){
-        this.classLoader.addClassLoader(classLoader);
+        getClassLoader().addClassLoader(classLoader);
     }
     
     public MultiClassLoader getClassLoader(){
