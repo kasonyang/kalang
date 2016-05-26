@@ -221,9 +221,14 @@ public class AstUtil {
         }
         return newParams;
     }
+    
+    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types){
+        return getMethod(cls, methodName, types,true);
+    }
 
-    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types) {
-       MethodNode[] methods = getMethodsByName(cls.getMethods(), methodName);
+    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean recursive) {
+        MethodNode[] clsMethods = recursive ? cls.getMethods() : cls.getDeclaredMethodNodes();
+       MethodNode[] methods = getMethodsByName(clsMethods, methodName);
         for(MethodNode m:methods){
            Type[] mdTypes = getParameterTypes(m);
            if(Arrays.equals(mdTypes, types)) return m;
@@ -273,7 +278,7 @@ public class AstUtil {
     public static Statement createDefaultSuperConstructorCall(ClassNode clazz) throws MethodNotFoundException, AmbiguousMethodException{
        SuperExpr thisExpr = new SuperExpr(clazz);
         return new ExprStmt(
-                ObjectInvokeExpr.create(thisExpr, "<init>", null)
+                ObjectInvokeExpr.create(thisExpr, "<init>", null,false)
         );
     }
     

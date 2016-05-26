@@ -16,7 +16,7 @@ public class StaticInvokeExpr extends InvocationExpr{
     private ClassReference invokeClass;
     
     public static StaticInvokeExpr create(ClassReference clazz, String methodName, ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException {
-        MethodSelection ms = applyMethod(clazz.getReferencedClassNode() , methodName, args);
+        MethodSelection ms = applyMethod(clazz.getReferencedClassNode() , methodName, args,true);
         MethodNode md = ms.selectedMethod;
         if(!AstUtil.isStatic(md.modifier)){
             throw new MethodNotFoundException(methodName + " is not static");

@@ -16,9 +16,13 @@ import kalang.util.AstUtil;
 public class ObjectInvokeExpr extends InvocationExpr{
 
     public static ObjectInvokeExpr create(ExprNode target , String methodName,ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException {
+        return create(target, methodName, args, true);
+    }
+    
+    public static ObjectInvokeExpr create(ExprNode target , String methodName,ExprNode[] args,boolean recursive) throws MethodNotFoundException, AmbiguousMethodException {
         ClassType targetType = (ClassType) target.getType();
         ClassNode clazz = targetType.getClassNode();
-        MethodSelection ms = applyMethod(clazz, methodName, args);
+        MethodSelection ms = applyMethod(clazz, methodName, args,recursive);
         MethodNode md = ms.selectedMethod;
         if(AstUtil.isStatic(md.modifier)){
             throw new MethodNotFoundException(methodName + " is static");
