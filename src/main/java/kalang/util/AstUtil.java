@@ -371,4 +371,22 @@ public class AstUtil {
         setter.body = body;
     }
     
+    public static List<MethodNode> listAccessibleMethods(ClassNode clazz,ClassNode caller){
+        List<MethodNode> list = new LinkedList<>();
+        for(MethodNode m:clazz.getMethods()){
+            if(caller.equals(m.classNode)){
+                list.add(m);
+            }else if(caller.isSubclassOf(m.classNode)){
+                if(Modifier.isProtected(m.modifier) || Modifier.isPublic(m.modifier)){
+                    list.add(m);
+                }
+            }else{
+                if(Modifier.isPublic(m.modifier)){
+                    list.add(m);
+                }
+            }
+        }
+        return list;
+    }
+    
 }
