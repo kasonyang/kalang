@@ -225,10 +225,18 @@ public class AstUtil {
     public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types){
         return getMethod(cls, methodName, types,true);
     }
-
-    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean recursive) {
-        MethodNode[] clsMethods = recursive ? cls.getMethods() : cls.getDeclaredMethodNodes();
-       MethodNode[] methods = getMethodsByName(clsMethods, methodName);
+    
+    @Nullable
+    public static MethodNode getAccessibleMethod(ClassNode cls, String methodName, @Nullable Type[] types,ClassNode caller) {
+        MethodNode md = getMethod(cls, methodName, types);
+        if(md==null) return null;
+        if(!isAccessibleMethod(md,caller)) return null;
+        return md;
+    }
+    
+    @Nullable
+    public static MethodNode getExactedMethod(MethodNode[] candidates,String methodName,@Nullable Type[] types){
+        MethodNode[] methods = getMethodsByName(candidates, methodName);
         for(MethodNode m:methods){
            Type[] mdTypes = getParameterTypes(m);
            if(Arrays.equals(mdTypes, types)) return m;
@@ -237,6 +245,13 @@ public class AstUtil {
            }
         }
         return null;
+    }
+
+    //TODO should rename?
+    @Nullable
+    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean recursive) {
+        MethodNode[] clsMethods = recursive ? cls.getMethods() : cls.getDeclaredMethodNodes();
+       return getExactedMethod(clsMethods, methodName, types);
     }
 
     @Nullable
@@ -278,7 +293,7 @@ public class AstUtil {
     public static Statement createDefaultSuperConstructorCall(ClassNode clazz) throws MethodNotFoundException, AmbiguousMethodException{
        SuperExpr thisExpr = new SuperExpr(clazz);
         return new ExprStmt(
-                ObjectInvokeExpr.create(thisExpr, "<init>", null,false)
+                ObjectInvokeExpr.create(thisExpr, "<init>", null,clazz)
         );
     }
     
@@ -371,22 +386,27 @@ public class AstUtil {
         setter.body = body;
     }
     
-    public static List<MethodNode> listAccessibleMethods(ClassNode clazz,ClassNode caller){
+    public static MethodNode[] listAccessibleMethods(ClassNode clazz,@Nullable ClassNode caller,boolean recursive){
         List<MethodNode> list = new LinkedList<>();
-        for(MethodNode m:clazz.getMethods()){
-            if(caller.equals(m.classNode)){
+        for(MethodNode m: (recursive ? clazz.getMethods() : clazz.getDeclaredMethodNodes()) ){
+            if(isAccessibleMethod(m, caller)){
                 list.add(m);
+            }
+        }
+        return list.toArray(new MethodNode[list.size()]);
+    }
+
+    public static boolean isAccessibleMethod(MethodNode m,@Nullable ClassNode caller) {
+        if(caller!=null){
+            if(caller.equals(m.classNode)){
+                return true;
             }else if(caller.isSubclassOf(m.classNode)){
                 if(Modifier.isProtected(m.modifier) || Modifier.isPublic(m.modifier)){
-                    list.add(m);
-                }
-            }else{
-                if(Modifier.isPublic(m.modifier)){
-                    list.add(m);
+                    return true;
                 }
             }
         }
-        return list;
+        return Modifier.isPublic(m.modifier);
     }
     
 }
