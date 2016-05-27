@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
 import kalang.util.AstUtil;
@@ -16,7 +17,13 @@ public class StaticInvokeExpr extends InvocationExpr{
     private ClassReference invokeClass;
     
     public static StaticInvokeExpr create(ClassReference clazz, String methodName, ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException {
-        MethodSelection ms = applyMethod(clazz.getReferencedClassNode() , methodName, args,true);
+        return create(clazz, methodName, args, null);
+    }
+    
+    public static StaticInvokeExpr create(ClassReference clazz, String methodName, ExprNode[] args,@Nullable ClassNode caller) throws MethodNotFoundException, AmbiguousMethodException {
+        //TODO static only
+        MethodNode[] candidates = AstUtil.listAccessibleMethods(clazz.getReferencedClassNode(), caller, true);
+        MethodSelection ms = applyMethod(clazz.getReferencedClassNode() , methodName, args,candidates);
         MethodNode md = ms.selectedMethod;
         if(!AstUtil.isStatic(md.modifier)){
             throw new MethodNotFoundException(methodName + " is not static");

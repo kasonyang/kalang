@@ -36,14 +36,13 @@ public abstract class InvocationExpr extends ExprNode {
      * @param types
      * @return the selected method,or null
      */
-    public static MethodSelection applyMethod(ClassNode specialClass,String methodName, ExprNode[] args,boolean recursive) throws MethodNotFoundException,AmbiguousMethodException {
+    public static MethodSelection applyMethod(ClassNode specialClass,String methodName, ExprNode[] args,MethodNode[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
         Type[] types = AstUtil.getExprTypes(args);
-        MethodNode md = AstUtil.getMethod(specialClass, methodName, types,recursive);
+        MethodNode md = AstUtil.getExactedMethod(candidates, methodName, types);
         if (md != null) {
             return new MethodSelection(md, args);
         } else {
-            MethodNode[] clsMethods = recursive ? specialClass.getMethods() : specialClass.getDeclaredMethodNodes();
-            MethodNode[] methods = AstUtil.getMethodsByName(clsMethods, methodName);
+            MethodNode[] methods = AstUtil.getMethodsByName(candidates, methodName);
             //int matchedCount = 0;
             ExprNode[] matchedParams=null;
             List<MethodNode> matchedMethod = new ArrayList(methods.length);

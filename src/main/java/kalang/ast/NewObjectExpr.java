@@ -36,7 +36,7 @@ public class NewObjectExpr extends ExprNode{
     
     private void initDefaultConstructor(ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException{
         constructor = 
-                ObjectInvokeExpr.create(this, "<init>",args,false);
+                ObjectInvokeExpr.create(this, "<init>",args);
     }
     
     @Override
