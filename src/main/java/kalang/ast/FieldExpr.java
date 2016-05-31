@@ -12,8 +12,8 @@ public abstract class FieldExpr extends AssignableExpr{
     private FieldNode field;
     
     @Nonnull
-    public static  FieldNode getField(ClassNode clazz,String fieldName) throws FieldNotFoundException{
-        FieldNode field = AstUtil.getField(clazz,fieldName);
+    protected static  FieldNode getField(ClassNode clazz,String fieldName,@Nullable ClassNode caller) throws FieldNotFoundException{
+        FieldNode field = AstUtil.getField(clazz,fieldName,caller);
         if(field==null){
             throw new FieldNotFoundException(fieldName);
         }

@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.FieldNotFoundException;
 import kalang.util.AstUtil;
 /**
@@ -14,8 +15,8 @@ public class StaticFieldExpr extends FieldExpr{
     
     private ClassReference clazz;
     
-    public static StaticFieldExpr create(ClassReference clazz,String fieldName) throws FieldNotFoundException{
-        FieldNode  field = getField(clazz.getReferencedClassNode(), fieldName);
+    public static StaticFieldExpr create(ClassReference clazz,String fieldName,@Nullable ClassNode caller) throws FieldNotFoundException{
+        FieldNode  field = getField(clazz.getReferencedClassNode(), fieldName,caller);
         if(!AstUtil.isStatic(field.modifier)){
             throw new FieldNotFoundException(fieldName + " is not static");
         }

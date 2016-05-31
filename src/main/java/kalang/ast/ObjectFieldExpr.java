@@ -33,14 +33,14 @@ public class ObjectFieldExpr extends FieldExpr{
     }
     
     @Nonnull
-    public static FieldExpr create(@Nonnull ExprNode target,String fieldName) throws FieldNotFoundException{
+    public static FieldExpr create(@Nonnull ExprNode target,String fieldName,@Nullable ClassNode caller) throws FieldNotFoundException{
         Type type = target.getType();
         if(!(type instanceof ClassType)){
             throw new UnsupportedOperationException("unsupported type:" + type);
         }
         ClassType classType = (ClassType) type;
         ClassNode clazz = classType.getClassNode();
-        FieldNode field = getField(clazz, fieldName);
+        FieldNode field = getField(clazz, fieldName,caller);
         if(AstUtil.isStatic(field.modifier)){
             throw new FieldNotFoundException(fieldName + " is static");
         }

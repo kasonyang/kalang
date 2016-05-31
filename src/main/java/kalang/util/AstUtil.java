@@ -96,8 +96,16 @@ public class AstUtil {
         return getMethodDescriptor(node.name, node.type, getParameterTypes(node));
     }
 
-    public static FieldNode getField(ClassNode ast, String name) {
-        for (FieldNode f : ast.fields) {
+    /**
+     * get an accessible field by name
+     * @param ast
+     * @param name
+     * @param caller
+     * @return 
+     */
+    @Nullable
+    public static FieldNode getField(ClassNode ast, String name,@Nullable ClassNode caller) {
+        for (FieldNode f : listAccessibleFields(ast, caller)) {
             if (f.name.equals(name)) {
                 return f;
             }

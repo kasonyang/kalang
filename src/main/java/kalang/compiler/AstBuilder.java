@@ -1459,7 +1459,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ret = new ArrayLengthExpr(expr);
         } else {
             try {
-                ret = ObjectFieldExpr.create(expr, fieldName);
+                ret = ObjectFieldExpr.create(expr, fieldName,classAst);
             } catch (FieldNotFoundException ex) {
                 ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
             }
@@ -1471,7 +1471,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     protected AssignableExpr getStaticFieldExpr(ClassReference clazz,String fieldName,ParserRuleContext rule){
         AssignableExpr ret;
         try {
-            ret = StaticFieldExpr.create(clazz,fieldName);
+            ret = StaticFieldExpr.create(clazz,fieldName,classAst);
         } catch (FieldNotFoundException ex) {
             ret = new UnknownFieldExpr(clazz, clazz.getReferencedClassNode(), fieldName);
         }
