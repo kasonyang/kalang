@@ -386,6 +386,32 @@ public class AstUtil {
         setter.body = body;
     }
     
+    public static boolean isAccessibleField(FieldNode field,@Nullable ClassNode caller){
+        return isAccessible(field.modifier, field.classNode, caller);
+    }
+    
+    public static FieldNode[] listAccessibleFields(ClassNode clazz,@Nullable ClassNode caller){
+        List<FieldNode> list = new LinkedList<>();
+        for(FieldNode f:listFields(clazz)){
+            if(isAccessibleField(f, caller)){
+                list.add(f);
+            }
+        }
+        return list.toArray(new FieldNode[list.size()]);
+    }
+    
+    public static FieldNode[] listFields(ClassNode clazz){
+        List<FieldNode> list = new LinkedList<>();
+        ClassNode clz = clazz;
+        while(clz!=null){
+            for(FieldNode f:clazz.fields){
+                list.add(f);
+            }
+            clz = clz.parent;
+        }
+        return list.toArray(new FieldNode[list.size()]);
+    }
+    
     public static MethodNode[] listAccessibleMethods(ClassNode clazz,@Nullable ClassNode caller,boolean recursive){
         List<MethodNode> list = new LinkedList<>();
         for(MethodNode m: (recursive ? clazz.getMethods() : clazz.getDeclaredMethodNodes()) ){
@@ -395,18 +421,22 @@ public class AstUtil {
         }
         return list.toArray(new MethodNode[list.size()]);
     }
-
-    public static boolean isAccessibleMethod(MethodNode m,@Nullable ClassNode caller) {
+    
+    public static boolean isAccessible(int modifier,ClassNode owner,@Nullable ClassNode caller){
         if(caller!=null){
-            if(caller.equals(m.classNode)){
+            if(caller.equals(owner)){
                 return true;
-            }else if(caller.isSubclassOf(m.classNode)){
-                if(Modifier.isProtected(m.modifier) || Modifier.isPublic(m.modifier)){
+            }else if(caller.isSubclassOf(owner)){
+                if(Modifier.isProtected(modifier) || Modifier.isPublic(modifier)){
                     return true;
                 }
             }
         }
-        return Modifier.isPublic(m.modifier);
+        return Modifier.isPublic(modifier);
+    }
+
+    public static boolean isAccessibleMethod(MethodNode m,@Nullable ClassNode caller) {
+        return isAccessible(m.modifier, m.classNode, caller);
     }
     
 }
