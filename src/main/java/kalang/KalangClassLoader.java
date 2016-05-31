@@ -52,7 +52,6 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
         Class clazz = loadedClasses.get(name);
         if(clazz!=null) return clazz;
         KalangSource src = sourceLoader.loadSource(name);
-        //TODO cache compiled classes
         if(src!=null){
             compiler.addSource(src);
             compiler.compile();
