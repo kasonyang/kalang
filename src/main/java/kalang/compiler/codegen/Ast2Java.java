@@ -451,16 +451,11 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     @Override
     public String visitNewArrayExpr(NewArrayExpr node) {
         String type = node.getComponentType().toString();
-        String code = "new "
+        return "new "
                 + type
                 + "["
                 + visit(node.getSize())
                 + "]";
-        ExprNode[] initExprs = node.getInitExprs();
-        if(initExprs!=null && initExprs.length>0){
-            code += "{" + String.join(",", visitAll(initExprs)) + "}";            
-        }
-        return code;
     }
 
     @Override

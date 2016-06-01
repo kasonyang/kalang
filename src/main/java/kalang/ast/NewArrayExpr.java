@@ -7,17 +7,9 @@ public class NewArrayExpr extends ExprNode{
     
     protected ExprNode size;
     
-    protected ExprNode[] initExprs;
-    
     public NewArrayExpr(Type type,ExprNode size){
             this.componentType = type;
             this.size = size;
-    }
-
-    public NewArrayExpr(Type componentType, ExprNode size, ExprNode[] initExprs) {
-        this.componentType = componentType;
-        this.size = size;
-        this.initExprs = initExprs;
     }
 
     @Override
@@ -53,14 +45,6 @@ public class NewArrayExpr extends ExprNode{
     public void setSize(ExprNode size) {
         Objects.requireNonNull(size);
         this.size = size;
-    }
-
-    public ExprNode[] getInitExprs() {
-        return initExprs;
-    }
-
-    public void setInitExprs(ExprNode[] initExprs) {
-        this.initExprs = initExprs;
     }
     
 }

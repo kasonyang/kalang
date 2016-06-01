@@ -712,15 +712,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else{
             md.visitTypeInsn(ANEWARRAY, internalName(t));
         }
-        //TODO maybe fill
-        ExprNode[] initExprs = node.getInitExprs();
-        if(initExprs!=null && initExprs.length>0){
-            for(int i=0;i<initExprs.length;i++){
-                md.visitInsn(DUP);
-                constX(i);
-                astore(initExprs[i]);
-            }
-        }
         return null;
     }
 

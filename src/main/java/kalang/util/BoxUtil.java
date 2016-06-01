@@ -15,6 +15,11 @@ import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.StaticInvokeExpr;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
+import kalang.ast.AssignExpr;
+import kalang.ast.ElementExpr;
+import kalang.ast.ExprStmt;
+import kalang.ast.MultiStmtExpr;
+import kalang.ast.Statement;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
@@ -170,9 +175,18 @@ public class BoxUtil {
         }
     }
     
-    public static NewArrayExpr castExprsToArrayExpr(Type type,int size, ExprNode[] exprs){
-        NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(size),exprs);
-        return ae;
+    public static ExprNode createInitializedArray(Type type,ExprNode[] exprs){
+        NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(exprs.length));
+        Statement[] initStmts = new Statement[exprs.length];
+        for(int i=0;i<exprs.length;i++){
+            initStmts[i] =new ExprStmt(
+                    new AssignExpr(
+                            new ElementExpr(ae, new ConstExpr(i))
+                            , exprs[i]
+                    )
+            );
+        }
+        return new MultiStmtExpr(Arrays.asList(initStmts), ae);
     }
 
 }

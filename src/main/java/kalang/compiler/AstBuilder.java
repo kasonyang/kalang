@@ -456,30 +456,19 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
         Type type = parseSingleType(ctx.singleType());
-        ExprNode size;
+        ExprNode ret;
         if(ctx.size!=null){
-            size = visitExpression(ctx.size);
+            ExprNode size = visitExpression(ctx.size);
+            ret = new NewArrayExpr(type,size);
         }else{
-            size =new ConstExpr(ctx.initExpr.size());
-        }
-        NewArrayExpr nae = new NewArrayExpr(type,size);
-        mapAst(nae, ctx);
-        if(ctx.size!=null){
-            return nae;
-        }else{
-            List<Statement> initStmts = new LinkedList<>();
-            for(int i=0;i<ctx.initExpr.size();i++){
-                initStmts.add(
-                        new ExprStmt(
-                                new AssignExpr(
-                                        new ElementExpr(nae,new ConstExpr(i))
-                                        ,visitExpression(ctx.initExpr.get(i))
-                                )
-                        )
-                );
+            ExprNode[] initExprs = new ExprNode[ctx.initExpr.size()];
+            for(int i=0;i<initExprs.length;i++){
+                initExprs[i] = visitExpression(ctx.initExpr.get(i));
             }
-            return new MultiStmtExpr(initStmts, nae);
+            ret= BoxUtil.createInitializedArray(type, initExprs);
         }
+        mapAst(ret, ctx);
+        return ret;
     }
 
     @Override
@@ -1061,7 +1050,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             for(int i=0;i<params.length;i++){
                 params[i] = visitExpression(ctx.params.get(i));
             }
-            invokeArgs[2] = BoxUtil.castExprsToArrayExpr(Types.ROOT_TYPE, params.length, params);
+            invokeArgs[2] = BoxUtil.createInitializedArray(Types.ROOT_TYPE, params);
             ClassNode dispatcherAst = getAst("kalang.runtime.invoke.MethodDispatcher");
             if(dispatcherAst==null){
                 throw new RuntimeException("Runtime library is required!");
