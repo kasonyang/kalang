@@ -2,6 +2,8 @@ package kalang.core;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The class holds the declared local variables.
@@ -64,6 +66,10 @@ public class VarTable<T, V> {
 
     public void setParent(VarTable<T, V> parent) {
         this.parent = parent;
+    }
+    
+    public Set<T> keySet(){
+        return vars.keySet();
     }
 
 }

@@ -3,9 +3,9 @@ import java.util.*;
 import kalang.core.*;
 public class VarExpr extends AssignableExpr{
     
-    protected VarObject var;
+    protected LocalVarNode var;
     
-    public VarExpr(VarObject var){
+    public VarExpr(LocalVarNode var){
         this.var = var;
     }
     
@@ -17,7 +17,7 @@ public class VarExpr extends AssignableExpr{
     /**
      * @return the var
      */
-    public VarObject getVar() {
+    public LocalVarNode getVar() {
         return var;
     }
     

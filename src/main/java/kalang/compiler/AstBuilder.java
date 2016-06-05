@@ -100,6 +100,7 @@ import kalang.ast.MathExpr;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ObjectInvokeExpr;
+import kalang.ast.ParameterExpr;
 import kalang.ast.ParameterNode;
 import kalang.ast.StaticFieldExpr;
 import kalang.ast.StaticInvokeExpr;
@@ -1150,7 +1151,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if (method != null && method.parameters != null) {
                 for (ParameterNode p : method.parameters) {
                     if (p.name.equals(name)) {
-                        VarExpr ve = new VarExpr(p);
+                        ParameterExpr ve = new ParameterExpr(p);
                         if(token!=null) mapAst(ve, token);
                         return ve;
                     }

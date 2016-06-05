@@ -3,8 +3,11 @@ package kalang.compiler;
 import kalang.util.MathType;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -43,6 +46,7 @@ import javax.annotation.Nullable;
 import kalang.ast.AnnotationNode;
 import kalang.ast.Annotationable;
 import kalang.ast.ArrayLengthExpr;
+import kalang.ast.AssignableExpr;
 import kalang.ast.ClassReference;
 import kalang.ast.ErrorousExpr;
 import kalang.ast.FieldNode;
@@ -57,10 +61,13 @@ import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.core.VarTable;
 import static kalang.util.AstUtil.getMethodsByName;
 import static kalang.util.AstUtil.getParameterTypes;
 import static kalang.util.AstUtil.matchTypes;
 import kalang.util.BoxUtil;
+import kalang.util.CollectionsUtil;
+import org.apache.commons.collections4.SetUtils;
 
 /**
  *  The semantic analyzer class infers and checks the componentType of expressions. It may transform the abstract syntax tree.
@@ -87,6 +94,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     private Stack<Map<Type,AstNode>> exceptionStack = new Stack();
     private CompilationUnit source;
+    
+    private VarTable<LocalVarNode,Void> assignedVars = new VarTable<>();
 
     public SemanticAnalyzer(CompilationUnit source,AstLoader astLoader) {
         this.astLoader = astLoader;
@@ -170,6 +179,11 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if(node instanceof Annotationable){
             validateAnnotation(((Annotationable)node).getAnnotations());
         }
+        if(node instanceof VarExpr){
+            if(!assignedVars.exist(((VarExpr)node).getVar(), true)){
+                err.fail(node.toString() + " is uninitialized!", 0, node);
+            }
+        }
         Object ret = super.visit(node);
         if (ret instanceof Type) {
             return  (Type) ret;
@@ -192,10 +206,14 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitAssignExpr(AssignExpr node) {
+        AssignableExpr to = node.getTo();
         Type ft = visit(node.getFrom());
-        Type tt = visit(node.getTo());
+        Type tt = visit(to);
         if(!requireNoneVoid(ft, node)) return getDefaultType();
         if(!requireNoneVoid(tt, node)) return getDefaultType();
+        if(to instanceof VarExpr){
+            assignedVars.put(((VarExpr)to).getVar(), null);
+        }
         if(!ft.equals(tt)){
             ExprNode from = checkAssign(node.getFrom(), ft, tt, node); 
             if(from==null) return getDefaultType();            
@@ -355,20 +373,31 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitTryStmt(TryStmt node) {
-        this.exceptionStack.add(new HashMap<>());        
+        this.exceptionStack.add(new HashMap<>());
+        List<VarTable<LocalVarNode,Void>> assignedList =  new ArrayList(node.getCatchStmts().size()+1);
+        enterNewFrame();
+        assignedList.add(assignedVars);
         visit(node.getExecStmt());
+        exitFrame();
         boolean tryReturned = this.returned;
         for(CatchBlock cs:node.getCatchStmts()){
             this.returned = false;
+            enterNewFrame();
+            assignedList.add(assignedVars);
             visit(cs);
+            exitFrame();
             tryReturned = tryReturned && this.returned;
         }
+        addIntersectedAssignedVar(assignedList.toArray(new VarTable[assignedList.size()]));
         Map<Type, AstNode> uncaught = this.exceptionStack.pop();
         if (uncaught.size() > 0) {
             this.exceptionStack.peek().putAll(uncaught);
         }
         returned = false;
-        visit(node.getFinallyStmt());
+        Statement finallyStmt = node.getFinallyStmt();
+        if(finallyStmt!=null){
+            visit(finallyStmt);
+        }        
         this.returned = tryReturned || returned;
         return null;
     }
@@ -410,18 +439,28 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitIfStmt(IfStmt node) {
-        if(!requireBoolean(node.getConditionExpr())) return getDefaultType();
+        requireBoolean(node.getConditionExpr());
+        VarTable<LocalVarNode, Void> trueAssignedVars=null,falseAssignedVars =null;
         if (node.getTrueBody() != null) {
+            enterNewFrame();
+            trueAssignedVars = assignedVars;
             visit(node.getTrueBody());
+            exitFrame();
         }
         boolean returnedOld = returned;
         returned = false;
         if (node.getFalseBody() != null) {
+            enterNewFrame();
+            falseAssignedVars = assignedVars;
             visit(node.getFalseBody());
+            exitFrame();
         } else {
             returned = false;
         }
         returned = returnedOld && returned;
+        if(trueAssignedVars!=null && falseAssignedVars!=null){
+            addIntersectedAssignedVar(trueAssignedVars,falseAssignedVars);
+        }
         return null;
     }
 
@@ -603,6 +642,25 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
         if(missingValues.size()>0){
             err.fail("Missing attribute for annotation:" + missingValues.toString(), -1, clazz);
+        }
+    }
+    
+    protected void enterNewFrame(){
+        assignedVars = new VarTable<>(assignedVars);
+    }
+    
+    protected void exitFrame(){
+        assignedVars = assignedVars.getParent();
+    }
+    
+    protected  void addIntersectedAssignedVar(VarTable<LocalVarNode,Void>... assignedVarsList){
+        Set<LocalVarNode>[] assigned = new Set[assignedVarsList.length];
+        for(int i=0;i<assigned.length;i++){
+            assigned[i] = assignedVarsList[i].keySet();
+        }
+        Set<LocalVarNode> sets = CollectionsUtil.getIntersection(assigned);
+        for(LocalVarNode s:sets){
+            assignedVars.put(s, null);
         }
     }
 
