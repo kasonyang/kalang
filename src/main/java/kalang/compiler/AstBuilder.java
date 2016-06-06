@@ -749,7 +749,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if (ctx.stat() != null) {
             loopBody = visitStat(ctx.stat());
         }
-        LoopStmt ws = new LoopStmt(null,loopBody,preConditionExpr,null);
+        LoopStmt ws = new LoopStmt(loopBody,preConditionExpr,null);
         mapAst(ws,ctx);
         return ws;
     }
@@ -763,15 +763,19 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             this.popVarStack();
         }
         ExprNode postConditionExpr = visitExpression(ctx.expression());
-        LoopStmt ls = new LoopStmt(null,loopBody,null,postConditionExpr);
+        LoopStmt ls = new LoopStmt(loopBody,null,postConditionExpr);
         mapAst(ls,ctx);
         return ls;
     }
 
     @Override
     public AstNode visitForStat(ForStatContext ctx) {
+        BlockStmt forStmt = new BlockStmt();
         this.newVarStack();
-        Statement vars = visitLocalVarDecl(ctx.localVarDecl());        
+        if(ctx.localVarDecl()!=null){
+            Statement vars = visitLocalVarDecl(ctx.localVarDecl());
+            forStmt.statements.add(vars);
+        }
         ExprNode preConditionExpr = (ExprNode) visit(ctx.expression());
         BlockStmt bs =new BlockStmt();
         if (ctx.stat() != null) {
@@ -784,9 +788,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             bs.statements.addAll(visitExpressions(ctx.expressions()));
         }
         this.popVarStack();
-        LoopStmt ls = new LoopStmt(Collections.singletonList(vars), bs, preConditionExpr, null);
+        LoopStmt ls = new LoopStmt(bs, preConditionExpr, null);
         mapAst(ls,ctx);
-        return ls;
+        forStmt.statements.add(ls);
+        return forStmt;
     }
 
     @Override

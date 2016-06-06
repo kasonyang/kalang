@@ -345,7 +345,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitLoopStmt(LoopStmt node) {
-        visitAll(node.initStmts);
+        //visitAll(node.initStmts);
         Label startLabel = new Label();
         Label stopLabel = new Label();
         continueLabels.push(startLabel);

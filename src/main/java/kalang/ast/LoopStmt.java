@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import kalang.core.*;
 public class LoopStmt extends Statement{
     
-    public final List<Statement> initStmts = new LinkedList<>();
+    //public final List<Statement> initStmts = new LinkedList<>();
     
     @Nullable
     public Statement loopBody;
@@ -19,10 +19,7 @@ public class LoopStmt extends Statement{
     public ExprNode postConditionExpr;
     
     
-    public LoopStmt(@Nullable List<Statement> initStmts,@Nullable Statement loopBody,@Nullable ExprNode preConditionExpr,@Nullable ExprNode postConditionExpr){
-        if(initStmts!=null){
-            this.initStmts.addAll(initStmts);
-        }
+    public LoopStmt(@Nullable Statement loopBody,@Nullable ExprNode preConditionExpr,@Nullable ExprNode postConditionExpr){
         this.loopBody = loopBody;
         this.preConditionExpr = preConditionExpr;
         this.postConditionExpr = postConditionExpr;
@@ -31,7 +28,7 @@ public class LoopStmt extends Statement{
     @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        addChild(ls,initStmts);
+        //addChild(ls,initStmts);
         addChild(ls,loopBody);
         addChild(ls,preConditionExpr);
         addChild(ls,postConditionExpr);
