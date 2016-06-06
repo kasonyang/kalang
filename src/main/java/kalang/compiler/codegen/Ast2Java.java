@@ -20,9 +20,10 @@ import org.apache.commons.io.FileUtils;
 
 /**
  * The class output the ast as java source
- * 
+ *  This class is outdated
  * @author Kason Yang <i@kasonyang.com>
  */
+@Deprecated
 public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerator{
 
     private List<VarObject> varList = new LinkedList<>();
@@ -169,9 +170,9 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         String mdf = "";
         fs += Modifier.toString(f.modifier) + " ";
         fs += f.type + " " + f.name;
-        if (f.initExpr != null) {
-            fs += "=" + visit(f.initExpr);
-        }
+//        if (f.initExpr != null) {
+//            fs += "=" + visit(f.initExpr);
+//        }
         return fs;
     }
 
@@ -357,10 +358,6 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         String code = type
                 + " "
                 + name;
-        if (null != var.initExpr) {
-            code += "="
-                    + visit(var.initExpr);
-        }
         c(code + ";");
     }
 
@@ -607,6 +604,12 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     @Override
     public String visitInstanceOfExpr(InstanceOfExpr node) {
         return "(" + visit(node.getExpr()) + " instanceof " + visit(node.getTarget()) + ")";
+    }
+
+    @Override
+    public String visitMultiStmt(MultiStmt node) {
+        visitAll(node.statements);
+        return null;
     }
 
 }

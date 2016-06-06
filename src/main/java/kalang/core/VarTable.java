@@ -35,7 +35,11 @@ public class VarTable<T, V> {
     }
 
     public boolean exist(T key, boolean includeParent) {
-        return get(key, includeParent) != null;
+        boolean e = vars.containsKey(key);
+        if(!e && parent!=null){
+            e =  parent.exist(key);
+        }
+        return e;
     }
 
     public V get(T key) {

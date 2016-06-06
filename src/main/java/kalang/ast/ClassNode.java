@@ -25,12 +25,13 @@ public class ClassNode extends AstNode implements Annotationable{
     
     public final List<AnnotationNode> annotations = new LinkedList<>();
     
+    public final List<Statement> staticInitStmts = new LinkedList<>();
+    
+    public final List<Statement> initStmts = new LinkedList<>();
+    
     public ClassNode(){
-        
             if(methods == null) methods = new LinkedList();
-        
             if(interfaces == null) interfaces = new LinkedList();
-        
     }
     
     

@@ -48,6 +48,7 @@ import kalang.ast.InstanceOfExpr;
 import kalang.ast.LocalVarNode;
 import kalang.ast.LogicExpr;
 import kalang.ast.MathExpr;
+import kalang.ast.MultiStmt;
 import kalang.ast.NewObjectExpr;
 import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ObjectInvokeExpr;
@@ -130,9 +131,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         int vSize = asmType(vo.type).getSize();
         varIdCounter+= vSize;
         varIds.put(vo, vid);
-        if(vo.initExpr!=null){
-            assignVarObject(vo, vo.initExpr);
-        }
     }
 
     private String internalName(String name){
@@ -186,20 +184,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         //TODO set source file of ClassNode
         classWriter.visitSource(node.name + ".kl", null);
         visitChildren(node);
-        //init static fields
-        List<FieldNode> staticFields = new LinkedList();
-        for(FieldNode f:node.fields){
-            if(AstUtil.isStatic(f.modifier)){
-                staticFields.add(f);
-            }
-        }
-        if(staticFields.size()>0){
+        //clinit
+        if(!node.staticInitStmts.isEmpty()){
             md = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
-            for(FieldNode f:staticFields){
-                if(f.initExpr!=null){
-                    assignField(f,null,f.initExpr);
-                }
-            }
+            visitAll(node.staticInitStmts);
             md.visitInsn(RETURN);
             md.visitMaxs(1, 1);
         }
@@ -228,15 +216,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     throw new RuntimeException("missing constructor call");
                 }
                 visit(firstStmt);
-                //init fields
-                List<FieldNode> fields = clazz.fields;
-                for(FieldNode f:fields){
-                    if(!Modifier.isStatic(f.modifier)){
-                        if(f.initExpr!=null){
-                            assignField(new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), f) , f.initExpr);
-                        }
-                    }
-                }
+                //init class
+                visitAll(clazz.initStmts);
                 for(int i=1;i<stmtsSize;i++){
                     visit(body.statements.get(i));
                 }
@@ -1080,6 +1061,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }
             md.visitJumpInsn(opc, label);
         }
+    }
+
+    @Override
+    public Object visitMultiStmt(MultiStmt node) {
+        visitAll(node.statements);
+        return null;
     }
 
 }

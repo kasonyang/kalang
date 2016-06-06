@@ -79,4 +79,6 @@ public interface IAstVisitor<T>{
     
     public T visitNewObjectExpr(NewObjectExpr node);
     
+    public T visitMultiStmt(MultiStmt node);
+    
 }

@@ -235,5 +235,11 @@ public class AstVisitor<T> extends AbstractAstVisitor<T>{
         visitChildren(node);
         return null;
     }
+
+    @Override
+    public T visitMultiStmt(MultiStmt node) {
+        visitChildren(node);
+        return null;
+    }
     
 }

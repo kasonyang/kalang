@@ -3,7 +3,7 @@ import java.util.*;
 import kalang.core.*;
 public class VarExpr extends AssignableExpr{
     
-    protected LocalVarNode var;
+    protected final LocalVarNode var;
     
     public VarExpr(LocalVarNode var){
         this.var = var;
@@ -20,5 +20,12 @@ public class VarExpr extends AssignableExpr{
     public LocalVarNode getVar() {
         return var;
     }
+
+    @Override
+    public String toString() {
+        return var.name;
+    }
+    
+    
     
 }

@@ -84,7 +84,6 @@ public class AstLoader {
         field.modifier = Modifier.PUBLIC;
         field.type = Types.INT_TYPE;
         field.name = "length";
-        field.initExpr = null;
         clazz.name = component + "[]";
         clazz.isArray = true;
         clazz.parent = BASE_AST_LOADER.getAst("java.lang.Object");

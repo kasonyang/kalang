@@ -207,15 +207,16 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitAssignExpr(AssignExpr node) {
         AssignableExpr to = node.getTo();
-        Type ft = visit(node.getFrom());
-        Type tt = visit(to);
-        if(!requireNoneVoid(ft, node)) return getDefaultType();
-        if(!requireNoneVoid(tt, node)) return getDefaultType();
+        ExprNode from = node.getFrom();
         if(to instanceof VarExpr){
             assignedVars.put(((VarExpr)to).getVar(), null);
         }
+        Type ft = from.getType();
+        Type tt = to.getType();
+        if(!requireNoneVoid(ft, node)) return getDefaultType();
+        if(!requireNoneVoid(tt, node)) return getDefaultType();
         if(!ft.equals(tt)){
-            ExprNode from = checkAssign(node.getFrom(), ft, tt, node); 
+            from = checkAssign(from, ft, tt, node); 
             if(from==null) return getDefaultType();            
             node.setFrom(from);
         }
@@ -409,35 +410,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     @Override
-    public Type visitFieldNode(FieldNode fieldNode) {
-        return checkVarDecl(fieldNode);
-    }
-
-    @Override
-    public Type visitLocalVarNode(LocalVarNode localVarNode) {
-        return checkVarDecl(localVarNode);
-    }
-
-    private Type checkVarDecl(VarObject var) {
-        Type retType = null;
-        if(var.initExpr!=null){
-            retType = visit(var.initExpr);
-            if(!requireNoneVoid(retType, var)) return getDefaultType();
-        }
-        if (var.type == null) {
-            if(retType!=null){
-                var.type = retType;
-            }else{
-                var.type = Types.ROOT_TYPE;
-            }
-        }
-        if(retType!=null){
-            var.initExpr = checkAssign(var.initExpr, retType, var.type, var);
-        }
-        return var.type;
-    }
-
-    @Override
     public Type visitIfStmt(IfStmt node) {
         requireBoolean(node.getConditionExpr());
         VarTable<LocalVarNode, Void> trueAssignedVars=null,falseAssignedVars =null;
@@ -466,11 +438,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitLoopStmt(LoopStmt node) {
-        if (node.preConditionExpr != null) {
-            requireBoolean(node.preConditionExpr);
-        }
+        //TODO here should enter new frame?
         if (node.initStmts != null) {
             visitAll(node.initStmts);
+        }
+        if (node.preConditionExpr != null) {
+            requireBoolean(node.preConditionExpr);
         }
         if (node.loopBody != null) {
             visit(node.loopBody);
@@ -587,11 +560,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     public AstLoader getAstLoader() {
         return astLoader;
-    }
-
-    @Override
-    public Type visitParameterNode(ParameterNode parameterNode) {
-        return checkVarDecl(parameterNode);
     }
 
     @Override
