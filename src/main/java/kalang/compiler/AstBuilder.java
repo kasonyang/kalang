@@ -749,9 +749,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitWhileStat(WhileStatContext ctx) {
         
         ExprNode preConditionExpr = visitExpression(ctx.expression());
-        Statement loopBody = null;
+        BlockStmt loopBody = null;
         if (ctx.stat() != null) {
-            loopBody = visitStat(ctx.stat());
+            loopBody = requireBlock(ctx.stat());
         }
         LoopStmt ws = new LoopStmt(loopBody,preConditionExpr,null);
         mapAst(ws,ctx);
@@ -760,9 +760,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitDoWhileStat(DoWhileStatContext ctx) {
-        Statement loopBody = null;
+        BlockStmt loopBody = null;
         if (ctx.stat() != null) {
-            loopBody = visitStat(ctx.stat());
+            loopBody = requireBlock(ctx.stat());
         }
         ExprNode postConditionExpr = visitExpression(ctx.expression());
         LoopStmt ls = new LoopStmt(loopBody,null,postConditionExpr);
@@ -1333,7 +1333,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 LocalVarNode vo = new LocalVarNode();
                 vo.name = vName;
                 vo.type = requireClassType(vType, ctx.catchTypes.get(i).start);
-                Statement catchExecStmt = visitStat(ctx.catchStmts.get(i));
+                BlockStmt catchExecStmt = requireBlock(ctx.catchStmts.get(i));
                 CatchBlock catchStmt = new CatchBlock(vo,catchExecStmt); 
                 tryCatchBlocks.add(catchStmt);
             }

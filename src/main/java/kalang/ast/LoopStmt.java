@@ -10,7 +10,7 @@ public class LoopStmt extends Statement{
     //public final List<Statement> initStmts = new LinkedList<>();
     
     @Nullable
-    public Statement loopBody;
+    public BlockStmt loopBody;
     
     @Nullable
     public ExprNode preConditionExpr;
@@ -19,7 +19,7 @@ public class LoopStmt extends Statement{
     public ExprNode postConditionExpr;
     
     
-    public LoopStmt(@Nullable Statement loopBody,@Nullable ExprNode preConditionExpr,@Nullable ExprNode postConditionExpr){
+    public LoopStmt(@Nullable BlockStmt loopBody,@Nullable ExprNode preConditionExpr,@Nullable ExprNode postConditionExpr){
         this.loopBody = loopBody;
         this.preConditionExpr = preConditionExpr;
         this.postConditionExpr = postConditionExpr;
