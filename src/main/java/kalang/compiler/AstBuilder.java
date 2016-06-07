@@ -149,6 +149,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private final ClassNode classAst = new ClassNode();
     private MethodNode method;
+    
+    protected BlockStmt currentBlock = null;
     private final HashMap<MethodNode,StatContext> methodBodys = new HashMap<>();
 
     @Nonnull
@@ -165,8 +167,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private String classPath;
 
-    @Nonnull
-    private VarTable<String, LocalVarNode> vtb;
+    //@Nonnull
+    //private VarTable<String, LocalVarNode> vtb;
     
     @Nonnull
     private KalangParser parser;
@@ -243,7 +245,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 StatContext body = methodBodys.get(m);
                 if(body!=null){
                     method = m;
-                    newVarStack();
                     m.body = (BlockStmt) visitStat(body);
                     if(m.body!=null && AstUtil.isConstructor(m)){   
                         @SuppressWarnings("null")
@@ -256,7 +257,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                             }
                         }
                     }
-                    popVarStack();
                 }
             }
         }
@@ -356,17 +356,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public void importPackage(@Nonnull String packageName) {
         this.importPaths.add(packageName);
     }
-
-    void newVarStack() {
-        if (vtb != null) {
-            vtb = new VarTable<>(vtb);
-        } else {
-            vtb = new VarTable<>();
-        }
+    
+    BlockStmt newBlock(){
+        BlockStmt bs = new BlockStmt(currentBlock);
+        currentBlock = bs;
+        return bs;
     }
-
-    void popVarStack() {
-        vtb = vtb.getParent();
+    
+    void popBlock(){
+        currentBlock = currentBlock.getParentBlock();
     }
 
     @Nonnull
@@ -532,9 +530,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitClassBody(ClassBodyContext ctx) {
-        this.newVarStack();
         this.visitChildren(ctx);
-        this.popVarStack();
         mapAst(classAst, ctx);
         return null;
     }
@@ -758,9 +754,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitDoWhileStat(DoWhileStatContext ctx) {
         Statement loopBody = null;
         if (ctx.stat() != null) {
-            this.newVarStack();
             loopBody = visitStat(ctx.stat());
-            this.popVarStack();
         }
         ExprNode postConditionExpr = visitExpression(ctx.expression());
         LoopStmt ls = new LoopStmt(loopBody,null,postConditionExpr);
@@ -770,14 +764,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitForStat(ForStatContext ctx) {
-        BlockStmt forStmt = new BlockStmt();
-        this.newVarStack();
+        //It seems that here lacks of var stack
+        BlockStmt forStmt = newBlock();
         if(ctx.localVarDecl()!=null){
             Statement vars = visitLocalVarDecl(ctx.localVarDecl());
             forStmt.statements.add(vars);
         }
         ExprNode preConditionExpr = (ExprNode) visit(ctx.expression());
-        BlockStmt bs =new BlockStmt();
+        BlockStmt bs =newBlock();
         if (ctx.stat() != null) {
             Statement st = visitStat(ctx.stat());
             if(st instanceof BlockStmt){
@@ -787,10 +781,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if(ctx.expressions()!=null){
             bs.statements.addAll(visitExpressions(ctx.expressions()));
         }
-        this.popVarStack();
+        popBlock();
         LoopStmt ls = new LoopStmt(bs, preConditionExpr, null);
         mapAst(ls,ctx);
         forStmt.statements.add(ls);
+        popBlock();
         return forStmt;
     }
 
@@ -1142,6 +1137,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         return n;
     }
+    
+    protected VarTable<String, LocalVarNode> requireVarTable(){
+        return currentBlock.getScopeVarTable();
+    }
+    
+    @Nullable
+    protected VarTable<String, LocalVarNode> getVarTable(){
+        return currentBlock==null ? null : currentBlock.getScopeVarTable();
+    }
 
     @Nullable
     private AstNode getNodeById(@Nonnull String name,@Nullable Token token) {
@@ -1150,7 +1154,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if(token!=null) mapAst(clsRef, token);
             return clsRef;
         }
-        if (vtb.exist(name)) {
+        VarTable<String, LocalVarNode> vtb = getVarTable();
+        if (vtb!=null && vtb.exist(name)) {
             LocalVarNode var = vtb.get(name); //vars.indexOf(vo);
             VarExpr ve = new VarExpr(var);
             if(token!=null) mapAst(ve, token);
@@ -1310,29 +1315,23 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitTryStat(TryStatContext ctx) {
-        this.newVarStack();
         Statement tryExecStmt = visitStat(ctx.tryStmtList);
-        this.popVarStack();
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
         Statement tryFinallyStmt = null;
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
                 String vName = ctx.catchVarNames.get(i).getText();
                 String vType = ctx.catchTypes.get(i).getText();
-                this.newVarStack();
                 LocalVarNode vo = new LocalVarNode();
                 vo.name = vName;
                 vo.type = requireClassType(vType, ctx.catchTypes.get(i).start);
                 Statement catchExecStmt = visitStat(ctx.catchStmts.get(i));
                 CatchBlock catchStmt = new CatchBlock(vo,catchExecStmt); 
-                this.popVarStack();
                 tryCatchBlocks.add(catchStmt);
             }
         }
         if (ctx.finalStmtList != null) {
-            this.newVarStack();
             tryFinallyStmt = visitStat(ctx.finalStmtList);
-            this.popVarStack();
         }
         TryStmt tryStmt = new TryStmt(tryExecStmt,tryCatchBlocks,tryFinallyStmt);
         mapAst(tryStmt,ctx);
@@ -1362,7 +1361,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
             mapAst(localVar,ctx);
             //list.add(localVar);
-            vtb.put(localVar.name, localVar);
+            requireVarTable().put(localVar.name, localVar);
         }
         return ms;
     }
@@ -1391,7 +1390,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitBlockStmt(BlockStmtContext ctx) {
-        BlockStmt bs =new BlockStmt();
+        //TODO var stack?
+        BlockStmt bs =newBlock();
         if (ctx.stat() == null) {
             return bs;
         }
@@ -1399,6 +1399,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             bs.statements.add(visitStat(s));
         }
         mapAst(bs,ctx);
+        popBlock();
         return bs;
     }
 
@@ -1543,7 +1544,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         method = mm;
         List<StatContext> stats = ctx.stat();
         List<Statement> ss = new LinkedList<>();
-        this.newVarStack();
+        BlockStmt body = newBlock();
+        //TODO redundant block?
         if(stats!=null){
             for(StatContext s:stats){
                 Object statement = visit(s);
@@ -1552,8 +1554,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 }
             }
         }
-        this.popVarStack();
-        BlockStmt body = new BlockStmt();
+        popBlock();
         body.statements.addAll(ss);
         mm.body = body;
         return null;

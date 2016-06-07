@@ -12,8 +12,8 @@ public class IfStmt extends Statement{
     
     public IfStmt(ExprNode conditionExpr,@Nullable Statement trueBody,@Nullable Statement falseBody){
         this.conditionExpr = conditionExpr;
-        this.trueBody = trueBody == null ? new BlockStmt() : trueBody;
-        this.falseBody = falseBody == null ? new BlockStmt() : falseBody;
+        this.trueBody = trueBody;
+        this.falseBody = falseBody;
     }
     
     @Override
@@ -43,6 +43,7 @@ public class IfStmt extends Statement{
     /**
      * @return the trueBody
      */
+    @Nullable
     public Statement getTrueBody() {
         return trueBody;
     }
@@ -58,6 +59,7 @@ public class IfStmt extends Statement{
     /**
      * @return the falseBody
      */
+    @Nullable
     public Statement getFalseBody() {
         return falseBody;
     }

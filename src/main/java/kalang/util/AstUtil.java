@@ -150,7 +150,7 @@ public class AstUtil {
                mm.modifier = m.modifier;
                mm.parameters = m.parameters;
                mm.type = m.type;
-               BlockStmt body = new BlockStmt();
+               BlockStmt body = new BlockStmt(null);
                mm.body = body;
                ExprNode[] params = new ExprNode[mm.parameters.size()];
                for(int i=0;i<params.length;i++){
@@ -343,7 +343,7 @@ public class AstUtil {
         getter.name = getterName;
         getter.modifier = accessModifier;
         getter.type = field.getType();
-        BlockStmt body = new BlockStmt();
+        BlockStmt body = new BlockStmt(null);
         FieldExpr fe;
         ClassReference cr = new ClassReference(clazz);
         if(isStatic){
@@ -375,7 +375,7 @@ public class AstUtil {
         param.type = field.getType();
         param.name = field.name;
         setter.parameters.add(param);
-        BlockStmt body = new BlockStmt();
+        BlockStmt body = new BlockStmt(null);
         FieldExpr fe;
         ExprNode paramVal = new ParameterExpr(param);
         ClassReference cr = new ClassReference(clazz);

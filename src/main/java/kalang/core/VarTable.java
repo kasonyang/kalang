@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  * The class holds the declared local variables.
@@ -22,7 +23,7 @@ public class VarTable<T, V> {
 
     }
 
-    public VarTable(VarTable<T, V> parent) {
+    public VarTable(@Nullable VarTable<T, V> parent) {
         this.parent = parent;
     }
 
