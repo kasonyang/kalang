@@ -1,4 +1,5 @@
 package kalang.ast;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import javax.annotation.Nullable;
 import kalang.core.*;
@@ -51,6 +52,7 @@ public class MethodNode extends AstNode implements Annotationable{
         return node;
     }
     
+    @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         addChild(ls,parameters);
@@ -62,5 +64,16 @@ public class MethodNode extends AstNode implements Annotationable{
     public AnnotationNode[] getAnnotations() {
         return annotations.toArray(new AnnotationNode[0]);
     }
+
+    @Override
+    public String toString() {
+        List<String> params = new ArrayList();
+        for(ParameterNode p:parameters){
+            params.add(String.format("%s %s", p.type,p.name));
+        }
+        return String.format("%s %s %s(%s)", Modifier.toString(modifier),type.toString(),name,String.join(",", params));
+    }
+    
+    
     
 }
