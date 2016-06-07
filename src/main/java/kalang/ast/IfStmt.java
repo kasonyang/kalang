@@ -6,11 +6,11 @@ public class IfStmt extends Statement{
     
     protected ExprNode conditionExpr;
     
-    protected Statement trueBody;
+    protected BlockStmt trueBody;
     
-    protected Statement falseBody;
+    protected BlockStmt falseBody;
     
-    public IfStmt(ExprNode conditionExpr,@Nullable Statement trueBody,@Nullable Statement falseBody){
+    public IfStmt(ExprNode conditionExpr,@Nullable BlockStmt trueBody,@Nullable BlockStmt falseBody){
         this.conditionExpr = conditionExpr;
         this.trueBody = trueBody;
         this.falseBody = falseBody;
@@ -44,14 +44,14 @@ public class IfStmt extends Statement{
      * @return the trueBody
      */
     @Nullable
-    public Statement getTrueBody() {
+    public BlockStmt getTrueBody() {
         return trueBody;
     }
 
     /**
      * @param trueBody the trueBody to set
      */
-    public void setTrueBody(Statement trueBody) {
+    public void setTrueBody(BlockStmt trueBody) {
         Objects.requireNonNull(trueBody);
         this.trueBody = trueBody;
     }
@@ -60,14 +60,14 @@ public class IfStmt extends Statement{
      * @return the falseBody
      */
     @Nullable
-    public Statement getFalseBody() {
+    public BlockStmt getFalseBody() {
         return falseBody;
     }
 
     /**
      * @param falseBody the falseBody to set
      */
-    public void setFalseBody(Statement falseBody) {
+    public void setFalseBody(BlockStmt falseBody) {
         Objects.requireNonNull(falseBody);
         this.falseBody = falseBody;
     }

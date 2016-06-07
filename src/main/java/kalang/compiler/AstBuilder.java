@@ -36,6 +36,7 @@ import kalang.ast.ReturnStmt;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -357,6 +358,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         this.importPaths.add(packageName);
     }
     
+    BlockStmt wrapBlock(Statement... statms){
+        BlockStmt bs = newBlock();
+        bs.statements.addAll(Arrays.asList(statms));
+        popBlock();
+        return bs;
+    }
+    
     BlockStmt newBlock(){
         BlockStmt bs = new BlockStmt(currentBlock);
         currentBlock = bs;
@@ -482,8 +490,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode trueExpr = (ExprNode) visit(ctx.expression(1));
         ExprNode falseExpr = (ExprNode)  visit(ctx.expression(2));
         IfStmt is = new IfStmt(conditionExpr
-                , new ExprStmt(new AssignExpr(ve, trueExpr))
-                , new ExprStmt(new AssignExpr(ve,falseExpr))
+                ,wrapBlock(new ExprStmt(new AssignExpr(ve, trueExpr)))
+                ,wrapBlock(new ExprStmt(new AssignExpr(ve,falseExpr)))
         );
         Type trueType = trueExpr.getType();
         Type falseType  = falseExpr.getType();
@@ -516,7 +524,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             cond = be;
         }
         AssignExpr as = new AssignExpr(to, from);
-        IfStmt is = new IfStmt(cond,new ExprStmt(as),null);
+        IfStmt is = new IfStmt(cond,wrapBlock(new ExprStmt(as)),null);
         mapAst(is,ctx);
         return is;
     }
@@ -623,13 +631,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitIfStat(IfStatContext ctx) {
         ExprNode expr = visitExpression(ctx.expression());
-        Statement trueBody = null;
-        Statement falseBody = null;
+        BlockStmt trueBody = null;
+        BlockStmt falseBody = null;
         if (ctx.trueStmt != null) {
-            trueBody=(visitStat(ctx.trueStmt));
+            trueBody=requireBlock(ctx.trueStmt);
         }
         if (ctx.falseStmt != null) {
-            falseBody=(visitStat(ctx.falseStmt));
+            falseBody=requireBlock(ctx.falseStmt);
         }
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
@@ -1620,6 +1628,17 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         //TODO validate values
         return anNode;
+    }
+
+    private BlockStmt requireBlock(ParserRuleContext stmt) {
+        if(stmt instanceof BlockStmtContext){
+            return (BlockStmt)visit(stmt);
+        }else{
+            BlockStmt bs = newBlock();
+            bs.statements.add((Statement)visit(stmt));
+            popBlock();
+            return bs;
+        }
     }
 
 }
