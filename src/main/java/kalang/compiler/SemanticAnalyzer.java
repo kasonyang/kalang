@@ -84,7 +84,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
    private  MethodNode method;
 
-    private List<String> methodDeclared;
+    //private List<String> methodDeclared;
 
     private boolean returned;
 
@@ -150,7 +150,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             }
         });
         this.fields = new HashMap();
-        this.methodDeclared = new LinkedList();
+        //this.methodDeclared = new LinkedList();
         for (VarObject f : clz.fields) {
             this.fields.put(f.name, f);
         }
@@ -453,12 +453,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitMethodNode(MethodNode node) {
-        String mStr = AstUtil.getMethodDescriptor(node);
-        if (methodDeclared.contains(mStr)) {
-            err.unsupported("declare method duplicately:"+mStr, node);
-            return getDefaultType();
-        }
-        methodDeclared.add(mStr);
         method = node;
         returned = false;
         this.exceptionStack.push(new HashMap<>());
@@ -477,7 +471,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             && !node.type.equals(Types.VOID_TYPE)
         );
         if (node.body != null && needReturn && !returned) {
-            err.fail("Missing return statement in method:" + mStr, SemanticError.LACKS_OF_STATEMENT, node);
+            err.fail("Missing return statement in method:" + AstUtil.getMethodDescription(node), SemanticError.LACKS_OF_STATEMENT, node);
         }
         return null;
     }

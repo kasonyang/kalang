@@ -179,6 +179,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     };
     
     private final CompilationUnit compilationUnit;
+    private List<String> methodDeclared = new ArrayList<>();
     
     public CompileErrorHandler getErrorHandler() {
         return errorHandler;
@@ -573,8 +574,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
-        method = classAst.createMethodNode();
-        method.annotations.addAll(getAnnotations(ctx.annotation()));
         String name;
         Type type;
         int mdf = parseModifier(ctx.varModifier());
@@ -589,6 +588,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
             name = ctx.name.getText();
         }
+        method = classAst.createMethodNode();
+        method.annotations.addAll(getAnnotations(ctx.annotation()));
         method.modifier = mdf;
         method.type = type;
         method.name = name;
@@ -599,6 +600,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 method.parameters.add(pn);
             }
         }
+        //check method duplicated before generate java stub
+        //TODO change to unique method descriptor
+        String mStr = AstUtil.getMethodDescriptor(method);
+        if (methodDeclared.contains(mStr)) {
+            //TODO should remove the duplicated method
+            handleSyntaxError("declare method duplicately:"+mStr, ctx);
+            return null;
+        }
+        methodDeclared.add(mStr);
         if (ctx.stat() != null) {
             methodBodys.put(method, ctx.stat());
         }
