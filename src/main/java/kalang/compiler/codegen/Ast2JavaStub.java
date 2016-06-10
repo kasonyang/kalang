@@ -8,6 +8,7 @@ import kalang.ast.FieldNode;
 import kalang.ast.MethodNode;
 import kalang.ast.ParameterNode;
 import kalang.compiler.CodeGenerator;
+import kalang.core.GenericType;
 import kalang.util.AstUtil;
 
 /**
@@ -78,7 +79,18 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
         sb.append(Modifier.toString(node.modifier))
                 .append(" class ")
                 .append(AstUtil.getClassNameWithoutPackage(clsName))
-                .append("{\n");
+                ;
+        GenericType[] genTypes = node.getGenericTypes();
+        if(genTypes.length>0){
+            String[] genTypeStrs = new String[genTypes.length];
+            for(int i=0;i<genTypeStrs.length;i++){
+                genTypeStrs[i] = genTypes[i].getName();
+            }
+            sb.append("<")
+                    .append(String.join(",", genTypeStrs))
+                    .append(">");
+        }
+        sb.append("{\n");
         super.visitClassNode(node);
         sb.append("\n}");
         return null;

@@ -1,4 +1,4 @@
-class{
+class<T>{
     int f = 6;
     static int  sf = 6;
     int fieldTest(){
@@ -87,6 +87,10 @@ class{
     int property() throws Exception{
         this->f = 6;
         return this->f;
+    }
+    
+    T genericMethod(){
+        return 6;
     }
     
     /*

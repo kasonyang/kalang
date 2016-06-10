@@ -47,7 +47,7 @@ classDef:
     annotation*
     varModifier?
     (
-        classType='class'
+        classType='class' ('<' genericTypes+=Identifier (',' genericTypes+=Identifier)* '>')?
         |classType='interface'
     ) 
     ('extends' parentClass = Identifier)? 
@@ -108,7 +108,10 @@ type:
     |baseType=type  ('[' ']' )
 ;
 singleType:
-    Identifier
+    classType=Identifier 
+        ('<' parameterTypes+=Identifier 
+                    ( ',' parameterTypes+=Identifier)* 
+        '>')?
     | primitiveType
 ;
 primitiveType:

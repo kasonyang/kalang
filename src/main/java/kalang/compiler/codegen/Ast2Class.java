@@ -64,6 +64,7 @@ import kalang.ast.VarDeclStmt;
 import kalang.compiler.CodeGenerator;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
+import kalang.core.GenericType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -734,6 +735,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         if(t instanceof PrimitiveType){
             return t.getName().substring(0,1).toUpperCase();
+        }
+        if(t instanceof GenericType){
+            return "L" + internalName(Types.ROOT_CLASS_NAME) + ";";
         }
         return "L" + internalName(t.getName()) + ";";
     }

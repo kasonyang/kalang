@@ -112,6 +112,8 @@ import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
+import kalang.core.GenericType;
+import kalang.core.ParameteredType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -180,6 +182,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private final CompilationUnit compilationUnit;
     private List<String> methodDeclared = new ArrayList<>();
+    private final Map<String,GenericType> declarededGenericTypes = new HashMap<>();
     
     public CompileErrorHandler getErrorHandler() {
         return errorHandler;
@@ -327,11 +330,28 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Nullable
-    private Type parseSingleType(KalangParser.SingleTypeContext singleTypeContext){
-        if(singleTypeContext.Identifier()!=null){
-            return requireClassType(singleTypeContext.Identifier().getSymbol());
+    private Type parseSingleType(KalangParser.SingleTypeContext ctx){
+        if(ctx.classType!=null){
+            List<Token> parameterTypes = ctx.parameterTypes;
+            if(parameterTypes!=null && parameterTypes.size()>0){
+                ClassType clazzType = requireClassType(ctx.classType);
+                if(clazzType==null) return null;
+                Type[] genericTypes = new Type[parameterTypes.size()];
+                for(int i=0;i<genericTypes.length;i++){
+                    genericTypes[i] = requireClassType(parameterTypes.get(i));
+                    //TODO should return null?
+                    if(genericTypes[i]==null) return null;
+                }
+                return new ParameteredType(clazzType, genericTypes);
+            }else{
+                GenericType gt = declarededGenericTypes.get(ctx.classType.getText());
+                if(gt!=null){
+                    return gt;
+                }
+                return requireClassType(ctx.classType);
+            }
         }else{
-            return Types.getPrimitiveType(singleTypeContext.getText());
+            return Types.getPrimitiveType(ctx.getText());
         }
     }
 
@@ -1597,6 +1617,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if(clsType!=null){
             if (clsType.getText().equals("interface")) {
                 classAst.isInterface = true;
+            }
+        }
+        List<Token> gnrTypes = ctx.genericTypes;
+        if(gnrTypes!=null && !gnrTypes.isEmpty()){
+            for(Token g:gnrTypes){
+                GenericType gt = new GenericType(g.getText());
+                this.declarededGenericTypes.put(gt.getName(),gt);
+                classAst.declareGenericType(gt);
             }
         }
         if (ctx.parentClass != null) {

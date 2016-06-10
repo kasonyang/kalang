@@ -29,6 +29,8 @@ public class ClassNode extends AstNode implements Annotationable{
     
     public final List<Statement> initStmts = new LinkedList<>();
     
+    protected List<GenericType> genericTypes = new LinkedList<>();
+    
     public ClassNode(){
             if(methods == null) methods = new LinkedList();
             if(interfaces == null) interfaces = new LinkedList();
@@ -70,6 +72,14 @@ public class ClassNode extends AstNode implements Annotationable{
         node.interfaces = new LinkedList();
         
         return node;
+    }
+    
+    public void declareGenericType(GenericType type){
+        genericTypes.add(type);
+    }
+    
+    public GenericType[] getGenericTypes(){
+        return genericTypes.toArray(new GenericType[genericTypes.size()]);
     }
     
     public List<AstNode> getChildren(){
