@@ -67,6 +67,7 @@ import static kalang.util.AstUtil.getParameterTypes;
 import static kalang.util.AstUtil.matchTypes;
 import kalang.util.BoxUtil;
 import kalang.util.CollectionsUtil;
+import kalang.util.TypeUtil;
 import org.apache.commons.collections4.SetUtils;
 
 /**
@@ -339,7 +340,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         for(Type et:invokeMethod.exceptionTypes){
             this.exceptionStack.peek().put(et,node);
         }
-        return invokeMethod.type;
+        return node.getType();
     }
 
     @Override

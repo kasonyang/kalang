@@ -156,7 +156,7 @@ public class Types {
     
     @Nullable
     public static PrimitiveType getPrimitiveType(ClassType classType){
-        return primitive2class.getKey(classType);
+        return primitive2class.getKey(classType.getName());
     }
     
     public static ClassType requireClassType(String className){

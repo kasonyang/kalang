@@ -12,13 +12,13 @@ public class Class {
     
     private Field[] fields;
     
-    private Method[] methods;
+    private MethodDescriptor[] methods;
     
     private String name;
     
     private Class parent;
 
-    public Class(String name, Field[] fields, Method[] methods,Class parent) {
+    public Class(String name, Field[] fields, MethodDescriptor[] methods,Class parent) {
         this.fields = fields;
         this.methods = methods;
         this.name = name;
@@ -29,7 +29,7 @@ public class Class {
         return fields;
     }
 
-    public Method[] getMethods() {
+    public MethodDescriptor[] getMethods() {
         return methods;
     }
 

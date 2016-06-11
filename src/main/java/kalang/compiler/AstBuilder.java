@@ -1010,7 +1010,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
         ExprNode expr;
         try {
-            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(classAst, methodName, args,AstUtil.listAccessibleMethods(classAst, classAst, true));
+            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(Types.getClassType(classAst), methodName, args,AstUtil.listAccessibleMethods(classAst, classAst, true));
             if(Modifier.isStatic(ms.selectedMethod.modifier)){
                 expr = new StaticInvokeExpr(new ClassReference(classAst), ms.selectedMethod, ms.appliedArguments);
             }else{

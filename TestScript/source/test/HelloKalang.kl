@@ -93,6 +93,13 @@ class<T>{
         return 6;
     }
     
+    int genericList(){
+        List<Integer> list = new LinkedList();
+        list.add(6);
+        //list.add("test");
+        return list.get(6);
+    }
+    
     /*
     
     int dynamicField() throws Exception{

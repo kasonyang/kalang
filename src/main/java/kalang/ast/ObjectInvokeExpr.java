@@ -25,7 +25,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
         ClassNode clazz = targetType.getClassNode();
         boolean recursive = ! "<init>".equals(methodName);
         MethodNode[] candidates = AstUtil.listAccessibleMethods(clazz, caller , recursive); 
-        MethodSelection ms = applyMethod(clazz, methodName, args,candidates);
+        MethodSelection ms = applyMethod(targetType, methodName, args,candidates);
         MethodNode md = ms.selectedMethod;
         if(AstUtil.isStatic(md.modifier)){
             throw new MethodNotFoundException(methodName + " is static");
@@ -38,7 +38,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
     //private final ClassNode specialClass;
 
     public ObjectInvokeExpr(ExprNode invokeTarget, MethodNode method, ExprNode[] args) {
-        super(method, args);
+        super((ClassType)invokeTarget.getType(),method, args);
         //TODO check non-static
         this.invokeTarget = invokeTarget;
     }

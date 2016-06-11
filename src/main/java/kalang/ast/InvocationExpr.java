@@ -7,8 +7,11 @@ import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
 import kalang.core.*;
 import kalang.util.AstUtil;
+import kalang.util.TypeUtil;
 
 public abstract class InvocationExpr extends ExprNode {
+
+    private final ClassType clazz;
     
     public static class MethodSelection{
         public MethodNode selectedMethod;
@@ -36,9 +39,9 @@ public abstract class InvocationExpr extends ExprNode {
      * @param types
      * @return the selected method,or null
      */
-    public static MethodSelection applyMethod(ClassNode specialClass,String methodName, ExprNode[] args,MethodNode[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
+    public static MethodSelection applyMethod(ClassType clazz,String methodName, ExprNode[] args,MethodNode[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
         Type[] types = AstUtil.getExprTypes(args);
-        MethodNode md = AstUtil.getExactedMethod(candidates, methodName, types);
+        MethodNode md = AstUtil.getExactedMethod(clazz,candidates, methodName, types);
         if (md != null) {
             return new MethodSelection(md, args);
         } else {
@@ -47,7 +50,7 @@ public abstract class InvocationExpr extends ExprNode {
             ExprNode[] matchedParams=null;
             List<MethodNode> matchedMethod = new ArrayList(methods.length);
             for (MethodNode m : methods) {
-                Type[] mTypes = AstUtil.getParameterTypes(m);
+                Type[] mTypes = TypeUtil.getMethodActualParameterTypes(clazz,m);
                 ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
                 if (mp != null) {
                     //matchedCount++;
@@ -64,9 +67,10 @@ public abstract class InvocationExpr extends ExprNode {
         }
     }
 
-    public InvocationExpr(MethodNode method, ExprNode[] args) {
+    public InvocationExpr(ClassType clazz,MethodNode method, ExprNode[] args) {
         this.method = method;
         this.arguments = args;
+        this.clazz = clazz;
     }
 
     @Nonnull
@@ -84,7 +88,8 @@ public abstract class InvocationExpr extends ExprNode {
 
     @Override
     public Type getType() {
-        return method.type;
+        return TypeUtil.getMethodActualReturnType(clazz, method);
+        //method.type;
     }
 
     /**

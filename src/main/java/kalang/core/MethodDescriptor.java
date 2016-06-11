@@ -8,13 +8,13 @@ import java.util.*;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class Method {
+public class MethodDescriptor {
     private String name;
     private Type[] parameterTypes;
     private Type returnType;
     private int modifier;
 
-    public Method(String name, Type[] parameterTypes, Type returnType, int modifier) {
+    public MethodDescriptor(String name, Type[] parameterTypes, Type returnType, int modifier) {
         this.name = name;
         this.parameterTypes = parameterTypes;
         this.returnType = returnType;

@@ -11,6 +11,7 @@ import java.util.List;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.ast.ExprStmt;
@@ -32,6 +33,8 @@ import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ReturnStmt;
 import kalang.ast.StaticFieldExpr;
 import kalang.core.ClassType;
+import kalang.core.GenericType;
+import kalang.core.ParameterizedType;
 import kalang.core.Type;
 import kalang.core.Types;
 
@@ -118,7 +121,7 @@ public class AstUtil {
         Type[] types = new Type[mn.parameters.size()];
         for(int i=0;i<types.length;i++){
             types[i] = mn.parameters.get(i).type;
-        }
+        }            
         return types;
     }
 
@@ -241,10 +244,10 @@ public class AstUtil {
     }
     
     @Nullable
-    public static MethodNode getExactedMethod(MethodNode[] candidates,String methodName,@Nullable Type[] types){
+    public static MethodNode getExactedMethod(ClassType targetType,MethodNode[] candidates,String methodName,@Nullable Type[] types){
         MethodNode[] methods = getMethodsByName(candidates, methodName);
         for(MethodNode m:methods){
-           Type[] mdTypes = getParameterTypes(m);
+           Type[] mdTypes = TypeUtil.getMethodActualParameterTypes(targetType,m);
            if(Arrays.equals(mdTypes, types)) return m;
            if(mdTypes==null || mdTypes.length==0){
                if(types==null || types.length==0) return m;
@@ -257,7 +260,7 @@ public class AstUtil {
     @Nullable
     public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean recursive) {
         MethodNode[] clsMethods = recursive ? cls.getMethods() : cls.getDeclaredMethodNodes();
-       return getExactedMethod(clsMethods, methodName, types);
+       return getExactedMethod(Types.getClassType(cls), clsMethods, methodName, types);
     }
 
     @Nullable

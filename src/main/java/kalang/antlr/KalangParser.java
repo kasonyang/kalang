@@ -1623,6 +1623,9 @@ public class KalangParser extends Parser {
 		public BlockStmtContext blockStmt() {
 			return getRuleContext(BlockStmtContext.class,0);
 		}
+		public VarDeclStatContext varDeclStat() {
+			return getRuleContext(VarDeclStatContext.class,0);
+		}
 		public PostIfStmtContext postIfStmt() {
 			return getRuleContext(PostIfStmtContext.class,0);
 		}
@@ -1646,9 +1649,6 @@ public class KalangParser extends Parser {
 		}
 		public ContinueStatContext continueStat() {
 			return getRuleContext(ContinueStatContext.class,0);
-		}
-		public VarDeclStatContext varDeclStat() {
-			return getRuleContext(VarDeclStatContext.class,0);
 		}
 		public ReturnStatContext returnStat() {
 			return getRuleContext(ReturnStatContext.class,0);
@@ -1698,63 +1698,63 @@ public class KalangParser extends Parser {
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(313);
-				postIfStmt();
+				varDeclStat();
 				}
 				break;
 			case 3:
 				enterOuterAlt(_localctx, 3);
 				{
 				setState(314);
-				exprStat();
+				postIfStmt();
 				}
 				break;
 			case 4:
 				enterOuterAlt(_localctx, 4);
 				{
 				setState(315);
-				ifStat();
+				exprStat();
 				}
 				break;
 			case 5:
 				enterOuterAlt(_localctx, 5);
 				{
 				setState(316);
-				whileStat();
+				ifStat();
 				}
 				break;
 			case 6:
 				enterOuterAlt(_localctx, 6);
 				{
 				setState(317);
-				doWhileStat();
+				whileStat();
 				}
 				break;
 			case 7:
 				enterOuterAlt(_localctx, 7);
 				{
 				setState(318);
-				forStat();
+				doWhileStat();
 				}
 				break;
 			case 8:
 				enterOuterAlt(_localctx, 8);
 				{
 				setState(319);
-				breakStat();
+				forStat();
 				}
 				break;
 			case 9:
 				enterOuterAlt(_localctx, 9);
 				{
 				setState(320);
-				continueStat();
+				breakStat();
 				}
 				break;
 			case 10:
 				enterOuterAlt(_localctx, 10);
 				{
 				setState(321);
-				varDeclStat();
+				continueStat();
 				}
 				break;
 			case 11:
@@ -4402,12 +4402,12 @@ public class KalangParser extends Parser {
 		"\2\u0132\u0133\7A\2\2\u0133\u0134\5> \2\u0134\u0135\7B\2\2\u0135\u0138"+
 		"\5\36\20\2\u0136\u0137\7\27\2\2\u0137\u0139\5\36\20\2\u0138\u0136\3\2"+
 		"\2\2\u0138\u0139\3\2\2\2\u0139\35\3\2\2\2\u013a\u0149\5$\23\2\u013b\u0149"+
-		"\5*\26\2\u013c\u0149\5<\37\2\u013d\u0149\5\34\17\2\u013e\u0149\5\64\33"+
-		"\2\u013f\u0149\5\66\34\2\u0140\u0149\58\35\2\u0141\u0149\5\60\31\2\u0142"+
-		"\u0149\5\62\32\2\u0143\u0149\5,\27\2\u0144\u0149\5(\25\2\u0145\u0149\5"+
-		"&\24\2\u0146\u0149\5\"\22\2\u0147\u0149\5 \21\2\u0148\u013a\3\2\2\2\u0148"+
-		"\u013b\3\2\2\2\u0148\u013c\3\2\2\2\u0148\u013d\3\2\2\2\u0148\u013e\3\2"+
-		"\2\2\u0148\u013f\3\2\2\2\u0148\u0140\3\2\2\2\u0148\u0141\3\2\2\2\u0148"+
+		"\5,\27\2\u013c\u0149\5*\26\2\u013d\u0149\5<\37\2\u013e\u0149\5\34\17\2"+
+		"\u013f\u0149\5\64\33\2\u0140\u0149\5\66\34\2\u0141\u0149\58\35\2\u0142"+
+		"\u0149\5\60\31\2\u0143\u0149\5\62\32\2\u0144\u0149\5(\25\2\u0145\u0149"+
+		"\5&\24\2\u0146\u0149\5\"\22\2\u0147\u0149\5 \21\2\u0148\u013a\3\2\2\2"+
+		"\u0148\u013b\3\2\2\2\u0148\u013c\3\2\2\2\u0148\u013d\3\2\2\2\u0148\u013e"+
+		"\3\2\2\2\u0148\u013f\3\2\2\2\u0148\u0140\3\2\2\2\u0148\u0141\3\2\2\2\u0148"+
 		"\u0142\3\2\2\2\u0148\u0143\3\2\2\2\u0148\u0144\3\2\2\2\u0148\u0145\3\2"+
 		"\2\2\u0148\u0146\3\2\2\2\u0148\u0147\3\2\2\2\u0149\37\3\2\2\2\u014a\u014b"+
 		"\5> \2\u014b!\3\2\2\2\u014c\u014d\7\64\2\2\u014d\u014e\5> \2\u014e\u014f"+
