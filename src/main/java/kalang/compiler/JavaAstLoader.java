@@ -11,6 +11,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,14 +21,18 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
+import kalang.core.ClassType;
+import kalang.core.GenericType;
+import kalang.core.ParameteredType;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
 
 /**
  * The class loads ast from java class
  * 
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class JavaAstLoader extends AstLoader {
 
@@ -67,6 +73,15 @@ public class JavaAstLoader extends AstLoader {
         } else if (!cn.name.equals(ROOT_CLASS)) {
             cn.parent = findAst(ROOT_CLASS);
         }
+        Map<TypeVariable,GenericType> genericTypes = new HashMap();
+        TypeVariable[] typeParameters = clz.getTypeParameters();
+        if(typeParameters.length>0){
+            for(TypeVariable pt:typeParameters){
+                GenericType gt = new GenericType(pt.getName());
+                genericTypes.put(pt, gt);
+                cn.declareGenericType(gt);
+            }
+        }
         Class[] clzInterfaces = clz.getInterfaces();
         if(clzInterfaces != null){
             for(Class itf:clzInterfaces){
@@ -99,11 +114,11 @@ public class JavaAstLoader extends AstLoader {
             for (Parameter p : m.getParameters()) {
                 ParameterNode param = ParameterNode.create(methodNode);
                 param.name = p.getName();
-                param.type = getType(p.getType());
+                param.type = getType(p.getParameterizedType(),genericTypes,p.getType());
                 methodNode.parameters.add(param);
             }
             if (m instanceof Method) {
-                methodNode.type =getType(((Method) m).getReturnType());
+                methodNode.type =getType(((Method) m).getGenericReturnType(),genericTypes,((Method)m).getReturnType());
                 methodNode.name = m.getName();
                 methodNode.modifier = m.getModifiers();
             } else if (m instanceof Constructor) {
@@ -113,13 +128,13 @@ public class JavaAstLoader extends AstLoader {
             }
             methodNode.body = null;
             for (Class e : m.getExceptionTypes()) {
-                methodNode.exceptionTypes.add(getType(e));
+                methodNode.exceptionTypes.add(getType(e,genericTypes,e));
             }
         }
         for (Field f : clz.getFields()) {
             FieldNode fn = cn.createField();
             fn.name = f.getName();
-            fn.type =getType(f.getType());
+            fn.type =getType(f.getGenericType(),genericTypes,f.getType());
             fn.modifier = f.getModifiers();
         }
         return cn;
@@ -158,14 +173,27 @@ public class JavaAstLoader extends AstLoader {
         }
     }
 
-    private Type getType(Class<?> type) throws AstNotFoundException {
+    private Type getType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes,Class defaultClass) throws AstNotFoundException {
+        if(t instanceof TypeVariable){
+            GenericType vt = genericTypes.get(t);
+            //FIXME why it maybe null?
+            if(vt!=null) return vt;
+        }
+//        }else if(t instanceof ParameterizedType){
+//            ParameterizedType pt = (ParameterizedType) t;
+//            //TODO add actual types
+//            return new ParameteredType((ClassType)getType(pt.getRawType(),genericTypes,),new Type[0]);
+//        }
+        
+        Class type = defaultClass;
         if(type.isPrimitive()){
             return Types.getPrimitiveType(type.getTypeName());
         }else if(type.isArray()){
-            return Types.getArrayType(getType(type.getComponentType()));
+            return Types.getArrayType(getType(type.getComponentType(),genericTypes,type.getComponentType()));
         }else{
             return Types.getClassType(findAst(type.getName()));
         }
+        
     }
 
 }

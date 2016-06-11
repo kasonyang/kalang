@@ -14,6 +14,7 @@ public class GenericType extends ClassType{
 
     public GenericType(String name) {
         super(Types.getRootType().getClassNode());
+        Objects.requireNonNull(name);
         this.name = name;
     }
 

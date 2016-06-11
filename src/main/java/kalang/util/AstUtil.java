@@ -43,10 +43,8 @@ public class AstUtil {
     }
    public static String getMethodDescriptor(String name,Type returnType,Type[] types) {
         List<String> typeStrList = new ArrayList<>(types.length);
-        if(types!=null){
-             for(Type t:types){
-                 typeStrList.add(t.getName());
-             }
+        for(Type t:types){
+            typeStrList.add(t.getName());
         }
         return  getMethodDescriptor(name, returnType.getName(),typeStrList.toArray(new String[0]));
     }
