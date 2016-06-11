@@ -127,6 +127,7 @@ ifStat:
     ;
 stat:
     blockStmt
+    |varDeclStat
     |postIfStmt
     |exprStat
     |ifStat
@@ -135,7 +136,6 @@ stat:
     |forStat
     |breakStat
     |continueStat
-    |varDeclStat
     |returnStat
     |tryStat
     |throwStat
