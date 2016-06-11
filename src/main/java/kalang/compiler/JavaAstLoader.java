@@ -11,7 +11,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
-import kalang.core.ParameteredType;
+import kalang.core.ParameterizedType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.exception.Exceptions;
@@ -182,7 +181,7 @@ public class JavaAstLoader extends AstLoader {
 //        }else if(t instanceof ParameterizedType){
 //            ParameterizedType pt = (ParameterizedType) t;
 //            //TODO add actual types
-//            return new ParameteredType((ClassType)getType(pt.getRawType(),genericTypes,),new Type[0]);
+//            return new ParameterizedType((ClassType)getType(pt.getRawType(),genericTypes,),new Type[0]);
 //        }
         
         Class type = defaultClass;

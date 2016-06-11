@@ -113,7 +113,7 @@ import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
-import kalang.core.ParameteredType;
+import kalang.core.ParameterizedType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -342,7 +342,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                     //TODO should return null?
                     if(genericTypes[i]==null) return null;
                 }
-                return new ParameteredType(clazzType, genericTypes);
+                return new ParameterizedType(clazzType, genericTypes);
             }else{
                 GenericType gt = declarededGenericTypes.get(ctx.classType.getText());
                 if(gt!=null){

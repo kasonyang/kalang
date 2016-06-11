@@ -3,13 +3,13 @@ package kalang.core;
 import kalang.ast.ClassNode;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
-public class ParameteredType extends ClassType {
+public class ParameterizedType extends ClassType {
     
     Type[] parameterTypes;
     
-    public ParameteredType(ClassType clazz,Type... parameterTypes ) {
+    public ParameterizedType(ClassType clazz,Type... parameterTypes ) {
         super(clazz.getClassNode());
         this.parameterTypes = parameterTypes;
     }
