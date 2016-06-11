@@ -97,7 +97,7 @@ class<T>{
         List<Integer> list = new LinkedList();
         list.add(6);
         //list.add("test");
-        return list.get(6);
+        return list.get(0);
     }
     
     /*

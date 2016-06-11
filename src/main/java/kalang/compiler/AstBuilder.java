@@ -1037,7 +1037,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         ExprNode expr;
         try {
-            expr = ObjectInvokeExpr.create(target, methodName, args,classAst);
+            ObjectInvokeExpr invoke = ObjectInvokeExpr.create(target, methodName, args,classAst);
+            if(invoke.getMethod().type instanceof GenericType){
+                expr = new CastExpr(invoke.getType(), invoke);
+            }else{
+                expr = invoke;
+            }
         } catch (MethodNotFoundException ex) {
             expr= new UnknownInvocationExpr(target,methodName,args);
         } catch(AmbiguousMethodException ex){
