@@ -34,7 +34,7 @@ public class ClassNodeTest {
         assertTrue(arrayListType.isSubTypeOf(listType));
         assertTrue(arrayListArrayType.isSubTypeOf(listArrayType));
         
-        assertTrue(listType.isSubTypeOf(Types.ROOT_TYPE));
+        assertTrue(listType.isSubTypeOf(Types.getRootType()));
         
     }
     

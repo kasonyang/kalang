@@ -13,7 +13,7 @@ public class GenericType extends ClassType{
     protected String name;
 
     public GenericType(String name) {
-        super(Types.ROOT_TYPE.getClassNode());
+        super(Types.getRootType().getClassNode());
         this.name = name;
     }
 
@@ -55,7 +55,7 @@ public class GenericType extends ClassType{
         if (obj == null) {
             return false;
         }
-        return Types.ROOT_TYPE.equals(obj);
+        return Types.getRootType().equals(obj);
     }
 
 }

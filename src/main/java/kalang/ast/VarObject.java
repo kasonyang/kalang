@@ -29,6 +29,6 @@ public abstract class VarObject extends AstNode{
     
     public Type getType(){
         if(type!=null) return type;
-        return Types.ROOT_TYPE;
+        return Types.getRootType();
     }
 }

@@ -25,7 +25,7 @@ public class ErrorousExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        return Types.ROOT_TYPE;
+        return Types.getRootType();
     }
 
 }

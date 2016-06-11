@@ -524,14 +524,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Type ct = ce.getType();
         if(ct.equals(Types.NULL_TYPE)){
             return null;
-        }else if(ct.equals(Types.CLASS_TYPE)){
+        }else if(ct.equals(Types.getClassClassType())){
             return asmType(ct);
         }else{
             if(
                     Types.isNumber(ct)
                     || Types.isBoolean(ct)
-                    || ct.equals(Types.CHAR_CLASS_TYPE)
-                    || ct.equals(Types.STRING_CLASS_TYPE)
+                    || ct.equals(Types.getCharClassType())
+                    || ct.equals(Types.getStringClassType())
                     ){
                 return ce.getValue();
             }

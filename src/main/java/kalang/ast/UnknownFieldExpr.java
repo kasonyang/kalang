@@ -34,7 +34,7 @@ public class UnknownFieldExpr extends AssignableExpr{
     
     @Override
     public Type getType() {
-        return Types.ROOT_TYPE;
+        return Types.getRootType();
     }
 
     @Override

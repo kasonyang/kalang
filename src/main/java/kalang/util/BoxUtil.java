@@ -82,7 +82,7 @@ public class BoxUtil {
             }
         } else if (fromType instanceof PrimitiveType
                 && toType instanceof ClassType) {
-            if (toType.equals(Types.ROOT_TYPE)) {
+            if (toType.equals(Types.getRootType())) {
                 return CAST_PRIMITIVE_TO_OBJECT;
             }
             if (fromType.equals(Types.NULL_TYPE)) {

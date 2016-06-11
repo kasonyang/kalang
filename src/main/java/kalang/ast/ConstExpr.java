@@ -32,9 +32,9 @@ public class ConstExpr extends ExprNode{
             }else if(vt.equals(Character.class)){
                 t = Types.CHAR_TYPE;
             }else if(vt.equals(String.class)){
-                t = Types.STRING_CLASS_TYPE;
+                t = Types.getStringClassType();
             }else if(vt.equals(ClassReference.class)){
-                t = Types.CLASS_TYPE;
+                t = Types.getClassClassType();
             }else{
                 throw Exceptions.unsupportedTypeException(value);
             }

@@ -25,7 +25,7 @@ public class Types {
     
     private static Map<ClassNode,ClassType> classTypes  = new HashMap<>();
     
-    private final static DualHashBidiMap<PrimitiveType,ClassType> primitive2class = new DualHashBidiMap<>();;
+    private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();;
     
     public static final PrimitiveType 
             BOOLEAN_TYPE = getPrimitiveType("boolean")
@@ -63,64 +63,62 @@ public class Types {
     public static final String MAP_IMPL_CLASS_NAME = "java.util.HashMap";
     
     public static final String LIST_IMPL_CLASS_NAME = "java.util.LinkedList";
-
-    
-    public static final ClassType 
-            VOID_CLASS_TYPE
-            ,BOOLEAN_CLASS_TYPE
-            ,BYTE_CLASS_TYPE
-            ,CHAR_CLASS_TYPE
-            ,SHORT_CLASS_TYPE
-            ,INT_CLASS_TYPE
-            ,LONG_CLASS_TYPE
-            ,FLOAT_CLASS_TYPE
-            ,DOUBLE_CLASS_TYPE
-            ,ROOT_TYPE
-            ,STRING_CLASS_TYPE
-            ,MAP_IMPL_CLASS_TYPE
-            ,LIST_IMPL_CLASS_TYPE
-            ,EXCEPTION_CLASS_TYPE
-            ,CLASS_TYPE
-            ;
+//    private static final ClassType VoidClassType;
+//    private static final ClassType booleanClassType;
+//    private static final ClassType byteClassType;
+//    private static final ClassType charClassType;
+//    
+//    private static final ClassType intClassType;
+//    private static final ClassType longClassType;
+//    private static final ClassType floatClassType;
+//    private static final ClassType doubleClassType;
+//    private static final ClassType rootType;
+//    private static final ClassType stringClassType;
+//    private static final ClassType mapImplClassType;
+//    private static final ClassType listImplClassType;
+//    private static final ClassType exceptionClassType;
+//    private static final ClassType shortClassType;
+//    private static final ClassType classClassType;
+    public final static String EXCEPTION_CLASS_NAME = "java.lang.Exception";
+    public final static String CLASS_CLASS_NAME = "java.lang.Class";
             
     static {
-        try {
-            AstLoader astLoader = AstLoader.BASE_AST_LOADER;
-            INT_CLASS_TYPE = getClassType(astLoader.loadAst(INT_CLASS_NAME));
-            LONG_CLASS_TYPE = getClassType(astLoader.loadAst(LONG_CLASS_NAME));
-            FLOAT_CLASS_TYPE = getClassType(astLoader.loadAst(FLOAT_CLASS_NAME));
-            DOUBLE_CLASS_TYPE = getClassType(astLoader.loadAst(DOUBLE_CLASS_NAME));
-            ROOT_TYPE = getClassType(astLoader.loadAst(ROOT_CLASS_NAME));
-            VOID_CLASS_TYPE = getClassType(astLoader.loadAst(VOID_CLASS_NAME));
-            STRING_CLASS_TYPE = getClassType(astLoader.loadAst(STRING_CLASS_NAME));
-            BOOLEAN_CLASS_TYPE = getClassType(astLoader.loadAst(BOOLEAN_CLASS_NAME));
-            CHAR_CLASS_TYPE = getClassType(astLoader.loadAst(CHAR_CLASS_NAME));
-            SHORT_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
-            BYTE_CLASS_TYPE = getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
-            MAP_IMPL_CLASS_TYPE = getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
-            LIST_IMPL_CLASS_TYPE = getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
-            EXCEPTION_CLASS_TYPE = getClassType(astLoader.loadAst("java.lang.Exception"));
-            CLASS_TYPE = getClassType("java.lang.Class");
-        } catch (AstNotFoundException ex) {
-            //ex.printStackTrace();
-            throw new RuntimeException(ex);
-        }
+//        try {
+//            AstLoader astLoader = AstLoader.BASE_AST_LOADER;
+//            intClassType = Types.getClassType(astLoader.loadAst(INT_CLASS_NAME));
+//            longClassType = Types.getClassType(astLoader.loadAst(LONG_CLASS_NAME));
+//            floatClassType = Types.getClassType(astLoader.loadAst(FLOAT_CLASS_NAME));
+//            doubleClassType = Types.getClassType(astLoader.loadAst(DOUBLE_CLASS_NAME));
+//            rootType = Types.getClassType(astLoader.loadAst(ROOT_CLASS_NAME));
+//            VoidClassType = Types.getClassType(astLoader.loadAst(VOID_CLASS_NAME));
+//            stringClassType = Types.getClassType(astLoader.loadAst(STRING_CLASS_NAME));
+//            booleanClassType = Types.getClassType(astLoader.loadAst(BOOLEAN_CLASS_NAME));
+//            charClassType = Types.getClassType(astLoader.loadAst(CHAR_CLASS_NAME));
+//            shortClassType = Types.getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
+//            byteClassType = Types.getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
+//            mapImplClassType = Types.getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
+//            listImplClassType = Types.getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
+//            exceptionClassType = Types.getClassType(astLoader.loadAst("java.lang.Exception"));
+//            classClassType = Types.getClassType("java.lang.Class");
+//        } catch (AstNotFoundException ex) {
+//            //ex.printStackTrace();
+//            throw new RuntimeException(ex);
+//        }
         
-        primitive2class.put(INT_TYPE, INT_CLASS_TYPE);
-        primitive2class.put(LONG_TYPE, LONG_CLASS_TYPE);
-        primitive2class.put(FLOAT_TYPE, FLOAT_CLASS_TYPE);
-        primitive2class.put(DOUBLE_TYPE, DOUBLE_CLASS_TYPE);
-        primitive2class.put(CHAR_TYPE, CHAR_CLASS_TYPE);
-        primitive2class.put(BOOLEAN_TYPE, BOOLEAN_CLASS_TYPE);
-        primitive2class.put(VOID_TYPE, VOID_CLASS_TYPE);
-        primitive2class.put(SHORT_TYPE, SHORT_CLASS_TYPE);
-        primitive2class.put(BYTE_TYPE, BYTE_CLASS_TYPE);
+        primitive2class.put(INT_TYPE, INT_CLASS_NAME);
+        primitive2class.put(LONG_TYPE,LONG_CLASS_NAME);
+        primitive2class.put(FLOAT_TYPE, FLOAT_CLASS_NAME);
+        primitive2class.put(DOUBLE_TYPE,DOUBLE_CLASS_NAME);
+        primitive2class.put(CHAR_TYPE,CHAR_CLASS_NAME);
+        primitive2class.put(BOOLEAN_TYPE,BOOLEAN_CLASS_NAME);
+        primitive2class.put(VOID_TYPE, VOID_CLASS_NAME);
+        primitive2class.put(SHORT_TYPE, SHORT_CLASS_NAME);
+        primitive2class.put(BYTE_TYPE, BYTE_CLASS_NAME);
         //m.put(NULL_TYPE, "null");//TODO does null has class type?
     }
     
     private static ClassType[] numberClass = new ClassType[]{
-        INT_CLASS_TYPE, LONG_CLASS_TYPE, FLOAT_CLASS_TYPE, DOUBLE_CLASS_TYPE
-    };
+        getIntClassType(), getLongClassType(), getFloatClassType(), getDoubleClassType()};
 
     private static PrimitiveType[] numberPrimitive = new PrimitiveType[]{
         INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
@@ -161,15 +159,24 @@ public class Types {
         return primitive2class.getKey(classType);
     }
     
+    public static ClassType requireClassType(String className){
+        try {
+            return getClassType(className);
+        } catch (AstNotFoundException ex) {
+            Logger.getLogger(Types.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException("failed to load class type:"+className);
+        }
+    }
+    
     @Nonnull
     public static ClassType getClassType(String className) throws AstNotFoundException{
         ClassNode ast = AstLoader.BASE_AST_LOADER.loadAst(className);
-        return getClassType(ast);
+        return Types.getClassType(ast);
     }
     
     @Nullable
     public static ClassType getClassType(PrimitiveType primitiveType){
-        return primitive2class.get(primitiveType);
+        return requireClassType(primitive2class.get(primitiveType));
     }
     
      public static boolean isNumberPrimitive(Type type) {
@@ -189,35 +196,140 @@ public class Types {
     }
 
     public static boolean isBoolean(Type type) {
-        return type.equals(BOOLEAN_CLASS_TYPE) || type.equals(BOOLEAN_TYPE);
+        return type.equals(getBooleanClassType()) || type.equals(BOOLEAN_TYPE);
     }
 
     @Nonnull
     public  static Type getHigherType(Type type1, Type type2) {
         if (
-                type1.equals(DOUBLE_CLASS_TYPE) 
+                type1.equals(getDoubleClassType()) 
                 || type1.equals(DOUBLE_TYPE)
-                || type2.equals(DOUBLE_CLASS_TYPE)
+                || type2.equals(getDoubleClassType())
                 || type2.equals(DOUBLE_TYPE)
                 ) {
             return DOUBLE_TYPE;
         }
         if (
-                type1.equals(FLOAT_CLASS_TYPE)
+                type1.equals(getFloatClassType())
                 || type1.equals(FLOAT_TYPE)
-                || type2.equals(FLOAT_CLASS_TYPE)
+                || type2.equals(getFloatClassType())
                 || type2.equals(FLOAT_TYPE)
                 ) {
             return FLOAT_TYPE;
         }
         if (
-                type1.equals(LONG_CLASS_TYPE) 
+                type1.equals(getLongClassType()) 
                 || type1.equals(LONG_TYPE)
-                || type2.equals(LONG_CLASS_TYPE)
+                || type2.equals(getLongClassType())
                 || type2.equals(LONG_TYPE)) {
             return LONG_TYPE;
         }
         return INT_TYPE;
+    }
+
+    /**
+     * @return the VoidClassType
+     */
+    public static ClassType getVoidClassType() {
+        return requireClassType(VOID_CLASS_NAME);
+    }
+
+    /**
+     * @return the booleanClassType
+     */
+    public static ClassType getBooleanClassType() {
+        return requireClassType(BOOLEAN_CLASS_NAME);
+    }
+
+    /**
+     * @return the byteClassType
+     */
+    public static ClassType getByteClassType() {
+        return requireClassType(BYTE_CLASS_NAME);
+    }
+
+    /**
+     * @return the charClassType
+     */
+    public static ClassType getCharClassType() {
+        return requireClassType(CHAR_CLASS_NAME);
+    }
+
+    /**
+     * @return the intClassType
+     */
+    public static ClassType getIntClassType() {
+        return requireClassType(INT_CLASS_NAME);
+    }
+
+    /**
+     * @return the longClassType
+     */
+    public static ClassType getLongClassType() {
+        return requireClassType(LONG_CLASS_NAME);
+    }
+
+    /**
+     * @return the floatClassType
+     */
+    public static ClassType getFloatClassType() {
+        return requireClassType(FLOAT_CLASS_NAME);
+    }
+
+    /**
+     * @return the doubleClassType
+     */
+    public static ClassType getDoubleClassType() {
+        return requireClassType(DOUBLE_CLASS_NAME);
+    }
+
+    /**
+     * @return the mapImplClassType
+     */
+    public static ClassType getMapImplClassType() {
+        return requireClassType(MAP_IMPL_CLASS_NAME);
+    }
+
+    /**
+     * @return the listImplClassType
+     */
+    public static ClassType getListImplClassType() {
+        return requireClassType(LIST_IMPL_CLASS_NAME);
+    }
+
+    /**
+     * @return the exceptionClassType
+     */
+    public static ClassType getExceptionClassType() {
+        return requireClassType(EXCEPTION_CLASS_NAME);
+    }
+
+    /**
+     * @return the shortClassType
+     */
+    public static ClassType getShortClassType() {
+        return requireClassType(SHORT_CLASS_NAME);
+    }
+
+    /**
+     * @return the classClassType
+     */
+    public static ClassType getClassClassType() {
+        return requireClassType(CLASS_CLASS_NAME);
+    }
+
+    /**
+     * @return the rootType
+     */
+    public static ClassType getRootType() {
+        return requireClassType(ROOT_CLASS_NAME);
+    }
+
+    /**
+     * @return the stringClassType
+     */
+    public static ClassType getStringClassType() {
+        return requireClassType(STRING_CLASS_NAME);
     }
 
 

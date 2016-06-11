@@ -106,7 +106,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
     
     private Type getDefaultType(){
-        return Types.ROOT_TYPE;
+        return Types.getRootType();
     }
 
     public void setAstSemanticErrorHandler(CompileErrorHandler handler) {
@@ -256,7 +256,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             case "!=":
                 if (Types.isNumber(t1)) {
                     if (!Types.isNumber(t2)) {
-                        err.failedToCast(node, t2.getName(), Types.INT_CLASS_TYPE.getName());
+                        err.failedToCast(node, t2.getName(), Types.getIntClassType().getName());
                         return getDefaultType();
                     }
                 } else {
@@ -268,9 +268,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if(isNumber(t1) && isNumber(t2)){
                     t = getMathType(t1, t2, op);
                 }else{
-                    node.setExpr1(checkAssign(node.getExpr1(), t1, Types.STRING_CLASS_TYPE, node));
-                    node.setExpr2(checkAssign(node.getExpr2(), t2, Types.STRING_CLASS_TYPE, node));
-                    t =Types.STRING_CLASS_TYPE;
+                    node.setExpr1(checkAssign(node.getExpr1(), t1, Types.getStringClassType(), node));
+                    node.setExpr2(checkAssign(node.getExpr2(), t2, Types.getStringClassType(), node));
+                    t =Types.getStringClassType();
                 }
                 break;
             case "-":
@@ -490,7 +490,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     boolean requireNumber(AstNode node, Type t) {
         if (!isNumber(t)) {
-            err.failedToCast(node, t.getName(),Types.INT_CLASS_TYPE.getName() );
+            err.failedToCast(node, t.getName(),Types.getIntClassType().getName() );
             return false;
         }
         return true;
@@ -503,7 +503,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     boolean requireBoolean(AstNode node, Type t) {
         if (!Types.isBoolean(t)) {
-            err.failedToCast(node, t.getName(), Types.BOOLEAN_CLASS_TYPE.getName());
+            err.failedToCast(node, t.getName(), Types.getBooleanClassType().getName());
             return false;
         }
         return true;
@@ -537,7 +537,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     boolean requireNoneVoid(Type type, AstNode node) {
         if (type == null
                 || type == Types.VOID_TYPE
-                || type == Types.VOID_CLASS_TYPE
+                || type == Types.getVoidClassType()
                 ){
             err.unsupported("use void type as value", node);
             return false;
