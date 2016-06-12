@@ -117,8 +117,8 @@ public class Types {
         //m.put(NULL_TYPE, "null");//TODO does null has class type?
     }
     
-    private static ClassType[] numberClass = new ClassType[]{
-        getIntClassType(), getLongClassType(), getFloatClassType(), getDoubleClassType()};
+    private static String[] numberClass = new String[]{
+        INT_CLASS_NAME,LONG_CLASS_NAME,FLOAT_CLASS_NAME,DOUBLE_CLASS_NAME};
 
     private static PrimitiveType[] numberPrimitive = new PrimitiveType[]{
         INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
@@ -187,7 +187,8 @@ public class Types {
 
     public static boolean isNumberClass(Type type) {
         if(type instanceof ClassType)
-            return Arrays.asList(numberClass).contains((ClassType)type);
+            //TODO checking type by name may be bug?
+            return Arrays.asList(numberClass).contains(((ClassType)type).getName());
         else return false;
     }
 
