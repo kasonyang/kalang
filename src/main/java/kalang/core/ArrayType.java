@@ -44,16 +44,6 @@ public class ArrayType extends ClassType{
         return componentType;
     }
 
-    @Override
-    public FieldNode[] getFields() {
-        return new FieldNode[0];
-    }
-
-    @Override
-    public MethodNode[] getMethods() {
-        return new MethodNode[0];
-    }
-
 //    @Override
 //    public boolean isSubTypeOf(Type targetType) {
 //        if(targetType instanceof ArrayType){

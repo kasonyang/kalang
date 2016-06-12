@@ -1,14 +1,9 @@
-
 package kalang.core;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
-import java.util.*;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
-public class Field {
+public class FieldDescriptor {
     
     private String name;
     
@@ -16,7 +11,7 @@ public class Field {
     
     private int modifier;
 
-    public Field(String name, Type type, int modifier) {
+    public FieldDescriptor(String name, Type type, int modifier) {
         this.name = name;
         this.type = type;
         this.modifier = modifier;
@@ -33,5 +28,7 @@ public class Field {
     public int getModifier() {
         return modifier;
     }
+    
+    
 
 }

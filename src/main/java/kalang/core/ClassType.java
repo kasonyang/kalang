@@ -50,17 +50,7 @@ public class ClassType extends Type{
     public ClassNode getClassNode() {
         return clazz;
     }
-
-    @Override
-    public FieldNode[] getFields() {
-        return clazz.fields.toArray(new FieldNode[0]);
-    }
-
-    @Override
-    public MethodNode[] getMethods() {
-        return clazz.getMethods();
-    }
-
+  
     @Override
     public boolean isSubTypeOf(Type targetType) {
         if(targetType instanceof ClassType){
@@ -71,6 +61,7 @@ public class ClassType extends Type{
         return false;
     }
     
+    //TODO cache 
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean recursive){
         MethodNode[] mds = AstUtil.listAccessibleMethods(clazz, caller, recursive);
         MethodDescriptor[] descs = new MethodDescriptor[mds.length];
@@ -85,6 +76,17 @@ public class ClassType extends Type{
             descs[i] = new MethodDescriptor(mn, pds, TypeUtil.getMethodActualReturnType(this, mn));    
         }
         return descs;
+    }
+    
+    //TODO cache
+    public FieldDescriptor[] getFieldDescriptors(){
+        List<FieldNode> fields = clazz.fields;
+        FieldDescriptor[] ret = new FieldDescriptor[fields.size()];
+        for(int i=0;i<ret.length;i++){
+            FieldNode f = fields.get(i);
+            ret[i] = new FieldDescriptor(f.name,f.type, f.modifier);
+        }
+        return ret;
     }
     
 }

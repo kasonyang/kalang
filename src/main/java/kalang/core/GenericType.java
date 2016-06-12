@@ -39,16 +39,6 @@ public class GenericType extends ClassType{
     }
 
     @Override
-    public FieldNode[] getFields() {
-        return new FieldNode[0];
-    }
-
-    @Override
-    public MethodNode[] getMethods() {
-        return new MethodNode[0];
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;

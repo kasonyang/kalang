@@ -42,22 +42,7 @@ public abstract class Type {
         if(equals(type)) return true;
         return type.isSubTypeOf(this);
     }
-    
-    //public abstract boolean isCastableTo(Type targetType);
-    
-    //public abstract ExprNode cast(Type targetType,ExprNode from);
-    
-    public abstract FieldNode[] getFields();
-    
-    public abstract MethodNode[] getMethods();
-    
-    public FieldNode getField(String name){
-        for(FieldNode f:getFields()){
-            if(f.name.equals(name)) return f;
-        }
-        return null;
-    }
-
+     
     @Override
     public String toString() {
         return getName();
