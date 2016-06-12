@@ -10,15 +10,21 @@ import kalang.ast.MethodNode;
  * @author Kason Yang
  */
 public class MethodDescriptor {
-    private String name;
-    private Type[] parameterTypes;
-    private Type returnType;
-    private int modifier;
+    private final String name;
+    private final Type[] parameterTypes;
+    private final Type returnType;
+    private final int modifier;
     private final MethodNode method;
+    private final ParameterDescriptor[] parameterDescriptors;
 
-    public MethodDescriptor(MethodNode method, Type[] parameterTypes, Type returnType) {
+    public MethodDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors, Type returnType) {
         this.name = method.name;
-        this.parameterTypes = parameterTypes;
+        this.parameterDescriptors = parameterDescriptors;
+        Type[] ptypes = new Type[parameterDescriptors.length];
+        for(int i=0;i<this.parameterDescriptors.length;i++){
+            ptypes[i] = parameterDescriptors[i].getType();
+        }
+        parameterTypes = ptypes;
         this.returnType = returnType;
         this.modifier = method.modifier;
         this.method = method;
@@ -42,6 +48,10 @@ public class MethodDescriptor {
 
     public MethodNode getMethodNode() {
         return method;
+    }
+    
+    public ParameterDescriptor[] getParameterDescriptors(){
+        return parameterDescriptors;
     }
     
 }

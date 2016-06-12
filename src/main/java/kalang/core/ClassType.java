@@ -11,6 +11,7 @@ import java.net.*;
 import java.util.*;
 import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
+import kalang.ast.ParameterNode;
 import kalang.util.AstUtil;
 import kalang.util.TypeUtil;
 /**
@@ -75,7 +76,13 @@ public class ClassType extends Type{
         MethodDescriptor[] descs = new MethodDescriptor[mds.length];
         for(int i=0;i<descs.length;i++){
             MethodNode mn = mds[i];
-            descs[i] = new MethodDescriptor(mn, TypeUtil.getMethodActualParameterTypes(this, mn), TypeUtil.getMethodActualReturnType(this, mn));    
+            List<ParameterNode> pms = mn.parameters;
+            Type[] ptypes = TypeUtil.getMethodActualParameterTypes(this, mn);
+            ParameterDescriptor[] pds = new ParameterDescriptor[ptypes.length];
+            for(int j=0;j<pds.length;j++){
+                pds[j] = new ParameterDescriptor(pms.get(j).name,ptypes[j]);
+            }
+            descs[i] = new MethodDescriptor(mn, pds, TypeUtil.getMethodActualReturnType(this, mn));    
         }
         return descs;
     }
