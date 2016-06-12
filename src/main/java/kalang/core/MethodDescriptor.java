@@ -4,21 +4,24 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import kalang.ast.MethodNode;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class MethodDescriptor {
     private String name;
     private Type[] parameterTypes;
     private Type returnType;
     private int modifier;
+    private final MethodNode method;
 
-    public MethodDescriptor(String name, Type[] parameterTypes, Type returnType, int modifier) {
-        this.name = name;
+    public MethodDescriptor(MethodNode method, Type[] parameterTypes, Type returnType) {
+        this.name = method.name;
         this.parameterTypes = parameterTypes;
         this.returnType = returnType;
-        this.modifier = modifier;
+        this.modifier = method.modifier;
+        this.method = method;
     }
 
     public String getName() {
@@ -35,6 +38,10 @@ public class MethodDescriptor {
 
     public int getModifier() {
         return modifier;
+    }
+
+    public MethodNode getMethodNode() {
+        return method;
     }
     
 }

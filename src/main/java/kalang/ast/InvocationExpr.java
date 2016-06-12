@@ -39,23 +39,23 @@ public abstract class InvocationExpr extends ExprNode {
      * @param types
      * @return the selected method,or null
      */
-    public static MethodSelection applyMethod(ClassType clazz,String methodName, ExprNode[] args,MethodNode[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
+    public static MethodSelection applyMethod(ClassType clazz,String methodName, ExprNode[] args,MethodDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
         Type[] types = AstUtil.getExprTypes(args);
-        MethodNode md = AstUtil.getExactedMethod(clazz,candidates, methodName, types);
+        MethodDescriptor md = AstUtil.getExactedMethod(clazz,candidates, methodName, types);
         if (md != null) {
-            return new MethodSelection(md, args);
+            return new MethodSelection(md.getMethodNode(), args);
         } else {
-            MethodNode[] methods = AstUtil.getMethodsByName(candidates, methodName);
+            MethodDescriptor[] methods = AstUtil.getMethodsByName(candidates, methodName);
             //int matchedCount = 0;
             ExprNode[] matchedParams=null;
             List<MethodNode> matchedMethod = new ArrayList(methods.length);
-            for (MethodNode m : methods) {
-                Type[] mTypes = TypeUtil.getMethodActualParameterTypes(clazz,m);
+            for (MethodDescriptor m : methods) {
+                Type[] mTypes = m.getParameterTypes();
                 ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
                 if (mp != null) {
                     //matchedCount++;
                     matchedParams = mp;
-                    matchedMethod.add(m);
+                    matchedMethod.add(m.getMethodNode());
                 }
             }
             if (matchedMethod.isEmpty()) {

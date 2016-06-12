@@ -34,6 +34,7 @@ import kalang.ast.ReturnStmt;
 import kalang.ast.StaticFieldExpr;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
+import kalang.core.MethodDescriptor;
 import kalang.core.ParameterizedType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -184,15 +185,23 @@ public class AstUtil {
         }
         return names;
     }
+    
+    public static boolean containsConstructor(ClassNode clazz){
+        MethodNode[] dms = clazz.getDeclaredMethodNodes();
+        for(MethodNode m:dms){
+            if("<init>".equals(m.name)) return true;
+        }
+        return false;
+    }
 
-    public static MethodNode[] getMethodsByName(MethodNode[] mds, String methodName) {
-        List<MethodNode> methods = new LinkedList();
-        for (MethodNode m : mds) {
-            if (m.name.equals(methodName)) {
+    public static MethodDescriptor[] getMethodsByName(MethodDescriptor[] mds, String methodName) {
+        List<MethodDescriptor> methods = new LinkedList();
+        for (MethodDescriptor m : mds) {
+            if (m.getName().equals(methodName)) {
                 methods.add(m);
             }
         }
-        return methods.toArray(new MethodNode[0]);
+        return methods.toArray(new MethodDescriptor[0]);
     }
 
     public static ExprNode matchType(Type from, Type target, ExprNode expr) {
@@ -244,10 +253,10 @@ public class AstUtil {
     }
     
     @Nullable
-    public static MethodNode getExactedMethod(ClassType targetType,MethodNode[] candidates,String methodName,@Nullable Type[] types){
-        MethodNode[] methods = getMethodsByName(candidates, methodName);
-        for(MethodNode m:methods){
-           Type[] mdTypes = TypeUtil.getMethodActualParameterTypes(targetType,m);
+    public static MethodDescriptor getExactedMethod(ClassType targetType,MethodDescriptor[] candidates,String methodName,@Nullable Type[] types){
+        MethodDescriptor[] methods = getMethodsByName(candidates, methodName);
+        for(MethodDescriptor m:methods){
+           Type[] mdTypes = m.getParameterTypes();
            if(Arrays.equals(mdTypes, types)) return m;
            if(mdTypes==null || mdTypes.length==0){
                if(types==null || types.length==0) return m;
@@ -259,8 +268,11 @@ public class AstUtil {
     //TODO should rename?
     @Nullable
     public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean recursive) {
-        MethodNode[] clsMethods = recursive ? cls.getMethods() : cls.getDeclaredMethodNodes();
-       return getExactedMethod(Types.getClassType(cls), clsMethods, methodName, types);
+        ClassType clazzType = Types.getClassType(cls);
+        MethodDescriptor[] clsMethods = clazzType.getMethodDescriptors(null, recursive);
+        MethodDescriptor md = getExactedMethod(clazzType, clsMethods, methodName, types);
+        if(md!=null) return md.getMethodNode();
+        return null;
     }
 
     @Nullable

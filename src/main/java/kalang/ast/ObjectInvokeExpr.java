@@ -8,7 +8,9 @@ import javax.annotation.Nullable;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
 import kalang.core.ClassType;
+import kalang.core.MethodDescriptor;
 import kalang.core.Type;
+import kalang.core.Types;
 import kalang.util.AstUtil;
 /**
  *
@@ -24,7 +26,8 @@ public class ObjectInvokeExpr extends InvocationExpr{
         ClassType targetType = (ClassType) target.getType();
         ClassNode clazz = targetType.getClassNode();
         boolean recursive = ! "<init>".equals(methodName);
-        MethodNode[] candidates = AstUtil.listAccessibleMethods(clazz, caller , recursive); 
+        //MethodNode[] candidates = AstUtil.listAccessibleMethods(clazz, caller , recursive);
+        MethodDescriptor[] candidates = targetType.getMethodDescriptors(caller,recursive);
         MethodSelection ms = applyMethod(targetType, methodName, args,candidates);
         MethodNode md = ms.selectedMethod;
         if(AstUtil.isStatic(md.modifier)){

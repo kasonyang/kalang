@@ -9,7 +9,10 @@ import java.io.*;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
+import kalang.util.AstUtil;
+import kalang.util.TypeUtil;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -65,6 +68,16 @@ public class ClassType extends Type{
                     );
         }
         return false;
+    }
+    
+    public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean recursive){
+        MethodNode[] mds = AstUtil.listAccessibleMethods(clazz, caller, recursive);
+        MethodDescriptor[] descs = new MethodDescriptor[mds.length];
+        for(int i=0;i<descs.length;i++){
+            MethodNode mn = mds[i];
+            descs[i] = new MethodDescriptor(mn, TypeUtil.getMethodActualParameterTypes(this, mn), TypeUtil.getMethodActualReturnType(this, mn));    
+        }
+        return descs;
     }
     
 }
