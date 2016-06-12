@@ -114,13 +114,13 @@ public class ClassNode extends AstNode implements Annotationable{
         if(parent!=null){
             MethodNode[] parentMds = parent.getMethods();
             for(MethodNode m:parentMds){
-                String descriptor = AstUtil.getMethodDescriptor(m);
+                String descriptor = AstUtil.getMethodDeclarationKey(m);
                 mds.put(descriptor, m);
             }
         }
         MethodNode[] decMds = getDeclaredMethodNodes();
         for(MethodNode m:decMds){
-            String descriptor = AstUtil.getMethodDescriptor(m);
+            String descriptor = AstUtil.getMethodDeclarationKey(m);
             mds.put(descriptor, m);
         }
         return mds.values().toArray(new MethodNode[0]);        

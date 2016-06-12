@@ -43,15 +43,16 @@ import kalang.core.Types;
 public class AstUtil {
 
 
-    public static String getMethodDescriptor(String name,String returnType,String... paramTypes){
-        return String.format("%s(%s)%s", name,String.join(",", paramTypes),returnType);
+    public static String getMethodDeclarationKey(String name,String... paramTypes){
+        return String.format("%s(%s)", name,String.join(",", paramTypes));
     }
-   public static String getMethodDescriptor(String name,Type returnType,Type[] types) {
+   public static String getMethodDeclarationKey(String name,Type[] types) {
+       //FIXME what about the key for a parameterized type
         List<String> typeStrList = new ArrayList<>(types.length);
         for(Type t:types){
             typeStrList.add(t.getName());
         }
-        return  getMethodDescriptor(name, returnType.getName(),typeStrList.toArray(new String[0]));
+        return  AstUtil.getMethodDeclarationKey(name,typeStrList.toArray(new String[typeStrList.size()]));
     }
    
    public static String getParametersDescription(Type[] types){
@@ -64,7 +65,7 @@ public class AstUtil {
    
    public static MethodNode getMethodByDescriptor(MethodNode[] mds,String descriptor){
        for(MethodNode m:mds){
-           if(getMethodDescriptor(m).equals(descriptor)){
+           if(getMethodDeclarationKey(m).equals(descriptor)){
                return m;
            }
        }
@@ -95,8 +96,8 @@ public class AstUtil {
        return String.join(delimiter, list);
    }
 
-    public static String getMethodDescriptor(MethodNode node) {
-        return getMethodDescriptor(node.name, node.type, getParameterTypes(node));
+    public static String getMethodDeclarationKey(MethodNode node) {
+        return AstUtil.getMethodDeclarationKey(node.name, getParameterTypes(node));
     }
 
     /**

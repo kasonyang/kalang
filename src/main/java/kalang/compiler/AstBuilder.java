@@ -621,8 +621,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
         //check method duplicated before generate java stub
-        //TODO change to unique method descriptor
-        String mStr = AstUtil.getMethodDescriptor(method);
+        String mStr = AstUtil.getMethodDeclarationKey(method);
         if (methodDeclared.contains(mStr)) {
             //TODO should remove the duplicated method
             handleSyntaxError("declare method duplicately:"+mStr, ctx);

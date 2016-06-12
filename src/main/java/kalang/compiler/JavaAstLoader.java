@@ -41,17 +41,13 @@ public class JavaAstLoader extends AstLoader {
     
     private Map<String,ClassNode> loadedClasses  =new HashMap<>();
     
-    private static String getMethodDescriptor(Executable m){
+    private static String getMethodDeclarationKey(Executable m){
         Class<?>[] pts = m.getParameterTypes();
         String[] types = new String[pts.length];
         for(int i=0;i<types.length;i++){
             types[i] = pts[i].getName();
         }
-        String returnType = "V";
-        if(m instanceof Method){
-            returnType = ((Method)m).getReturnType().getName();
-        }
-        return AstUtil.getMethodDescriptor(m.getName(),returnType, types);
+        return AstUtil.getMethodDeclarationKey(m.getName(), types);
     }
 
     /**
@@ -92,17 +88,16 @@ public class JavaAstLoader extends AstLoader {
         methods.addAll(Arrays.asList(clz.getDeclaredConstructors()));
         Class[] itfs = clz.getInterfaces();
         //TODO should default method of  interface becomes a declared method
-        //MethodNode[] mds = methods.toArray(new MethodNode[0]);
         List<String> declaredMethods = new LinkedList<>();
         for(Executable m:methods){
-            declaredMethods.add(getMethodDescriptor(m));
+            declaredMethods.add(getMethodDeclarationKey(m));
         }
         if(itfs!=null){
             for(Class i:itfs){
                 for(Method m:i.getMethods()){
                     if(
                             m.isDefault() 
-                            && !declaredMethods.contains(getMethodDescriptor(m))){
+                            && !declaredMethods.contains(getMethodDeclarationKey(m))){
                         methods.add(m);
                     }
                 }
