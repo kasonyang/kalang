@@ -173,12 +173,7 @@ public class JavaAstLoader extends AstLoader {
             //FIXME why it maybe null?
             if(vt!=null) return vt;
         }
-//        }else if(t instanceof ParameterizedType){
-//            ParameterizedType pt = (ParameterizedType) t;
-//            //TODO add actual types
-//            return new ParameterizedType((ClassType)getType(pt.getRawType(),genericTypes,),new Type[0]);
-//        }
-        
+        //TODO handle parameterizedType,wildcardType,genericArrayType
         Class type = defaultClass;
         if(type.isPrimitive()){
             return Types.getPrimitiveType(type.getTypeName());

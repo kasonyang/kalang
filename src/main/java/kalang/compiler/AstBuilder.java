@@ -1433,7 +1433,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitBlockStmt(BlockStmtContext ctx) {
-        //TODO var stack?
         BlockStmt bs =newBlock();
         if (ctx.stat() == null) {
             return bs;
@@ -1578,7 +1577,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         mm.name = "main";
         mm.modifier = Modifier.PUBLIC  + Modifier.STATIC;
         mm.type = Types.VOID_TYPE;
-        //TODO throws exception
         mm.exceptionTypes = Collections.singletonList(Types.getExceptionClassType());
         ParameterNode pn = ParameterNode.create(mm);
         pn.name = "args";
@@ -1588,7 +1586,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         List<StatContext> stats = ctx.stat();
         List<Statement> ss = new LinkedList<>();
         BlockStmt body = newBlock();
-        //TODO redundant block?
+        //TODO change body from stat to blockStat in .g4
         if(stats!=null){
             for(StatContext s:stats){
                 Object statement = visit(s);
@@ -1669,7 +1667,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ConstExpr defaultValue = visitLiteral(dv);
             anNode.values.put("value", defaultValue);
         }
-        //TODO validate values
+        //TODO validate annotation's values
         return anNode;
     }
 
