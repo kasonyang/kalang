@@ -92,7 +92,7 @@ methodDecl:
    )
    '('    (     varDecl   (',' varDecl)*     )?      ')'
    ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
-   ( stat | ';')
+   ( blockStmt | ';')
 ;
 annotation:
     '@' annotationType=Identifier 
@@ -151,11 +151,11 @@ blockStmt:
     '{' stat* '}'
 ;
 tryStat:
-    'try' '{' tryStmtList=stat* '}'
+    'try' exec=blockStmt
     ('catch' '(' catchTypes+=singleType catchVarNames+=Identifier ')'
-        '{' catchStmts+=stat* '}'
+        catchExec += blockStmt
     )*
-    ('finally' '{' finalStmtList = stat* '}')?
+    ('finally' finallyExec=blockStmt)?
 ;
 returnStat:
     'return' expression? ';'
@@ -181,13 +181,13 @@ varDecl:
       varType=type name=Identifier ('=' expression)?
   )
 ;
-breakStat:BREAK ';';
-continueStat:CONTINUE ';';
+breakStat:'break' ';';
+continueStat:'continue' ';';
 whileStat:
     WHILE '(' expression ')' stat
 ;
 doWhileStat:
-    DO stat WHILE '(' expression ')' ';'
+    DO blockStmt WHILE '(' expression ')' ';'
 ;
 
 forStat:

@@ -154,7 +154,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private MethodNode method;
     
     protected BlockStmt currentBlock = null;
-    private final HashMap<MethodNode,StatContext> methodBodys = new HashMap<>();
+    private final HashMap<MethodNode,BlockStmtContext> methodBodys = new HashMap<>();
 
     @Nonnull
     private AstLoader astLoader;
@@ -247,10 +247,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
             for(MethodNode m:classAst.getDeclaredMethodNodes()){
-                StatContext body = methodBodys.get(m);
+                BlockStmtContext body = methodBodys.get(m);
                 if(body!=null){
                     method = m;
-                    m.body = (BlockStmt) visitStat(body);
+                    m.body = requireBlock(body);
                     if(m.body!=null && AstUtil.isConstructor(m)){   
                         @SuppressWarnings("null")
                         List<Statement> bodyStmts = m.body.statements;
@@ -628,8 +628,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             return null;
         }
         methodDeclared.add(mStr);
-        if (ctx.stat() != null) {
-            methodBodys.put(method, ctx.stat());
+        if (ctx.blockStmt() != null) {
+            methodBodys.put(method, ctx.blockStmt());
         }
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {
@@ -790,8 +790,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitDoWhileStat(DoWhileStatContext ctx) {
         BlockStmt loopBody = null;
-        if (ctx.stat() != null) {
-            loopBody = requireBlock(ctx.stat());
+        if (ctx.blockStmt() != null) {
+            loopBody = requireBlock(ctx.blockStmt());
         }
         ExprNode postConditionExpr = visitExpression(ctx.expression());
         LoopStmt ls = new LoopStmt(loopBody,null,postConditionExpr);
@@ -1358,9 +1358,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitTryStat(TryStatContext ctx) {
-        Statement tryExecStmt = visitStat(ctx.tryStmtList);
+        BlockStmt tryExecStmt = requireBlock(ctx.exec);
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
-        Statement tryFinallyStmt = null;
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
                 String vName = ctx.catchVarNames.get(i).getText();
@@ -1368,14 +1367,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 LocalVarNode vo = new LocalVarNode();
                 vo.name = vName;
                 vo.type = requireClassType(vType, ctx.catchTypes.get(i).start);
-                BlockStmt catchExecStmt = requireBlock(ctx.catchStmts.get(i));
+                BlockStmt catchExecStmt = requireBlock(ctx.catchExec.get(i));
                 CatchBlock catchStmt = new CatchBlock(vo,catchExecStmt); 
                 tryCatchBlocks.add(catchStmt);
             }
         }
-        if (ctx.finalStmtList != null) {
-            tryFinallyStmt = visitStat(ctx.finalStmtList);
+        BlockStmt tryFinallyStmt = null;
+        if (ctx.finallyExec != null) {
+            tryFinallyStmt = requireBlock(ctx.finallyExec);
         }
+        //TODO should refactor TryStmt as blockStmt,blockStmt,blockStmt?
         TryStmt tryStmt = new TryStmt(tryExecStmt,tryCatchBlocks,tryFinallyStmt);
         mapAst(tryStmt,ctx);
         return tryStmt;
