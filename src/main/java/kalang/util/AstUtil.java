@@ -33,6 +33,7 @@ import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ReturnStmt;
 import kalang.ast.StaticFieldExpr;
 import kalang.core.ClassType;
+import kalang.core.ExecutableDescriptor;
 import kalang.core.GenericType;
 import kalang.core.MethodDescriptor;
 import kalang.core.ParameterizedType;
@@ -194,14 +195,14 @@ public class AstUtil {
         return false;
     }
 
-    public static MethodDescriptor[] getMethodsByName(MethodDescriptor[] mds, String methodName) {
-        List<MethodDescriptor> methods = new LinkedList();
-        for (MethodDescriptor m : mds) {
+    public static ExecutableDescriptor[] getMethodsByName(ExecutableDescriptor[] mds, String methodName) {
+        List<ExecutableDescriptor> methods = new LinkedList();
+        for (ExecutableDescriptor m : mds) {
             if (m.getName().equals(methodName)) {
                 methods.add(m);
             }
         }
-        return methods.toArray(new MethodDescriptor[0]);
+        return methods.toArray(new ExecutableDescriptor[0]);
     }
 
     public static ExprNode matchType(Type from, Type target, ExprNode expr) {
@@ -253,9 +254,9 @@ public class AstUtil {
     }
     
     @Nullable
-    public static MethodDescriptor getExactedMethod(ClassType targetType,MethodDescriptor[] candidates,String methodName,@Nullable Type[] types){
-        MethodDescriptor[] methods = getMethodsByName(candidates, methodName);
-        for(MethodDescriptor m:methods){
+    public static ExecutableDescriptor getExactedMethod(ClassType targetType,ExecutableDescriptor[] candidates,String methodName,@Nullable Type[] types){
+        ExecutableDescriptor[] methods = getMethodsByName(candidates, methodName);
+        for(ExecutableDescriptor m:methods){
            Type[] mdTypes = m.getParameterTypes();
            if(Arrays.equals(mdTypes, types)) return m;
            if(mdTypes==null || mdTypes.length==0){
@@ -270,7 +271,7 @@ public class AstUtil {
     public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean recursive) {
         ClassType clazzType = Types.getClassType(cls);
         MethodDescriptor[] clsMethods = clazzType.getMethodDescriptors(null, recursive);
-        MethodDescriptor md = getExactedMethod(clazzType, clsMethods, methodName, types);
+        ExecutableDescriptor md = getExactedMethod(clazzType, clsMethods, methodName, types);
         if(md!=null) return md.getMethodNode();
         return null;
     }

@@ -1,11 +1,11 @@
 package kalang.util;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import kalang.ast.MethodNode;
-import kalang.ast.ParameterNode;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
 import kalang.core.ParameterizedType;
@@ -43,32 +43,53 @@ public class TypeUtil {
     }
     
     public static Type getMethodActualReturnType(ClassType clazz,MethodNode mn){
-        Map<GenericType, Type> genericTypes = null;
-        if(clazz instanceof ParameterizedType){
-            genericTypes = ((ParameterizedType)clazz).getParameterTypesMap();    
-        }
-        Type type = mn.type;
-        if(genericTypes!=null && (type instanceof GenericType)){
-            type = genericTypes.get((GenericType)type);
-        }
-        return type;
+        return getActualType(clazz, mn.type);
     }
     
     public static Type[] getMethodActualParameterTypes(ClassType clazz,MethodNode mn){
-        Map<GenericType, Type> genericTypes = null;
+        Type[] paramsTypes = AstUtil.getParameterTypes(mn);
+        return getActualType(clazz, paramsTypes);
+    }
+    
+    private static Type[] parseGenericType(Type[] types,Map<GenericType,Type> genericTypes){
+        Type[] actTypes = new Type[types.length];
+        for(int i=0;i<actTypes.length;i++){
+            actTypes[i] = parseGenericType(types[i],genericTypes);
+        }
+        return actTypes;
+    }
+    
+    private static Type parseGenericType(Type type,Map<GenericType,Type> genericTypes){
+        if(type instanceof GenericType){
+            Type actualType = genericTypes.get((GenericType)type);
+            return actualType == null ? type : actualType;
+        }else if(type instanceof ParameterizedType){
+            ParameterizedType pt = (ParameterizedType) type;
+            Type[] ptParameterizedTypes = pt.getParameterTypes();
+            Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
+            if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
+            return new ParameterizedType(pt.getRawType(), ptParameterizedTypes);
+        }else{
+            return type;
+        }        
+    }
+    
+    public static Type getActualType(ClassType clazz,Type type){
+        Map<GenericType, Type> genericTypes;
         if(clazz instanceof ParameterizedType){
             genericTypes = ((ParameterizedType)clazz).getParameterTypesMap();    
+        }else{
+            genericTypes = new HashMap();
         }
-        List<ParameterNode> params = mn.parameters;
-        Type[] types = new Type[params.size()];
-        for(int i=0;i<types.length;i++){
-            Type pt = params.get(i).type;
-            if(genericTypes!=null && (pt instanceof GenericType)){
-                types[i] = genericTypes.get((GenericType)pt);
-            }else{
-                types[i] = pt;
-            }
-        }
-        return types;
+        return parseGenericType(type, genericTypes);
     }
+    
+    public static Type[] getActualType(ClassType clazz,Type[] types){
+        Type[] actTypes = new Type[types.length];
+        for(int i=0;i<types.length;i++){
+            actTypes[i] = getActualType(clazz, types[i]);
+        }
+        return actTypes;
+    }
+    
 }

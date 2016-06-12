@@ -10,9 +10,11 @@ import kalang.ast.ClassNode;
 public class ParameterizedType extends ClassType {
     
     Type[] parameterTypes;
+    private final ClassType rawType;
     
-    public ParameterizedType(ClassType clazz,Type... parameterTypes ) {
-        super(clazz.getClassNode());
+    public ParameterizedType(ClassType rawType,Type... parameterTypes ) {
+        super(rawType.getClassNode());
+        this.rawType = rawType;
         this.parameterTypes = parameterTypes;
         //TODO check parameterTypes.length
     }
@@ -29,6 +31,10 @@ public class ParameterizedType extends ClassType {
             ret.put(gts[i], parameterTypes[i]);
         }
         return ret;
+    }
+
+    public ClassType getRawType() {
+        return rawType;
     }
 
 }

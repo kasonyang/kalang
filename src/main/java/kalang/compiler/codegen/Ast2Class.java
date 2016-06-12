@@ -791,7 +791,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
 
     private String internalName(Type t) {
-        return asmType(t).getInternalName();
+        org.objectweb.asm.Type asmType = asmType(t);
+        Objects.requireNonNull(asmType, "couldn't get asm type for " + t);
+        try{
+            return asmType.getInternalName();
+        }catch(Exception ex){
+            throw new RuntimeException("couldn't get asm type for " + t);
+        }
     }
     
     private String[] internalName(Type[] types){

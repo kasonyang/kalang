@@ -39,17 +39,17 @@ public abstract class InvocationExpr extends ExprNode {
      * @param types
      * @return the selected method,or null
      */
-    public static MethodSelection applyMethod(ClassType clazz,String methodName, ExprNode[] args,MethodDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
+    public static MethodSelection applyMethod(ClassType clazz,String methodName, ExprNode[] args,ExecutableDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
         Type[] types = AstUtil.getExprTypes(args);
-        MethodDescriptor md = AstUtil.getExactedMethod(clazz,candidates, methodName, types);
+        ExecutableDescriptor md = AstUtil.getExactedMethod(clazz,candidates, methodName, types);
         if (md != null) {
             return new MethodSelection(md.getMethodNode(), args);
         } else {
-            MethodDescriptor[] methods = AstUtil.getMethodsByName(candidates, methodName);
+            ExecutableDescriptor[] methods = AstUtil.getMethodsByName(candidates, methodName);
             //int matchedCount = 0;
             ExprNode[] matchedParams=null;
             List<MethodNode> matchedMethod = new ArrayList(methods.length);
-            for (MethodDescriptor m : methods) {
+            for (ExecutableDescriptor m : methods) {
                 Type[] mTypes = m.getParameterTypes();
                 ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
                 if (mp != null) {
