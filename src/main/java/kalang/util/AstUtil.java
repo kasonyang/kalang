@@ -47,10 +47,9 @@ public class AstUtil {
         return String.format("%s(%s)", name,String.join(",", paramTypes));
     }
    public static String getMethodDeclarationKey(String name,Type[] types) {
-       //FIXME what about the key for a parameterized type
         List<String> typeStrList = new ArrayList<>(types.length);
         for(Type t:types){
-            typeStrList.add(t.getName());
+            typeStrList.add(t.getDeclarationKey());
         }
         return  AstUtil.getMethodDeclarationKey(name,typeStrList.toArray(new String[typeStrList.size()]));
     }

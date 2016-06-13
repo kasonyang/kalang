@@ -37,4 +37,11 @@ public class ParameterizedType extends ClassType {
         return rawType;
     }
 
+    @Override
+    public String getDeclarationKey() {
+        return rawType.getDeclarationKey();
+    }
+    
+    
+
 }

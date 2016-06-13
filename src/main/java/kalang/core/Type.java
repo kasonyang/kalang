@@ -27,6 +27,10 @@ public abstract class Type {
     
     public abstract boolean isArray();
     
+    public String getDeclarationKey(){
+        return getName();
+    }
+    
     public abstract Type getComponentType();
     
     public boolean isSubTypeOf(Type targetType){
