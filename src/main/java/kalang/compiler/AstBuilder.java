@@ -1330,8 +1330,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
-        ClassType clsType = requireClassType(ctx.Identifier().getSymbol());
-        if(clsType==null) return null;
+        Type type = parseSingleType(ctx.singleType());
+        if(!(type instanceof ClassType)){
+            this.handleSyntaxError("require class type", ctx);
+            return null;
+        }
+        ClassType clsType = (ClassType) type;
         ExprNode[] params = visitAll(ctx.params).toArray(new ExprNode[0]);
         NewObjectExpr newExpr;
         try {
@@ -1339,10 +1343,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {
-            methodNotFound(ctx.Identifier().getSymbol(), clsType.getName(), "<init>", params);
+            methodNotFound(ctx.singleType().Identifier, clsType.getName(), "<init>", params);
             return null;
         } catch(AmbiguousMethodException ex){
-            methodIsAmbiguous(ctx.Identifier().getSymbol(),ex);
+            methodIsAmbiguous(ctx.singleType().Identifier ,ex);
             return null;
         }
     }

@@ -221,7 +221,7 @@ expression
     |     (Identifier|key='this'|key='super') 
         '(' (params+=expression (',' params+=expression)*)? ')'   #exprMemberInvocation
     |  expression '[' expression ']' #exprGetArrayElement    
-    |   NEW Identifier 
+    |   'new' singleType
          '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
     |   ( 'new' singleType '[' size=expression ']' 
             | 'new' singleType '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}'

@@ -94,7 +94,7 @@ class<T>{
     }
     
     int genericList(){
-        List<Integer> list = new LinkedList();
+        var list = new LinkedList<Integer>();
         list.add(6);
         //list.add("test");
         return list.get(0);
