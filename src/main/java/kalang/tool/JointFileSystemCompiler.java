@@ -182,7 +182,9 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
             }
             return;
         }
-        Map<String, byte[]> bytes = javaCompiler.getFileManager().getBytes();
+        MemoryFileManager fm = javaCompiler.getFileManager();
+        Map<String, byte[]> bytes = null;
+        if(fm!=null) bytes = fm.getBytes();
         OutputManager outManager = getOutputManager();
         if(bytes!=null && outManager!=null){
             for(Map.Entry<String, byte[]> e:bytes.entrySet()){

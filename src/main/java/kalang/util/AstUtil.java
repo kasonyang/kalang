@@ -225,6 +225,8 @@ public class AstUtil {
         if(from==null || from.length==0){
             if(target==null || target.length==0){
                 return args;
+            }else{
+                return null;
             }
         }
         if (from.length != target.length || from.length!=args.length) {

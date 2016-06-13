@@ -169,7 +169,7 @@ public class JavaAstLoader extends AstLoader {
 
     private Type getType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes,Class defaultClass) throws AstNotFoundException {
         if(t instanceof TypeVariable){
-            GenericType vt = genericTypes.get(t);
+            GenericType vt = genericTypes.get((TypeVariable)t);
             //FIXME why it maybe null?
             if(vt!=null) return vt;
         }
