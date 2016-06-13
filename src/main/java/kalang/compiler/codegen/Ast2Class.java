@@ -34,6 +34,7 @@ import java.nio.*;
 import java.net.*;
 import java.util.*;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import kalang.ast.AnnotationNode;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
@@ -65,6 +66,7 @@ import kalang.compiler.CodeGenerator;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
+import kalang.core.ParameterizedType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -133,6 +135,56 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         varIdCounter+= vSize;
         varIds.put(vo, vid);
     }
+    
+    @Nullable
+    private String classSignature(ClassNode c){
+        GenericType[] genericTypes = c.getGenericTypes();
+        if(genericTypes==null || genericTypes.length==0){
+            return null;
+        }
+        String gnrTypeStr = "";
+        for(GenericType t:genericTypes){
+            gnrTypeStr += t.getName() + ":" + "Ljava/lang/Object;";
+        }
+        String superTypeStr = "";
+        if(c.parent!=null) superTypeStr += classSignature(c.parent);
+        for(ClassNode itf:c.interfaces){
+            superTypeStr += classSignature(itf);
+        }
+        return "<" + gnrTypeStr + ">" + superTypeStr ;
+        
+    }
+    
+    private String methodSignature(MethodNode m){
+        String ptype = "";
+        for(ParameterNode p:m.parameters){
+            ptype += typeSignature(p.type);
+        }
+        return "(" + ptype + ")" + typeSignature(m.type);
+    }
+    
+    @Nullable
+    private String typeSignature(Type type){
+        if(type instanceof GenericType){
+            return "T" + type.getName() + ";" ;
+        }else if(type instanceof ParameterizedType){
+            ParameterizedType pt = (ParameterizedType) type;
+            String ptypes = "";
+            for(Type p:pt.getParameterTypes()){
+                ptypes += typeSignature(p);
+            }
+            if(!ptypes.isEmpty()) ptypes = "<" + ptypes + ">";
+            return "L" + pt.getName().replace('.', '/') + ptypes + ";";
+        }else if(type instanceof ClassType){
+            return getTypeDescriptor(type);
+        }else if(type instanceof PrimitiveType){
+            return getTypeDescriptor(type);
+        }else if(type instanceof ArrayType){
+            return "[" + typeSignature(((ArrayType)type).getComponentType());
+        }else{
+            throw Exceptions.unsupportedTypeException(type);
+        }
+    }
 
     private String internalName(String name){
         return name.replace(".", "/");
@@ -181,7 +233,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             interfaces = internalName(node.interfaces.toArray(new ClassNode[0]));
         }
         int access = node.modifier;
-        classWriter.visit(V1_5, access,internalName(node.name), null, internalName(parentName),interfaces);
+        classWriter.visit(V1_5, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);
         //TODO set source file of ClassNode
         classWriter.visitSource(node.name + ".kl", null);
         visitChildren(node);
@@ -199,7 +251,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMethodNode(MethodNode node) {
         int access = node.modifier;
-        md = classWriter.visitMethod(access, internalName(node.name),getMethodDescriptor(node), null,internalName(node.exceptionTypes.toArray(new Type[0])) );
+        md = classWriter.visitMethod(access, internalName(node.name),getMethodDescriptor(node),methodSignature(node),internalName(node.exceptionTypes.toArray(new Type[0])) );
         annotation(md, node.getAnnotations());
         if(AstUtil.isStatic(node.modifier)){
             varIdCounter = 0;
