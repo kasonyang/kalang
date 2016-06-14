@@ -88,11 +88,7 @@ class<T>{
         this->f = 6;
         return this->f;
     }
-    
-    T genericMethod(){
-        return 6;
-    }
-    
+            
     int genericList(){
         var list = new LinkedList<Integer>();
         list.add(6);
