@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.core.ClassType;
@@ -166,23 +167,42 @@ public class JavaAstLoader extends AstLoader {
             }
         }
     }
-
-    private Type getType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes,Class defaultClass) throws AstNotFoundException {
+    
+    @Nullable
+    private Type transType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes) throws AstNotFoundException{
         if(t instanceof TypeVariable){
             GenericType vt = genericTypes.get((TypeVariable)t);
             //FIXME why it maybe null?
             if(vt!=null) return vt;
-        }
-        //TODO handle parameterizedType,wildcardType,genericArrayType
-        Class type = defaultClass;
-        if(type.isPrimitive()){
-            return Types.getPrimitiveType(type.getTypeName());
-        }else if(type.isArray()){
-            return Types.getArrayType(getType(type.getComponentType(),genericTypes,type.getComponentType()));
+            return null;
+        }else if(t instanceof java.lang.reflect.ParameterizedType){
+            java.lang.reflect.ParameterizedType pt = (java.lang.reflect.ParameterizedType) t;
+            Type rawType = transType(pt.getRawType(),genericTypes);
+            if(!(rawType instanceof ClassType)) return null;
+            java.lang.reflect.Type[] typeArgs = pt.getActualTypeArguments();
+            Type[] gTypes = new Type[typeArgs.length];
+            for(int i=0;i<gTypes.length;i++){
+                gTypes[i] = transType(typeArgs[i], genericTypes);
+                if(gTypes[i]==null) return null;
+            }
+            return new ParameterizedType((ClassType) rawType, gTypes);
+        }else if(t instanceof Class){
+            Class type = (Class) t;
+            if(type.isPrimitive()){
+                return Types.getPrimitiveType(type.getTypeName());
+            }else if(type.isArray()){
+                return Types.getArrayType(getType(type.getComponentType(),genericTypes,type.getComponentType()));
+            }else{
+                return Types.getClassType(findAst(type.getName()));
+            }
         }else{
-            return Types.getClassType(findAst(type.getName()));
+            return null;
         }
-        
+    }
+
+    private Type getType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes,Class defaultClass) throws AstNotFoundException {
+        Type type = this.transType(t, genericTypes);
+        return type==null ? transType(defaultClass,genericTypes) : type;
     }
 
 }
