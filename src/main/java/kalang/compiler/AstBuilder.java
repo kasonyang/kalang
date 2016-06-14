@@ -433,9 +433,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public MultiStmtExpr visitMapExpr(KalangParser.MapExprContext ctx) {
+        Type keyType = ctx.keyType!=null 
+                ? requireClassType(ctx.keyType)
+                : Types.getRootType();
+        Type valueType = ctx.valueType!=null 
+                ? requireClassType(ctx.valueType)
+                : Types.getRootType();
+        if(keyType==null || valueType == null) return null;
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
-        vo.type = Types.getMapImplClassType();
+        vo.type =new ParameterizedType(Types.getMapImplClassType(),keyType,valueType);
         NewObjectExpr newExpr;
         try {
             newExpr = new NewObjectExpr(Types.getMapImplClassType());
@@ -472,7 +479,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         List<Statement> stmts = new LinkedList<>();
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
-        vo.type = Types.getListImplClassType();
+        Type valueType = ctx.Identifier()!=null
+                ?requireClassType(ctx.Identifier().getSymbol())
+                :Types.getRootType();
+        if(valueType==null) return null;
+        vo.type = new ParameterizedType(Types.getListImplClassType(),valueType);
         NewObjectExpr newExpr;
         try {
             newExpr = new NewObjectExpr(Types.getListImplClassType());

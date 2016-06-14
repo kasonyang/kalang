@@ -208,10 +208,10 @@ expression
         RPAREN #exprParen
     |   ref=('this'|'super') #exprSelfRef
     |   literal #exprLiteral
-    | ( '['  Identifier ':' expression ( ',' Identifier ':' expression)*  ']' 
+    | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=Identifier ':' values+=expression ( ',' keys+=Identifier ':' values+=expression)*  ']' 
           | '[' ':' ']'
       ) #mapExpr
-    | '[' ( expression ( ',' expression )* )? ']'  # listExpr
+    | ('<' Identifier '>')? '[' ( expression ( ',' expression )* )? ']'  # listExpr
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
