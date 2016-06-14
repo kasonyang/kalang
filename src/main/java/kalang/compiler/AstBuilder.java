@@ -133,7 +133,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 /**
  *  build ast from antlr parse tree
  * 
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisitor {
     
@@ -203,6 +203,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     public String getClassName() {
         return className;
+    }
+    
+    LocalVarNode createTempVar(Type type){
+        LocalVarNode v = new LocalVarNode();
+        v.type = type;
+        return v;
     }
     
     @Nullable
@@ -440,9 +446,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 ? requireClassType(ctx.valueType)
                 : Types.getRootType();
         if(keyType==null || valueType == null) return null;
-        LocalVarNode vo = new LocalVarNode();
+        LocalVarNode vo = createTempVar(new ParameterizedType(Types.getMapImplClassType(),keyType,valueType));
         VarDeclStmt vds = new VarDeclStmt(vo);
-        vo.type =new ParameterizedType(Types.getMapImplClassType(),keyType,valueType);
         NewObjectExpr newExpr;
         try {
             newExpr = new NewObjectExpr(Types.getMapImplClassType());
@@ -477,13 +482,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public MultiStmtExpr visitListExpr(KalangParser.ListExprContext ctx) {
         List<Statement> stmts = new LinkedList<>();
-        LocalVarNode vo = new LocalVarNode();
-        VarDeclStmt vds = new VarDeclStmt(vo);
         Type valueType = ctx.Identifier()!=null
                 ?requireClassType(ctx.Identifier().getSymbol())
                 :Types.getRootType();
         if(valueType==null) return null;
-        vo.type = new ParameterizedType(Types.getListImplClassType(),valueType);
+        LocalVarNode vo = createTempVar(new ParameterizedType(Types.getListImplClassType(),valueType));
+        VarDeclStmt vds = new VarDeclStmt(vo);
         NewObjectExpr newExpr;
         try {
             newExpr = new NewObjectExpr(Types.getListImplClassType());
