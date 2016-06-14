@@ -480,8 +480,11 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitReturnStmt(ReturnStmt node) {
         Type retType = method.type;
-        //this.checkCastable(visit(node.expr),retType,node)
-        if (node.expr != null) {
+        if (node.expr == null) {
+            if(!retType.equals(Types.VOID_TYPE)){
+                err.fail("expression expected", 0, node);
+            }
+        }else{
             Type exType = visit(node.expr);
             node.expr = this.checkAssign(node.expr, exType, retType, node);
         }
