@@ -150,7 +150,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private final List<String> importPaths = new LinkedList<>();
     @Nonnull
-    private final ClassNode classAst = new ClassNode();
+    private final ClassNode thisClazz = new ClassNode();
+    
+    @Nonnull
+    private final ClassType thisType = Types.getClassType(thisClazz);
+    
     private MethodNode method;
     
     protected BlockStmt currentBlock = null;
@@ -239,14 +243,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             parsingPhase = PARSING_PHASE_META;
             this.compilationContext = parser.compilantUnit();
             visit(compilationContext);
-            if(!AstUtil.containsConstructor(classAst)){
-                AstUtil.createEmptyConstructor(classAst);
+            if(!AstUtil.containsConstructor(thisClazz)){
+                AstUtil.createEmptyConstructor(thisClazz);
             }
         }
         if(targetPhase>=PARSING_PHASE_ALL
                 && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
-            for(MethodNode m:classAst.getDeclaredMethodNodes()){
+            for(MethodNode m:thisClazz.getDeclaredMethodNodes()){
                 BlockStmtContext body = methodBodys.get(m);
                 if(body!=null){
                     method = m;
@@ -256,7 +260,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                         List<Statement> bodyStmts = m.body.statements;
                         if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
                             try {
-                                bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(classAst));
+                                bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
                             } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                                 AstBuilder.this.handleSyntaxError("default constructor not found", body.start);
                             }
@@ -270,7 +274,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public AstBuilder(@Nonnull CompilationUnit compilationUnit, @Nonnull KalangParser parser) {
         this.compilationUnit = compilationUnit;
         this.className = compilationUnit.getSource().getClassName();
-        classAst.name = className;
+        thisClazz.name = className;
         this.classPath = "";
         this.parser = parser;
         tokenStream = parser.getTokenStream();
@@ -409,7 +413,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Nonnull
     public ClassNode getAst() {
-        return this.classAst;
+        return this.thisClazz;
     }
     
     private void mapAst(@Nonnull AstNode node,@Nonnull ParserRuleContext tree){
@@ -563,7 +567,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitCompilantUnit(CompilantUnitContext ctx) {
-        classAst.name = this.className;
+        thisClazz.name = this.className;
         visitChildren(ctx);
         return null;
     }
@@ -571,7 +575,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitClassBody(ClassBodyContext ctx) {
         this.visitChildren(ctx);
-        mapAst(classAst, ctx);
+        mapAst(thisClazz, ctx);
         return null;
     }
 
@@ -579,25 +583,25 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public Void visitFieldDecl(FieldDeclContext ctx) {
         int mdf = this.parseModifier(ctx.varModifier());
         for(VarDeclContext vd:ctx.varDecl()){
-            FieldNode fieldNode = classAst.createField();
+            FieldNode fieldNode = thisClazz.createField();
             fieldNode.modifier =ModifierUtil.setPrivate(mdf);
             if(vd.expression()!=null){
                 ExprNode initExpr = visitExpression(vd.expression());
                 varDecl(vd,fieldNode,initExpr.getType());
                 //TODO simplify it
                 if(AstUtil.isStatic(fieldNode.modifier)){
-                    classAst.staticInitStmts.add(new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(classAst), fieldNode), initExpr)));
+                    thisClazz.staticInitStmts.add(new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(thisClazz), fieldNode), initExpr)));
                 }else{
-                    classAst.initStmts.add(new ExprStmt(new AssignExpr(new ObjectFieldExpr(new ThisExpr(Types.getClassType(classAst)), fieldNode), initExpr)));
+                    thisClazz.initStmts.add(new ExprStmt(new AssignExpr(new ObjectFieldExpr(new ThisExpr(thisType), fieldNode), initExpr)));
                 }
             }else{
                 varDecl(vd,fieldNode, Types.getRootType());
             }
-            if(!AstUtil.hasGetter(classAst, fieldNode)){
-                AstUtil.createGetter(classAst, fieldNode, mdf);
+            if(!AstUtil.hasGetter(thisClazz, fieldNode)){
+                AstUtil.createGetter(thisClazz, fieldNode, mdf);
             }
-            if(!AstUtil.hasSetter(classAst, fieldNode)){
-                AstUtil.createSetter(classAst, fieldNode, mdf);
+            if(!AstUtil.hasSetter(thisClazz, fieldNode)){
+                AstUtil.createSetter(thisClazz, fieldNode, mdf);
             }
         }
         return null;
@@ -619,7 +623,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
             name = ctx.name.getText();
         }
-        method = classAst.createMethodNode();
+        method = thisClazz.createMethodNode();
         method.annotations.addAll(getAnnotations(ctx.annotation()));
         method.modifier = mdf;
         method.type = type;
@@ -1020,12 +1024,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
         ExprNode expr;
         try {
-            ClassType clazzType = Types.getClassType(classAst);
-            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(classAst, true));
+            ClassType clazzType = thisType;
+            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(thisClazz, true));
             if(Modifier.isStatic(ms.selectedMethod.modifier)){
-                expr = new StaticInvokeExpr(new ClassReference(classAst), ms.selectedMethod, ms.appliedArguments);
+                expr = new StaticInvokeExpr(new ClassReference(thisClazz), ms.selectedMethod, ms.appliedArguments);
             }else{
-                expr = new ObjectInvokeExpr(new ThisExpr(Types.getClassType(classAst)), ms.selectedMethod, ms.appliedArguments);
+                expr = new ObjectInvokeExpr(new ThisExpr(thisType), ms.selectedMethod, ms.appliedArguments);
             }
         } catch (MethodNotFoundException ex) {
             expr = new UnknownInvocationExpr(null, methodName, args);
@@ -1048,7 +1052,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         ExprNode expr;
         try {
-            ObjectInvokeExpr invoke = ObjectInvokeExpr.create(target, methodName, args,classAst);
+            ObjectInvokeExpr invoke = ObjectInvokeExpr.create(target, methodName, args,thisClazz);
             if(invoke.getMethod().type instanceof GenericType){
                 expr = new CastExpr(invoke.getType(), invoke);
             }else{
@@ -1225,14 +1229,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                     }
                 }
             }
-            if (classAst.fields != null) {
-                for (FieldNode f : classAst.fields) {
+            if (thisClazz.fields != null) {
+                for (FieldNode f : thisClazz.fields) {
                     if (f.name!=null && f.name.equals(name)) {
                         FieldExpr fe;
                         if(Modifier.isStatic(f.modifier)){
-                            fe = new StaticFieldExpr(new ClassReference(classAst), f);
+                            fe = new StaticFieldExpr(new ClassReference(thisClazz), f);
                         }else{
-                            fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(classAst)), f);
+                            fe = new ObjectFieldExpr(new ThisExpr(thisType), f);
                         }
                         if(token!=null) mapAst(fe, token);
                         return fe;
@@ -1471,9 +1475,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         String key = ctx.ref.getText();
         AstNode expr;
         if(key.equals("this")){
-            expr = new ThisExpr(Types.getClassType(classAst));
+            expr = new ThisExpr(thisType);
         }else if(key.equals("super")){
-            expr = new SuperExpr(classAst);
+            expr = new SuperExpr(thisClazz);
         }else{
             throw new UnknownError();
         }
@@ -1532,7 +1536,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ret = new ArrayLengthExpr(expr);
         } else {
             try {
-                ret = ObjectFieldExpr.create(expr, fieldName,classAst);
+                ret = ObjectFieldExpr.create(expr, fieldName,thisClazz);
             } catch (FieldNotFoundException ex) {
                 ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
             }
@@ -1544,7 +1548,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     protected AssignableExpr getStaticFieldExpr(ClassReference clazz,String fieldName,ParserRuleContext rule){
         AssignableExpr ret;
         try {
-            ret = StaticFieldExpr.create(clazz,fieldName,classAst);
+            ret = StaticFieldExpr.create(clazz,fieldName,thisClazz);
         } catch (FieldNotFoundException ex) {
             ret = new UnknownFieldExpr(clazz, clazz.getReferencedClassNode(), fieldName);
         }
@@ -1581,15 +1585,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
-        classAst.modifier = Modifier.PUBLIC;
-        classAst.parent = Types.getRootType().getClassNode();
+        thisClazz.modifier = Modifier.PUBLIC;
+        thisClazz.parent = Types.getRootType().getClassNode();
         List<MethodDeclContext> mds = ctx.methodDecl();
         if(mds!=null){
             for(MethodDeclContext m:mds){
                 visit(m);
             }
         }
-        MethodNode mm = classAst.createMethodNode();
+        MethodNode mm = thisClazz.createMethodNode();
         mm.name = "main";
         mm.modifier = Modifier.PUBLIC  + Modifier.STATIC;
         mm.type = Types.VOID_TYPE;
@@ -1630,12 +1634,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
-        classAst.annotations.addAll(getAnnotations(ctx.annotation()));
-        classAst.modifier = parseModifier(ctx.varModifier());
+        thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
+        thisClazz.modifier = parseModifier(ctx.varModifier());
         Token clsType = ctx.classType;
         if(clsType!=null){
             if (clsType.getText().equals("interface")) {
-                classAst.isInterface = true;
+                thisClazz.isInterface = true;
             }
         }
         List<Token> gnrTypes = ctx.genericTypes;
@@ -1643,24 +1647,24 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             for(Token g:gnrTypes){
                 GenericType gt = new GenericType(g.getText());
                 this.declarededGenericTypes.put(gt.getName(),gt);
-                classAst.declareGenericType(gt);
+                thisClazz.declareGenericType(gt);
             }
         }
         if (ctx.parentClass != null) {
-            classAst.parent =  requireAst(ctx.parentClass);
+            thisClazz.parent =  requireAst(ctx.parentClass);
         }else{
-            classAst.parent = Types.getRootType().getClassNode();
+            thisClazz.parent = Types.getRootType().getClassNode();
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (Token itf : ctx.interfaces) {
                 ClassNode itfClassNode = requireAst(itf);
                 if(itfClassNode!=null){
-                    classAst.interfaces.add(itfClassNode);
+                    thisClazz.interfaces.add(itfClassNode);
                 }
             }
         }
         visitClassBody(ctx.classBody());
-        mapAst(classAst, ctx);
+        mapAst(thisClazz, ctx);
         return null;
     }
 
