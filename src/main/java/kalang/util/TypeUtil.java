@@ -9,6 +9,7 @@ import kalang.ast.MethodNode;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
 import kalang.core.ParameterizedType;
+import kalang.core.PrimitiveType;
 import kalang.core.Type;
 
 /**
@@ -68,8 +69,13 @@ public class TypeUtil {
             Type[] ptParameterizedTypes = pt.getParameterTypes();
             Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
             if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
-            return new ParameterizedType(pt.getRawType(), ptParameterizedTypes);
+            return new ParameterizedType(pt.getRawType(), parsedParamTypes);
+        }else if(type instanceof ClassType){
+            return type;
+        }else if(type instanceof PrimitiveType){
+            return type;
         }else{
+            System.err.println("unknown type:" + type);
             return type;
         }        
     }
