@@ -1,7 +1,11 @@
 
 package kalang.core;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import kalang.ast.ClassNode;
 /**
  *
@@ -40,6 +44,36 @@ public class ParameterizedType extends ClassType {
     @Override
     public String getDeclarationKey() {
         return rawType.getDeclarationKey();
+    }
+
+    @Override
+    public String getName() {
+        List<String> paramTypes = new ArrayList(parameterTypes.length);
+        for(Type t:parameterTypes){
+            paramTypes.add(t.getName());
+        }
+        return rawType.getName() + "<" + String.join(",",paramTypes) + ">";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ParameterizedType other = (ParameterizedType) obj;
+        if (!Arrays.deepEquals(this.parameterTypes, other.parameterTypes)) {
+            return false;
+        }
+        if (!Objects.equals(this.rawType, other.rawType)) {
+            return false;
+        }
+        return true;
     }
     
     
