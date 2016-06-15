@@ -174,7 +174,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 ptypes += typeSignature(p);
             }
             if(!ptypes.isEmpty()) ptypes = "<" + ptypes + ">";
-            return "L" + pt.getName().replace('.', '/') + ptypes + ";";
+            return "L" + pt.getRawType().getName().replace('.', '/') + ptypes + ";";
         }else if(type instanceof ClassType){
             return getTypeDescriptor(type);
         }else if(type instanceof PrimitiveType){
@@ -776,23 +776,24 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         //TODO check why null
         if(t==null || t.equals(VOID_TYPE)){
             return "V";
-        }
-        if(t instanceof ArrayType){
+        }else if(t instanceof ArrayType){
             return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());
-        }
-        if(t.equals(BOOLEAN_TYPE)){
+        }else if(t.equals(BOOLEAN_TYPE)){
             return "Z";
         }else if(t.equals(LONG_TYPE)){
             return "J";
-        }
-        if(t instanceof PrimitiveType){
+        }else if(t instanceof PrimitiveType){
             return t.getName().substring(0,1).toUpperCase();
-        }
-        if(t instanceof GenericType){
+        }else if(t instanceof GenericType){
             //TODO all generic type is object?
             return "L" + internalName(Types.ROOT_CLASS_NAME) + ";";
+        }else if(t instanceof ParameterizedType){
+            return getTypeDescriptor(((ParameterizedType)t).getRawType());
+        }else if(t instanceof ClassType){
+            return "L" + internalName(t.getName()) + ";";
+        }else{
+            throw Exceptions.unsupportedTypeException(t);
         }
-        return "L" + internalName(t.getName()) + ";";
     }
     
     private String getMethodDescriptor(Type returnType,Type[] parameterTypes){

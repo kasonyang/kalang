@@ -96,6 +96,14 @@ class<T>{
         return list.get(0);
     }
     
+    int genericIterator(){
+        List<Integer> list = new LinkedList();
+        list.add(6);
+        var it = list.iterator();
+        Integer i = it.next();
+        return i;
+    }
+    
     /*
     
     int dynamicField() throws Exception{

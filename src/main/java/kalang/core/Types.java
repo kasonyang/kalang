@@ -25,6 +25,8 @@ public class Types {
     
     private static Map<ClassNode,ClassType> classTypes  = new HashMap<>();
     
+    private static final Map<String,ParameterizedType> parameterizedTypes = new HashMap();
+    
     private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();;
     
     public static final PrimitiveType 
@@ -142,6 +144,20 @@ public class Types {
             arrayTypes.put(componentType,at);
         }
         return at;
+    }
+    
+    public static ParameterizedType getParameterizedType(ClassType rawType,Type[] argumentsType){
+        List<String> argTypes = new ArrayList(argumentsType.length);
+        for(Type t:argumentsType){
+            argTypes.add(t.getName());
+        }
+        String key = rawType.getName() + "<" + String.join(",", argTypes) + ">";
+        ParameterizedType pt = parameterizedTypes.get(key);
+        if(pt==null){
+            pt = new ParameterizedType(rawType, argumentsType);
+            parameterizedTypes.put(key, pt);
+        }
+        return pt;
     }
     
     @Nonnull
