@@ -22,7 +22,7 @@ public class ParameterizedType extends ClassType {
         super(rawType.getClassNode(),rawType.getSuperType());
         this.rawType = rawType;
         this.parameterTypes = parameterTypes;
-        superType =(ClassType) TypeUtil.getActualType(this, superType);
+        superType =(ClassType) getActualType(superType);
        //TODO check parameterTypes.length
     }
 
@@ -77,6 +77,53 @@ public class ParameterizedType extends ClassType {
             return false;
         }
         return true;
+    }
+    
+    private static Type[] parseGenericType(Type[] types,Map<GenericType,Type> genericTypes){
+        Type[] actTypes = new Type[types.length];
+        for(int i=0;i<actTypes.length;i++){
+            actTypes[i] = parseGenericType(types[i],genericTypes);
+        }
+        return actTypes;
+    }
+    
+    private static Type parseGenericType(Type type,Map<GenericType,Type> genericTypes){
+        if(type instanceof GenericType){
+            Type actualType = genericTypes.get((GenericType)type);
+            return actualType == null ? type : actualType;
+        }else if(type instanceof ParameterizedType){
+            ParameterizedType pt = (ParameterizedType) type;
+            Type[] ptParameterizedTypes = pt.getParameterTypes();
+            Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
+            if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
+            return new ParameterizedType(pt.getRawType(), parsedParamTypes);
+        }else if(type instanceof ClassType){
+            return type;
+        }else if(type instanceof PrimitiveType){
+            return type;
+        }else{
+            System.err.println("unknown type:" + type);
+            return type;
+        }        
+    }
+    
+    private Type getActualType(Type type){
+        Map<GenericType, Type> genericTypes;
+        genericTypes = this.getParameterTypesMap();    
+        return parseGenericType(type, genericTypes);
+    }
+    
+    private Type[] getActualType(Type[] types){
+        Type[] actTypes = new Type[types.length];
+        for(int i=0;i<types.length;i++){
+            actTypes[i] = getActualType(types[i]);
+        }
+        return actTypes;
+    }
+
+    @Override
+    protected Type parseType(Type type) {
+        return getActualType(type);
     }
     
     

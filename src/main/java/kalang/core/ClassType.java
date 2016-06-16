@@ -16,7 +16,7 @@ import kalang.util.AstUtil;
 import kalang.util.TypeUtil;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class ClassType extends Type{
     
@@ -66,12 +66,24 @@ public class ClassType extends Type{
     
     private ParameterDescriptor[] getParameterDescriptors(MethodNode method){
         List<ParameterNode> pms = method.parameters;
-        Type[] ptypes = TypeUtil.getMethodActualParameterTypes(this, method);
+        Type[] ptypes = parseTypes(AstUtil.getParameterTypes(method));
         ParameterDescriptor[] pds = new ParameterDescriptor[ptypes.length];
         for(int j=0;j<pds.length;j++){
             pds[j] = new ParameterDescriptor(pms.get(j).name,ptypes[j]);
         }
         return pds;
+    }
+    
+    protected Type parseType(Type type){
+        return type;
+    }
+    
+    protected final Type[] parseTypes(Type[] types){
+        Type[] ret = new Type[types.length];
+        for(int i=0;i<types.length;i++){
+            ret[i] = parseType(types[i]);
+        }
+        return ret;
     }
     
     //TODO cache 
@@ -86,7 +98,12 @@ public class ClassType extends Type{
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
             if("<init>".equals(mds[i].name)) continue;
-            MethodDescriptor md = new MethodDescriptor(mds[i],getParameterDescriptors(mds[i]), TypeUtil.getMethodActualReturnType(this,mds[i]),mds[i].exceptionTypes.toArray(new Type[0]));
+            MethodDescriptor md = new MethodDescriptor(
+                    mds[i]
+                    ,getParameterDescriptors(mds[i])
+                    ,parseType(mds[i].type)
+                    ,parseTypes(mds[i].exceptionTypes.toArray(new Type[0]))
+            );
             descs.put(md.getDeclarationKey(), md);
         }
         return descs.values().toArray(new MethodDescriptor[descs.size()]);
@@ -99,7 +116,11 @@ public class ClassType extends Type{
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
             if(!"<init>".equals(mds[i].name)) continue;
-            ConstructorDescriptor md = new ConstructorDescriptor(mds[i],getParameterDescriptors(mds[i]),mds[i].exceptionTypes.toArray(new Type[0]));
+            ConstructorDescriptor md = new ConstructorDescriptor(
+                    mds[i]
+                    ,getParameterDescriptors(mds[i])
+                    ,parseTypes(mds[i].exceptionTypes.toArray(new Type[0]))
+            );
             descs.put(md.getDeclarationKey(), md);
         }
         return descs.values().toArray(new ConstructorDescriptor[descs.size()]);
@@ -111,7 +132,7 @@ public class ClassType extends Type{
         FieldDescriptor[] ret = new FieldDescriptor[fields.size()];
         for(int i=0;i<ret.length;i++){
             FieldNode f = fields.get(i);
-            ret[i] = new FieldDescriptor(f.name,f.type, f.modifier);
+            ret[i] = new FieldDescriptor(f.name,parseType(f.type), f.modifier);
         }
         return ret;
     }
