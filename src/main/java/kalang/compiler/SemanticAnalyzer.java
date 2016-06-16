@@ -59,6 +59,7 @@ import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.core.ClassType;
 import kalang.core.ExecutableDescriptor;
+import kalang.core.MethodDescriptor;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -163,7 +164,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if (itfNode == null) {
                     continue;
                 }
-                List<MethodNode> unImps = AstUtil.getUnimplementedMethod(clazz, itfNode);
+                List<MethodDescriptor> unImps = AstUtil.getUnimplementedMethod(clazz, itfNode);
                 if (unImps.size() > 0) {
                     err.notImplementedMethods(clazz, itfNode, unImps);
                 }

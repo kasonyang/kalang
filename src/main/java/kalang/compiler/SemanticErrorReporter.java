@@ -5,6 +5,7 @@
  */
 package kalang.compiler;
 
+import java.util.LinkedList;
 import kalang.ast.ClassNode;
 import kalang.ast.MethodNode;
 import kalang.ast.AstNode;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import java.util.Map;
 import static kalang.compiler.SemanticError.*;
+import kalang.core.MethodDescriptor;
 import kalang.core.Type;
 /**
  *
@@ -66,8 +68,13 @@ public class SemanticErrorReporter{
         fail("Unable to cast " + fromType + " to " + toType, UNABLE_TO_CAST, node);
     }
 
-    public void notImplementedMethods(AstNode node, Type theInterface, List<MethodNode> method) {
-        String methodStr = AstUtil.getMethodDescription(method.get(0), theInterface.getName());
-        fail("The method isn't implemented:" + methodStr, METHOD_NOT_IMPLEMENTED, node);
+    public void notImplementedMethods(AstNode node, Type theInterface, List<MethodDescriptor> method) {
+        List<String> list = new LinkedList();
+        for(MethodDescriptor m:method){
+            list.add(m.toString());
+        }
+        String methodStr = String.join("\n", list);
+        String msg = String.format("methods require implemented:\n%s", methodStr);
+        fail(msg , METHOD_NOT_IMPLEMENTED, node);
     }
 }

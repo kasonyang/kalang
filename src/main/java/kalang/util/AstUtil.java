@@ -114,16 +114,14 @@ public class AstUtil {
     }
 
     @Nonnull
-    public static List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassType theInterface) {
-        //TODO optimize getUnimplementedMethod
-        List<MethodNode> list = new LinkedList();
+    public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass, ClassType theInterface) {
+        List<MethodDescriptor> list = new LinkedList();
         for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true)) {
             String name = m.getName();
             Type[] types = m.getParameterTypes();
-            //MethodNode[] methods = getMethodsByName(theClass, name);
-            MethodNode matches = getMethod(theClass,name, types);
-            if (matches == null) {
-                list.add(m.getMethodNode());
+            MethodNode matched = getMethod(theClass,name, types);
+            if (matched == null) {
+                list.add(m);
             }
         }
         return list;
