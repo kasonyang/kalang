@@ -73,12 +73,6 @@ public abstract class InvocationExpr extends ExprNode {
         this.clazz = clazz;
     }
 
-    @Nonnull
-    public ClassType getInvokeClassType() {
-        //TODO remove
-        return Types.getClassType(method.getMethodNode().classNode);
-    }
-
     @Nullable
     public Type[] getArgumentTypes() {
         if (getArguments() == null) {
@@ -99,15 +93,7 @@ public abstract class InvocationExpr extends ExprNode {
     public ExprNode[] getArguments() {
         return arguments;
     }
-
-    /**
-     * @param arguments the arguments to set
-     */
-    public void setArguments(ExprNode[] arguments) {
-        //Objects.requireNonNull(arguments);
-        this.arguments = arguments;
-    }
-
+    
     public ExecutableDescriptor getMethod() {
         return method;
     }

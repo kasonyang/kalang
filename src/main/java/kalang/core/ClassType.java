@@ -126,15 +126,23 @@ public class ClassType extends Type{
         return descs.values().toArray(new ConstructorDescriptor[descs.size()]);
     }
     
-    //TODO cache
-    public FieldDescriptor[] getFieldDescriptors(){
-        List<FieldNode> fields = clazz.fields;
-        FieldDescriptor[] ret = new FieldDescriptor[fields.size()];
-        for(int i=0;i<ret.length;i++){
-            FieldNode f = fields.get(i);
-            ret[i] = new FieldDescriptor(f.name,parseType(f.type), f.modifier);
+    @Nullable
+    public FieldDescriptor getFieldDescriptor(ClassNode caller,String name){
+        FieldDescriptor[] fds = getFieldDescriptors(caller);
+        for(FieldDescriptor f:fds){
+            if(name.equals(f.getName())) return f;
         }
-        return ret;
+        return null;
+    }
+    
+    //TODO cache
+    public FieldDescriptor[] getFieldDescriptors(ClassNode caller){
+        List<FieldNode> fields = clazz.fields;
+        List<FieldDescriptor>ret = new ArrayList(fields.size());
+        for(FieldNode f:fields){
+            ret.add(new StandardFieldDescriptor(f,parseType(f.type)));
+        }
+        return ret.toArray(new FieldDescriptor[ret.size()]);
     }
 
     public ClassType getSuperType() {

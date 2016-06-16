@@ -1,34 +1,19 @@
 package kalang.core;
+
+import kalang.ast.FieldNode;
+
 /**
  *
  * @author Kason Yang
  */
-public class FieldDescriptor {
-    
-    private String name;
-    
-    private Type type;
-    
-    private int modifier;
+public interface FieldDescriptor {
 
-    public FieldDescriptor(String name, Type type, int modifier) {
-        this.name = name;
-        this.type = type;
-        this.modifier = modifier;
-    }
+    public String getName();
 
-    public String getName() {
-        return name;
-    }
+    public Type getType();
 
-    public Type getType() {
-        return type;
-    }
+    public int getModifier() ;
 
-    public int getModifier() {
-        return modifier;
-    }
-    
-    
+    public FieldNode getFieldNode() ;
 
 }

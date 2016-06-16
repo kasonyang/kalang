@@ -35,6 +35,7 @@ import kalang.ast.StaticFieldExpr;
 import kalang.core.ClassType;
 import kalang.core.ConstructorDescriptor;
 import kalang.core.ExecutableDescriptor;
+import kalang.core.FieldDescriptor;
 import kalang.core.GenericType;
 import kalang.core.MethodDescriptor;
 import kalang.core.ParameterizedType;
@@ -350,12 +351,12 @@ public class AstUtil {
         return method != null;
     }
     
-    public static void createGetter(ClassNode clazz,FieldNode field,int accessModifier){
-        String fn = field.name;
+    public static void createGetter(ClassNode clazz,FieldDescriptor field,int accessModifier){
+        String fn = field.getName();
         String getterName = "get" + NameUtil.firstCharToUpperCase(fn);
-        boolean isStatic = isStatic(field.modifier);
+        boolean isStatic = isStatic(field.getModifier());
         MethodNode getter = clazz.createMethodNode();
-        getter.offset = field.offset;
+        //getter.offset = field.offset;
         getter.name = getterName;
         getter.modifier = accessModifier;
         getter.type = field.getType();
@@ -374,12 +375,12 @@ public class AstUtil {
         getter.body = body;
     }
     
-    public static void createSetter(ClassNode clazz,FieldNode field,int accessModifier){
-        String fn = field.name;
+    public static void createSetter(ClassNode clazz,FieldDescriptor field,int accessModifier){
+        String fn = field.getName();
         String setterName = "set" + NameUtil.firstCharToUpperCase(fn);
-        boolean isStatic = isStatic(field.modifier);
+        boolean isStatic = isStatic(field.getModifier());
         MethodNode setter = clazz.createMethodNode();
-        setter.offset = field.offset;
+        //setter.offset = field.offset;
         setter.name = setterName;
         setter.modifier = accessModifier;
         if(isStatic(accessModifier)){
@@ -389,7 +390,7 @@ public class AstUtil {
         }
         ParameterNode param = ParameterNode.create(setter);
         param.type = field.getType();
-        param.name = field.name;
+        param.name = field.getName();
         setter.parameters.add(param);
         BlockStmt body = new BlockStmt(null);
         FieldExpr fe;

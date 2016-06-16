@@ -405,7 +405,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         }
         return target
                 + "."
-                + node.getField().name;
+                + node.getField().getName();
     }
 
     @Override

@@ -9,18 +9,18 @@ import kalang.util.AstUtil;
 public abstract class FieldExpr extends AssignableExpr{
     
     @Nonnull
-    private FieldNode field;
+    private FieldDescriptor field;
     
     @Nonnull
-    protected static  FieldNode getField(ClassNode clazz,String fieldName,@Nullable ClassNode caller) throws FieldNotFoundException{
-        FieldNode field = AstUtil.getField(clazz,fieldName,caller);
+    protected static  FieldDescriptor getField(ClassType type,String fieldName,@Nullable ClassNode caller) throws FieldNotFoundException{
+        FieldDescriptor field = type.getFieldDescriptor(caller,fieldName);
         if(field==null){
             throw new FieldNotFoundException(fieldName);
         }
         return field;
     }
     
-    public FieldExpr(@Nonnull FieldNode field){
+    public FieldExpr(@Nonnull FieldDescriptor field){
         this.field = field;
     }
 
@@ -30,7 +30,7 @@ public abstract class FieldExpr extends AssignableExpr{
     }
     
     @Nonnull
-    public FieldNode getField(){
+    public FieldDescriptor getField(){
         return field;
     }
 

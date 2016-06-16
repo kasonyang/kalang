@@ -497,9 +497,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private void assignField(FieldExpr fieldExpr,ExprNode expr){
         if(fieldExpr instanceof StaticFieldExpr){
-            assignField(fieldExpr.getField(), null, expr);
+            assignField(fieldExpr.getField().getFieldNode(), null, expr);
         }else if(fieldExpr instanceof ObjectFieldExpr){
-            assignField(fieldExpr.getField(), ((ObjectFieldExpr) fieldExpr).getTarget(), expr);
+            assignField(fieldExpr.getField().getFieldNode(), ((ObjectFieldExpr) fieldExpr).getTarget(), expr);
         }else{
             throw new UnsupportedOperationException();
         }
@@ -614,7 +614,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitFieldExpr(FieldExpr node) {
         int   opc ;
-        String owner = internalName(node.getField().classNode);
+        String owner = internalName(node.getField().getFieldNode().classNode);
         if(node instanceof ObjectFieldExpr){
             ExprNode target =((ObjectFieldExpr)node).getTarget();
             visit(target);
@@ -626,7 +626,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         md.visitFieldInsn(opc
                 ,owner
-                , node.getField().name
+                , node.getField().getName()
                 ,getTypeDescriptor(node.getType()));
         return null;
     }
@@ -638,7 +638,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         String ownerClass;// = internalName(node.getMethod().classNode);
         if (node instanceof StaticInvokeExpr) {
             opc = INVOKESTATIC;
-            ownerClass = internalName(((StaticInvokeExpr) node).getInvokeClassType().getClassNode());
+            ownerClass = internalName(((StaticInvokeExpr) node).getInvokeClass().getReferencedClassNode());
         } else if(node instanceof ObjectInvokeExpr) {
             ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
             ClassType targetType = (ClassType) oie.getInvokeTarget().getType();
