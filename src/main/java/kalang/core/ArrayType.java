@@ -20,7 +20,7 @@ public class ArrayType extends ClassType{
 
     public ArrayType(Type componentType) {
         //TODO should not hard code
-        super(AstLoader.createArrayAst("java.lang.Object"));
+        super(AstLoader.createArrayAst("java.lang.Object"),Types.getRootType());
         this.componentType = componentType;
     }
     

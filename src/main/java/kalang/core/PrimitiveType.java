@@ -12,7 +12,6 @@ public class PrimitiveType extends Type{
     private String name;
 
     public PrimitiveType(String name) {
-        super(null);
         this.name = name;
     }
 

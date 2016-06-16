@@ -15,11 +15,6 @@ import kalang.ast.FieldNode;
  */
 public abstract class Type {
     
-    protected Type superType;
-
-    public Type(Type superType) {
-        this.superType = superType;
-    }
     
     public abstract String getName();
     
@@ -34,11 +29,6 @@ public abstract class Type {
     public abstract Type getComponentType();
     
     public boolean isSubTypeOf(Type targetType){
-        Type t = this;
-        while(t!=null){
-            if(t.equals(targetType)) return true;
-            t = t.getSuperType();
-        }
         return false;
     }
     
@@ -50,10 +40,6 @@ public abstract class Type {
     @Override
     public String toString() {
         return getName();
-    }
-
-    public Type getSuperType() {
-        return superType;
     }
 
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import kalang.ast.ClassNode;
+import kalang.util.TypeUtil;
 /**
  *
  * @author Kason Yang
@@ -17,10 +18,12 @@ public class ParameterizedType extends ClassType {
     private final ClassType rawType;
     
     public ParameterizedType(ClassType rawType,Type... parameterTypes ) {
-        super(rawType.getClassNode());
+        //TODO may be bug
+        super(rawType.getClassNode(),rawType.getSuperType());
         this.rawType = rawType;
         this.parameterTypes = parameterTypes;
-        //TODO check parameterTypes.length
+        superType =(ClassType) TypeUtil.getActualType(this, superType);
+       //TODO check parameterTypes.length
     }
 
     public Type[] getParameterTypes() {

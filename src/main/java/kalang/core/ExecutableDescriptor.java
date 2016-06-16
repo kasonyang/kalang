@@ -8,12 +8,12 @@ import kalang.util.AstUtil;
  * @author Kason Yang
  */
 public abstract class ExecutableDescriptor {
-    private final Type[] parameterTypes;
-    private final int modifier;
-    private final MethodNode methodNode;
-    private final ParameterDescriptor[] parameterDescriptors;
+    protected final Type[] parameterTypes;
+    protected final int modifier;
+    protected final MethodNode methodNode;
+    protected final ParameterDescriptor[] parameterDescriptors;
     
-    private final String name;
+    protected final String name;
 
     public ExecutableDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors) {
         this.modifier = method.modifier;

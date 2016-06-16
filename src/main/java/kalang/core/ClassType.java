@@ -21,10 +21,13 @@ import kalang.util.TypeUtil;
 public class ClassType extends Type{
     
     private ClassNode clazz;
+    protected ClassType superType;
+    
+    
 
-    public ClassType(ClassNode clazz) {
-        super(clazz.superType);
+    public ClassType(ClassNode clazz,ClassType superType) {
         this.clazz = clazz;
+        this.superType = superType;
     }
 
     @Override
@@ -74,8 +77,8 @@ public class ClassType extends Type{
     //TODO cache 
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean recursive){
         Map<String,MethodDescriptor> descs = new HashMap();
-        if(recursive && clazz.superType!=null){
-            MethodDescriptor[] ms = clazz.superType.getMethodDescriptors(caller, recursive);
+        if(recursive && superType!=null){
+            MethodDescriptor[] ms = superType.getMethodDescriptors(caller, recursive);
             for(MethodDescriptor m:ms){
                 descs.put(m.getDeclarationKey(),m);
             }
@@ -111,6 +114,10 @@ public class ClassType extends Type{
             ret[i] = new FieldDescriptor(f.name,f.type, f.modifier);
         }
         return ret;
+    }
+
+    public ClassType getSuperType() {
+        return superType;
     }
     
 }

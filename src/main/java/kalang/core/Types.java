@@ -164,7 +164,7 @@ public class Types {
     public static ClassType getClassType(@Nonnull ClassNode clazz){
         ClassType ct = classTypes.get(clazz);
         if(ct==null){
-            ct = new ClassType(clazz);
+            ct = new ClassType(clazz,clazz.superType);
             classTypes.put(clazz, ct);
         }
         return ct;

@@ -13,7 +13,8 @@ public class GenericType extends ClassType{
     protected String name;
 
     public GenericType(String name) {
-        super(Types.getRootType().getClassNode());
+        //FIXME wrong arguments
+        super(Types.getRootType().getClassNode(),Types.getRootType());
         Objects.requireNonNull(name);
         this.name = name;
     }
