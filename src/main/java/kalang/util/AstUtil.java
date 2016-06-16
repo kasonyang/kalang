@@ -101,23 +101,7 @@ public class AstUtil {
         return AstUtil.getMethodDeclarationKey(node.name, getParameterTypes(node));
     }
 
-    /**
-     * get an accessible field by name
-     * @param ast
-     * @param name
-     * @param caller
-     * @return 
-     */
-    @Nullable
-    public static FieldNode getField(ClassNode ast, String name,@Nullable ClassNode caller) {
-        for (FieldNode f : listAccessibleFields(ast, caller)) {
-            if (f.name.equals(name)) {
-                return f;
-            }
-        }
-        return null;
-    }
-
+    
     public static Type[] getParameterTypes(MethodNode mn) {
         if (mn.parameters == null) {
             return new Type[0];
@@ -131,6 +115,7 @@ public class AstUtil {
 
     @Nonnull
     public static List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassType theInterface) {
+        //TODO optimize getUnimplementedMethod
         List<MethodNode> list = new LinkedList();
         for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true)) {
             String name = m.getName();
@@ -247,14 +232,7 @@ public class AstUtil {
     public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types){
         return getMethod(cls, methodName, types,true);
     }
-    
-    @Nullable
-    public static MethodNode getAccessibleMethod(ClassNode cls, String methodName, @Nullable Type[] types,ClassNode caller) {
-        MethodNode md = getMethod(cls, methodName, types);
-        if(md==null) return null;
-        if(!isAccessibleMethod(md,caller)) return null;
-        return md;
-    }
+        
     
     @Nullable
     public static ExecutableDescriptor getExactedMethod(ClassType targetType,ExecutableDescriptor[] candidates,String methodName,@Nullable Type[] types){
@@ -410,34 +388,7 @@ public class AstUtil {
         }
         setter.body = body;
     }
-    
-    public static boolean isAccessibleField(FieldNode field,@Nullable ClassNode caller){
-        return isAccessible(field.modifier, field.classNode, caller);
-    }
-    
-    public static FieldNode[] listAccessibleFields(ClassNode clazz,@Nullable ClassNode caller){
-        List<FieldNode> list = new LinkedList<>();
-        for(FieldNode f:listFields(clazz)){
-            if(isAccessibleField(f, caller)){
-                list.add(f);
-            }
-        }
-        return list.toArray(new FieldNode[list.size()]);
-    }
-    
-    //TODO remove
-    public static FieldNode[] listFields(ClassNode clazz){
-        List<FieldNode> list = new LinkedList<>();
-        ClassNode clz = clazz;
-        while(clz!=null){
-            for(FieldNode f:clazz.fields){
-                list.add(f);
-            }
-            clz = clz.superType ==null ? null : clz.superType.getClassNode();
-        }
-        return list.toArray(new FieldNode[list.size()]);
-    }
-    
+           
     public static boolean isAccessible(int modifier,ClassNode owner,@Nullable ClassNode caller){
         if(caller!=null){
             if(caller.equals(owner)){
@@ -449,10 +400,6 @@ public class AstUtil {
             }
         }
         return Modifier.isPublic(modifier);
-    }
-
-    public static boolean isAccessibleMethod(MethodNode m,@Nullable ClassNode caller) {
-        return isAccessible(m.modifier, m.classNode, caller);
     }
     
 }
