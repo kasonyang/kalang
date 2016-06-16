@@ -349,5 +349,11 @@ public class Types {
         return requireClassType(STRING_CLASS_NAME);
     }
 
+    public static PrimitiveType getVoidType() {
+        return VOID_TYPE;
+    }
+    
+    
+
 
 }

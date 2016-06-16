@@ -86,7 +86,7 @@ public class ClassType extends Type{
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
             if("<init>".equals(mds[i].name)) continue;
-            MethodDescriptor md = new MethodDescriptor(mds[i],getParameterDescriptors(mds[i]), TypeUtil.getMethodActualReturnType(this,mds[i]));
+            MethodDescriptor md = new MethodDescriptor(mds[i],getParameterDescriptors(mds[i]), TypeUtil.getMethodActualReturnType(this,mds[i]),mds[i].exceptionTypes.toArray(new Type[0]));
             descs.put(md.getDeclarationKey(), md);
         }
         return descs.values().toArray(new MethodDescriptor[descs.size()]);
@@ -99,7 +99,7 @@ public class ClassType extends Type{
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
             if(!"<init>".equals(mds[i].name)) continue;
-            ConstructorDescriptor md = new ConstructorDescriptor(mds[i],getParameterDescriptors(mds[i]));
+            ConstructorDescriptor md = new ConstructorDescriptor(mds[i],getParameterDescriptors(mds[i]),mds[i].exceptionTypes.toArray(new Type[0]));
             descs.put(md.getDeclarationKey(), md);
         }
         return descs.values().toArray(new ConstructorDescriptor[descs.size()]);

@@ -32,8 +32,8 @@ public class ObjectInvokeExpr extends InvocationExpr{
         candidates.addAll(Arrays.asList(targetType.getMethodDescriptors(caller,recursive)));
         candidates.addAll(Arrays.asList(targetType.getConstructorDescriptors(caller)));
         MethodSelection ms = applyMethod(targetType, methodName, args,candidates.toArray(new ExecutableDescriptor[candidates.size()]));
-        MethodNode md = ms.selectedMethod;
-        if(AstUtil.isStatic(md.modifier)){
+        ExecutableDescriptor md = ms.selectedMethod;
+        if(AstUtil.isStatic(md.getModifier())){
             throw new MethodNotFoundException(methodName + " is static");
         }
         return new ObjectInvokeExpr(target,ms.selectedMethod ,ms.appliedArguments);
@@ -43,7 +43,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
     
     //private final ClassNode specialClass;
 
-    public ObjectInvokeExpr(ExprNode invokeTarget, MethodNode method, ExprNode[] args) {
+    public ObjectInvokeExpr(ExprNode invokeTarget, ExecutableDescriptor method, ExprNode[] args) {
         super((ClassType)invokeTarget.getType(),method, args);
         //TODO check non-static
         this.invokeTarget = invokeTarget;

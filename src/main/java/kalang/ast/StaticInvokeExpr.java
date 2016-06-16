@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
 import kalang.core.ClassType;
+import kalang.core.ExecutableDescriptor;
 import kalang.core.MethodDescriptor;
 import kalang.core.Types;
 import kalang.util.AstUtil;
@@ -29,16 +30,16 @@ public class StaticInvokeExpr extends InvocationExpr{
         //TODO what about generic static method?
         MethodDescriptor[] candidates = clazzType.getMethodDescriptors(caller, true);
         MethodSelection ms = applyMethod(Types.getClassType( clazz.getReferencedClassNode()) , methodName, args,candidates);
-        MethodNode md = ms.selectedMethod;
-        if(!AstUtil.isStatic(md.modifier)){
+        ExecutableDescriptor md = ms.selectedMethod;
+        if(!AstUtil.isStatic(md.getModifier())){
             throw new MethodNotFoundException(methodName + " is not static");
         }
         return new StaticInvokeExpr(clazz, md , ms.appliedArguments);
     }
 
-    public StaticInvokeExpr(ClassReference invokeClass, MethodNode method, ExprNode[] args) {
+    public StaticInvokeExpr(ClassReference invokeClass, ExecutableDescriptor method, ExprNode[] args) {
         super(Types.getClassType(invokeClass.getReferencedClassNode()),method, args);
-        if(!AstUtil.isStatic(method.modifier)){
+        if(!AstUtil.isStatic(method.getModifier())){
             throw new IllegalArgumentException("static method is required");
         }
         this.invokeClass = invokeClass;

@@ -1,5 +1,8 @@
 package kalang.core;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 import kalang.ast.MethodNode;
 import kalang.util.AstUtil;
 
@@ -12,10 +15,13 @@ public abstract class ExecutableDescriptor {
     protected final int modifier;
     protected final MethodNode methodNode;
     protected final ParameterDescriptor[] parameterDescriptors;
+    protected final Type returnType;
     
     protected final String name;
+    
+    protected final Type[] exceptionTypes;
 
-    public ExecutableDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors) {
+    public ExecutableDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors,Type returnType,Type[] exceptionTypes) {
         this.modifier = method.modifier;
         this.methodNode = method;
         this.name = method.name;
@@ -25,6 +31,8 @@ public abstract class ExecutableDescriptor {
             ptypes[i] = parameterDescriptors[i].getType();
         }
         parameterTypes = ptypes;
+        this.returnType = returnType;
+        this.exceptionTypes = exceptionTypes;
     }
 
     public Type[] getParameterTypes() {
@@ -50,5 +58,23 @@ public abstract class ExecutableDescriptor {
     public String getDeclarationKey(){
         return AstUtil.getMethodDeclarationKey(name, parameterTypes);
     }
+    
+    @Override
+    public String toString() {
+        List<String> params = new ArrayList();
+        for(ParameterDescriptor p:getParameterDescriptors()){
+            params.add(String.format("%s %s", p.getType(),p.getName()));
+        }
+        return String.format("%s %s(%s)", Modifier.toString(modifier),name,String.join(",", params));
+    }
+    
+    public Type getReturnType() {
+        return returnType;
+    }
+
+    public Type[] getExceptionTypes() {
+        return exceptionTypes;
+    }
+    
     
 }

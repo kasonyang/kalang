@@ -412,7 +412,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     public String visitInvocationExpr(InvocationExpr node) {
         String invokeTarget;
         String fullCallName = null;
-        String mname = node.getMethod().name;
+        String mname = node.getMethod().getName();
         if (node instanceof ObjectInvokeExpr) {
             ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
             invokeTarget = visit(oie.getInvokeTarget());

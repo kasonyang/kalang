@@ -11,15 +11,10 @@ import kalang.ast.ParameterNode;
  */
 public class MethodDescriptor extends ExecutableDescriptor {
     
-    private final Type returnType;
+    
 
-    public MethodDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors, Type returnType) {
-        super(method, parameterDescriptors);
-        this.returnType = returnType;
-    }
-
-    public Type getReturnType() {
-        return returnType;
+    public MethodDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors, Type returnType,Type[] exceptionTypes) {
+        super(method, parameterDescriptors,returnType,exceptionTypes);
     }
 
     @Override

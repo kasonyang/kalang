@@ -65,6 +65,7 @@ import kalang.ast.VarDeclStmt;
 import kalang.compiler.CodeGenerator;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
+import kalang.core.ExecutableDescriptor;
 import kalang.core.GenericType;
 import kalang.core.ParameterizedType;
 import kalang.core.PrimitiveType;
@@ -283,8 +284,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             try{
                 md.visitMaxs(0, 0);
             }catch(Exception ex){
-                //System.err.println("exception when visit method:" + node.name);
-                throw ex;
+                throw new RuntimeException("exception when visit method:" + node.name, ex);
             }
         }
         md.visitEnd();
@@ -634,7 +634,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitInvocationExpr(InvocationExpr node) {
         int opc;
-        MethodNode method = node.getMethod();
+        ExecutableDescriptor method = node.getMethod();
         String ownerClass;// = internalName(node.getMethod().classNode);
         if (node instanceof StaticInvokeExpr) {
             opc = INVOKESTATIC;
@@ -645,7 +645,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ownerClass = internalName(targetType);
             ExprNode target = oie.getInvokeTarget();
             visit(target);
-            if (target instanceof SuperExpr || method.name.equals("<init>")) {
+            if (target instanceof SuperExpr || method.getName().equals("<init>")) {
                 opc = INVOKESPECIAL;
             } else {
                 opc = targetType.getClassNode().isInterface ?
@@ -658,8 +658,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitMethodInsn(
                 opc 
                 ,ownerClass
-                ,method.name
-                ,getMethodDescriptor(method)
+                ,method.getName()
+                ,getMethodDescriptor(method.getMethodNode())
         );
         return null;
     }
@@ -945,7 +945,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 INVOKESPECIAL
                 , t.getInternalName()
                 , "<init>"
-                ,getMethodDescriptor(node.getConstructor().getMethod())
+                ,getMethodDescriptor(node.getConstructor().getMethod().getMethodNode())
                 , false);
         return null;
     }

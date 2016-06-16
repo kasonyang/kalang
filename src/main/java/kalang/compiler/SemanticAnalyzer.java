@@ -58,6 +58,7 @@ import kalang.ast.ThrowStmt;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.core.ClassType;
+import kalang.core.ExecutableDescriptor;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -332,12 +333,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
         super.visitInvocationExpr(node);
-       MethodNode invokeMethod = node.getMethod();
+       ExecutableDescriptor invokeMethod = node.getMethod();
 //        boolean inStaticMethod = Modifier.isStatic(node.getMethod().modifier) && Modifier.isStatic(this.method.modifier);
 //        if (inStaticMethod) {
 //            if(!requireStatic(invokeMethod.modifier, node)) return getDefaultType();
 //        }
-        for(Type et:invokeMethod.exceptionTypes){
+        for(Type et:invokeMethod.getExceptionTypes()){
             this.exceptionStack.peek().put(et,node);
         }
         return node.getType();

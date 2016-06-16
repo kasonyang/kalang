@@ -14,10 +14,10 @@ public abstract class InvocationExpr extends ExprNode {
     private final ClassType clazz;
     
     public static class MethodSelection{
-        public MethodNode selectedMethod;
+        public ExecutableDescriptor selectedMethod;
         public ExprNode[] appliedArguments;
 
-        public MethodSelection(MethodNode selectedMethod, ExprNode[] appliedArguments) {
+        public MethodSelection(ExecutableDescriptor selectedMethod, ExprNode[] appliedArguments) {
             this.selectedMethod = selectedMethod;
             this.appliedArguments = appliedArguments;
         }
@@ -30,7 +30,7 @@ public abstract class InvocationExpr extends ExprNode {
     //protected String methodName;
     protected ExprNode[] arguments;
     
-    private MethodNode method;
+    private ExecutableDescriptor method;
 
      /**
      *  select the method for invocation expression,and apply ast transform if needed
@@ -43,19 +43,19 @@ public abstract class InvocationExpr extends ExprNode {
         Type[] types = AstUtil.getExprTypes(args);
         ExecutableDescriptor md = AstUtil.getExactedMethod(clazz,candidates, methodName, types);
         if (md != null) {
-            return new MethodSelection(md.getMethodNode(), args);
+            return new MethodSelection(md, args);
         } else {
             ExecutableDescriptor[] methods = AstUtil.getMethodsByName(candidates, methodName);
             //int matchedCount = 0;
             ExprNode[] matchedParams=null;
-            List<MethodNode> matchedMethod = new ArrayList(methods.length);
+            List<ExecutableDescriptor> matchedMethod = new ArrayList(methods.length);
             for (ExecutableDescriptor m : methods) {
                 Type[] mTypes = m.getParameterTypes();
                 ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
                 if (mp != null) {
                     //matchedCount++;
                     matchedParams = mp;
-                    matchedMethod.add(m.getMethodNode());
+                    matchedMethod.add(m);
                 }
             }
             if (matchedMethod.isEmpty()) {
@@ -67,7 +67,7 @@ public abstract class InvocationExpr extends ExprNode {
         }
     }
 
-    public InvocationExpr(ClassType clazz,MethodNode method, ExprNode[] args) {
+    public InvocationExpr(ClassType clazz,ExecutableDescriptor method, ExprNode[] args) {
         this.method = method;
         this.arguments = args;
         this.clazz = clazz;
@@ -75,7 +75,8 @@ public abstract class InvocationExpr extends ExprNode {
 
     @Nonnull
     public ClassType getInvokeClassType() {
-        return Types.getClassType(method.classNode);
+        //TODO remove
+        return Types.getClassType(method.getMethodNode().classNode);
     }
 
     @Nullable
@@ -88,7 +89,7 @@ public abstract class InvocationExpr extends ExprNode {
 
     @Override
     public Type getType() {
-        return TypeUtil.getMethodActualReturnType(clazz, method);
+        return method.getReturnType();
         //method.type;
     }
 
@@ -107,7 +108,7 @@ public abstract class InvocationExpr extends ExprNode {
         this.arguments = arguments;
     }
 
-    public MethodNode getMethod() {
+    public ExecutableDescriptor getMethod() {
         return method;
     }
 

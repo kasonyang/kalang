@@ -33,6 +33,7 @@ import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ReturnStmt;
 import kalang.ast.StaticFieldExpr;
 import kalang.core.ClassType;
+import kalang.core.ConstructorDescriptor;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.GenericType;
 import kalang.core.MethodDescriptor;
@@ -144,31 +145,29 @@ public class AstUtil {
     
     public static void createEmptyConstructor(ClassNode clazzNode){
         //FIXME support generic type
-       ClassNode parent = clazzNode.superType.getClassNode();
-       MethodNode[] methods = parent.getDeclaredMethodNodes();
-       for(MethodNode m:methods){
-           if(m.name.equals("<init>")){
-               MethodNode mm = clazzNode.createMethodNode();
-               mm.name = m.name;
-               mm.exceptionTypes = m.exceptionTypes;
-               mm.modifier = m.modifier;
-               mm.parameters = m.parameters;
-               mm.type = m.type;
-               BlockStmt body = new BlockStmt(null);
-               mm.body = body;
-               ExprNode[] params = new ExprNode[mm.parameters.size()];
-               for(int i=0;i<params.length;i++){
-                   params[i] = new ParameterExpr(mm.parameters.get(i));
-               }
-               body.statements.add(
-                       new ExprStmt(
-                               new ObjectInvokeExpr(
-                                       new SuperExpr(clazzNode), 
-                                       m,
-                                       params)
-                       )
-               );
-           }
+       ConstructorDescriptor[] methods = clazzNode.superType.getConstructorDescriptors(clazzNode);
+       for(ConstructorDescriptor m:methods){
+            MethodNode mm = clazzNode.createMethodNode();
+            mm.name = m.getName();
+            mm.exceptionTypes =Arrays.asList(m.getExceptionTypes());
+            mm.modifier = m.getModifier();
+            //TODO bug:here not replace generic type
+            mm.parameters = m.getMethodNode().parameters;
+            mm.type = Types.getVoidType();
+            BlockStmt body = new BlockStmt(null);
+            mm.body = body;
+            ExprNode[] params = new ExprNode[mm.parameters.size()];
+            for(int i=0;i<params.length;i++){
+                params[i] = new ParameterExpr(mm.parameters.get(i));
+            }
+            body.statements.add(
+                    new ExprStmt(
+                            new ObjectInvokeExpr(
+                                    new SuperExpr(clazzNode), 
+                                    m,
+                                    params)
+                    )
+            );
        }
 //        MethodNode initMethod = clazzNode.createMethodNode();
 //        initMethod.modifier = Modifier.PUBLIC;
@@ -297,8 +296,8 @@ public class AstUtil {
         try{
             ExprStmt exprStmt = (ExprStmt) stmt;
             InvocationExpr invExpr = (InvocationExpr) exprStmt.getExpr();
-            MethodNode method = invExpr.getMethod();
-            return method.name.equals("<init>") && !Modifier.isStatic(method.modifier);
+            ExecutableDescriptor method = invExpr.getMethod();
+            return method.getName().equals("<init>") && !Modifier.isStatic(method.getModifier());
         }catch(ClassCastException ex){
             return false;
         }
@@ -433,7 +432,7 @@ public class AstUtil {
             for(FieldNode f:clazz.fields){
                 list.add(f);
             }
-            clz = clz.superType.getClassNode();
+            clz = clz.superType ==null ? null : clz.superType.getClassNode();
         }
         return list.toArray(new FieldNode[list.size()]);
     }

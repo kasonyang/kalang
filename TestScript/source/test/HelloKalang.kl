@@ -97,7 +97,7 @@ class<T>{
     }
     
     int genericIterator(){
-        List<Integer> list = new LinkedList();
+        var list = new LinkedList<Integer>();
         list.add(6);
         var it = list.iterator();
         Integer i = it.next();

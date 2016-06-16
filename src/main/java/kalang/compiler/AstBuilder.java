@@ -1041,7 +1041,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         try {
             ClassType clazzType = thisType;
             InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(thisClazz, true));
-            if(Modifier.isStatic(ms.selectedMethod.modifier)){
+            if(Modifier.isStatic(ms.selectedMethod.getModifier())){
                 expr = new StaticInvokeExpr(new ClassReference(thisClazz), ms.selectedMethod, ms.appliedArguments);
             }else{
                 expr = new ObjectInvokeExpr(new ThisExpr(thisType), ms.selectedMethod, ms.appliedArguments);
@@ -1068,7 +1068,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode expr;
         try {
             ObjectInvokeExpr invoke = ObjectInvokeExpr.create(target, methodName, args,thisClazz);
-            if(invoke.getMethod().type instanceof GenericType){
+            if(invoke.getMethod().getMethodNode().type instanceof GenericType){
                 expr = new CastExpr(invoke.getType(), invoke);
             }else{
                 expr = invoke;
