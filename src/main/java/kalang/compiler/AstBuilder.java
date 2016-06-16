@@ -1601,7 +1601,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
         thisClazz.modifier = Modifier.PUBLIC;
-        thisClazz.parent = Types.getRootType().getClassNode();
+        thisClazz.superType = Types.getRootType();
         List<MethodDeclContext> mds = ctx.methodDecl();
         if(mds!=null){
             for(MethodDeclContext m:mds){
@@ -1666,14 +1666,20 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
         if (ctx.parentClass != null) {
-            thisClazz.parent =  requireAst(ctx.parentClass);
+            //TODO change to parse type
+            ClassNode parentClass = requireAst(ctx.parentClass);
+            if(parentClass!=null){
+                thisClazz.superType =  Types.getClassType(parentClass);
+            }
         }else{
-            thisClazz.parent = Types.getRootType().getClassNode();
+            thisClazz.superType = Types.getRootType();
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (Token itf : ctx.interfaces) {
-                ClassNode itfClassNode = requireAst(itf);
-                if(itfClassNode!=null){
+                //TODO change to parse type
+                ClassNode itfClz = requireAst(itf);
+                if(itfClz!=null){
+                    ClassType itfClassNode =Types.getClassType(itfClz);
                     thisClazz.interfaces.add(itfClassNode);
                 }
             }

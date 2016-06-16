@@ -63,12 +63,6 @@ public class JavaAstLoader extends AstLoader {
         cn.name = clz.getName();
         cn.isInterface = clz.isInterface();
         loadedClasses.put(clz.getName(), cn);
-        Class superClass = clz.getSuperclass();
-        if (superClass != null) {
-            cn.parent = findAst(superClass.getName());
-        } else if (!cn.name.equals(ROOT_CLASS)) {
-            cn.parent = findAst(ROOT_CLASS);
-        }
         Map<TypeVariable,GenericType> genericTypes = new HashMap();
         TypeVariable[] typeParameters = clz.getTypeParameters();
         if(typeParameters.length>0){
@@ -78,10 +72,18 @@ public class JavaAstLoader extends AstLoader {
                 cn.declareGenericType(gt);
             }
         }
+        java.lang.reflect.Type superType = clz.getGenericSuperclass();
+        Class superClazz = clz.getSuperclass();
+        if (superType != null) {
+            cn.superType = (ClassType)getType(superType, genericTypes,superClazz);
+        } else if (!cn.name.equals(ROOT_CLASS)) {
+            cn.superType = Types.getRootType();
+        }
+        java.lang.reflect.Type[] typeInterfaces = clz.getGenericInterfaces();
         Class[] clzInterfaces = clz.getInterfaces();
         if(clzInterfaces != null){
-            for(Class itf:clzInterfaces){
-                cn.interfaces.add(findAst(itf.getName()));
+            for(int i=0;i<clzInterfaces.length;i++){
+                cn.interfaces.add((ClassType)getType(typeInterfaces[i], genericTypes,clzInterfaces[i]));
             }
         }
         List<Executable> methods = new LinkedList();

@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import kalang.compiler.CodeGenerator;
+import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.exception.Exceptions;
@@ -191,14 +192,14 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         }
         String pkgStr = pkg.length()>0 ? "package " + pkg + ";" : "";
         String parentStr = "";
-        if (node.parent != null) {
-            parentStr = "extends " + node.parent.name;
+        if (node.superType != null) {
+            parentStr = "extends " + node.superType.getName();
         }
         String impStr = "";
         if (node.interfaces != null && node.interfaces.size() > 0) {
             List<String> interfaces = new LinkedList();
-            for (ClassNode itf : node.interfaces) {
-                interfaces.add(itf.name);
+            for (ClassType itf : node.interfaces) {
+                interfaces.add(itf.getName());
             }
             impStr = "implements " + String.join(",", interfaces);
         }

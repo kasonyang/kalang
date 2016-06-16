@@ -1,6 +1,7 @@
 package kalang.core;
 
 import kalang.ast.MethodNode;
+import kalang.util.AstUtil;
 
 /**
  *
@@ -46,6 +47,8 @@ public abstract class ExecutableDescriptor {
         return name;
     }
     
-    
+    public String getDeclarationKey(){
+        return AstUtil.getMethodDeclarationKey(name, parameterTypes);
+    }
     
 }

@@ -1,23 +1,24 @@
-/*
-
-*/
 package kalang.ast;
 import java.util.*;
 import kalang.core.*;
 import kalang.util.AstUtil;
+/**
+ * 
+ * @author Kason Yang
+ */
 public class ClassNode extends AstNode implements Annotationable{
     
     public int modifier;
     
     public String name;
     
-    public ClassNode parent;
+    public ClassType superType;
     
     public final List<FieldNode> fields = new ArrayList<>();
     
-    protected List<MethodNode> methods;
+    protected final List<MethodNode> methods = new LinkedList();
     
-    public List<ClassNode> interfaces;
+    public final List<ClassType> interfaces = new LinkedList();
     
     public boolean isInterface;
     
@@ -32,45 +33,12 @@ public class ClassNode extends AstNode implements Annotationable{
     protected List<GenericType> genericTypes = new LinkedList<>();
     
     public ClassNode(){
-            if(methods == null) methods = new LinkedList();
-            if(interfaces == null) interfaces = new LinkedList();
+    
     }
-    
-    
-    public ClassNode(Integer modifier,String name,ClassNode parent,List<MethodNode> methods,List<ClassNode> interfaces,boolean isInterface,boolean isArray){
-        
-        
-            if(methods == null) methods = new LinkedList();
-        
-            if(interfaces == null) interfaces = new LinkedList();
-        
-        
-            this.modifier = modifier;
-        
-            this.name = name;
-        
-            this.parent = parent;
-        
-            //this.fields = fields;
-        
-            this.methods = methods;
-        
-            this.interfaces = interfaces;
-        
-            this.isInterface = isInterface;
-        
-            this.isArray = isArray;
-        
-    }
-    
+              
     
     public static ClassNode create(){
         ClassNode node = new ClassNode();
-        
-        node.methods = new LinkedList();
-        
-        node.interfaces = new LinkedList();
-        
         return node;
     }
     
@@ -82,13 +50,11 @@ public class ClassNode extends AstNode implements Annotationable{
         return genericTypes.toArray(new GenericType[genericTypes.size()]);
     }
     
+    @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        
         addChild(ls,fields);
-        
         addChild(ls,methods);
-        
         return ls;
     }
 
@@ -108,31 +74,18 @@ public class ClassNode extends AstNode implements Annotationable{
     public MethodNode[] getDeclaredMethodNodes(){
         return methods.toArray(new MethodNode[0]);
     }
-    
-    public MethodNode[] getMethods(){
-        Map<String,MethodNode> mds = new HashMap<>();
-        if(parent!=null){
-            MethodNode[] parentMds = parent.getMethods();
-            for(MethodNode m:parentMds){
-                String descriptor = AstUtil.getMethodDeclarationKey(m);
-                mds.put(descriptor, m);
-            }
-        }
-        MethodNode[] decMds = getDeclaredMethodNodes();
-        for(MethodNode m:decMds){
-            String descriptor = AstUtil.getMethodDeclarationKey(m);
-            mds.put(descriptor, m);
-        }
-        return mds.values().toArray(new MethodNode[0]);        
-    }
+   
     
     public boolean isSubclassOf(ClassNode clazz){
-        if(parent!=null){
+        if(superType!=null){
+            //FIXME wrong impl of isSubclassOf
+            ClassNode parent = superType.getClassNode();
             if(parent.equals(clazz)) return true;
             if(parent.isSubclassOf(clazz)) return true;
         }
         if(interfaces!=null){
-            for(ClassNode itf:interfaces){
+            for(ClassType i:interfaces){
+                ClassNode itf = i.getClassNode();
                 if(itf.equals(clazz)) return true;
                 if(itf.isSubclassOf(clazz)) return true;
             }

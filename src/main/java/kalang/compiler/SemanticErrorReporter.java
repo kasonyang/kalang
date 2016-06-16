@@ -66,8 +66,8 @@ public class SemanticErrorReporter{
         fail("Unable to cast " + fromType + " to " + toType, UNABLE_TO_CAST, node);
     }
 
-    public void notImplementedMethods(AstNode node, ClassNode theInterface, List<MethodNode> method) {
-        String methodStr = AstUtil.getMethodDescription(method.get(0), theInterface.name);
+    public void notImplementedMethods(AstNode node, Type theInterface, List<MethodNode> method) {
+        String methodStr = AstUtil.getMethodDescription(method.get(0), theInterface.getName());
         fail("The method isn't implemented:" + methodStr, METHOD_NOT_IMPLEMENTED, node);
     }
 }

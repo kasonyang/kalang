@@ -23,7 +23,7 @@ public class ClassType extends Type{
     private ClassNode clazz;
 
     public ClassType(ClassNode clazz) {
-        super(clazz.parent==null?null:Types.getClassType(clazz.parent));
+        super(clazz.superType);
         this.clazz = clazz;
     }
 
@@ -73,24 +73,33 @@ public class ClassType extends Type{
     
     //TODO cache 
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean recursive){
-        MethodNode[] mds = AstUtil.listAccessibleMethods(clazz, caller, recursive);
-        List<MethodDescriptor> descs = new ArrayList(mds.length);
+        Map<String,MethodDescriptor> descs = new HashMap();
+        if(recursive && clazz.superType!=null){
+            MethodDescriptor[] ms = clazz.superType.getMethodDescriptors(caller, recursive);
+            for(MethodDescriptor m:ms){
+                descs.put(m.getDeclarationKey(),m);
+            }
+        }
+        MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
             if("<init>".equals(mds[i].name)) continue;
-            descs.add(new MethodDescriptor(mds[i],getParameterDescriptors(mds[i]), TypeUtil.getMethodActualReturnType(this,mds[i])));    
+            MethodDescriptor md = new MethodDescriptor(mds[i],getParameterDescriptors(mds[i]), TypeUtil.getMethodActualReturnType(this,mds[i]));
+            descs.put(md.getDeclarationKey(), md);
         }
-        return descs.toArray(new MethodDescriptor[descs.size()]);
+        return descs.values().toArray(new MethodDescriptor[descs.size()]);
     }
     
     //TODO cache 
+    //TODO cache 
     public ConstructorDescriptor[] getConstructorDescriptors(@Nullable ClassNode caller){
-        MethodNode[] mds = AstUtil.listAccessibleMethods(clazz, caller, false);
-        List<ConstructorDescriptor> descs = new ArrayList(mds.length);
-        for (MethodNode md : mds) {
-            if(!"<init>".equals(md.name)) continue;
-            descs.add(new ConstructorDescriptor(md, getParameterDescriptors(md)));    
+        Map<String,ConstructorDescriptor> descs = new HashMap();
+        MethodNode[] mds = clazz.getDeclaredMethodNodes();
+        for(int i=0;i<mds.length;i++){
+            if(!"<init>".equals(mds[i].name)) continue;
+            ConstructorDescriptor md = new ConstructorDescriptor(mds[i],getParameterDescriptors(mds[i]));
+            descs.put(md.getDeclarationKey(), md);
         }
-        return descs.toArray(new ConstructorDescriptor[descs.size()]);
+        return descs.values().toArray(new ConstructorDescriptor[descs.size()]);
     }
     
     //TODO cache

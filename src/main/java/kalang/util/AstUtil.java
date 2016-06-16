@@ -128,22 +128,23 @@ public class AstUtil {
     }
 
     @Nonnull
-    public static List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassNode theInterface) {
+    public static List<MethodNode> getUnimplementedMethod(ClassNode theClass, ClassType theInterface) {
         List<MethodNode> list = new LinkedList();
-        for (MethodNode m : theInterface.getMethods()) {
-            String name = m.name;
-            Type[] types = getParameterTypes(m);
+        for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true)) {
+            String name = m.getName();
+            Type[] types = m.getParameterTypes();
             //MethodNode[] methods = getMethodsByName(theClass, name);
             MethodNode matches = getMethod(theClass,name, types);
             if (matches == null) {
-                list.add(m);
+                list.add(m.getMethodNode());
             }
         }
         return list;
     }
     
     public static void createEmptyConstructor(ClassNode clazzNode){
-       ClassNode parent = clazzNode.parent;
+        //FIXME support generic type
+       ClassNode parent = clazzNode.superType.getClassNode();
        MethodNode[] methods = parent.getDeclaredMethodNodes();
        for(MethodNode m:methods){
            if(m.name.equals("<init>")){
@@ -424,6 +425,7 @@ public class AstUtil {
         return list.toArray(new FieldNode[list.size()]);
     }
     
+    //TODO remove
     public static FieldNode[] listFields(ClassNode clazz){
         List<FieldNode> list = new LinkedList<>();
         ClassNode clz = clazz;
@@ -431,19 +433,9 @@ public class AstUtil {
             for(FieldNode f:clazz.fields){
                 list.add(f);
             }
-            clz = clz.parent;
+            clz = clz.superType.getClassNode();
         }
         return list.toArray(new FieldNode[list.size()]);
-    }
-    
-    public static MethodNode[] listAccessibleMethods(ClassNode clazz,@Nullable ClassNode caller,boolean recursive){
-        List<MethodNode> list = new LinkedList<>();
-        for(MethodNode m: (recursive ? clazz.getMethods() : clazz.getDeclaredMethodNodes()) ){
-            if(isAccessibleMethod(m, caller)){
-                list.add(m);
-            }
-        }
-        return list.toArray(new MethodNode[list.size()]);
     }
     
     public static boolean isAccessible(int modifier,ClassNode owner,@Nullable ClassNode caller){

@@ -86,7 +86,7 @@ public class AstLoader {
         field.name = "length";
         clazz.name = component + "[]";
         clazz.isArray = true;
-        clazz.parent = BASE_AST_LOADER.getAst("java.lang.Object");
+        clazz.superType = Types.getRootType();
         return clazz;
     }
 

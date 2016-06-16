@@ -147,9 +147,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             gnrTypeStr += t.getName() + ":" + "Ljava/lang/Object;";
         }
         String superTypeStr = "";
-        if(c.parent!=null) superTypeStr += classSignature(c.parent);
-        for(ClassNode itf:c.interfaces){
-            superTypeStr += classSignature(itf);
+        if(c.superType!=null) superTypeStr += typeSignature(c.superType);
+        for(ClassType itf:c.interfaces){
+            superTypeStr += typeSignature(itf);
         }
         return "<" + gnrTypeStr + ">" + superTypeStr ;
         
@@ -225,8 +225,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         annotation(classWriter, clazz.getAnnotations());
         String parentName = "java.lang.Object";
-        if(node.parent!=null){
-            parentName = node.parent.name;
+        if(node.superType!=null){
+            parentName = node.superType.getName();
         }
         String[] interfaces = null;
         if(node.interfaces!=null){
