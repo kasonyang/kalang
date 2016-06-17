@@ -8,15 +8,15 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface KalangListener extends ParseTreeListener {
 	/**
-	 * Enter a parse tree produced by {@link KalangParser#compilantUnit}.
+	 * Enter a parse tree produced by {@link KalangParser#compilationUnit}.
 	 * @param ctx the parse tree
 	 */
-	void enterCompilantUnit(KalangParser.CompilantUnitContext ctx);
+	void enterCompilationUnit(KalangParser.CompilationUnitContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link KalangParser#compilantUnit}.
+	 * Exit a parse tree produced by {@link KalangParser#compilationUnit}.
 	 * @param ctx the parse tree
 	 */
-	void exitCompilantUnit(KalangParser.CompilantUnitContext ctx);
+	void exitCompilationUnit(KalangParser.CompilationUnitContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#scriptDef}.
 	 * @param ctx the parse tree

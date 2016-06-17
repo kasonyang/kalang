@@ -35,7 +35,7 @@ public class KalangParser extends Parser {
 		LSHIFT_ASSIGN=103, RSHIFT_ASSIGN=104, URSHIFT_ASSIGN=105, Identifier=106, 
 		AT=107, ELLIPSIS=108, WS=109, COMMENT=110, LINE_COMMENT=111;
 	public static final int
-		RULE_compilantUnit = 0, RULE_scriptDef = 1, RULE_classDef = 2, RULE_importDecl = 3, 
+		RULE_compilationUnit = 0, RULE_scriptDef = 1, RULE_classDef = 2, RULE_importDecl = 3, 
 		RULE_qualifiedName = 4, RULE_classBody = 5, RULE_fieldDecl = 6, RULE_methodDecl = 7, 
 		RULE_annotation = 8, RULE_type = 9, RULE_singleType = 10, RULE_classType = 11, 
 		RULE_primitiveType = 12, RULE_localVarDecl = 13, RULE_ifStat = 14, RULE_stat = 15, 
@@ -45,7 +45,7 @@ public class KalangParser extends Parser {
 		RULE_forStat = 28, RULE_expressions = 29, RULE_exprStat = 30, RULE_expression = 31, 
 		RULE_literal = 32, RULE_varModifier = 33;
 	public static final String[] ruleNames = {
-		"compilantUnit", "scriptDef", "classDef", "importDecl", "qualifiedName", 
+		"compilationUnit", "scriptDef", "classDef", "importDecl", "qualifiedName", 
 		"classBody", "fieldDecl", "methodDecl", "annotation", "type", "singleType", 
 		"classType", "primitiveType", "localVarDecl", "ifStat", "stat", "errorousStat", 
 		"throwStat", "blockStmt", "tryStat", "returnStat", "postIfStmt", "varDeclStat", 
@@ -136,7 +136,7 @@ public class KalangParser extends Parser {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
-	public static class CompilantUnitContext extends ParserRuleContext {
+	public static class CompilationUnitContext extends ParserRuleContext {
 		public ClassDefContext classDef() {
 			return getRuleContext(ClassDefContext.class,0);
 		}
@@ -149,28 +149,28 @@ public class KalangParser extends Parser {
 		public ImportDeclContext importDecl(int i) {
 			return getRuleContext(ImportDeclContext.class,i);
 		}
-		public CompilantUnitContext(ParserRuleContext parent, int invokingState) {
+		public CompilationUnitContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_compilantUnit; }
+		@Override public int getRuleIndex() { return RULE_compilationUnit; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterCompilantUnit(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterCompilationUnit(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitCompilantUnit(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitCompilationUnit(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitCompilantUnit(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitCompilationUnit(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final CompilantUnitContext compilantUnit() throws RecognitionException {
-		CompilantUnitContext _localctx = new CompilantUnitContext(_ctx, getState());
-		enterRule(_localctx, 0, RULE_compilantUnit);
+	public final CompilationUnitContext compilationUnit() throws RecognitionException {
+		CompilationUnitContext _localctx = new CompilationUnitContext(_ctx, getState());
+		enterRule(_localctx, 0, RULE_compilationUnit);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);

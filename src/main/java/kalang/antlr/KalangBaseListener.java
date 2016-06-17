@@ -16,13 +16,13 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCompilantUnit(KalangParser.CompilantUnitContext ctx) { }
+	@Override public void enterCompilationUnit(KalangParser.CompilationUnitContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCompilantUnit(KalangParser.CompilantUnitContext ctx) { }
+	@Override public void exitCompilationUnit(KalangParser.CompilationUnitContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

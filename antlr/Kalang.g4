@@ -36,7 +36,7 @@ grammar Kalang;
     public static final int COMMENTS =    4; 
 } 
 
-compilantUnit:
+compilationUnit:
     importDecl*
     (classDef | scriptDef)
 ;

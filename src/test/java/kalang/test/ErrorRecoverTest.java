@@ -67,7 +67,7 @@ public class ErrorRecoverTest {
                 return v;
             }
         });
-        parser.compilantUnit();
+        parser.compilationUnit();
     }
     
 }

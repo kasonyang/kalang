@@ -49,7 +49,7 @@ import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
 import kalang.antlr.KalangParser.CastExprContext;
 import kalang.antlr.KalangParser.ClassBodyContext;
-import kalang.antlr.KalangParser.CompilantUnitContext;
+import kalang.antlr.KalangParser.CompilationUnitContext;
 import kalang.antlr.KalangParser.ContinueStatContext;
 import kalang.antlr.KalangParser.DoWhileStatContext;
 import kalang.antlr.KalangParser.ExprAssignContext;
@@ -248,7 +248,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if(targetPhase>=PARSING_PHASE_META
                 && parsingPhase < PARSING_PHASE_META){
             parsingPhase = PARSING_PHASE_META;
-            this.compilationContext = parser.compilantUnit();
+            this.compilationContext = parser.compilationUnit();
             visit(compilationContext);
             if(!AstUtil.containsConstructor(thisClazz)){
                 AstUtil.createEmptyConstructor(thisClazz);
@@ -589,7 +589,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitCompilantUnit(CompilantUnitContext ctx) {
+    public AstNode visitCompilationUnit(CompilationUnitContext ctx) {
         thisClazz.name = this.className;
         visitChildren(ctx);
         return null;
