@@ -1685,7 +1685,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 }
             }
         }
-        visitClassBody(ctx.classBody());
+        visit(ctx.classBody());
         mapAst(thisClazz, ctx);
         return null;
     }
