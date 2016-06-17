@@ -45,73 +45,6 @@ import kalang.core.Types;
 public class AstUtil {
 
 
-    public static String getMethodDeclarationKey(String name,String... paramTypes){
-        return String.format("%s(%s)", name,String.join(",", paramTypes));
-    }
-   public static String getMethodDeclarationKey(String name,Type[] types) {
-        List<String> typeStrList = new ArrayList<>(types.length);
-        for(Type t:types){
-            typeStrList.add(t.getDeclarationKey());
-        }
-        return  AstUtil.getMethodDeclarationKey(name,typeStrList.toArray(new String[typeStrList.size()]));
-    }
-   
-   public static String getParametersDescription(Type[] types){
-       List<String> tys = new ArrayList<>(types.length);
-       for(Type t:types){
-           tys.add(t.getName());
-       }
-       return String.format("(%s)", String.join(",", tys));
-   }
-   
-   public static MethodNode getMethodByDescriptor(MethodNode[] mds,String descriptor){
-       for(MethodNode m:mds){
-           if(getMethodDeclarationKey(m).equals(descriptor)){
-               return m;
-           }
-       }
-       return null;
-   }
-   
-   public static String getMethodDescription(String className,String name,Type[] types) {
-       return String.format("%s#%s(%s)", className,name,getParametersDescription(types));
-   }
-   
-   public static String getMethodDescription(MethodNode node){
-       String className = "";
-       if(node.classNode!=null){
-           className = node.classNode.name + "#";
-       }
-       return String.format("%s%s(%s)", className,node.name,getParametersDescription(getParameterTypes(node)));
-   }
-   
-   public static String getMethodDescription(MethodNode node,String className){
-       return String.format("%s#%s(%s)", className,node.name,getParametersDescription(getParameterTypes(node)));
-   }
-   
-   public static String getMethodDescription(MethodNode[] methods,String delimiter){
-       List<String> list = new ArrayList<>(methods.length);
-       for(MethodNode m:methods){
-           list.add(getMethodDescription(m));
-       }
-       return String.join(delimiter, list);
-   }
-
-    public static String getMethodDeclarationKey(MethodNode node) {
-        return AstUtil.getMethodDeclarationKey(node.name, getParameterTypes(node));
-    }
-
-    
-    public static Type[] getParameterTypes(MethodNode mn) {
-        if (mn.parameters == null) {
-            return new Type[0];
-        }
-        Type[] types = new Type[mn.parameters.size()];
-        for(int i=0;i<types.length;i++){
-            types[i] = mn.parameters.get(i).type;
-        }            
-        return types;
-    }
 
     @Nonnull
     public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass, ClassType theInterface) {
@@ -162,14 +95,6 @@ public class AstUtil {
 //       initMethod.body = body;
     }
     
-    @Nonnull
-    public static String[] getParameterNames(@Nonnull ParameterNode[] parameterNodes){
-        String[] names = new String[parameterNodes.length];
-        for(int i=0;i<names.length;i++){
-            names[i] = parameterNodes[i].name;
-        }
-        return names;
-    }
     
     public static boolean containsConstructor(ClassNode clazz){
         MethodNode[] dms = clazz.getDeclaredMethodNodes();
@@ -298,24 +223,6 @@ public class AstUtil {
         );
     }
     
-    @Nullable
-    public static String getPackageName(String name){
-        int dotIdx = name.lastIndexOf('.');
-        if (dotIdx > 0) {
-            return name.substring(0, dotIdx);
-        }else{
-            return null;
-        }
-    }
-    
-    public static String getClassNameWithoutPackage(String name){
-        int dotIdx = name.lastIndexOf('.');
-        if (dotIdx > 0) {
-            return name.substring(dotIdx + 1);
-        }else{
-            return name;
-        }
-    }
     
     public static boolean hasSetter(ClassNode clazz,FieldNode field){
         MethodNode method = getMethod(clazz, "set" + NameUtil.firstCharToUpperCase(field.name),new Type[]{ field.getType()});

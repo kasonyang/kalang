@@ -10,6 +10,7 @@ import kalang.ast.ParameterNode;
 import kalang.compiler.CodeGenerator;
 import kalang.core.GenericType;
 import kalang.util.AstUtil;
+import kalang.util.NameUtil;
 
 /**
  *
@@ -36,7 +37,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
                 .append(" ");
         boolean isConstructor = "<init>".equals(node.name);
         if(isConstructor){
-            sb.append(AstUtil.getClassNameWithoutPackage(node.classNode.name));
+            sb.append(NameUtil.getClassNameWithoutPackage(node.classNode.name));
         }else{
             sb.append("native ")
                 .append(node.type)
@@ -72,13 +73,13 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     @Override
     public Void visitClassNode(ClassNode node) {
         String clsName = node.name;
-        String pkgName = AstUtil.getPackageName(clsName);
+        String pkgName = NameUtil.getPackageName(clsName);
         if(pkgName!=null){
             sb.append("package ").append(pkgName).append(";\n");
         }
         sb.append(Modifier.toString(node.modifier))
                 .append(" class ")
-                .append(AstUtil.getClassNameWithoutPackage(clsName))
+                .append(NameUtil.getClassNameWithoutPackage(clsName))
                 ;
         GenericType[] genTypes = node.getGenericTypes();
         if(genTypes.length>0){

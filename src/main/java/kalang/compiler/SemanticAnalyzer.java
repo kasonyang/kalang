@@ -2,12 +2,8 @@ package kalang.compiler;
 
 import kalang.util.MathType;
 import kalang.util.AstUtil;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -19,41 +15,27 @@ import kalang.ast.BinaryExpr;
 import kalang.ast.CastExpr;
 import kalang.ast.CatchBlock;
 import kalang.ast.ClassNode;
-import kalang.ast.ConstExpr;
 import kalang.ast.ElementExpr;
 import kalang.ast.ExprNode;
-import kalang.ast.FieldExpr;
 import kalang.ast.IfStmt;
 import kalang.ast.InvocationExpr;
-import kalang.ast.ThisExpr;
 import kalang.ast.LoopStmt;
 import kalang.ast.MethodNode;
-import kalang.ast.MultiStmtExpr;
-import kalang.ast.NewArrayExpr;
-import kalang.ast.ParameterExpr;
 import kalang.ast.ReturnStmt;
 import kalang.ast.Statement;
 import kalang.ast.TryStmt;
 import kalang.ast.UnaryExpr;
-import kalang.ast.VarDeclStmt;
 import kalang.ast.VarExpr;
 import kalang.ast.VarObject;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import kalang.ast.AnnotationNode;
 import kalang.ast.Annotationable;
-import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
 import kalang.ast.ClassReference;
 import kalang.ast.ErrorousExpr;
-import kalang.ast.FieldNode;
-import kalang.ast.IncrementExpr;
 import kalang.ast.LocalVarNode;
-import kalang.ast.NewObjectExpr;
-import kalang.ast.ParameterNode;
 import kalang.ast.ThrowStmt;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
@@ -64,13 +46,9 @@ import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.core.VarTable;
-import static kalang.util.AstUtil.getMethodsByName;
-import static kalang.util.AstUtil.getParameterTypes;
-import static kalang.util.AstUtil.matchTypes;
 import kalang.util.BoxUtil;
 import kalang.util.CollectionsUtil;
-import kalang.util.TypeUtil;
-import org.apache.commons.collections4.SetUtils;
+import kalang.util.MethodUtil;
 
 /**
  *  The semantic analyzer class infers and checks the componentType of expressions. It may transform the abstract syntax tree.
@@ -474,7 +452,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             && !node.type.equals(Types.VOID_TYPE)
         );
         if (node.body != null && needReturn && !returned) {
-            err.fail("Missing return statement in method:" + AstUtil.getMethodDescription(node), SemanticError.LACKS_OF_STATEMENT, node);
+            err.fail("Missing return statement in method:" + MethodUtil.toString(node), SemanticError.LACKS_OF_STATEMENT, node);
         }
         return null;
     }

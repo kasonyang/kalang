@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import static kalang.compiler.SemanticError.*;
 import kalang.core.Type;
+import kalang.util.MethodUtil;
 /**
  *
  * @author Kason Yang
@@ -37,7 +38,7 @@ public class SemanticErrors{
     }
 
     public static SemanticError methodNotFound(AstNode node, String className, String name, Type[] types, CompilationUnit unit) {
-        String method = AstUtil.getMethodDescription(className,name, types);
+        String method = MethodUtil.toString(className,name, types);
         return fail("Method Missing:" + method, METHOD_NOT_FOUND, node,unit);
     }
 
@@ -50,7 +51,7 @@ public class SemanticErrors{
     }
 
     public static SemanticError notImplementedMethods(AstNode node, ClassNode theInterface, List<MethodNode> method, CompilationUnit unit) {
-        String methodStr = AstUtil.getMethodDescription(method.get(0), theInterface.name);
+        String methodStr = MethodUtil.toString(method.get(0), theInterface.name);
         return fail("The method isn't implemented:" + methodStr, METHOD_NOT_IMPLEMENTED, node,unit);
     }
 }

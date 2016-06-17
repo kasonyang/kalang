@@ -16,6 +16,7 @@ import java.util.Map;
 import static kalang.compiler.SemanticError.*;
 import kalang.core.MethodDescriptor;
 import kalang.core.Type;
+import kalang.util.MethodUtil;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -56,7 +57,7 @@ public class SemanticErrorReporter{
     }
 
     public void methodNotFound(AstNode node, String className, String name, Type[] types) {
-        String method = AstUtil.getMethodDescription(className,name, types);
+        String method = MethodUtil.toString(className,name, types);
         fail("Method Missing:" + method, METHOD_NOT_FOUND, node);
     }
 

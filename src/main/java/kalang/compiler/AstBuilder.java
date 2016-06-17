@@ -119,6 +119,7 @@ import kalang.core.Type;
 import kalang.core.Types;
 import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
+import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
 import kalang.util.NameUtil;
 import kalang.util.OffsetRangeHelper;
@@ -651,7 +652,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
         //check method duplicated before generate java stub
-        String mStr = AstUtil.getMethodDeclarationKey(method);
+        String mStr = MethodUtil.getDeclarationKey(method);
         if (methodDeclared.contains(mStr)) {
             //TODO should remove the duplicated method
             handleSyntaxError("declare method duplicately:"+mStr, ctx);
@@ -773,7 +774,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     public void methodNotFound(Token token , String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
-        AstBuilder.this.handleSyntaxError("method not found:" + AstUtil.getMethodDescription(className,methodName, types), token);
+        AstBuilder.this.handleSyntaxError("method not found:" + MethodUtil.toString(className,methodName, types), token);
     }
     
     public void handleSyntaxError(String msg, Token token) {

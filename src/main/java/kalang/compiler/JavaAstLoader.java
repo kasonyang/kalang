@@ -28,6 +28,7 @@ import kalang.core.Type;
 import kalang.core.Types;
 import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
+import kalang.util.MethodUtil;
 
 /**
  * The class loads ast from java class
@@ -48,7 +49,7 @@ public class JavaAstLoader extends AstLoader {
         for(int i=0;i<types.length;i++){
             types[i] = pts[i].getName();
         }
-        return AstUtil.getMethodDeclarationKey(m.getName(), types);
+        return MethodUtil.getDeclarationKey(m.getName(), types);
     }
 
     /**

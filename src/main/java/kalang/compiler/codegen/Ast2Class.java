@@ -74,6 +74,7 @@ import kalang.core.Types;
 import static kalang.core.Types.*;
 import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
+import kalang.util.MethodUtil;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -808,7 +809,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
         
     private String getMethodDescriptor(MethodNode node) {
-        return getMethodDescriptor(node.type , AstUtil.getParameterTypes(node));
+        return getMethodDescriptor(node.type , MethodUtil.getParameterTypes(node));
     }
     
     private org.objectweb.asm.Type asmType(Type type){

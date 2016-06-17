@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import kalang.ast.MethodNode;
 import kalang.util.AstUtil;
+import kalang.util.MethodUtil;
 
 /**
  *
@@ -56,7 +57,7 @@ public abstract class ExecutableDescriptor {
     }
     
     public String getDeclarationKey(){
-        return AstUtil.getMethodDeclarationKey(name, parameterTypes);
+        return MethodUtil.getDeclarationKey(name, parameterTypes);
     }
     
     @Override

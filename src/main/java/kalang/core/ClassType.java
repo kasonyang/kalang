@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.util.AstUtil;
+import kalang.util.MethodUtil;
 import kalang.util.TypeUtil;
 /**
  *
@@ -66,7 +67,7 @@ public class ClassType extends Type{
     
     private ParameterDescriptor[] getParameterDescriptors(MethodNode method){
         List<ParameterNode> pms = method.parameters;
-        Type[] ptypes = parseTypes(AstUtil.getParameterTypes(method));
+        Type[] ptypes = parseTypes(MethodUtil.getParameterTypes(method));
         ParameterDescriptor[] pds = new ParameterDescriptor[ptypes.length];
         for(int j=0;j<pds.length;j++){
             pds[j] = new ParameterDescriptor(pms.get(j).name,ptypes[j]);
