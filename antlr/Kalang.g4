@@ -47,11 +47,11 @@ classDef:
     annotation*
     varModifier?
     (
-        classType='class' ('<' genericTypes+=Identifier (',' genericTypes+=Identifier)* '>')?
-        |classType='interface'
+        classKind='class' ('<' genericTypes+=Identifier (',' genericTypes+=Identifier)* '>')?
+        |classKind='interface'
     ) 
-    ('extends' parentClass = Identifier)? 
-    ( 'implements' interfaces+=Identifier ( ',' interfaces+=Identifier)* )?
+    ('extends' parentClass = classType)? 
+    ( 'implements' interfaces+=classType ( ',' interfaces+=classType)* )?
     '{' classBody '}'
 ;
 
@@ -108,11 +108,14 @@ type:
     |baseType=type  ('[' ']' )
 ;
 singleType:
-    classType=Identifier 
+    classType
+    | primitiveType
+;
+classType:
+    rawClass=Identifier 
         ('<' parameterTypes+=Identifier 
                     ( ',' parameterTypes+=Identifier)* 
         '>')?
-    | primitiveType
 ;
 primitiveType:
   DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN|BYTE|VOID
@@ -221,7 +224,7 @@ expression
     |     (Identifier|key='this'|key='super') 
         '(' (params+=expression (',' params+=expression)*)? ')'   #exprMemberInvocation
     |  expression '[' expression ']' #exprGetArrayElement    
-    |   'new' singleType
+    |   'new' classType
          '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
     |   ( 'new' singleType '[' size=expression ']' 
             | 'new' singleType '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}'

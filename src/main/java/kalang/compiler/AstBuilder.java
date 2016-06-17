@@ -339,39 +339,46 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         id =expandClassName(id);
         return astLoader.getAst(id);
     }
+    
+    @Nullable
+    private ClassType parseClassType(KalangParser.ClassTypeContext ctx){
+        Token rawTypeToken = ctx.rawClass;
+        String rawType = rawTypeToken.getText();
+        GenericType gt = declarededGenericTypes.get(rawType);
+        if(gt!=null) return gt;
+        ClassType clazzType = requireClassType(rawTypeToken);
+        if(clazzType==null) return null;
+        ClassNode clazzNode = clazzType.getClassNode();
+        GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
+        if(clzDeclaredGenericTypes!=null && clzDeclaredGenericTypes.length>0){
+            Type[] typeArguments = new Type[clzDeclaredGenericTypes.length];
+            List<Token> parameterTypes = ctx.parameterTypes;
+            if(parameterTypes!=null && parameterTypes.size()>0){
+                if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
+                    this.handleSyntaxError("wrong number of type arguments",ctx);
+                    return null;
+                }
+                for(int i=0;i<typeArguments.length;i++){
+                    typeArguments[i] = requireClassType(parameterTypes.get(i));
+                    //TODO should return null?
+                    if(typeArguments[i]==null) return null;
+                }
+            }else{
+                for(int i=0;i<typeArguments.length;i++){
+                    //TODO here should get bounded type,not root type
+                    typeArguments[i] = Types.getRootType();
+                }
+            }
+            return new ParameterizedType(clazzType, typeArguments);
+        }else{
+            return clazzType;
+        }
+    }
 
     @Nullable
     private Type parseSingleType(KalangParser.SingleTypeContext ctx){
-        if(ctx.classType!=null){
-            GenericType gt = declarededGenericTypes.get(ctx.classType.getText());
-            if(gt!=null) return gt;
-            ClassType clazzType = requireClassType(ctx.classType);
-            if(clazzType==null) return null;
-            ClassNode clazzNode = clazzType.getClassNode();
-            GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
-            if(clzDeclaredGenericTypes!=null && clzDeclaredGenericTypes.length>0){
-                Type[] typeArguments = new Type[clzDeclaredGenericTypes.length];
-                List<Token> parameterTypes = ctx.parameterTypes;
-                if(parameterTypes!=null && parameterTypes.size()>0){
-                    if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
-                        this.handleSyntaxError("wrong number of type arguments",ctx);
-                        return null;
-                    }
-                    for(int i=0;i<typeArguments.length;i++){
-                        typeArguments[i] = requireClassType(parameterTypes.get(i));
-                        //TODO should return null?
-                        if(typeArguments[i]==null) return null;
-                    }
-                }else{
-                    for(int i=0;i<typeArguments.length;i++){
-                        //TODO here should get bounded type,not root type
-                        typeArguments[i] = Types.getRootType();
-                    }
-                }
-                return new ParameterizedType(clazzType, typeArguments);
-            }else{
-                return clazzType;
-            }
+        if(ctx.classType()!=null){
+            return parseClassType(ctx.classType());
         }else{
             return Types.getPrimitiveType(ctx.getText());
         }
@@ -1361,12 +1368,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
-        Type type = parseSingleType(ctx.singleType());
-        if(!(type instanceof ClassType)){
-            this.handleSyntaxError("require class type", ctx);
-            return null;
-        }
-        ClassType clsType = (ClassType) type;
+        ClassType clsType = parseClassType(ctx.classType());
+        if(clsType==null) return null;
         ExprNode[] params = visitAll(ctx.params).toArray(new ExprNode[0]);
         NewObjectExpr newExpr;
         try {
@@ -1374,10 +1377,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {
-            methodNotFound(ctx.singleType().Identifier, clsType.getName(), "<init>", params);
+            methodNotFound(ctx.classType().Identifier, clsType.getName(), "<init>", params);
             return null;
         } catch(AmbiguousMethodException ex){
-            methodIsAmbiguous(ctx.singleType().Identifier ,ex);
+            methodIsAmbiguous(ctx.classType().Identifier ,ex);
             return null;
         }
     }
@@ -1652,9 +1655,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
         thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
         thisClazz.modifier = parseModifier(ctx.varModifier());
-        Token clsType = ctx.classType;
-        if(clsType!=null){
-            if (clsType.getText().equals("interface")) {
+        Token classKind = ctx.classKind;
+        if(classKind!=null){
+            if (classKind.getText().equals("interface")) {
                 thisClazz.isInterface = true;
             }
         }
@@ -1667,21 +1670,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
         if (ctx.parentClass != null) {
-            //TODO change to parse type
-            ClassNode parentClass = requireAst(ctx.parentClass);
+            ClassType parentClass = parseClassType(ctx.parentClass);
             if(parentClass!=null){
-                thisClazz.superType =  Types.getClassType(parentClass);
+                thisClazz.superType =  parentClass;
             }
         }else{
             thisClazz.superType = Types.getRootType();
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
-            for (Token itf : ctx.interfaces) {
-                //TODO change to parse type
-                ClassNode itfClz = requireAst(itf);
+            for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
+                ClassType itfClz = parseClassType(itf);
                 if(itfClz!=null){
-                    ClassType itfClassNode =Types.getClassType(itfClz);
-                    thisClazz.interfaces.add(itfClassNode);
+                    thisClazz.interfaces.add(itfClz);
                 }
             }
         }
@@ -1722,6 +1722,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             popBlock();
             return bs;
         }
+    }
+
+    @Override
+    public Object visitClassType(KalangParser.ClassTypeContext ctx) {
+        return null;
     }
 
 }
