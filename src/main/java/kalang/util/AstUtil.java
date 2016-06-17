@@ -70,7 +70,7 @@ public class AstUtil {
             mm.modifier = m.getModifier();
             //TODO bug:here not replace generic type
             mm.parameters = m.getMethodNode().parameters;
-            mm.type = Types.getVoidType();
+            mm.type = Types.VOID_TYPE;
             BlockStmt body = new BlockStmt(null);
             mm.body = body;
             ExprNode[] params = new ExprNode[mm.parameters.size()];
