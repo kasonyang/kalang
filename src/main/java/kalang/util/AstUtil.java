@@ -44,8 +44,6 @@ import kalang.core.Types;
 
 public class AstUtil {
 
-
-
     @Nonnull
     public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass, ClassType theInterface) {
         List<MethodDescriptor> list = new LinkedList();
@@ -53,7 +51,9 @@ public class AstUtil {
             String name = m.getName();
             Type[] types = m.getParameterTypes();
             MethodNode matched = getMethod(theClass,name, types);
-            if (matched == null) {
+            if (matched == null 
+                    || matched.modifier!=m.getModifier() 
+                    || !m.getReturnType().isAssignedFrom(matched.type)) {
                 list.add(m);
             }
         }
@@ -86,13 +86,6 @@ public class AstUtil {
                     )
             );
        }
-//        MethodNode initMethod = clazzNode.createMethodNode();
-//        initMethod.modifier = Modifier.PUBLIC;
-//        initMethod.name = "<init>";
-//        initMethod.type = Types.VOID_TYPE;// Types.getClassType(clazzNode);
-//       BlockStmt body = BlockStmt.create();
-//       //body.statements.add(new )
-//       initMethod.body = body;
     }
     
     
@@ -104,14 +97,14 @@ public class AstUtil {
         return false;
     }
 
-    public static ExecutableDescriptor[] getMethodsByName(ExecutableDescriptor[] mds, String methodName) {
-        List<ExecutableDescriptor> methods = new LinkedList();
+    public static ExecutableDescriptor[] filterMethodByName(ExecutableDescriptor[] mds, String methodName) {
+        List<ExecutableDescriptor> methods = new ArrayList(mds.length);
         for (ExecutableDescriptor m : mds) {
             if (m.getName().equals(methodName)) {
                 methods.add(m);
             }
         }
-        return methods.toArray(new ExecutableDescriptor[0]);
+        return methods.toArray(new ExecutableDescriptor[methods.size()]);
     }
 
     public static ExprNode matchType(Type from, Type target, ExprNode expr) {
@@ -159,7 +152,7 @@ public class AstUtil {
     
     @Nullable
     public static ExecutableDescriptor getExactedMethod(ClassType targetType,ExecutableDescriptor[] candidates,String methodName,@Nullable Type[] types){
-        ExecutableDescriptor[] methods = getMethodsByName(candidates, methodName);
+        ExecutableDescriptor[] methods = filterMethodByName(candidates, methodName);
         for(ExecutableDescriptor m:methods){
            Type[] mdTypes = m.getParameterTypes();
            if(Arrays.equals(mdTypes, types)) return m;

@@ -45,7 +45,7 @@ public abstract class InvocationExpr extends ExprNode {
         if (md != null) {
             return new MethodSelection(md, args);
         } else {
-            ExecutableDescriptor[] methods = AstUtil.getMethodsByName(candidates, methodName);
+            ExecutableDescriptor[] methods = AstUtil.filterMethodByName(candidates, methodName);
             //int matchedCount = 0;
             ExprNode[] matchedParams=null;
             List<ExecutableDescriptor> matchedMethod = new ArrayList(methods.length);
