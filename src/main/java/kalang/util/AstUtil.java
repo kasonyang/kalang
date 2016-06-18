@@ -52,8 +52,11 @@ public class AstUtil {
             Type[] types = m.getParameterTypes();
             MethodNode overridingMd = getMethod(theClass,name, types);
             if (overridingMd == null 
-                    || ModifierUtil.overridingCompatible(overridingMd.modifier, m.getModifier()) 
-                    || !m.getReturnType().isAssignedFrom(overridingMd.type)) {
+                    //TODO move check to where method declare
+                    || !OverrideUtil.overridingCompatible(overridingMd.modifier, m.getModifier()) 
+                    || !OverrideUtil.returnTypeCompatible(overridingMd.type, m.getReturnType())
+                    || !OverrideUtil.exceptionTypeCompatible(overridingMd.exceptionTypes.toArray(new Type[0]), m.getExceptionTypes())
+                    ) {
                 list.add(m);
             }
         }
