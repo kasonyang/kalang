@@ -28,6 +28,7 @@ import kalang.core.GenericType;
 import kalang.core.ParameterizedType;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
@@ -202,7 +203,7 @@ public class JavaAstLoader extends AstLoader {
             if(upperBounds==null) return null;
             Type[] lowerBounds = transType(wt.getLowerBounds(),genericTypes);
             if(lowerBounds==null) return null;
-            return Types.getWildcartType(upperBounds,lowerBounds);
+            return new WildcardType(upperBounds,lowerBounds);
         }else if(t instanceof GenericArrayType){
             GenericArrayType gt = (GenericArrayType) t;
             Type ct = transType(gt.getGenericComponentType(),genericTypes);

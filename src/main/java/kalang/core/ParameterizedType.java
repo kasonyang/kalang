@@ -109,7 +109,7 @@ public class ParameterizedType extends ClassType {
             Type[] lbs = wt.getLowerBounds();
             Type[] parsedUBs = parseGenericType(ubs, genericTypes);
             Type[] parsedLBs = parseGenericType(lbs, genericTypes);
-            return Types.getWildcartType(parsedUBs, parsedLBs);
+            return new kalang.core.WildcardType(parsedUBs, parsedLBs);
         }else{
             System.err.println("unknown type:" + type);
             return type;
