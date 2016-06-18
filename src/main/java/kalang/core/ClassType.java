@@ -22,11 +22,13 @@ import kalang.util.TypeUtil;
 public class ClassType extends Type{
     
     private ClassNode clazz;
+    
+    @Nullable
     protected ClassType superType;
     
     
 
-    public ClassType(ClassNode clazz,ClassType superType) {
+    public ClassType(ClassNode clazz,@Nullable ClassType superType) {
         this.clazz = clazz;
         this.superType = superType;
     }
@@ -146,6 +148,7 @@ public class ClassType extends Type{
         return ret.toArray(new FieldDescriptor[ret.size()]);
     }
 
+    @Nullable
     public ClassType getSuperType() {
         return superType;
     }

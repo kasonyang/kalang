@@ -1,5 +1,6 @@
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.core.*;
 import kalang.util.AstUtil;
 /**
@@ -12,6 +13,7 @@ public class ClassNode extends AstNode implements Annotationable{
     
     public String name;
     
+    @Nullable
     public ClassType superType;
     
     public final List<FieldNode> fields = new ArrayList<>();

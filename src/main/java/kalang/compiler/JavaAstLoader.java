@@ -77,8 +77,6 @@ public class JavaAstLoader extends AstLoader {
         Class superClazz = clz.getSuperclass();
         if (superType != null) {
             cn.superType = (ClassType)getType(superType, genericTypes,superClazz);
-        } else if (!cn.name.equals(ROOT_CLASS)) {
-            cn.superType = Types.getRootType();
         }
         java.lang.reflect.Type[] typeInterfaces = clz.getGenericInterfaces();
         Class[] clzInterfaces = clz.getInterfaces();

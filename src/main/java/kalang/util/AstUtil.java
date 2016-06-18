@@ -62,7 +62,11 @@ public class AstUtil {
     
     public static void createEmptyConstructor(ClassNode clazzNode){
         //FIXME support generic type
-       ConstructorDescriptor[] methods = clazzNode.superType.getConstructorDescriptors(clazzNode);
+        ClassType supType = clazzNode.superType;
+        if(supType==null){
+            throw new RuntimeException("super type is null:" + clazzNode.name);
+        }
+       ConstructorDescriptor[] methods = supType.getConstructorDescriptors(clazzNode);
        for(ConstructorDescriptor m:methods){
             MethodNode mm = clazzNode.createMethodNode();
             mm.name = m.getName();

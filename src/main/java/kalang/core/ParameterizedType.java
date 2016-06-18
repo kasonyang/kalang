@@ -22,7 +22,9 @@ public class ParameterizedType extends ClassType {
         super(rawType.getClassNode(),rawType.getSuperType());
         this.rawType = rawType;
         this.parameterTypes = parameterTypes;
-        superType =(ClassType) getActualType(superType);
+        if(superType!=null){
+            superType =(ClassType) getActualType(superType);
+        }
        //TODO check parameterTypes.length
     }
 
