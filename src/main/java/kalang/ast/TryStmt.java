@@ -4,15 +4,15 @@ import javax.annotation.Nullable;
 import kalang.core.*;
 public class TryStmt extends Statement{
     
-    protected Statement execStmt;
+    protected BlockStmt execStmt;
     
     protected final List<CatchBlock> catchStmts = new LinkedList<>();
     
     @Nullable
-    protected Statement finallyStmt;
+    protected BlockStmt finallyStmt;
     
     
-    public TryStmt(Statement execStmt,List<CatchBlock> catchStmts,@Nullable Statement finallyStmt){
+    public TryStmt(BlockStmt execStmt,List<CatchBlock> catchStmts,@Nullable BlockStmt finallyStmt){
         if(catchStmts == null) catchStmts = new LinkedList();
         this.execStmt = execStmt;
         this.catchStmts.addAll(catchStmts);
@@ -31,7 +31,7 @@ public class TryStmt extends Statement{
     /**
      * @return the execStmt
      */
-    public Statement getExecStmt() {
+    public BlockStmt getExecStmt() {
         return execStmt;
     }
 
@@ -45,7 +45,7 @@ public class TryStmt extends Statement{
     /**
      * @return the finallyStmt
      */
-    public Statement getFinallyStmt() {
+    public BlockStmt getFinallyStmt() {
         return finallyStmt;
     }
     

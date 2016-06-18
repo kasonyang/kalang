@@ -1433,7 +1433,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if (ctx.finallyExec != null) {
             tryFinallyStmt = requireBlock(ctx.finallyExec);
         }
-        //TODO should refactor TryStmt as blockStmt,blockStmt,blockStmt?
         TryStmt tryStmt = new TryStmt(tryExecStmt,tryCatchBlocks,tryFinallyStmt);
         mapAst(tryStmt,ctx);
         return tryStmt;
