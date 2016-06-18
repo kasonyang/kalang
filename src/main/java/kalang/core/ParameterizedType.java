@@ -103,6 +103,13 @@ public class ParameterizedType extends ClassType {
             return type;
         }else if(type instanceof PrimitiveType){
             return type;
+        }else if(type instanceof WildcardType){
+            WildcardType wt = (WildcardType) type;
+            Type[] ubs = wt.getUpperBounds();
+            Type[] lbs = wt.getLowerBounds();
+            Type[] parsedUBs = parseGenericType(ubs, genericTypes);
+            Type[] parsedLBs = parseGenericType(lbs, genericTypes);
+            return Types.getWildcartType(parsedUBs, parsedLBs);
         }else{
             System.err.println("unknown type:" + type);
             return type;

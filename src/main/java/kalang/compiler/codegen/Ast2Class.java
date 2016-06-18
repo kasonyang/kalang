@@ -72,6 +72,7 @@ import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import static kalang.core.Types.*;
+import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
@@ -183,6 +184,19 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             return getTypeDescriptor(type);
         }else if(type instanceof ArrayType){
             return "[" + typeSignature(((ArrayType)type).getComponentType());
+        }else if(type instanceof WildcardType){
+            WildcardType wt = (WildcardType) type;
+            Type[] lbs = wt.getLowerBounds();
+            Type[] ubs = wt.getUpperBounds();
+            if(lbs.length>0){
+                //FIXME handle other lowerBounds
+                return "-" + typeSignature(lbs[0]) ;
+            }else if(ubs.length>0){
+                //FIXME handle other lowerBounds
+                return "+" + typeSignature(ubs[0]) ;
+            }else{
+                return "*";
+            }
         }else{
             throw Exceptions.unsupportedTypeException(type);
         }
@@ -232,7 +246,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         String[] interfaces = null;
         if(node.interfaces!=null){
-            interfaces = internalName(node.interfaces.toArray(new ClassNode[0]));
+            interfaces = internalName(node.interfaces.toArray(new Type[0]));
         }
         int access = node.modifier;
         classWriter.visit(V1_5, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);

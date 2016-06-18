@@ -117,6 +117,7 @@ import kalang.core.ParameterizedType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
 import kalang.util.MethodUtil;
@@ -352,14 +353,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
         if(clzDeclaredGenericTypes!=null && clzDeclaredGenericTypes.length>0){
             Type[] typeArguments = new Type[clzDeclaredGenericTypes.length];
-            List<Token> parameterTypes = ctx.parameterTypes;
+            List<KalangParser.ParameterizedElementTypeContext> parameterTypes = ctx.parameterTypes;
             if(parameterTypes!=null && parameterTypes.size()>0){
                 if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
                     this.handleSyntaxError("wrong number of type arguments",ctx);
                     return null;
                 }
                 for(int i=0;i<typeArguments.length;i++){
-                    typeArguments[i] = requireClassType(parameterTypes.get(i));
+                    typeArguments[i] = parseParameterizedElementType(parameterTypes.get(i));
                     //TODO should return null?
                     if(typeArguments[i]==null) return null;
                 }
@@ -1077,7 +1078,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         try {
             ObjectInvokeExpr invoke = ObjectInvokeExpr.create(target, methodName, args,thisClazz);
             if(invoke.getMethod().getMethodNode().type instanceof GenericType){
-                expr = new CastExpr(invoke.getType(), invoke);
+                Type invokeType = invoke.getType();
+                if(invokeType instanceof ClassType){
+                    expr = new CastExpr(invokeType, invoke);
+                }else{
+                    expr = invoke;
+                }
             }else{
                 expr = invoke;
             }
@@ -1377,10 +1383,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {
-            methodNotFound(ctx.classType().Identifier, clsType.getName(), "<init>", params);
+            methodNotFound(ctx.classType().rawClass, clsType.getName(), "<init>", params);
             return null;
         } catch(AmbiguousMethodException ex){
-            methodIsAmbiguous(ctx.classType().Identifier ,ex);
+            methodIsAmbiguous(ctx.classType().rawClass ,ex);
             return null;
         }
     }
@@ -1727,6 +1733,41 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public Object visitClassType(KalangParser.ClassTypeContext ctx) {
         return null;
+    }
+
+    @Override
+    public Object visitParameterizedElementType(KalangParser.ParameterizedElementTypeContext ctx) {
+        return null;
+    }
+    
+    private Type parseParameterizedElementType(KalangParser.ParameterizedElementTypeContext ctx){
+        if(ctx.Identifier()!=null){
+            String id = ctx.Identifier().getText();
+            if(declarededGenericTypes.containsKey(id)){
+                return declarededGenericTypes.get(id);
+            }
+            return requireClassType(ctx.Identifier().getSymbol());
+        }else{
+            return parseWildcardType(ctx.wildcardType());
+        }
+    }
+
+    @Override
+    public Object visitWildcardType(KalangParser.WildcardTypeContext ctx) {
+        return null;
+    }
+    
+    private Type parseWildcardType(KalangParser.WildcardTypeContext ctx){
+        ClassType classType = parseClassType(ctx.classType());
+        if(classType==null) return null;
+        Type[] bounds = new Type[]{classType};
+        String boundKind = ctx.boundKind.getText();
+        if(boundKind.equals("super")){
+            //TODO while upperbounds is object
+            return new WildcardType(new Type[]{Types.getRootType()},bounds);
+        }else{
+            return new WildcardType(bounds,null);
+        }
     }
 
 }

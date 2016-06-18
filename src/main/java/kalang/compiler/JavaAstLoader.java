@@ -170,6 +170,16 @@ public class JavaAstLoader extends AstLoader {
     }
     
     @Nullable
+    private Type[] transType(java.lang.reflect.Type[] ts,Map<TypeVariable,GenericType> genericTypes) throws AstNotFoundException{
+        Type[] ret = new Type[ts.length];
+        for(int i=0;i<ret.length;i++){
+            ret[i] = transType(ts[i],genericTypes);
+            if(ret[i]==null) return null;
+        }
+        return ret;
+    }
+    
+    @Nullable
     private Type transType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes) throws AstNotFoundException{
         if(t instanceof TypeVariable){
             GenericType vt = genericTypes.get((TypeVariable)t);
@@ -181,12 +191,16 @@ public class JavaAstLoader extends AstLoader {
             Type rawType = transType(pt.getRawType(),genericTypes);
             if(!(rawType instanceof ClassType)) return null;
             java.lang.reflect.Type[] typeArgs = pt.getActualTypeArguments();
-            Type[] gTypes = new Type[typeArgs.length];
-            for(int i=0;i<gTypes.length;i++){
-                gTypes[i] = transType(typeArgs[i], genericTypes);
-                if(gTypes[i]==null) return null;
-            }
+            Type[] gTypes = transType(typeArgs,genericTypes);
+            if(gTypes==null) return null;
             return new ParameterizedType((ClassType) rawType, gTypes);
+        }else if(t instanceof java.lang.reflect.WildcardType){
+            java.lang.reflect.WildcardType wt = (java.lang.reflect.WildcardType) t;
+            Type[] upperBounds = transType(wt.getUpperBounds(),genericTypes);
+            if(upperBounds==null) return null;
+            Type[] lowerBounds = transType(wt.getLowerBounds(),genericTypes);
+            if(lowerBounds==null) return null;
+            return Types.getWildcartType(upperBounds,lowerBounds);
         }else if(t instanceof Class){
             Class type = (Class) t;
             if(type.isPrimitive()){

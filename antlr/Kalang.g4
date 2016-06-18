@@ -113,9 +113,15 @@ singleType:
 ;
 classType:
     rawClass=Identifier 
-        ('<' parameterTypes+=Identifier 
-                    ( ',' parameterTypes+=Identifier)* 
+        ('<' parameterTypes+=parameterizedElementType 
+                    ( ',' parameterTypes+=parameterizedElementType)* 
         '>')?
+;
+parameterizedElementType:
+    Identifier | wildcardType
+;
+wildcardType:
+    '?' boundKind=('extends'|'super') classType
 ;
 primitiveType:
   DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN|BYTE|VOID

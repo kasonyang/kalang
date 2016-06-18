@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.compiler.AstLoader;
 import kalang.AstNotFoundException;
+import kalang.util.TypeUtil;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
@@ -24,6 +25,8 @@ public class Types {
     private static Map<Type,ArrayType> arrayTypes = new HashMap();
     
     private static Map<ClassNode,ClassType> classTypes  = new HashMap<>();
+    
+    private static Map<String,WildcardType> wildcardTypes = new HashMap();
     
     private static final Map<String,ParameterizedType> parameterizedTypes = new HashMap();
     
@@ -347,6 +350,19 @@ public class Types {
      */
     public static ClassType getStringClassType() {
         return requireClassType(STRING_CLASS_NAME);
+    }
+
+    //TODO remove getWildcardType?
+    public static WildcardType getWildcartType(Type[] upperBounds, Type[] lowerBounds) {
+        String ub = TypeUtil.toString(upperBounds, "&");
+        String lb = TypeUtil.toString(lowerBounds,"&");
+        String key = ub + "," + lb;
+        WildcardType wt = wildcardTypes.get(key);
+        if(wt==null){
+            wt = new WildcardType(upperBounds, lowerBounds);
+            wildcardTypes.put(key, wt);
+        }
+        return wt;
     }
 
 }

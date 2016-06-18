@@ -1,7 +1,9 @@
 package kalang.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -41,6 +43,14 @@ public class TypeUtil {
             }
         }
         return declaredType.equals(argType);
+    }
+    
+    public static String toString(Type[] types,String delimiter){
+        List<String> list = new ArrayList(types.length);
+        for(Type t:types){
+            list.add(t.toString());
+        }
+        return String.join(delimiter, list);
     }
     
 }
