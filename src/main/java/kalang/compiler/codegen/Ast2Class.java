@@ -788,8 +788,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private String getTypeDescriptor(Type t){
-        //TODO check why null
-        if(t==null || t.equals(VOID_TYPE)){
+        if(t.equals(VOID_TYPE)){
             return "V";
         }else if(t instanceof ArrayType){
             return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());

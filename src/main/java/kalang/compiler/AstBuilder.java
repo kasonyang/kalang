@@ -1644,7 +1644,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         List<StatContext> stats = ctx.stat();
         List<Statement> ss = new LinkedList<>();
         BlockStmt body = newBlock();
-        //TODO change body from stat to blockStat in .g4
         if(stats!=null){
             for(StatContext s:stats){
                 Object statement = visit(s);
