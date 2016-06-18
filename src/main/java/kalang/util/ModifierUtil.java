@@ -28,5 +28,16 @@ public class ModifierUtil {
                 & (~Modifier.PROTECTED)
                 | (Modifier.PUBLIC);
     }
+    
+    public static boolean overridingCompatible(int overridingModifier,int overriddenModifier){
+        return 
+                Modifier.isStatic(overriddenModifier) == Modifier.isStatic(overridingModifier)
+                && 
+                Modifier.isPrivate(overriddenModifier) == Modifier.isPrivate(overridingModifier)
+                && Modifier.isProtected(overriddenModifier) == Modifier.isPrivate(overridingModifier)
+                && Modifier.isPublic(overriddenModifier) == Modifier.isPrivate(overridingModifier)
+                ;
+        
+    }
 
 }

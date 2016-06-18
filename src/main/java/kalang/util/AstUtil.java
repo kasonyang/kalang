@@ -50,10 +50,10 @@ public class AstUtil {
         for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true)) {
             String name = m.getName();
             Type[] types = m.getParameterTypes();
-            MethodNode matched = getMethod(theClass,name, types);
-            if (matched == null 
-                    || matched.modifier!=m.getModifier() 
-                    || !m.getReturnType().isAssignedFrom(matched.type)) {
+            MethodNode overridingMd = getMethod(theClass,name, types);
+            if (overridingMd == null 
+                    || ModifierUtil.overridingCompatible(overridingMd.modifier, m.getModifier()) 
+                    || !m.getReturnType().isAssignedFrom(overridingMd.type)) {
                 list.add(m);
             }
         }
