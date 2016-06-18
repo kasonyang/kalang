@@ -8,6 +8,7 @@ import kalang.ast.MethodNode;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -21,6 +22,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
+import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
 import kalang.core.ParameterizedType;
@@ -201,6 +203,11 @@ public class JavaAstLoader extends AstLoader {
             Type[] lowerBounds = transType(wt.getLowerBounds(),genericTypes);
             if(lowerBounds==null) return null;
             return Types.getWildcartType(upperBounds,lowerBounds);
+        }else if(t instanceof GenericArrayType){
+            GenericArrayType gt = (GenericArrayType) t;
+            Type ct = transType(gt.getGenericComponentType(),genericTypes);
+            if(ct==null) return null;
+            return new ArrayType(ct);
         }else if(t instanceof Class){
             Class type = (Class) t;
             if(type.isPrimitive()){
