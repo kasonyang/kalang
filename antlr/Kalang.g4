@@ -85,7 +85,7 @@ fieldDecl:
 ;
 methodDecl:
    annotation*
-   varModifier? 
+   OVERRIDE? varModifier? 
    (
      (type name=Identifier )
      |(prefix='constructor')
@@ -285,7 +285,7 @@ literal
 varModifier:('static'|'final'|'private'|'public'|'protected')+;
 
 // §3.9 Keywords
-
+OVERRIDE   : 'override' ;
 ABSTRACT      : 'abstract';
 ASSERT        : 'assert';
 BOOLEAN       : 'boolean';

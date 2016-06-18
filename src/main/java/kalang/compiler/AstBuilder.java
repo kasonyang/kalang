@@ -113,6 +113,7 @@ import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
+import kalang.core.MethodDescriptor;
 import kalang.core.ParameterizedType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -120,6 +121,7 @@ import kalang.core.Types;
 import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
+import kalang.util.ClassTypeUtil;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
 import kalang.util.NameUtil;
@@ -635,6 +637,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
         String name;
         Type type;
+        boolean isOverriding = ctx.OVERRIDE() != null;
         int mdf = parseModifier(ctx.varModifier());
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
             type = Types.VOID_TYPE;
@@ -667,6 +670,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             return null;
         }
         methodDeclared.add(mStr);
+        MethodDescriptor overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.superType, mStr, thisClazz, true);
+        if(overriddenMd==null){
+            overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.interfaces.toArray(new ClassType[thisClazz.interfaces.size()]), mStr, thisClazz, true);
+        }
+        if(isOverriding && overriddenMd==null){            
+            handleSyntaxError("method does not override any method", ctx);
+        }
+        if(!isOverriding && overriddenMd!=null){
+            handleSyntaxError("method override a method but not declare", ctx);
+        }
         if (ctx.blockStmt() != null) {
             methodBodys.put(method, ctx.blockStmt());
         }
