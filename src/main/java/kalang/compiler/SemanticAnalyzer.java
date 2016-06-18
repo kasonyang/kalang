@@ -419,7 +419,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitLoopStmt(LoopStmt node) {
-        //TODO here should enter new frame?
         if (node.preConditionExpr != null) {
             requireBoolean(node.preConditionExpr);
         }

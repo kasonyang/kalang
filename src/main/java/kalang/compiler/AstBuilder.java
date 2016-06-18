@@ -1775,7 +1775,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Type[] bounds = new Type[]{classType};
         String boundKind = ctx.boundKind.getText();
         if(boundKind.equals("super")){
-            //TODO while upperbounds is object
             return new WildcardType(new Type[]{Types.getRootType()},bounds);
         }else{
             return new WildcardType(bounds,null);

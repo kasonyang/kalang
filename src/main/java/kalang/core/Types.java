@@ -204,7 +204,6 @@ public class Types {
 
     public static boolean isNumberClass(Type type) {
         if(type instanceof ClassType)
-            //TODO checking type by name may be bug?
             return Arrays.asList(numberClass).contains(((ClassType)type).getName());
         else return false;
     }
