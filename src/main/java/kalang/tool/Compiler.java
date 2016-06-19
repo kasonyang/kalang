@@ -31,6 +31,7 @@ public class Compiler {
         OPTIONS.addOption("cp", true, "compile classpath");
         OPTIONS.addOption("s", true, "source directory");
         OPTIONS.addOption("o", true, "output directory");
+        OPTIONS.addOption("f",true,"output format");
         OPTIONS.addOption("run", true, "run the class with special name");
         //OPTIONS.addOption("t",true,"set the output type,should be one of class,java");
     }
@@ -66,7 +67,22 @@ public class Compiler {
             if (cli.hasOption("o")) {
                 outPath = cli.getOptionValue("o");
             }
-            fsc.setOutputManager(new FileSystemOutputManager(new File(outPath), "class"));
+            String outputFormat = "class";
+            if(cli.hasOption("f")){
+                outputFormat = cli.getOptionValue("f");
+            }
+            FileSystemOutputManager outputManager = new FileSystemOutputManager(new File(outPath), outputFormat);
+            switch(outputFormat){
+                case "class":
+                    fsc.setJavaOutputManager(outputManager);
+                    fsc.setCodeGenerator(new ClassWriter(outputManager));
+                    break;
+                case "ast":
+                    fsc.setCodeGenerator(new AstWriter(outputManager));
+                    break;
+                default:
+                    throw new UnsupportedOperationException("unknown format:" + outputFormat);
+            }
             File currentDir = new File(".");
             fsc.addJavaSourcePath(currentDir);
             fsc.addSourcePath(currentDir);

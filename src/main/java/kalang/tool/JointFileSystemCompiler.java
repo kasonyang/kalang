@@ -43,6 +43,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     
     final MemoryOutputManager javaStubManager = new MemoryOutputManager();
     private MemoryCompiler javaCompiler;
+    private OutputManager javaOutputManager;
     
     public void addJavaSourcePath(File path){
         javaSourcePath.add(path);
@@ -185,7 +186,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         MemoryFileManager fm = javaCompiler.getFileManager();
         Map<String, byte[]> bytes = null;
         if(fm!=null) bytes = fm.getBytes();
-        OutputManager outManager = getOutputManager();
+        OutputManager outManager = javaOutputManager;
         if(bytes!=null && outManager!=null){
             for(Map.Entry<String, byte[]> e:bytes.entrySet()){
                 OutputStream os;
@@ -246,6 +247,13 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
         String code = new String(data);
         return new StringJavaSource(className, code);
     }
-    
+
+    public OutputManager getJavaOutputManager() {
+        return javaOutputManager;
+    }
+
+    public void setJavaOutputManager(OutputManager javaOutputManager) {
+        this.javaOutputManager = javaOutputManager;
+    }
 
 }

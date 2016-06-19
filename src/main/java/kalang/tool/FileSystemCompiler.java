@@ -29,8 +29,9 @@ import kalang.compiler.CompileContext;
 /**
  * The FileSystemCompiler compile sources from file system.
  * 
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
+//TODO unimplement CodeGenerator
 public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
 
     private Map<String, File> sourceFiles = new HashMap<>();
@@ -56,7 +57,7 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
         return classLoader;
     }
     
-    private OutputManager outputManager;
+    private CodeGenerator codeGenerator;
 
     public FileSystemCompiler() {
         super();
@@ -106,31 +107,11 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
             Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-      
-    private String generateJavaCode(ClassNode classNode){
-        Ast2Java ast2Java = new Ast2Java();
-        ast2Java.generate(classNode);
-        return ast2Java.getCode();
-    }
-    
-    private byte[] generateClassBytes(ClassNode clazz){
-        Ast2Class ast2Class = new Ast2Class();
-        ast2Class.generate(clazz);
-        return ast2Class.getClassBytes();
-    }
 
     @Override
     public void generate(ClassNode classNode) {
-        String cls = classNode.name;
-        if (outputManager != null) {
-            try {
-                OutputStream os = outputManager.createOutputStream(cls);
-                //os.write(generateJavaCode(classNode).getBytes());
-                os.write(generateClassBytes(classNode));
-            } catch (IOException ex) {
-                //TODO handle ex
-                Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        if(codeGenerator!=null){
+            codeGenerator.generate(classNode);
         }
     }
     
@@ -159,15 +140,7 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
                 
         }
         setCompileTargetPhase(oldPhase);
-    }
-
-    public OutputManager getOutputManager() {
-        return outputManager;
-    }
-
-    public void setOutputManager(OutputManager outputManager) {
-        this.outputManager = outputManager;
-    }
+    }   
 
     @Override
     public SourceLoader getSourceLoader() {
@@ -176,6 +149,14 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
     
     public void addSourcePath(File path){
         sourcePaths.add(path);
+    }
+
+    public CodeGenerator getCodeGenerator() {
+        return codeGenerator;
+    }
+
+    public void setCodeGenerator(CodeGenerator codeGenerator) {
+        this.codeGenerator = codeGenerator;
     }
 
 }
