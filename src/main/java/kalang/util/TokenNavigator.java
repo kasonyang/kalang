@@ -96,5 +96,13 @@ public class TokenNavigator {
         }
         return idx;
     }
+    
+    public boolean hasNext(){
+        return this.currentTokenIndex < this.tokens.length-1;
+    }
+    
+    public boolean hasPrevious(){
+        return this.currentTokenIndex>0;
+    }
 
 }
