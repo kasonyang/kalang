@@ -71,7 +71,7 @@ public class JavaAstLoader extends AstLoader {
         TypeVariable[] typeParameters = clz.getTypeParameters();
         if(typeParameters.length>0){
             for(TypeVariable pt:typeParameters){
-                GenericType gt = new GenericType(pt.getName());
+                GenericType gt = new GenericType(pt.getName(),transType(pt.getBounds(),genericTypes));
                 genericTypes.put(pt, gt);
                 cn.declareGenericType(gt);
             }

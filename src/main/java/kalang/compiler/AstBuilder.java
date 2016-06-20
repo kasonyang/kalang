@@ -1681,7 +1681,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         List<Token> gnrTypes = ctx.genericTypes;
         if(gnrTypes!=null && !gnrTypes.isEmpty()){
             for(Token g:gnrTypes){
-                GenericType gt = new GenericType(g.getText());
+                GenericType gt = new GenericType(g.getText(),new Type[]{Types.getRootType()});
                 this.declarededGenericTypes.put(gt.getName(),gt);
                 thisClazz.declareGenericType(gt);
             }
