@@ -196,7 +196,7 @@ public class JavaAstLoader extends AstLoader {
             java.lang.reflect.Type[] typeArgs = pt.getActualTypeArguments();
             Type[] gTypes = transType(typeArgs,genericTypes);
             if(gTypes==null) return null;
-            return new ParameterizedType((ClassType) rawType, gTypes);
+            return Types.getParameterizedType((ClassType) rawType, gTypes);
         }else if(t instanceof java.lang.reflect.WildcardType){
             java.lang.reflect.WildcardType wt = (java.lang.reflect.WildcardType) t;
             Type[] upperBounds = transType(wt.getUpperBounds(),genericTypes);

@@ -17,7 +17,7 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class Types {
     
@@ -26,7 +26,7 @@ public class Types {
     
     private static Map<ClassNode,ClassType> classTypes  = new HashMap<>();
             
-    private static final Map<String,ParameterizedType> parameterizedTypes = new HashMap();
+    private static final Map<List<Type>,ParameterizedType> parameterizedTypes = new HashMap();
     
     private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();;
     
@@ -66,48 +66,11 @@ public class Types {
     public static final String MAP_IMPL_CLASS_NAME = "java.util.HashMap";
     
     public static final String LIST_IMPL_CLASS_NAME = "java.util.LinkedList";
-//    private static final ClassType VoidClassType;
-//    private static final ClassType booleanClassType;
-//    private static final ClassType byteClassType;
-//    private static final ClassType charClassType;
-//    
-//    private static final ClassType intClassType;
-//    private static final ClassType longClassType;
-//    private static final ClassType floatClassType;
-//    private static final ClassType doubleClassType;
-//    private static final ClassType rootType;
-//    private static final ClassType stringClassType;
-//    private static final ClassType mapImplClassType;
-//    private static final ClassType listImplClassType;
-//    private static final ClassType exceptionClassType;
-//    private static final ClassType shortClassType;
-//    private static final ClassType classClassType;
+    
     public final static String EXCEPTION_CLASS_NAME = "java.lang.Exception";
     public final static String CLASS_CLASS_NAME = "java.lang.Class";
             
     static {
-//        try {
-//            AstLoader astLoader = AstLoader.BASE_AST_LOADER;
-//            intClassType = Types.getClassType(astLoader.loadAst(INT_CLASS_NAME));
-//            longClassType = Types.getClassType(astLoader.loadAst(LONG_CLASS_NAME));
-//            floatClassType = Types.getClassType(astLoader.loadAst(FLOAT_CLASS_NAME));
-//            doubleClassType = Types.getClassType(astLoader.loadAst(DOUBLE_CLASS_NAME));
-//            rootType = Types.getClassType(astLoader.loadAst(ROOT_CLASS_NAME));
-//            VoidClassType = Types.getClassType(astLoader.loadAst(VOID_CLASS_NAME));
-//            stringClassType = Types.getClassType(astLoader.loadAst(STRING_CLASS_NAME));
-//            booleanClassType = Types.getClassType(astLoader.loadAst(BOOLEAN_CLASS_NAME));
-//            charClassType = Types.getClassType(astLoader.loadAst(CHAR_CLASS_NAME));
-//            shortClassType = Types.getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
-//            byteClassType = Types.getClassType(astLoader.loadAst(SHORT_CLASS_NAME));
-//            mapImplClassType = Types.getClassType(astLoader.loadAst(MAP_IMPL_CLASS_NAME));
-//            listImplClassType = Types.getClassType(astLoader.loadAst(LIST_IMPL_CLASS_NAME));
-//            exceptionClassType = Types.getClassType(astLoader.loadAst("java.lang.Exception"));
-//            classClassType = Types.getClassType("java.lang.Class");
-//        } catch (AstNotFoundException ex) {
-//            //ex.printStackTrace();
-//            throw new RuntimeException(ex);
-//        }
-        
         primitive2class.put(INT_TYPE, INT_CLASS_NAME);
         primitive2class.put(LONG_TYPE,LONG_CLASS_NAME);
         primitive2class.put(FLOAT_TYPE, FLOAT_CLASS_NAME);
@@ -147,12 +110,10 @@ public class Types {
         return at;
     }
     
-    public static ParameterizedType getParameterizedType(ClassType rawType,Type[] argumentsType){
-        List<String> argTypes = new ArrayList(argumentsType.length);
-        for(Type t:argumentsType){
-            argTypes.add(t.getName());
-        }
-        String key = rawType.getName() + "<" + String.join(",", argTypes) + ">";
+    public static ParameterizedType getParameterizedType(ClassType rawType,Type... argumentsType){
+        List<Type> key = new ArrayList(argumentsType.length+1);
+        key.add(rawType);
+        key.addAll(Arrays.asList(argumentsType));
         ParameterizedType pt = parameterizedTypes.get(key);
         if(pt==null){
             pt = new ParameterizedType(rawType, argumentsType);

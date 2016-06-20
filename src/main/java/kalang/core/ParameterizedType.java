@@ -17,7 +17,7 @@ public class ParameterizedType extends ClassType {
     Type[] parameterTypes;
     private final ClassType rawType;
     
-    public ParameterizedType(ClassType rawType,Type... parameterTypes ) {
+    protected ParameterizedType(ClassType rawType,Type... parameterTypes ) {
         //TODO may be bug
         super(rawType.getClassNode(),rawType.getSuperType());
         this.rawType = rawType;
@@ -98,7 +98,7 @@ public class ParameterizedType extends ClassType {
             Type[] ptParameterizedTypes = pt.getParameterTypes();
             Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
             if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
-            return new ParameterizedType(pt.getRawType(), parsedParamTypes);
+            return Types.getParameterizedType(pt.getRawType(), parsedParamTypes);
         }else if(type instanceof ClassType){
             return type;
         }else if(type instanceof PrimitiveType){

@@ -372,7 +372,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                     typeArguments[i] = Types.getRootType();
                 }
             }
-            return new ParameterizedType(clazzType, typeArguments);
+            return Types.getParameterizedType(clazzType, typeArguments);
         }else{
             return clazzType;
         }
@@ -457,7 +457,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 ? requireClassType(ctx.valueType)
                 : Types.getRootType();
         if(keyType==null || valueType == null) return null;
-        LocalVarNode vo = createTempVar(new ParameterizedType(Types.getMapImplClassType(),keyType,valueType));
+        LocalVarNode vo = createTempVar(Types.getParameterizedType(Types.getMapImplClassType(),new Type[]{keyType,valueType}));
         VarDeclStmt vds = new VarDeclStmt(vo);
         NewObjectExpr newExpr;
         try {
@@ -497,7 +497,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 ?requireClassType(ctx.Identifier().getSymbol())
                 :Types.getRootType();
         if(valueType==null) return null;
-        LocalVarNode vo = createTempVar(new ParameterizedType(Types.getListImplClassType(),valueType));
+        LocalVarNode vo = createTempVar(Types.getParameterizedType(Types.getListImplClassType(),valueType));
         VarDeclStmt vds = new VarDeclStmt(vo);
         NewObjectExpr newExpr;
         try {
