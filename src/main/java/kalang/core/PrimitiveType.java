@@ -20,19 +20,4 @@ public class PrimitiveType extends Type{
         return name;
     }
 
-    @Override
-    public boolean isPrimitiveType() {
-        return true;
-    }
-
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-
-    @Override
-    public Type getComponentType() {
-        return null;
-    }
-
 }

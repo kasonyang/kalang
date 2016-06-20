@@ -38,21 +38,6 @@ public class ClassType extends Type{
         return clazz.name;
     }
 
-    @Override
-    public boolean isPrimitiveType() {
-        return false;
-    }
-
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-
-    @Override
-    public Type getComponentType() {
-        return null;
-    }
-
     public ClassNode getClassNode() {
         return clazz;
     }

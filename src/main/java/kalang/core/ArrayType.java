@@ -29,17 +29,6 @@ public class ArrayType extends ClassType{
         return componentType.getName() + "[]";
     }
 
-    @Override
-    public boolean isPrimitiveType() {
-        return componentType.isPrimitiveType();
-    }
-
-    @Override
-    public boolean isArray() {
-        return true;
-    }
-
-    @Override
     public Type getComponentType() {
         return componentType;
     }

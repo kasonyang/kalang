@@ -32,21 +32,6 @@ public class WildcardType extends Type {
         }
     }
 
-    @Override
-    public boolean isPrimitiveType() {
-        return false;
-    }
-
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-
-    @Override
-    public Type getComponentType() {
-        return null;
-    }
-
     public Type[] getUpperBounds() {
         return upperBounds;
     }

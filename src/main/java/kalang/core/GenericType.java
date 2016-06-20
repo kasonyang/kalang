@@ -29,21 +29,6 @@ public class GenericType extends ClassType{
     }
 
     @Override
-    public boolean isPrimitiveType() {
-        return false;
-    }
-
-    @Override
-    public boolean isArray() {
-        return false;
-    }
-
-    @Override
-    public Type getComponentType() {
-        return null;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         return this==obj;
     }

@@ -39,6 +39,7 @@ import kalang.ast.LocalVarNode;
 import kalang.ast.ThrowStmt;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
+import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.MethodDescriptor;
@@ -493,7 +494,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     boolean isArray(Type t) {
-        return t.isArray();
+        return t instanceof ArrayType;
     }
 
     boolean requireArray(AstNode node, Type t) {
