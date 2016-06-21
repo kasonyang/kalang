@@ -1,17 +1,26 @@
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.core.*;
 public class VarExpr extends AssignableExpr{
     
     protected final LocalVarNode var;
     
+    @Nullable
+    protected Type overrideType;
+    
     public VarExpr(LocalVarNode var){
         this.var = var;
+    }
+
+    public VarExpr(LocalVarNode var,@Nullable Type overrideType) {
+        this.var = var;
+        this.overrideType = overrideType;
     }
     
     @Override
     public Type getType() {
-        return getVar().getType();
+        return overrideType !=null ? overrideType : var.getType();
     }
 
     /**

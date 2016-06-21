@@ -104,6 +104,15 @@ class<T>{
         return i;
     }
     
+    int overrideType(){
+        Object s = "test";
+        if(s instanceof String){
+            s.chars();
+            return 6;
+        }
+        return 0;
+    }
+    
     /*
     
     int dynamicField() throws Exception{

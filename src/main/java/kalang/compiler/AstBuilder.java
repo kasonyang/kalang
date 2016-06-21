@@ -161,6 +161,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private MethodNode method;
     
+    private VarTable<VarObject,Type> overrideTypes = new VarTable();
+    
     protected BlockStmt currentBlock = null;
     private final HashMap<MethodNode,BlockStmtContext> methodBodys = new HashMap<>();
 
@@ -191,6 +193,77 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private final CompilationUnit compilationUnit;
     private List<String> methodDeclared = new ArrayList<>();
     private final Map<String,GenericType> declarededGenericTypes = new HashMap<>();
+    
+    private void newOverrideTypeStack(){
+        overrideTypes = new VarTable(overrideTypes);
+    }
+    
+    private void popOverrideTypeStack(){
+        overrideTypes = overrideTypes.getParent();
+    }
+    
+    private void removeOverrideType(ExprNode expr){
+        //TODO impl removeOverrideType and call on assign
+        //overrideTypes.
+    }
+    
+    private void changeTypeTemporarilyIfCould(ExprNode expr,Type type){
+        VarObject key ;
+        if(expr instanceof VarExpr){
+            key = ((VarExpr) expr).getVar();
+        }else if(expr instanceof ParameterExpr){
+            key = ((ParameterExpr) expr).getParameter();
+        }else if(expr instanceof FieldExpr){
+            key = ((FieldExpr) expr).getField().getFieldNode();
+        }else{
+            key = null;
+        }
+        if(key!=null){
+            overrideTypes.put(key, type);
+        }
+    }
+    
+    private void onNull(ExprNode expr,boolean onTrue,boolean isEQ){
+        boolean isNull = (onTrue && isEQ) || (!onTrue && !isEQ);
+        System.out.print("null caught:" + isNull + "," + expr);
+        //TODO set null or nonnull
+    }
+    
+    protected void onIf(ExprNode expr,boolean onTrue){
+        if(expr instanceof InstanceOfExpr && onTrue){
+            InstanceOfExpr ie = (InstanceOfExpr) expr;
+            changeTypeTemporarilyIfCould(ie.getExpr(),Types.getClassType(ie.getTarget().getReferencedClassNode()));
+        }
+        if(expr instanceof CompareExpr){
+            CompareExpr ce = (CompareExpr) expr;
+            ExprNode e1 = ce.getExpr1();
+            ExprNode e2 = ce.getExpr2();
+            boolean isEQ = ce.getOperation().equals(CompareExpr.OP_EQ);
+            if(e1.getType().equals(Types.NULL_TYPE)){
+                onNull(e2, onTrue,isEQ);
+            }else if(e2.getType().equals(Types.NULL_TYPE)){
+                onNull(e1,onTrue,isEQ);
+            }
+        }
+        if(expr instanceof UnaryExpr){
+            onIf(((UnaryExpr) expr).getExpr(),!onTrue);
+        }
+        if(expr instanceof LogicExpr){
+            LogicExpr le = (LogicExpr) expr;
+            if(le.getOperation().equals(LogicExpr.OP_LOGIC_AND)){
+                if(onTrue){
+                    onIf(le.getExpr1(),true);
+                    onIf(le.getExpr2(),true);
+                }
+            }else if(le.getOperation().equals(LogicExpr.OP_LOGIC_OR)){
+                if(!onTrue){
+                    onIf(le.getExpr1(),false);
+                    onIf(le.getExpr2(),false);
+                }
+            }
+        }
+        
+    }
     
     public CompileErrorHandler getErrorHandler() {
         return errorHandler;
@@ -715,10 +788,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         BlockStmt trueBody = null;
         BlockStmt falseBody = null;
         if (ctx.trueStmt != null) {
+            newOverrideTypeStack();
+            onIf(expr, true);
             trueBody=requireBlock(ctx.trueStmt);
+            popOverrideTypeStack();
+            //TODO pop block state
         }
         if (ctx.falseStmt != null) {
+            newOverrideTypeStack();
+            onIf(expr,false);
             falseBody=requireBlock(ctx.falseStmt);
+            popOverrideTypeStack();
+            //TODO pop block state
         }
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
@@ -1257,7 +1338,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         VarTable<String, LocalVarNode> vtb = getVarTable();
         if (vtb!=null && vtb.exist(name)) {
             LocalVarNode var = vtb.get(name); //vars.indexOf(vo);
-            VarExpr ve = new VarExpr(var);
+            VarExpr ve = new VarExpr(var,overrideTypes.get(var));
             if(token!=null) mapAst(ve, token);
             return ve;
         } else {
@@ -1265,7 +1346,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if (method != null && method.parameters != null) {
                 for (ParameterNode p : method.parameters) {
                     if (p.name.equals(name)) {
-                        ParameterExpr ve = new ParameterExpr(p);
+                        ParameterExpr ve = new ParameterExpr(p,overrideTypes.get(p));
                         if(token!=null) mapAst(ve, token);
                         return ve;
                     }
@@ -1274,6 +1355,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if (thisClazz.fields != null) {
                 for (FieldNode f : thisClazz.fields) {
                     if (f.name!=null && f.name.equals(name)) {
+                        //TODO override field type
                         FieldExpr fe;
                         if(Modifier.isStatic(f.modifier)){
                             fe = new StaticFieldExpr(new ClassReference(thisClazz), f);
