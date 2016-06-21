@@ -22,11 +22,11 @@ import org.apache.commons.collections4.bidimap.TreeBidiMap;
 public class Types {
     
     private static Map<String,PrimitiveType> primitiveTypes = new HashMap();
-    private static Map<Type,ArrayType> arrayTypes = new HashMap();
+    private static Map<List,ArrayType> arrayTypes = new HashMap();
     
-    private static Map<ClassNode,ClassType> classTypes  = new HashMap<>();
+    private static Map<List,ClassType> classTypes  = new HashMap<>();
             
-    private static final Map<List<Type>,ParameterizedType> parameterizedTypes = new HashMap();
+    private static final Map<List,ParameterizedType> parameterizedTypes = new HashMap();
     
     private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();;
     
@@ -102,21 +102,32 @@ public class Types {
     
     @Nonnull
     public static ArrayType getArrayType(@Nonnull Type componentType){
-        ArrayType at = arrayTypes.get(componentType);
+        return getArrayType(componentType,NullableKind.NONNULL);
+    }
+    
+    @Nonnull
+    public static ArrayType getArrayType(@Nonnull Type componentType,NullableKind nullable){
+        List key = Arrays.asList(componentType,nullable);
+        ArrayType at = arrayTypes.get(key);
         if(at==null){
-            at = new ArrayType(componentType);
-            arrayTypes.put(componentType,at);
+            at = new ArrayType(componentType,nullable);
+            arrayTypes.put(key,at);
         }
         return at;
     }
     
-    public static ParameterizedType getParameterizedType(ClassType rawType,Type... argumentsType){
-        List<Type> key = new ArrayList(argumentsType.length+1);
+    public static ParameterizedType getParameterizedType(ClassType rawType,Type[] argumentsType){
+        return getParameterizedType(rawType, argumentsType,NullableKind.NONNULL);
+    }
+    
+    public static ParameterizedType getParameterizedType(ClassType rawType,Type[] argumentsType,NullableKind nullable){
+        List key = new ArrayList(argumentsType.length+1);
         key.add(rawType);
         key.addAll(Arrays.asList(argumentsType));
+        key.add(nullable);
         ParameterizedType pt = parameterizedTypes.get(key);
         if(pt==null){
-            pt = new ParameterizedType(rawType, argumentsType);
+            pt = new ParameterizedType(rawType, argumentsType,nullable);
             parameterizedTypes.put(key, pt);
         }
         return pt;
@@ -124,10 +135,16 @@ public class Types {
     
     @Nonnull
     public static ClassType getClassType(@Nonnull ClassNode clazz){
-        ClassType ct = classTypes.get(clazz);
+        return getClassType(clazz,NullableKind.NONNULL);
+    }
+    
+    @Nonnull
+    public static ClassType getClassType(@Nonnull ClassNode clazz,NullableKind nullable){
+        List<Object> key = Arrays.asList(clazz,nullable);
+        ClassType ct = classTypes.get(key);
         if(ct==null){
-            ct = new ClassType(clazz,clazz.superType);
-            classTypes.put(clazz, ct);
+            ct = new ClassType(clazz,clazz.superType,nullable);
+            classTypes.put(key, ct);
         }
         return ct;
     }
@@ -148,8 +165,13 @@ public class Types {
     
     @Nonnull
     public static ClassType getClassType(String className) throws AstNotFoundException{
+        return getClassType(className,NullableKind.NONNULL);
+    }
+    
+    @Nonnull
+    public static ClassType getClassType(String className,NullableKind nullable) throws AstNotFoundException{
         ClassNode ast = AstLoader.BASE_AST_LOADER.loadAst(className);
-        return Types.getClassType(ast);
+        return Types.getClassType(ast,nullable);
     }
     
     @Nullable

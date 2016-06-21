@@ -25,6 +25,7 @@ import kalang.ast.ParameterNode;
 import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
+import kalang.core.NullableKind;
 import kalang.core.ParameterizedType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -71,7 +72,7 @@ public class JavaAstLoader extends AstLoader {
         TypeVariable[] typeParameters = clz.getTypeParameters();
         if(typeParameters.length>0){
             for(TypeVariable pt:typeParameters){
-                GenericType gt = new GenericType(pt.getName(),transType(pt.getBounds(),genericTypes));
+                GenericType gt = new GenericType(pt.getName(),transType(pt.getBounds(),genericTypes),NullableKind.NONNULL);
                 genericTypes.put(pt, gt);
                 cn.declareGenericType(gt);
             }
@@ -208,7 +209,7 @@ public class JavaAstLoader extends AstLoader {
             GenericArrayType gt = (GenericArrayType) t;
             Type ct = transType(gt.getGenericComponentType(),genericTypes);
             if(ct==null) return null;
-            return new ArrayType(ct);
+            return Types.getArrayType(ct,NullableKind.NONNULL);
         }else if(t instanceof Class){
             Class type = (Class) t;
             if(type.isPrimitive()){

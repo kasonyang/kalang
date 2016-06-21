@@ -18,7 +18,7 @@ public class ParameterizedTypeTest {
     
     @Test
     public void test() throws AstNotFoundException{
-        ParameterizedType pt = Types.getParameterizedType(Types.getClassType("java.util.LinkedList"),Types.getIntClassType());
+        ParameterizedType pt = Types.getParameterizedType(Types.getClassType("java.util.LinkedList"),new Type[]{Types.getIntClassType()});
         ClassType supType = pt.getSuperType();
         assertTrue(supType instanceof ParameterizedType);        
 //        MethodDescriptor[] mds = supType.getMethodDescriptors(null, true);

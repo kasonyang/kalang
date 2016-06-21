@@ -23,14 +23,15 @@ public class ClassType extends Type{
     
     private ClassNode clazz;
     
+    protected NullableKind nullable;
+    
     @Nullable
     protected ClassType superType;
-    
-    
 
-    public ClassType(ClassNode clazz,@Nullable ClassType superType) {
+    public ClassType(ClassNode clazz,@Nullable ClassType superType,NullableKind nullable) {
         this.clazz = clazz;
         this.superType = superType;
+        this.nullable = nullable;
     }
 
     @Override

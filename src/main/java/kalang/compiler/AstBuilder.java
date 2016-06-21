@@ -114,6 +114,7 @@ import kalang.core.ArrayType;
 import kalang.core.ClassType;
 import kalang.core.GenericType;
 import kalang.core.MethodDescriptor;
+import kalang.core.NullableKind;
 import kalang.core.ParameterizedType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -570,7 +571,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 ?requireClassType(ctx.Identifier().getSymbol())
                 :Types.getRootType();
         if(valueType==null) return null;
-        LocalVarNode vo = createTempVar(Types.getParameterizedType(Types.getListImplClassType(),valueType));
+        LocalVarNode vo = createTempVar(Types.getParameterizedType(Types.getListImplClassType(),new Type[]{valueType}));
         VarDeclStmt vds = new VarDeclStmt(vo);
         NewObjectExpr newExpr;
         try {
@@ -1763,7 +1764,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         List<Token> gnrTypes = ctx.genericTypes;
         if(gnrTypes!=null && !gnrTypes.isEmpty()){
             for(Token g:gnrTypes){
-                GenericType gt = new GenericType(g.getText(),new Type[]{Types.getRootType()});
+                GenericType gt = new GenericType(g.getText(),new Type[]{Types.getRootType()},NullableKind.NONNULL);
                 this.declarededGenericTypes.put(gt.getName(),gt);
                 thisClazz.declareGenericType(gt);
             }

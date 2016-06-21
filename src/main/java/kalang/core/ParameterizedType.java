@@ -17,9 +17,9 @@ public class ParameterizedType extends ClassType {
     Type[] parameterTypes;
     private final ClassType rawType;
     
-    protected ParameterizedType(ClassType rawType,Type... parameterTypes ) {
+    protected ParameterizedType(ClassType rawType,Type[] parameterTypes,NullableKind nullable ) {
         //TODO may be bug
-        super(rawType.getClassNode(),rawType.getSuperType());
+        super(rawType.getClassNode(),rawType.getSuperType(),nullable);
         this.rawType = rawType;
         this.parameterTypes = parameterTypes;
         if(superType!=null){

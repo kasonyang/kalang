@@ -15,9 +15,9 @@ public class GenericType extends ClassType{
     
     protected Type[] upperBounds;
 
-    public GenericType(String name,@Nullable Type[] upperBounds) {
+    public GenericType(String name,@Nullable Type[] upperBounds,NullableKind nullable) {
         //FIXME wrong arguments
-        super(Types.getRootType().getClassNode(),Types.getRootType());
+        super(Types.getRootType().getClassNode(),Types.getRootType(),nullable);
         Objects.requireNonNull(name);
         this.name = name;
         this.upperBounds = upperBounds==null?new Type[0] : upperBounds;
