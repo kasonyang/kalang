@@ -138,5 +138,22 @@ public class ClassType extends Type{
     public ClassType getSuperType() {
         return superType;
     }
+
+    public NullableKind getNullable() {
+        return nullable;
+    }
+
+    @Override
+    public boolean isAssignedFrom(Type type) {
+        if(type.equals(this)) return true;
+        if(!super.isAssignedFrom(type)) return false;
+        if(!(type instanceof ClassType)) return false;        
+        ClassType other = (ClassType) type;
+        NullableKind otherNullable = other.getNullable();
+        if(!nullable.isAssignedFrom(otherNullable)) return false;
+        return other.getClassNode().isSubclassOf(clazz);
+    }
+    
+    
     
 }

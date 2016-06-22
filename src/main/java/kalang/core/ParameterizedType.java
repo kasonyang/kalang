@@ -134,6 +134,16 @@ public class ParameterizedType extends ClassType {
     protected Type parseType(Type type) {
         return getActualType(type);
     }
+
+    @Override
+    public boolean isAssignedFrom(Type type) {
+        if(type.equals(this)) return true;
+        if(!(type instanceof ParameterizedType)) return false;
+        ParameterizedType other = (ParameterizedType) type;
+        if(!nullable.isAssignedFrom(other.getNullable())) return false;
+        //TODO impl parameterizedTYpe.isAssignedFrom
+        return super.isAssignedFrom(type);
+    }
     
     
 
