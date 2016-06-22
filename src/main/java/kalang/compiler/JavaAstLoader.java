@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.core.ArrayType;
-import kalang.core.ClassType;
 import kalang.core.ObjectType;
 import kalang.core.GenericType;
 import kalang.core.NullableKind;
@@ -194,11 +193,11 @@ public class JavaAstLoader extends AstLoader {
         }else if(t instanceof java.lang.reflect.ParameterizedType){
             java.lang.reflect.ParameterizedType pt = (java.lang.reflect.ParameterizedType) t;
             Type rawType = transType(pt.getRawType(),genericTypes);
-            if(!(rawType instanceof ClassType)) return null;
+            if(!(rawType instanceof ObjectType)) return null;
             java.lang.reflect.Type[] typeArgs = pt.getActualTypeArguments();
             Type[] gTypes = transType(typeArgs,genericTypes);
             if(gTypes==null) return null;
-            return Types.getParameterizedType((ObjectType) rawType, gTypes);
+            return Types.getParameterizedType(((ObjectType) rawType).getClassNode(), gTypes);
         }else if(t instanceof java.lang.reflect.WildcardType){
             java.lang.reflect.WildcardType wt = (java.lang.reflect.WildcardType) t;
             Type[] upperBounds = transType(wt.getUpperBounds(),genericTypes);

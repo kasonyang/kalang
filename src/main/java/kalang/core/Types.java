@@ -24,7 +24,7 @@ public class Types {
     private static Map<String,PrimitiveType> primitiveTypes = new HashMap();
     private static Map<List,ArrayType> arrayTypes = new HashMap();
     
-    private static Map<List,ObjectType> classTypes  = new HashMap<>();
+    //private static Map<List,ObjectType> classTypes  = new HashMap<>();
             
     private static final Map<List,ParameterizedType> parameterizedTypes = new HashMap();
     
@@ -116,12 +116,12 @@ public class Types {
         return at;
     }
     
-    public static ParameterizedType getParameterizedType(ObjectType rawType,Type[] argumentsType){
+    public static ParameterizedType getParameterizedType(ClassNode rawType,Type[] argumentsType){
         return getParameterizedType(rawType, argumentsType,NullableKind.NONNULL);
     }
     
-    public static ParameterizedType getParameterizedType(ObjectType rawType,Type[] argumentsType,NullableKind nullable){
-        List key = new ArrayList(argumentsType.length+1);
+    public static ParameterizedType getParameterizedType(ClassNode rawType,Type[] argumentsType,NullableKind nullable){
+        List key = new ArrayList(argumentsType.length+2);
         key.add(rawType);
         key.addAll(Arrays.asList(argumentsType));
         key.add(nullable);
@@ -140,13 +140,7 @@ public class Types {
     
     @Nonnull
     public static ObjectType getClassType(@Nonnull ClassNode clazz,NullableKind nullable){
-        List<Object> key = Arrays.asList(clazz,nullable);
-        ObjectType ct = classTypes.get(key);
-        if(ct==null){
-            ct = new ClassType(clazz,nullable);
-            classTypes.put(key, ct);
-        }
-        return ct;
+        return getParameterizedType(clazz, new Type[0],nullable);
     }
     
     @Nullable

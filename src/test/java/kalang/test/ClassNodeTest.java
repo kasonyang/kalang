@@ -5,6 +5,7 @@ import kalang.compiler.AstLoader;
 import kalang.AstNotFoundException;
 import kalang.core.ArrayType;
 import kalang.core.ObjectType;
+import kalang.core.Type;
 import kalang.core.Types;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -26,10 +27,10 @@ public class ClassNodeTest {
         assertTrue(arrayListClass.isSubclassOf(listClass));
         assertFalse(listClass.isSubclassOf(listClass));
         
-        
-        ObjectType listType = Types.getClassType(listClass);
+        Type[] paramTypes = new Type[]{Types.getRootType()};
+        ObjectType listType = Types.getParameterizedType(listClass,paramTypes );
         ArrayType listArrayType = Types.getArrayType(listType);
-        ObjectType arrayListType = Types.getClassType(arrayListClass);
+        ObjectType arrayListType = Types.getParameterizedType(arrayListClass,paramTypes );
         ArrayType arrayListArrayType = Types.getArrayType(arrayListType);
         assertTrue(arrayListType.isSubTypeOf(listType));
         assertTrue(arrayListArrayType.isSubTypeOf(listArrayType));

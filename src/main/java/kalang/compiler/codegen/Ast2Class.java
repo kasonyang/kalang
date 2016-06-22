@@ -64,7 +64,6 @@ import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.compiler.CodeGenerator;
 import kalang.core.ArrayType;
-import kalang.core.ClassType;
 import kalang.core.ObjectType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.GenericType;
@@ -178,9 +177,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 ptypes += typeSignature(p);
             }
             if(!ptypes.isEmpty()) ptypes = "<" + ptypes + ">";
-            return "L" + pt.getRawType().getName().replace('.', '/') + ptypes + ";";
-        }else if(type instanceof ClassType){
-            return getTypeDescriptor(type);
+            return "L" + pt.getRawType().name.replace('.', '/') + ptypes + ";";
         }else if(type instanceof PrimitiveType){
             return getTypeDescriptor(type);
         }else if(type instanceof ArrayType){
@@ -806,9 +803,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             //TODO all generic type is object?
             return "L" + internalName(Types.ROOT_CLASS_NAME) + ";";
         }else if(t instanceof ParameterizedType){
-            return getTypeDescriptor(((ParameterizedType)t).getRawType());
-        }else if(t instanceof ClassType){
-            return "L" + internalName(t.getName()) + ";";
+            return "L" + internalName(((ParameterizedType) t).getClassNode().name) + ";";
         }else{
             throw Exceptions.unsupportedTypeException(t);
         }

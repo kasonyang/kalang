@@ -14,46 +14,50 @@ import kalang.ast.ClassNode;
 public class ParameterizedType extends ObjectType {
     
     Type[] parameterTypes;
-    private final ObjectType rawType;
+    private final ClassNode rawType;
     
-    protected ParameterizedType(ObjectType rawType,Type[] parameterTypes,NullableKind nullable ) {
+    protected ParameterizedType(ClassNode rawType,Type[] parameterTypes,NullableKind nullable ) {
         //TODO may be bug
-        super(rawType.getClassNode(),nullable);
+        super(rawType,nullable);
         this.rawType = rawType;
-        this.parameterTypes = parameterTypes;
-       //TODO check parameterTypes.length
+            this.parameterTypes = parameterTypes;
+           //TODO check parameterTypes.length
     }
 
     public Type[] getParameterTypes() {
-        return parameterTypes;
+        return parameterTypes.length>0?parameterTypes:rawType.getGenericTypes();
     }
     
     public Map<GenericType,Type> getParameterTypesMap(){
         ClassNode clz = getClassNode();
         GenericType[] gts = clz.getGenericTypes();
         Map<GenericType,Type> ret = new HashMap();
-        for(int i=0;i<gts.length;i++){
-            ret.put(gts[i], parameterTypes[i]);
+        if(parameterTypes.length>0){
+            for(int i=0;i<gts.length;i++){
+                ret.put(gts[i], parameterTypes[i]);
+            }
         }
         return ret;
     }
 
-    public ObjectType getRawType() {
+    public ClassNode getRawType() {
         return rawType;
     }
 
     @Override
     public String getDeclarationKey() {
-        return rawType.getDeclarationKey();
+        return rawType.name;
     }
 
     @Override
     public String getName() {
-        List<String> paramTypes = new ArrayList(parameterTypes.length);
-        for(Type t:parameterTypes){
+        Type[] pTypes = getParameterTypes();
+        List<String> paramTypes = new ArrayList(pTypes.length);
+        for(Type t:pTypes){
             paramTypes.add(t.getName());
         }
-        return rawType.getName() + "<" + String.join(",",paramTypes) + ">";
+        String suffix = paramTypes.isEmpty() ? "" : "<" + String.join(",",paramTypes) + ">";
+        return rawType.name + suffix;
     }
 
     @Override
@@ -68,10 +72,12 @@ public class ParameterizedType extends ObjectType {
             return false;
         }
         final ParameterizedType other = (ParameterizedType) obj;
-        if (!Arrays.deepEquals(this.parameterTypes, other.parameterTypes)) {
+        if (!Objects.equals(this.rawType, other.rawType)) {
             return false;
         }
-        if (!Objects.equals(this.rawType, other.rawType)) {
+        Type[] thisPts = this.getParameterTypes();
+        Type[] otherPts = other.getParameterTypes();
+        if (!Arrays.deepEquals(thisPts,otherPts)) {
             return false;
         }
         return true;
@@ -95,8 +101,6 @@ public class ParameterizedType extends ObjectType {
             Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
             if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
             return Types.getParameterizedType(pt.getRawType(), parsedParamTypes);
-        }else if(type instanceof ClassType){
-            return type;
         }else if(type instanceof PrimitiveType){
             return type;
         }else if(type instanceof WildcardType){
