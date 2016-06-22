@@ -226,8 +226,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private void onNull(ExprNode expr,boolean onTrue,boolean isEQ){
         boolean isNull = (onTrue && isEQ) || (!onTrue && !isEQ);
-        System.out.print("null caught:" + isNull + "," + expr);
-        //TODO set null or nonnull
+        NullableKind nullable = isNull ? NullableKind.NULLABLE : NullableKind.NONNULL;
+        Type type = expr.getType();
+        if(type instanceof ClassType){
+            ClassType newType = Types.getClassType((ClassType)type, nullable);
+            changeTypeTemporarilyIfCould(expr,newType);
+        }
     }
     
     protected void onIf(ExprNode expr,boolean onTrue){
