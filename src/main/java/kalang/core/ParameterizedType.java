@@ -137,7 +137,7 @@ public class ParameterizedType extends ClassType {
 
     @Override
     public boolean isAssignedFrom(Type type) {
-        if(type.equals(this)) return true;
+        if(equalAndNullAssignChecked(type)) return true;
         if(!(type instanceof ParameterizedType)) return false;
         ParameterizedType other = (ParameterizedType) type;
         if(!nullable.isAssignedFrom(other.getNullable())) return false;

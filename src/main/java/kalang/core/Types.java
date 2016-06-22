@@ -332,4 +332,8 @@ public class Types {
         return requireClassType(STRING_CLASS_NAME);
     }
 
+    public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {
+        return getClassType(clazzType.getClassNode(),nullable);
+    }
+
 }

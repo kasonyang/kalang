@@ -105,7 +105,7 @@ annotation:
 ;
 type:
     singleType
-    |baseType=type  ('[' ']' )
+    |baseType=type  ('[' ']' ) (nullable='?')?
 ;
 singleType:
     classType
@@ -116,6 +116,7 @@ classType:
         ('<' parameterTypes+=parameterizedElementType 
                     ( ',' parameterTypes+=parameterizedElementType)* 
         '>')?
+        (nullable='?')?
 ;
 parameterizedElementType:
     Identifier | wildcardType

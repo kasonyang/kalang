@@ -8,7 +8,7 @@ class<T>{
         return sf;
     }
     int nullTest(){
-        String s = null;
+        String? s = null;
         if(s==null){
             s = "test";
         }

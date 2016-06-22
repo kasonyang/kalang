@@ -419,6 +419,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     @Nullable
     private ClassType parseClassType(KalangParser.ClassTypeContext ctx){
+        NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
         Token rawTypeToken = ctx.rawClass;
         String rawType = rawTypeToken.getText();
         GenericType gt = declarededGenericTypes.get(rawType);
@@ -446,9 +447,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                     typeArguments[i] = Types.getRootType();
                 }
             }
-            return Types.getParameterizedType(clazzType, typeArguments);
+            return Types.getParameterizedType(clazzType, typeArguments,nullable);
         }else{
-            return clazzType;
+            return Types.getClassType(clazzType, nullable);
         }
     }
 
@@ -462,13 +463,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Nullable
-    private Type parseType(TypeContext typeContext) {
-        if(typeContext.singleType()!=null){
-            return parseSingleType(typeContext.singleType());
+    private Type parseType(TypeContext ctx) {
+        if(ctx.singleType()!=null){
+            return parseSingleType(ctx.singleType());
         }else{
-            Type ct = parseType(typeContext.type());
+            NullableKind nullable = ctx.nullable!=null ? NullableKind.NULLABLE : NullableKind.NONNULL;
+            Type ct = parseType(ctx.type());
             if(ct==null) return null;
-            return Types.getArrayType(ct);
+            return Types.getArrayType(ct,nullable);
         }
     }
 

@@ -85,12 +85,12 @@ public class BoxUtil {
             if (toType.equals(Types.getRootType())) {
                 return CAST_PRIMITIVE_TO_OBJECT;
             }
-            if (fromType.equals(Types.NULL_TYPE)) {
-                return CAST_NOTHING;
-            }
-//            if (toType.equals(Types.STRING_CLASS_TYPE)) {
-//                return CAST_PRIMITIVE_TO_STRING;
+//            if (fromType.equals(Types.NULL_TYPE)) {
+//                return CAST_NOTHING;
 //            }
+////            if (toType.equals(Types.STRING_CLASS_TYPE)) {
+////                return CAST_PRIMITIVE_TO_STRING;
+////            }
             PrimitiveType toPriType = Types.getPrimitiveType((ClassType) toType);
             if (toPriType == null) {
                 return CAST_UNSUPPORTED;

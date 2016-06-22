@@ -1,20 +1,12 @@
 
 package kalang.core;
-import kalang.ast.CastExpr;
 import kalang.ast.ClassNode;
-import kalang.ast.ExprNode;
 import kalang.ast.MethodNode;
-import kalang.ast.VarObject;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
 import java.util.*;
 import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
-import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
-import kalang.util.TypeUtil;
 /**
  *
  * @author Kason Yang
@@ -142,16 +134,24 @@ public class ClassType extends Type{
     public NullableKind getNullable() {
         return nullable;
     }
+    
+    protected boolean equalAndNullAssignChecked(Type type){
+        if(type.equals(this)) return true;
+        if(type.equals(Types.NULL_TYPE)){
+            return nullable== NullableKind.NULLABLE || nullable == NullableKind.UNKNOWN;
+        }
+        return false;
+    }
 
     @Override
     public boolean isAssignedFrom(Type type) {
-        if(type.equals(this)) return true;
-        if(!super.isAssignedFrom(type)) return false;
+        if(equalAndNullAssignChecked(type)) return true;
         if(!(type instanceof ClassType)) return false;        
         ClassType other = (ClassType) type;
         NullableKind otherNullable = other.getNullable();
         if(!nullable.isAssignedFrom(otherNullable)) return false;
-        return other.getClassNode().isSubclassOf(clazz);
+        ClassNode otherClazz = other.getClassNode();
+        return otherClazz.equals(clazz) || other.getClassNode().isSubclassOf(clazz);
     }
     
     

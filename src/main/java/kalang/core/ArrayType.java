@@ -26,7 +26,7 @@ public class ArrayType extends ClassType{
 
     @Override
     public boolean isAssignedFrom(Type type) {
-        if(type.equals(this)) return true;
+        if(equalAndNullAssignChecked(type)) return true;
         if(!(type instanceof ArrayType)) return false;
         ArrayType other = (ArrayType) type;
         if(!nullable.isAssignedFrom(other.getNullable())) return false;
