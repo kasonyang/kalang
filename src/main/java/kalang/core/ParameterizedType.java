@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import kalang.ast.ClassNode;
-import kalang.util.TypeUtil;
 /**
  *
  * @author Kason Yang
@@ -19,12 +18,9 @@ public class ParameterizedType extends ObjectType {
     
     protected ParameterizedType(ObjectType rawType,Type[] parameterTypes,NullableKind nullable ) {
         //TODO may be bug
-        super(rawType.getClassNode(),rawType.getSuperType(),nullable);
+        super(rawType.getClassNode(),nullable);
         this.rawType = rawType;
         this.parameterTypes = parameterTypes;
-        if(superType!=null){
-            superType =(ObjectType) getActualType(superType);
-        }
        //TODO check parameterTypes.length
     }
 
@@ -148,6 +144,15 @@ public class ParameterizedType extends ObjectType {
         if(!nullable.isAssignedFrom(other.getNullable())) return false;
         //TODO impl parameterizedTYpe.isAssignedFrom
         return super.isAssignedFrom(type);
+    }
+
+    @Override
+    public ObjectType getSuperType() {
+        ObjectType superType = super.getSuperType();
+        if(superType!=null){
+            superType =(ObjectType) getActualType(superType);
+        }
+        return superType;
     }
     
     

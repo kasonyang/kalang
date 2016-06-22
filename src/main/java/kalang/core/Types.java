@@ -143,7 +143,7 @@ public class Types {
         List<Object> key = Arrays.asList(clazz,nullable);
         ObjectType ct = classTypes.get(key);
         if(ct==null){
-            ct = new ClassType(clazz,clazz.superType,nullable);
+            ct = new ClassType(clazz,nullable);
             classTypes.put(key, ct);
         }
         return ct;

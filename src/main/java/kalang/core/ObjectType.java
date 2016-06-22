@@ -16,13 +16,9 @@ public abstract class ObjectType extends Type{
     private ClassNode clazz;
     
     protected NullableKind nullable;
-    
-    @Nullable
-    protected ObjectType superType;
 
-    public ObjectType(ClassNode clazz,@Nullable ObjectType superType,NullableKind nullable) {
+    public ObjectType(ClassNode clazz,NullableKind nullable) {
         this.clazz = clazz;
-        this.superType = superType;
         this.nullable = nullable;
     }
 
@@ -38,7 +34,17 @@ public abstract class ObjectType extends Type{
     @Override
     public boolean isSubTypeOf(Type targetType) {
         if(targetType instanceof ObjectType){
-            return clazz.isSubclassOf(((ObjectType)targetType).clazz);
+            ObjectType other = (ObjectType) targetType;
+            ObjectType superType = getSuperType();
+            if(superType!=null){
+                if(superType.equals(other)) return true;
+                if(superType.isSubTypeOf(other)) return true;
+            }
+            ObjectType[] interfaces = this.getInterfaces();
+            for(ObjectType i:interfaces){
+                if(i.equals(targetType)) return true;
+                if(i.isSubTypeOf(targetType)) return true;
+            }
         }
         return false;
     }
@@ -68,6 +74,7 @@ public abstract class ObjectType extends Type{
     //TODO cache 
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean recursive){
         Map<String,MethodDescriptor> descs = new HashMap();
+        ObjectType superType = getSuperType();
         if(recursive && superType!=null){
             MethodDescriptor[] ms = superType.getMethodDescriptors(caller, recursive);
             for(MethodDescriptor m:ms){
@@ -126,7 +133,7 @@ public abstract class ObjectType extends Type{
 
     @Nullable
     public ObjectType getSuperType() {
-        return superType;
+        return clazz.superType;
     }
 
     public NullableKind getNullable() {
@@ -148,10 +155,16 @@ public abstract class ObjectType extends Type{
         ObjectType other = (ObjectType) type;
         NullableKind otherNullable = other.getNullable();
         if(!nullable.isAssignedFrom(otherNullable)) return false;
-        ClassNode otherClazz = other.getClassNode();
-        return otherClazz.equals(clazz) || other.getClassNode().isSubclassOf(clazz);
+        if(clazz.equals(other.clazz)) return true;
+        return  type.isSubTypeOf(this);
     }
     
-    
+    public ObjectType[] getInterfaces(){
+        ObjectType[] itfs = clazz.interfaces.toArray(new ObjectType[clazz.interfaces.size()]);
+        for(int i=0;i<itfs.length;i++){
+            itfs[i] = (ObjectType) parseType(itfs[i]);
+        }
+        return itfs;
+    }
     
 }

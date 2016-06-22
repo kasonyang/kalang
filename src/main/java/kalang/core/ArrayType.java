@@ -11,7 +11,7 @@ public class ArrayType extends ObjectType{
 
     public ArrayType(Type componentType,NullableKind nullable) {
         //TODO should not hard code
-        super(AstLoader.createArrayAst("java.lang.Object"),Types.getRootType(),nullable);
+        super(AstLoader.createArrayAst("java.lang.Object"),nullable);
         this.componentType = componentType;
     }
     
@@ -35,7 +35,7 @@ public class ArrayType extends ObjectType{
 
     @Override
     public boolean isSubTypeOf(Type targetType) {
-        if(targetType.equals(superType)) return true;
+        if(targetType.equals(getSuperType())) return true;
         if(targetType instanceof ArrayType){
             return componentType.isSubTypeOf(((ArrayType)targetType).componentType);
         }
