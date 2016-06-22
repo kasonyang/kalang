@@ -2,8 +2,6 @@ package kalang.core;
 
 import java.util.Objects;
 import javax.annotation.Nullable;
-import kalang.ast.FieldNode;
-import kalang.ast.MethodNode;
 
 /**
  *
@@ -26,11 +24,6 @@ public class GenericType extends ObjectType{
     @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return this==obj;
     }
 
     public Type[] getUpperBounds() {

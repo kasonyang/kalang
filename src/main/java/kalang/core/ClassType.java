@@ -20,7 +20,7 @@ public class ClassType extends ObjectType {
         //TODO may be bug
         super(rawType,nullable);
         this.rawType = rawType;
-            this.parameterTypes = parameterTypes;
+        this.parameterTypes = parameterTypes;
            //TODO check parameterTypes.length
     }
 
@@ -81,14 +81,6 @@ public class ClassType extends ObjectType {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 19 * hash + Arrays.deepHashCode(this.parameterTypes);
-        hash = 19 * hash + Objects.hashCode(this.rawType);
-        return hash;
     }
     
     private static Type[] parseGenericType(Type[] types,Map<GenericType,Type> genericTypes){
@@ -155,7 +147,7 @@ public class ClassType extends ObjectType {
         ClassType other = (ClassType) type;
         if(!nullable.isAssignedFrom(other.getNullable())) return false;
         //TODO impl parameterizedTYpe.isAssignedFrom
-        return type.isSubTypeOf(this);
+        return super.isAssignedFrom(type);
     }
 
     @Override
