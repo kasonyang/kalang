@@ -64,6 +64,7 @@ import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.compiler.CodeGenerator;
 import kalang.core.ArrayType;
+import kalang.core.ClassType;
 import kalang.core.ObjectType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.GenericType;
@@ -178,7 +179,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }
             if(!ptypes.isEmpty()) ptypes = "<" + ptypes + ">";
             return "L" + pt.getRawType().getName().replace('.', '/') + ptypes + ";";
-        }else if(type instanceof ObjectType){
+        }else if(type instanceof ClassType){
             return getTypeDescriptor(type);
         }else if(type instanceof PrimitiveType){
             return getTypeDescriptor(type);
@@ -788,22 +789,25 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private String getTypeDescriptor(Type t){
-        if(t.equals(VOID_TYPE)){
-            return "V";
+        if(t instanceof PrimitiveType){
+            if(t.equals(VOID_TYPE)){
+                return "V";
+            }else if(t.equals(BOOLEAN_TYPE)){
+                return "Z";
+            }else if(t.equals(LONG_TYPE)){
+                return "J";
+            }else{
+                //TODO unsafe
+                return t.getName().substring(0,1).toUpperCase();
+            }
         }else if(t instanceof ArrayType){
             return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());
-        }else if(t.equals(BOOLEAN_TYPE)){
-            return "Z";
-        }else if(t.equals(LONG_TYPE)){
-            return "J";
-        }else if(t instanceof PrimitiveType){
-            return t.getName().substring(0,1).toUpperCase();
         }else if(t instanceof GenericType){
             //TODO all generic type is object?
             return "L" + internalName(Types.ROOT_CLASS_NAME) + ";";
         }else if(t instanceof ParameterizedType){
             return getTypeDescriptor(((ParameterizedType)t).getRawType());
-        }else if(t instanceof ObjectType){
+        }else if(t instanceof ClassType){
             return "L" + internalName(t.getName()) + ";";
         }else{
             throw Exceptions.unsupportedTypeException(t);

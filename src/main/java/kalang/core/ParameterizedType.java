@@ -99,7 +99,7 @@ public class ParameterizedType extends ObjectType {
             Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
             if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
             return Types.getParameterizedType(pt.getRawType(), parsedParamTypes);
-        }else if(type instanceof ObjectType){
+        }else if(type instanceof ClassType){
             return type;
         }else if(type instanceof PrimitiveType){
             return type;
@@ -110,6 +110,11 @@ public class ParameterizedType extends ObjectType {
             Type[] parsedUBs = parseGenericType(ubs, genericTypes);
             Type[] parsedLBs = parseGenericType(lbs, genericTypes);
             return new kalang.core.WildcardType(parsedUBs, parsedLBs);
+        }else if(type instanceof ArrayType){
+            Type ct = ((ArrayType) type).getComponentType();
+            Type parsedCt = parseGenericType(ct, genericTypes);
+            if(parsedCt.equals(ct)) return type;
+            return Types.getArrayType(parsedCt, ((ArrayType) type).getNullable());
         }else{
             System.err.println("unknown type:" + type);
             return type;

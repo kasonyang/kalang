@@ -38,8 +38,7 @@ public abstract class ObjectType extends Type{
     @Override
     public boolean isSubTypeOf(Type targetType) {
         if(targetType instanceof ObjectType){
-            return clazz.isSubclassOf(((ObjectType)targetType).clazz
-                    );
+            return clazz.isSubclassOf(((ObjectType)targetType).clazz);
         }
         return false;
     }
