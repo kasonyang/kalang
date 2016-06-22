@@ -24,8 +24,6 @@ public class ClassNodeTest {
         AstLoader astLoader = new AstLoader();
         ClassNode listClass = astLoader.loadAst("java.util.List");
         ClassNode arrayListClass = astLoader.loadAst("java.util.ArrayList");
-        assertTrue(arrayListClass.isSubclassOf(listClass));
-        assertFalse(listClass.isSubclassOf(listClass));
         
         Type[] paramTypes = new Type[]{Types.getRootType()};
         ObjectType listType = Types.getClassType(listClass,paramTypes );

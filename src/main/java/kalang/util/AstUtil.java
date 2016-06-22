@@ -293,18 +293,5 @@ public class AstUtil {
         }
         setter.body = body;
     }
-           
-    public static boolean isAccessible(int modifier,ClassNode owner,@Nullable ClassNode caller){
-        if(caller!=null){
-            if(caller.equals(owner)){
-                return true;
-            }else if(caller.isSubclassOf(owner)){
-                if(Modifier.isProtected(modifier) || Modifier.isPublic(modifier)){
-                    return true;
-                }
-            }
-        }
-        return Modifier.isPublic(modifier);
-    }
     
 }

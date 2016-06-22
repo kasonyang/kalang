@@ -76,24 +76,6 @@ public class ClassNode extends AstNode implements Annotationable{
     public MethodNode[] getDeclaredMethodNodes(){
         return methods.toArray(new MethodNode[0]);
     }
-   
-    
-    public boolean isSubclassOf(ClassNode clazz){
-        if(superType!=null){
-            //FIXME wrong impl of isSubclassOf
-            ClassNode parent = superType.getClassNode();
-            if(parent.equals(clazz)) return true;
-            if(parent.isSubclassOf(clazz)) return true;
-        }
-        if(interfaces!=null){
-            for(ObjectType i:interfaces){
-                ClassNode itf = i.getClassNode();
-                if(itf.equals(clazz)) return true;
-                if(itf.isSubclassOf(clazz)) return true;
-            }
-        }
-        return false;
-    }
 
     @Override
     public AnnotationNode[] getAnnotations() {
