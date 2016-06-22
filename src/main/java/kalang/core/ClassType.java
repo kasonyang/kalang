@@ -155,7 +155,7 @@ public class ClassType extends ObjectType {
         ClassType other = (ClassType) type;
         if(!nullable.isAssignedFrom(other.getNullable())) return false;
         //TODO impl parameterizedTYpe.isAssignedFrom
-        return super.isAssignedFrom(type);
+        return type.isSubTypeOf(this);
     }
 
     @Override
