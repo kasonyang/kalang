@@ -54,6 +54,11 @@ public class VarTable<T, V> {
         }
         return est;
     }
+    
+    public void remove(T key,boolean includeParent){
+        vars.remove(key);
+        if(includeParent && parent!=null) parent.remove(key, includeParent);
+    }
 
     public V[] toArray() {
         return (V[]) vars.values().toArray();

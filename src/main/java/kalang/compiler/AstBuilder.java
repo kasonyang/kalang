@@ -204,11 +204,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     private void removeOverrideType(ExprNode expr){
-        //TODO impl removeOverrideType and call on assign
-        //overrideTypes.
+        VarObject key = getOverrideTypeKey(expr);
+        if(key!=null) overrideTypes.remove(key, true);
     }
     
-    private void changeTypeTemporarilyIfCould(ExprNode expr,Type type){
+    @Nullable
+    private VarObject getOverrideTypeKey(ExprNode expr){
         VarObject key ;
         if(expr instanceof VarExpr){
             key = ((VarExpr) expr).getVar();
@@ -219,6 +220,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }else{
             key = null;
         }
+        return key;
+    }
+    
+    private void changeTypeTemporarilyIfCould(ExprNode expr,Type type){
+        VarObject key = getOverrideTypeKey(expr);
         if(key!=null){
             overrideTypes.put(key, type);
         }
@@ -1074,28 +1080,34 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public ExprNode visitExprAssign(ExprAssignContext ctx) {
+        ExprNode expr;
         String assignOp = ctx.getChild(1).getText();
         ExpressionContext toCtx = ctx.expression(0);
         ExpressionContext fromCtx = ctx.expression(1);
         if(toCtx instanceof ExprGetFieldContext){
-            return createFieldExpr((ExprGetFieldContext)toCtx,fromCtx);
-        }
-        ExprNode to = visitExpression(toCtx);
-        ExprNode from = visitExpression(fromCtx);
-        if (assignOp.length() > 1) {
-            String op = assignOp.substring(0, assignOp.length() - 1);
-            from = createBinaryExpr(to, from, op);
-        }
-        AssignableExpr toExpr;
-        if(to instanceof AssignableExpr){
-            toExpr = (AssignableExpr) to;
-            AssignExpr aexpr = new AssignExpr(toExpr,from);
-            mapAst(aexpr, ctx);
-            return aexpr;
+            expr = createFieldExpr((ExprGetFieldContext)toCtx,fromCtx);
         }else{
-            AstBuilder.this.handleSyntaxError("unsupported assign statement",ctx);
-            return null;
+            ExprNode to = visitExpression(toCtx);
+            ExprNode from = visitExpression(fromCtx);
+            if (assignOp.length() > 1) {
+                String op = assignOp.substring(0, assignOp.length() - 1);
+                from = createBinaryExpr(to, from, op);
+            }
+            AssignableExpr toExpr;
+            if(to instanceof AssignableExpr){
+                toExpr = (AssignableExpr) to;
+                AssignExpr aexpr = new AssignExpr(toExpr,from);
+                mapAst(aexpr, ctx);
+                expr = aexpr;
+            }else{
+                AstBuilder.this.handleSyntaxError("unsupported assign statement",ctx);
+                return null;
+            }
         }
+        if(expr!=null){
+            removeOverrideType(expr);
+        }
+        return expr;
     }
 
     @Override
