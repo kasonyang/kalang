@@ -82,6 +82,14 @@ public class ClassType extends ObjectType {
         }
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 19 * hash + Arrays.deepHashCode(this.parameterTypes);
+        hash = 19 * hash + Objects.hashCode(this.rawType);
+        return hash;
+    }
     
     private static Type[] parseGenericType(Type[] types,Map<GenericType,Type> genericTypes){
         Type[] actTypes = new Type[types.length];
