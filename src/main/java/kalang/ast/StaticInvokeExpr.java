@@ -7,7 +7,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.MethodDescriptor;
 import kalang.core.Types;
@@ -25,7 +25,7 @@ public class StaticInvokeExpr extends InvocationExpr{
     }
     
     public static StaticInvokeExpr create(ClassReference clazz, String methodName, ExprNode[] args,@Nullable ClassNode caller) throws MethodNotFoundException, AmbiguousMethodException {
-        ClassType clazzType = Types.getClassType(clazz.getReferencedClassNode());
+        ObjectType clazzType = Types.getClassType(clazz.getReferencedClassNode());
         //TODO static only
         //TODO what about generic static method?
         MethodDescriptor[] candidates = clazzType.getMethodDescriptors(caller, true);

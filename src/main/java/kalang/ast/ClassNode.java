@@ -14,13 +14,13 @@ public class ClassNode extends AstNode implements Annotationable{
     public String name;
     
     @Nullable
-    public ClassType superType;
+    public ObjectType superType;
     
     public final List<FieldNode> fields = new ArrayList<>();
     
     protected final List<MethodNode> methods = new LinkedList();
     
-    public final List<ClassType> interfaces = new LinkedList();
+    public final List<ObjectType> interfaces = new LinkedList();
     
     public boolean isInterface;
     
@@ -86,7 +86,7 @@ public class ClassNode extends AstNode implements Annotationable{
             if(parent.isSubclassOf(clazz)) return true;
         }
         if(interfaces!=null){
-            for(ClassType i:interfaces){
+            for(ObjectType i:interfaces){
                 ClassNode itf = i.getClassNode();
                 if(itf.equals(clazz)) return true;
                 if(itf.isSubclassOf(clazz)) return true;

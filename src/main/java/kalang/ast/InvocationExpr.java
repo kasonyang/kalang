@@ -11,7 +11,7 @@ import kalang.util.TypeUtil;
 
 public abstract class InvocationExpr extends ExprNode {
 
-    private final ClassType clazz;
+    private final ObjectType clazz;
     
     public static class MethodSelection{
         public ExecutableDescriptor selectedMethod;
@@ -39,7 +39,7 @@ public abstract class InvocationExpr extends ExprNode {
      * @param types
      * @return the selected method,or null
      */
-    public static MethodSelection applyMethod(ClassType clazz,String methodName, ExprNode[] args,ExecutableDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
+    public static MethodSelection applyMethod(ObjectType clazz,String methodName, ExprNode[] args,ExecutableDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
         Type[] types = AstUtil.getExprTypes(args);
         ExecutableDescriptor md = AstUtil.getExactedMethod(clazz,candidates, methodName, types);
         if (md != null) {
@@ -67,7 +67,7 @@ public abstract class InvocationExpr extends ExprNode {
         }
     }
 
-    public InvocationExpr(ClassType clazz,ExecutableDescriptor method, ExprNode[] args) {
+    public InvocationExpr(ObjectType clazz,ExecutableDescriptor method, ExprNode[] args) {
         this.method = method;
         this.arguments = args;
         this.clazz = clazz;

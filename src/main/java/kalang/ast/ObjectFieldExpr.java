@@ -7,7 +7,7 @@ import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.FieldNotFoundException;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.FieldDescriptor;
 import kalang.core.Type;
 import kalang.util.AstUtil;
@@ -36,10 +36,10 @@ public class ObjectFieldExpr extends FieldExpr{
     @Nonnull
     public static FieldExpr create(@Nonnull ExprNode target,String fieldName,@Nullable ClassNode caller) throws FieldNotFoundException{
         Type type = target.getType();
-        if(!(type instanceof ClassType)){
+        if(!(type instanceof ObjectType)){
             throw new UnsupportedOperationException("unsupported type:" + type);
         }
-        ClassType classType = (ClassType) type;
+        ObjectType classType = (ObjectType) type;
         FieldDescriptor field = getField(classType, fieldName,caller);
         if(AstUtil.isStatic(field.getModifier())){
             throw new FieldNotFoundException(fieldName + " is static");

@@ -12,7 +12,7 @@ public abstract class FieldExpr extends AssignableExpr{
     private FieldDescriptor field;
     
     @Nonnull
-    protected static  FieldDescriptor getField(ClassType type,String fieldName,@Nullable ClassNode caller) throws FieldNotFoundException{
+    protected static  FieldDescriptor getField(ObjectType type,String fieldName,@Nullable ClassNode caller) throws FieldNotFoundException{
         FieldDescriptor field = type.getFieldDescriptor(caller,fieldName);
         if(field==null){
             throw new FieldNotFoundException(fieldName);

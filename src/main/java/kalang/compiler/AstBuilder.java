@@ -111,7 +111,7 @@ import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.GenericType;
 import kalang.core.MethodDescriptor;
 import kalang.core.NullableKind;
@@ -158,7 +158,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private final ClassNode thisClazz = new ClassNode();
     
     @Nonnull
-    private final ClassType thisType = Types.getClassType(thisClazz);
+    private final ObjectType thisType = Types.getClassType(thisClazz);
     
     private MethodNode method;
     
@@ -234,8 +234,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         boolean isNull = (onTrue && isEQ) || (!onTrue && !isEQ);
         NullableKind nullable = isNull ? NullableKind.NULLABLE : NullableKind.NONNULL;
         Type type = expr.getType();
-        if(type instanceof ClassType){
-            ClassType newType = Types.getClassType((ClassType)type, nullable);
+        if(type instanceof ObjectType){
+            ObjectType newType = Types.getClassType((ObjectType)type, nullable);
             changeTypeTemporarilyIfCould(expr,newType);
         }
     }
@@ -307,12 +307,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     @Nullable
-    private ClassType requireClassType(@Nonnull Token token){
+    private ObjectType requireClassType(@Nonnull Token token){
         return requireClassType(token.getText(),token);
     }
     
     @Nullable
-    private ClassType requireClassType(@Nonnull String id,@Nonnull Token token){
+    private ObjectType requireClassType(@Nonnull String id,@Nonnull Token token){
         ClassNode ast = requireAst(id, token);
         if(ast==null) return null;
         return Types.getClassType(ast);
@@ -428,13 +428,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     @Nullable
-    private ClassType parseClassType(KalangParser.ClassTypeContext ctx){
+    private ObjectType parseClassType(KalangParser.ClassTypeContext ctx){
         NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
         Token rawTypeToken = ctx.rawClass;
         String rawType = rawTypeToken.getText();
         GenericType gt = declarededGenericTypes.get(rawType);
         if(gt!=null) return gt;
-        ClassType clazzType = requireClassType(rawTypeToken);
+        ObjectType clazzType = requireClassType(rawTypeToken);
         if(clazzType==null) return null;
         ClassNode clazzNode = clazzType.getClassNode();
         GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
@@ -758,7 +758,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         methodDeclared.add(mStr);
         MethodDescriptor overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.superType, mStr, thisClazz, true);
         if(overriddenMd==null){
-            overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.interfaces.toArray(new ClassType[thisClazz.interfaces.size()]), mStr, thisClazz, true);
+            overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.interfaces.toArray(new ObjectType[thisClazz.interfaces.size()]), mStr, thisClazz, true);
         }
         if(isOverriding && overriddenMd==null){            
             handleSyntaxError("method does not override any method", ctx);
@@ -771,7 +771,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {
-                ClassType exType = requireClassType(et);
+                ObjectType exType = requireClassType(et);
                 if(exType!=null){
                     method.exceptionTypes.add(exType);
                 }
@@ -1161,7 +1161,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
         ExprNode expr;
         try {
-            ClassType clazzType = thisType;
+            ObjectType clazzType = thisType;
             InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(thisClazz, true));
             if(Modifier.isStatic(ms.selectedMethod.getModifier())){
                 expr = new StaticInvokeExpr(new ClassReference(thisClazz), ms.selectedMethod, ms.appliedArguments);
@@ -1190,11 +1190,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             throw new UnsupportedOperationException("don't get constructor by this method");
         }
         Type targetType = target.getType();
-        if(!(targetType instanceof ClassType)){
+        if(!(targetType instanceof ObjectType)){
             handleSyntaxError("class type required.", ctx);
             return null;
         }
-        ClassType targetClassType = (ClassType) targetType;
+        ObjectType targetClassType = (ObjectType) targetType;
         if(targetClassType.getNullable()==NullableKind.NULLABLE){
             handleSyntaxError("expression may be null", ctx);
             return null;
@@ -1204,7 +1204,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ObjectInvokeExpr invoke = ObjectInvokeExpr.create(target, methodName, args,thisClazz);
             if(invoke.getMethod().getMethodNode().type instanceof GenericType){
                 Type invokeType = invoke.getType();
-                if(invokeType instanceof ClassType){
+                if(invokeType instanceof ObjectType){
                     expr = new CastExpr(invokeType, invoke);
                 }else{
                     expr = invoke;
@@ -1500,7 +1500,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
-        ClassType clsType = parseClassType(ctx.classType());
+        ObjectType clsType = parseClassType(ctx.classType());
         if(clsType==null) return null;
         ExprNode[] params = visitAll(ctx.params).toArray(new ExprNode[0]);
         NewObjectExpr newExpr;
@@ -1676,11 +1676,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName,ParserRuleContext rule){
         ExprNode ret;
         Type type = expr.getType();
-        if(!(type instanceof  ClassType)){
+        if(!(type instanceof  ObjectType)){
             AstBuilder.this.handleSyntaxError("unsupported type", rule);
             return null;
         }
-        ClassType exprType = (ClassType) type;
+        ObjectType exprType = (ObjectType) type;
         if ((exprType instanceof ArrayType)
                 && fieldName.equals("length")) {
             ret = new ArrayLengthExpr(expr);
@@ -1800,7 +1800,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
         if (ctx.parentClass != null) {
-            ClassType parentClass = parseClassType(ctx.parentClass);
+            ObjectType parentClass = parseClassType(ctx.parentClass);
             if(parentClass!=null){
                 thisClazz.superType =  parentClass;
             }
@@ -1809,7 +1809,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
-                ClassType itfClz = parseClassType(itf);
+                ObjectType itfClz = parseClassType(itf);
                 if(itfClz!=null){
                     thisClazz.interfaces.add(itfClz);
                 }
@@ -1882,7 +1882,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     private Type parseWildcardType(KalangParser.WildcardTypeContext ctx){
-        ClassType classType = parseClassType(ctx.classType());
+        ObjectType classType = parseClassType(ctx.classType());
         if(classType==null) return null;
         Type[] bounds = new Type[]{classType};
         String boundKind = ctx.boundKind.getText();

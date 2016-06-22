@@ -40,7 +40,7 @@ import kalang.ast.ThrowStmt;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.core.ArrayType;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.MethodDescriptor;
 import kalang.core.PrimitiveType;
@@ -139,7 +139,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         this.clazz = clz;
         visit(clazz);
         if (clazz.interfaces.size() > 0) {
-            for (ClassType itfNode : clazz.interfaces) {
+            for (ObjectType itfNode : clazz.interfaces) {
                 if (itfNode == null) {
                     continue;
                 }
@@ -209,8 +209,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public static PrimitiveType getPrimitiveType(Type t){
         if(t instanceof PrimitiveType){
             return (PrimitiveType) t;
-        }else if(t instanceof ClassType){
-            return Types.getPrimitiveType((ClassType)t);
+        }else if(t instanceof ObjectType){
+            return Types.getPrimitiveType((ObjectType)t);
         }else{
             return null;
         }

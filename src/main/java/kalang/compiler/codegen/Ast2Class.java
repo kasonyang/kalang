@@ -64,7 +64,7 @@ import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.compiler.CodeGenerator;
 import kalang.core.ArrayType;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.GenericType;
 import kalang.core.ParameterizedType;
@@ -151,7 +151,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         String superTypeStr = "";
         if(c.superType!=null) superTypeStr += typeSignature(c.superType);
-        for(ClassType itf:c.interfaces){
+        for(ObjectType itf:c.interfaces){
             superTypeStr += typeSignature(itf);
         }
         return "<" + gnrTypeStr + ">" + superTypeStr ;
@@ -178,7 +178,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }
             if(!ptypes.isEmpty()) ptypes = "<" + ptypes + ">";
             return "L" + pt.getRawType().getName().replace('.', '/') + ptypes + ";";
-        }else if(type instanceof ClassType){
+        }else if(type instanceof ObjectType){
             return getTypeDescriptor(type);
         }else if(type instanceof PrimitiveType){
             return getTypeDescriptor(type);
@@ -656,7 +656,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ownerClass = internalName(((StaticInvokeExpr) node).getInvokeClass().getReferencedClassNode());
         } else if(node instanceof ObjectInvokeExpr) {
             ObjectInvokeExpr oie = (ObjectInvokeExpr) node;
-            ClassType targetType = (ClassType) oie.getInvokeTarget().getType();
+            ObjectType targetType = (ObjectType) oie.getInvokeTarget().getType();
             ownerClass = internalName(targetType);
             ExprNode target = oie.getInvokeTarget();
             visit(target);
@@ -803,7 +803,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             return "L" + internalName(Types.ROOT_CLASS_NAME) + ";";
         }else if(t instanceof ParameterizedType){
             return getTypeDescriptor(((ParameterizedType)t).getRawType());
-        }else if(t instanceof ClassType){
+        }else if(t instanceof ObjectType){
             return "L" + internalName(t.getName()) + ";";
         }else{
             throw Exceptions.unsupportedTypeException(t);

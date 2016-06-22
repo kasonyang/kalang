@@ -5,7 +5,7 @@ import kalang.compiler.AstLoader;
  *
  * @author Kason Yang
  */
-public class ArrayType extends ClassType{
+public class ArrayType extends ObjectType{
 
     private Type componentType;
 

@@ -6,7 +6,7 @@ import java.net.*;
 import java.util.*;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.Type;
 import kalang.util.AstUtil;
 /**
@@ -15,21 +15,21 @@ import kalang.util.AstUtil;
  */
 public class NewObjectExpr extends ExprNode{
 
-    protected ClassType objectType;
+    protected ObjectType objectType;
     
     protected InvocationExpr constructor;
 
-    public NewObjectExpr(ClassType objectType, InvocationExpr constructor) {
+    public NewObjectExpr(ObjectType objectType, InvocationExpr constructor) {
         this.objectType = objectType;
         this.constructor = constructor;
     }
     
-    public NewObjectExpr(ClassType objectType,ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException {
+    public NewObjectExpr(ObjectType objectType,ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException {
         this.objectType = objectType;
         initDefaultConstructor(args);
     }
     
-    public NewObjectExpr(ClassType objectType) throws MethodNotFoundException, AmbiguousMethodException {
+    public NewObjectExpr(ObjectType objectType) throws MethodNotFoundException, AmbiguousMethodException {
         this.objectType = objectType;
         initDefaultConstructor(null);
     }
@@ -53,14 +53,14 @@ public class NewObjectExpr extends ExprNode{
     /**
      * @return the objectType
      */
-    public ClassType getObjectType() {
+    public ObjectType getObjectType() {
         return objectType;
     }
 
     /**
      * @param objectType the objectType to set
      */
-    public void setObjectType(ClassType objectType) {
+    public void setObjectType(ObjectType objectType) {
         Objects.requireNonNull(objectType);
         this.objectType = objectType;
     }

@@ -12,18 +12,18 @@ import kalang.util.TypeUtil;
  *
  * @author Kason Yang
  */
-public class ParameterizedType extends ClassType {
+public class ParameterizedType extends ObjectType {
     
     Type[] parameterTypes;
-    private final ClassType rawType;
+    private final ObjectType rawType;
     
-    protected ParameterizedType(ClassType rawType,Type[] parameterTypes,NullableKind nullable ) {
+    protected ParameterizedType(ObjectType rawType,Type[] parameterTypes,NullableKind nullable ) {
         //TODO may be bug
         super(rawType.getClassNode(),rawType.getSuperType(),nullable);
         this.rawType = rawType;
         this.parameterTypes = parameterTypes;
         if(superType!=null){
-            superType =(ClassType) getActualType(superType);
+            superType =(ObjectType) getActualType(superType);
         }
        //TODO check parameterTypes.length
     }
@@ -42,7 +42,7 @@ public class ParameterizedType extends ClassType {
         return ret;
     }
 
-    public ClassType getRawType() {
+    public ObjectType getRawType() {
         return rawType;
     }
 
@@ -99,7 +99,7 @@ public class ParameterizedType extends ClassType {
             Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
             if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
             return Types.getParameterizedType(pt.getRawType(), parsedParamTypes);
-        }else if(type instanceof ClassType){
+        }else if(type instanceof ObjectType){
             return type;
         }else if(type instanceof PrimitiveType){
             return type;

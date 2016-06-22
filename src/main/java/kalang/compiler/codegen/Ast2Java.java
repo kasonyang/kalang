@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import kalang.compiler.CodeGenerator;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.exception.Exceptions;
@@ -198,7 +198,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         String impStr = "";
         if (node.interfaces != null && node.interfaces.size() > 0) {
             List<String> interfaces = new LinkedList();
-            for (ClassType itf : node.interfaces) {
+            for (ObjectType itf : node.interfaces) {
                 interfaces.add(itf.getName());
             }
             impStr = "implements " + String.join(",", interfaces);

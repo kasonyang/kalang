@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import kalang.ast.MethodNode;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.GenericType;
 import kalang.core.ParameterizedType;
 import kalang.core.PrimitiveType;

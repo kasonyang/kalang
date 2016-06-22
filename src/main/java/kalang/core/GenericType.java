@@ -9,7 +9,7 @@ import kalang.ast.MethodNode;
  *
  * @author Kason Yang
  */
-public class GenericType extends ClassType{
+public class GenericType extends ObjectType{
     
     protected String name;
     

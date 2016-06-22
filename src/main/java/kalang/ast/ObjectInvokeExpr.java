@@ -7,7 +7,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.MethodDescriptor;
 import kalang.core.Type;
@@ -24,7 +24,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
     }
     
     public static ObjectInvokeExpr create(ExprNode target , String methodName,ExprNode[] args,@Nullable ClassNode caller) throws MethodNotFoundException, AmbiguousMethodException {
-        ClassType targetType = (ClassType) target.getType();
+        ObjectType targetType = (ObjectType) target.getType();
         ClassNode clazz = targetType.getClassNode();
         boolean recursive = ! "<init>".equals(methodName);
         //MethodNode[] candidates = AstUtil.listAccessibleMethods(clazz, caller , recursive);
@@ -44,7 +44,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
     //private final ClassNode specialClass;
 
     public ObjectInvokeExpr(ExprNode invokeTarget, ExecutableDescriptor method, ExprNode[] args) {
-        super((ClassType)invokeTarget.getType(),method, args);
+        super((ObjectType)invokeTarget.getType(),method, args);
         //TODO check non-static
         this.invokeTarget = invokeTarget;
     }

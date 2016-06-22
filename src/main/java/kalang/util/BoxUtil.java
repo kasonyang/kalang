@@ -21,7 +21,7 @@ import kalang.ast.ExprStmt;
 import kalang.ast.MultiStmtExpr;
 import kalang.ast.Statement;
 import kalang.core.ArrayType;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -81,7 +81,7 @@ public class BoxUtil {
                 return CAST_PRIMITIVE;
             }
         } else if (fromType instanceof PrimitiveType
-                && toType instanceof ClassType) {
+                && toType instanceof ObjectType) {
             if (toType.equals(Types.getRootType())) {
                 return CAST_PRIMITIVE_TO_OBJECT;
             }
@@ -91,17 +91,17 @@ public class BoxUtil {
 ////            if (toType.equals(Types.STRING_CLASS_TYPE)) {
 ////                return CAST_PRIMITIVE_TO_STRING;
 ////            }
-            PrimitiveType toPriType = Types.getPrimitiveType((ClassType) toType);
+            PrimitiveType toPriType = Types.getPrimitiveType((ObjectType) toType);
             if (toPriType == null) {
                 return CAST_UNSUPPORTED;
             }
             if (toPriType.equals(fromType)) {
                 return CAST_PRIMITIVE_TO_OBJECT;
             }
-        } else if (fromType instanceof ClassType
+        } else if (fromType instanceof ObjectType
                 && toType instanceof PrimitiveType) {
 //            if() {
-            ClassType fromClassType = (ClassType) fromType;
+            ObjectType fromClassType = (ObjectType) fromType;
             PrimitiveType fromPrimitive = Types.getPrimitiveType(fromClassType);
             if (fromPrimitive == null) {
                 return CAST_UNSUPPORTED;
@@ -112,7 +112,7 @@ public class BoxUtil {
         } 
 //        else if (
 //                (
-//                fromType instanceof ClassType
+//                fromType instanceof ObjectType
 //                || fromType instanceof ArrayType
 //                )
 //                && toType.equals(Types.STRING_CLASS_TYPE)
@@ -127,7 +127,7 @@ public class BoxUtil {
     }
 
     private static ExprNode castPrimitive2Object(ExprNode expr, PrimitiveType fromType) {
-        ClassType classType = Types.getClassType(fromType);
+        ObjectType classType = Types.getClassType(fromType);
         if(classType==null){
             throw new UnknownError("unknown primitive type:" + fromType);
         }
@@ -168,7 +168,7 @@ public class BoxUtil {
         Type fromType = expr.getType();
         if(fromType instanceof PrimitiveType){
             return castPrimitive2String(expr, (PrimitiveType) fromType);
-        }else if(fromType instanceof ClassType){
+        }else if(fromType instanceof ObjectType){
             return castObject2String(expr);
         }else{
             return null;

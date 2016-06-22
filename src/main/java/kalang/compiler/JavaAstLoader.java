@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.core.ArrayType;
-import kalang.core.ClassType;
+import kalang.core.ObjectType;
 import kalang.core.GenericType;
 import kalang.core.NullableKind;
 import kalang.core.ParameterizedType;
@@ -80,13 +80,13 @@ public class JavaAstLoader extends AstLoader {
         java.lang.reflect.Type superType = clz.getGenericSuperclass();
         Class superClazz = clz.getSuperclass();
         if (superType != null) {
-            cn.superType = (ClassType)getType(superType, genericTypes,superClazz);
+            cn.superType = (ObjectType)getType(superType, genericTypes,superClazz);
         }
         java.lang.reflect.Type[] typeInterfaces = clz.getGenericInterfaces();
         Class[] clzInterfaces = clz.getInterfaces();
         if(clzInterfaces != null){
             for(int i=0;i<clzInterfaces.length;i++){
-                cn.interfaces.add((ClassType)getType(typeInterfaces[i], genericTypes,clzInterfaces[i]));
+                cn.interfaces.add((ObjectType)getType(typeInterfaces[i], genericTypes,clzInterfaces[i]));
             }
         }
         List<Executable> methods = new LinkedList();
@@ -193,11 +193,11 @@ public class JavaAstLoader extends AstLoader {
         }else if(t instanceof java.lang.reflect.ParameterizedType){
             java.lang.reflect.ParameterizedType pt = (java.lang.reflect.ParameterizedType) t;
             Type rawType = transType(pt.getRawType(),genericTypes);
-            if(!(rawType instanceof ClassType)) return null;
+            if(!(rawType instanceof ObjectType)) return null;
             java.lang.reflect.Type[] typeArgs = pt.getActualTypeArguments();
             Type[] gTypes = transType(typeArgs,genericTypes);
             if(gTypes==null) return null;
-            return Types.getParameterizedType((ClassType) rawType, gTypes);
+            return Types.getParameterizedType((ObjectType) rawType, gTypes);
         }else if(t instanceof java.lang.reflect.WildcardType){
             java.lang.reflect.WildcardType wt = (java.lang.reflect.WildcardType) t;
             Type[] upperBounds = transType(wt.getUpperBounds(),genericTypes);

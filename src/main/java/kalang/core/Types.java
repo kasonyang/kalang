@@ -24,7 +24,7 @@ public class Types {
     private static Map<String,PrimitiveType> primitiveTypes = new HashMap();
     private static Map<List,ArrayType> arrayTypes = new HashMap();
     
-    private static Map<List,ClassType> classTypes  = new HashMap<>();
+    private static Map<List,ObjectType> classTypes  = new HashMap<>();
             
     private static final Map<List,ParameterizedType> parameterizedTypes = new HashMap();
     
@@ -116,11 +116,11 @@ public class Types {
         return at;
     }
     
-    public static ParameterizedType getParameterizedType(ClassType rawType,Type[] argumentsType){
+    public static ParameterizedType getParameterizedType(ObjectType rawType,Type[] argumentsType){
         return getParameterizedType(rawType, argumentsType,NullableKind.NONNULL);
     }
     
-    public static ParameterizedType getParameterizedType(ClassType rawType,Type[] argumentsType,NullableKind nullable){
+    public static ParameterizedType getParameterizedType(ObjectType rawType,Type[] argumentsType,NullableKind nullable){
         List key = new ArrayList(argumentsType.length+1);
         key.add(rawType);
         key.addAll(Arrays.asList(argumentsType));
@@ -134,14 +134,14 @@ public class Types {
     }
     
     @Nonnull
-    public static ClassType getClassType(@Nonnull ClassNode clazz){
+    public static ObjectType getClassType(@Nonnull ClassNode clazz){
         return getClassType(clazz,NullableKind.NONNULL);
     }
     
     @Nonnull
-    public static ClassType getClassType(@Nonnull ClassNode clazz,NullableKind nullable){
+    public static ObjectType getClassType(@Nonnull ClassNode clazz,NullableKind nullable){
         List<Object> key = Arrays.asList(clazz,nullable);
-        ClassType ct = classTypes.get(key);
+        ObjectType ct = classTypes.get(key);
         if(ct==null){
             ct = new ClassType(clazz,clazz.superType,nullable);
             classTypes.put(key, ct);
@@ -150,11 +150,11 @@ public class Types {
     }
     
     @Nullable
-    public static PrimitiveType getPrimitiveType(ClassType classType){
+    public static PrimitiveType getPrimitiveType(ObjectType classType){
         return primitive2class.getKey(classType.getName());
     }
     
-    public static ClassType requireClassType(String className){
+    public static ObjectType requireClassType(String className){
         try {
             return getClassType(className);
         } catch (AstNotFoundException ex) {
@@ -164,18 +164,18 @@ public class Types {
     }
     
     @Nonnull
-    public static ClassType getClassType(String className) throws AstNotFoundException{
+    public static ObjectType getClassType(String className) throws AstNotFoundException{
         return getClassType(className,NullableKind.NONNULL);
     }
     
     @Nonnull
-    public static ClassType getClassType(String className,NullableKind nullable) throws AstNotFoundException{
+    public static ObjectType getClassType(String className,NullableKind nullable) throws AstNotFoundException{
         ClassNode ast = AstLoader.BASE_AST_LOADER.loadAst(className);
         return Types.getClassType(ast,nullable);
     }
     
     @Nullable
-    public static ClassType getClassType(PrimitiveType primitiveType){
+    public static ObjectType getClassType(PrimitiveType primitiveType){
         return requireClassType(primitive2class.get(primitiveType));
     }
     
@@ -186,8 +186,8 @@ public class Types {
     }
 
     public static boolean isNumberClass(Type type) {
-        if(type instanceof ClassType)
-            return Arrays.asList(numberClass).contains(((ClassType)type).getName());
+        if(type instanceof ObjectType)
+            return Arrays.asList(numberClass).contains(((ObjectType)type).getName());
         else return false;
     }
 
@@ -230,109 +230,109 @@ public class Types {
     /**
      * @return the VoidClassType
      */
-    public static ClassType getVoidClassType() {
+    public static ObjectType getVoidClassType() {
         return requireClassType(VOID_CLASS_NAME);
     }
 
     /**
      * @return the booleanClassType
      */
-    public static ClassType getBooleanClassType() {
+    public static ObjectType getBooleanClassType() {
         return requireClassType(BOOLEAN_CLASS_NAME);
     }
 
     /**
      * @return the byteClassType
      */
-    public static ClassType getByteClassType() {
+    public static ObjectType getByteClassType() {
         return requireClassType(BYTE_CLASS_NAME);
     }
 
     /**
      * @return the charClassType
      */
-    public static ClassType getCharClassType() {
+    public static ObjectType getCharClassType() {
         return requireClassType(CHAR_CLASS_NAME);
     }
 
     /**
      * @return the intClassType
      */
-    public static ClassType getIntClassType() {
+    public static ObjectType getIntClassType() {
         return requireClassType(INT_CLASS_NAME);
     }
 
     /**
      * @return the longClassType
      */
-    public static ClassType getLongClassType() {
+    public static ObjectType getLongClassType() {
         return requireClassType(LONG_CLASS_NAME);
     }
 
     /**
      * @return the floatClassType
      */
-    public static ClassType getFloatClassType() {
+    public static ObjectType getFloatClassType() {
         return requireClassType(FLOAT_CLASS_NAME);
     }
 
     /**
      * @return the doubleClassType
      */
-    public static ClassType getDoubleClassType() {
+    public static ObjectType getDoubleClassType() {
         return requireClassType(DOUBLE_CLASS_NAME);
     }
 
     /**
      * @return the mapImplClassType
      */
-    public static ClassType getMapImplClassType() {
+    public static ObjectType getMapImplClassType() {
         return requireClassType(MAP_IMPL_CLASS_NAME);
     }
 
     /**
      * @return the listImplClassType
      */
-    public static ClassType getListImplClassType() {
+    public static ObjectType getListImplClassType() {
         return requireClassType(LIST_IMPL_CLASS_NAME);
     }
 
     /**
      * @return the exceptionClassType
      */
-    public static ClassType getExceptionClassType() {
+    public static ObjectType getExceptionClassType() {
         return requireClassType(EXCEPTION_CLASS_NAME);
     }
 
     /**
      * @return the shortClassType
      */
-    public static ClassType getShortClassType() {
+    public static ObjectType getShortClassType() {
         return requireClassType(SHORT_CLASS_NAME);
     }
 
     /**
      * @return the classClassType
      */
-    public static ClassType getClassClassType() {
+    public static ObjectType getClassClassType() {
         return requireClassType(CLASS_CLASS_NAME);
     }
 
     /**
      * @return the rootType
      */
-    public static ClassType getRootType() {
+    public static ObjectType getRootType() {
         return requireClassType(ROOT_CLASS_NAME);
     }
 
     /**
      * @return the stringClassType
      */
-    public static ClassType getStringClassType() {
+    public static ObjectType getStringClassType() {
         return requireClassType(STRING_CLASS_NAME);
     }
 
-    public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {
+    public static ObjectType getClassType(ObjectType clazzType, NullableKind nullable) {
         return getClassType(clazzType.getClassNode(),nullable);
     }
 

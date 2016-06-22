@@ -3,9 +3,9 @@ import java.util.*;
 import kalang.core.*;
 public class ThisExpr extends ExprNode{
     
-    private final ClassType classType;
+    private final ObjectType classType;
     
-    public ThisExpr(ClassType classType){
+    public ThisExpr(ObjectType classType){
             this.classType = classType;
     }
 
