@@ -1,9 +1,6 @@
 
 package kalang.core;
 import kalang.ast.ClassNode;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,10 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.compiler.AstLoader;
 import kalang.AstNotFoundException;
-import kalang.util.TypeUtil;
-import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
-import org.apache.commons.collections4.bidimap.TreeBidiMap;
 /**
  *
  * @author Kason Yang
@@ -26,7 +20,7 @@ public class Types {
     
     //private static Map<List,ObjectType> classTypes  = new HashMap<>();
             
-    private static final Map<List,ParameterizedType> parameterizedTypes = new HashMap();
+    private static final Map<List,ClassType> classTypes = new HashMap();
     
     private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();;
     
@@ -116,31 +110,31 @@ public class Types {
         return at;
     }
     
-    public static ParameterizedType getParameterizedType(ClassNode rawType,Type[] argumentsType){
-        return getParameterizedType(rawType, argumentsType,NullableKind.NONNULL);
+    public static ClassType getClassType(ClassNode rawType,Type[] argumentsType){
+        return getClassType(rawType, argumentsType,NullableKind.NONNULL);
     }
     
-    public static ParameterizedType getParameterizedType(ClassNode rawType,Type[] argumentsType,NullableKind nullable){
+    public static ClassType getClassType(ClassNode rawType,Type[] argumentsType,NullableKind nullable){
         List key = new ArrayList(argumentsType.length+2);
         key.add(rawType);
         key.addAll(Arrays.asList(argumentsType));
         key.add(nullable);
-        ParameterizedType pt = parameterizedTypes.get(key);
+        ClassType pt = classTypes.get(key);
         if(pt==null){
-            pt = new ParameterizedType(rawType, argumentsType,nullable);
-            parameterizedTypes.put(key, pt);
+            pt = new ClassType(rawType, argumentsType,nullable);
+            classTypes.put(key, pt);
         }
         return pt;
     }
     
     @Nonnull
     public static ObjectType getClassType(@Nonnull ClassNode clazz){
-        return getClassType(clazz,NullableKind.NONNULL);
+        return Types.getClassType(clazz,NullableKind.NONNULL);
     }
     
     @Nonnull
     public static ObjectType getClassType(@Nonnull ClassNode clazz,NullableKind nullable){
-        return getParameterizedType(clazz, new Type[0],nullable);
+        return getClassType(clazz, new Type[0],nullable);
     }
     
     @Nullable
@@ -150,7 +144,7 @@ public class Types {
     
     public static ObjectType requireClassType(String className){
         try {
-            return getClassType(className);
+            return Types.getClassType(className);
         } catch (AstNotFoundException ex) {
             Logger.getLogger(Types.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException("failed to load class type:"+className);
@@ -159,7 +153,7 @@ public class Types {
     
     @Nonnull
     public static ObjectType getClassType(String className) throws AstNotFoundException{
-        return getClassType(className,NullableKind.NONNULL);
+        return Types.getClassType(className,NullableKind.NONNULL);
     }
     
     @Nonnull
@@ -327,7 +321,7 @@ public class Types {
     }
 
     public static ObjectType getClassType(ObjectType clazzType, NullableKind nullable) {
-        return getClassType(clazzType.getClassNode(),nullable);
+        return Types.getClassType(clazzType.getClassNode(),nullable);
     }
 
 }

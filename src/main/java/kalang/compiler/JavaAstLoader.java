@@ -26,7 +26,7 @@ import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.GenericType;
 import kalang.core.NullableKind;
-import kalang.core.ParameterizedType;
+import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.core.WildcardType;
@@ -197,7 +197,7 @@ public class JavaAstLoader extends AstLoader {
             java.lang.reflect.Type[] typeArgs = pt.getActualTypeArguments();
             Type[] gTypes = transType(typeArgs,genericTypes);
             if(gTypes==null) return null;
-            return Types.getParameterizedType(((ObjectType) rawType).getClassNode(), gTypes);
+            return Types.getClassType(((ObjectType) rawType).getClassNode(), gTypes);
         }else if(t instanceof java.lang.reflect.WildcardType){
             java.lang.reflect.WildcardType wt = (java.lang.reflect.WildcardType) t;
             Type[] upperBounds = transType(wt.getUpperBounds(),genericTypes);

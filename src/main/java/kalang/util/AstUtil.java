@@ -38,7 +38,7 @@ import kalang.core.ExecutableDescriptor;
 import kalang.core.FieldDescriptor;
 import kalang.core.GenericType;
 import kalang.core.MethodDescriptor;
-import kalang.core.ParameterizedType;
+import kalang.core.ClassType;
 import kalang.core.Type;
 import kalang.core.Types;
 

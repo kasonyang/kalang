@@ -28,9 +28,9 @@ public class ClassNodeTest {
         assertFalse(listClass.isSubclassOf(listClass));
         
         Type[] paramTypes = new Type[]{Types.getRootType()};
-        ObjectType listType = Types.getParameterizedType(listClass,paramTypes );
+        ObjectType listType = Types.getClassType(listClass,paramTypes );
         ArrayType listArrayType = Types.getArrayType(listType);
-        ObjectType arrayListType = Types.getParameterizedType(arrayListClass,paramTypes );
+        ObjectType arrayListType = Types.getClassType(arrayListClass,paramTypes );
         ArrayType arrayListArrayType = Types.getArrayType(arrayListType);
         assertTrue(arrayListType.isSubTypeOf(listType));
         assertTrue(arrayListArrayType.isSubTypeOf(listArrayType));

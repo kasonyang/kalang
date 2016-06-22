@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import kalang.ast.MethodNode;
 import kalang.core.ObjectType;
 import kalang.core.GenericType;
-import kalang.core.ParameterizedType;
+import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 

@@ -67,7 +67,7 @@ import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.GenericType;
-import kalang.core.ParameterizedType;
+import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -170,8 +170,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private String typeSignature(Type type){
         if(type instanceof GenericType){
             return "T" + type.getName() + ";" ;
-        }else if(type instanceof ParameterizedType){
-            ParameterizedType pt = (ParameterizedType) type;
+        }else if(type instanceof ClassType){
+            ClassType pt = (ClassType) type;
             String ptypes = "";
             for(Type p:pt.getParameterTypes()){
                 ptypes += typeSignature(p);
@@ -802,8 +802,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else if(t instanceof GenericType){
             //TODO all generic type is object?
             return "L" + internalName(Types.ROOT_CLASS_NAME) + ";";
-        }else if(t instanceof ParameterizedType){
-            return "L" + internalName(((ParameterizedType) t).getClassNode().name) + ";";
+        }else if(t instanceof ClassType){
+            return "L" + internalName(((ClassType) t).getClassNode().name) + ";";
         }else{
             throw Exceptions.unsupportedTypeException(t);
         }
