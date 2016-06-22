@@ -33,7 +33,7 @@ public class ClassNodeTest {
         ObjectType arrayListType = Types.getClassType(arrayListClass,paramTypes );
         ArrayType arrayListArrayType = Types.getArrayType(arrayListType);
         assertTrue(arrayListType.isSubTypeOf(listType));
-        assertTrue(arrayListArrayType.isSubTypeOf(listArrayType));
+        assertTrue(listArrayType.isAssignedFrom(arrayListArrayType));
         //assertTrue(listType.isSubTypeOf(Types.getRootType()));
     }
     

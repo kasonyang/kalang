@@ -33,14 +33,4 @@ public class ArrayType extends ObjectType{
         return componentType.isAssignedFrom(other.getComponentType());
     }
 
-    @Override
-    public boolean isSubTypeOf(Type targetType) {
-        if(targetType.equals(getSuperType())) return true;
-        if(targetType instanceof ArrayType){
-            return componentType.isSubTypeOf(((ArrayType)targetType).componentType);
-        }
-        return false;
-    }
-
-
 }
