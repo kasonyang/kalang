@@ -1166,14 +1166,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return expr;
     }
     
+    @Nullable
     private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,List<ExpressionContext> argumentsCtx,ParserRuleContext ctx){
         ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
         return getObjectInvokeExpr(target, methodName, args, ctx);
     }
     
+    @Nullable
     private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,ExprNode[] args,ParserRuleContext ctx){
         if("<init>".equals(methodName)){
             throw new UnsupportedOperationException("don't get constructor by this method");
+        }
+        Type targetType = target.getType();
+        if(!(targetType instanceof ClassType)){
+            handleSyntaxError("class type required.", ctx);
+            return null;
+        }
+        ClassType targetClassType = (ClassType) targetType;
+        if(targetClassType.getNullable()==NullableKind.NULLABLE){
+            handleSyntaxError("expression may be null", ctx);
+            return null;
         }
         ExprNode expr;
         try {
