@@ -10,8 +10,7 @@ public class ArrayType extends ObjectType{
     private Type componentType;
 
     public ArrayType(Type componentType,NullableKind nullable) {
-        //TODO should not hard code
-        super(AstLoader.createArrayAst("java.lang.Object"),nullable);
+        super(AstLoader.createArrayAst(Types.ROOT_CLASS_NAME),nullable);
         this.componentType = componentType;
     }
     

@@ -793,9 +793,20 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 return "Z";
             }else if(t.equals(LONG_TYPE)){
                 return "J";
+            }else if(t.equals(INT_TYPE)){
+                return "I";
+            }else if(t.equals(CHAR_TYPE)){
+                return "C";
+            }else if(t.equals(SHORT_TYPE)){
+                return "S";
+            }else if(t.equals(BYTE_TYPE)){
+                return "B";
+            }else if(t.equals(FLOAT_TYPE)){
+                return "F";
+            }else if(t.equals(DOUBLE_TYPE)){
+                return "D";
             }else{
-                //TODO unsafe
-                return t.getName().substring(0,1).toUpperCase();
+                throw Exceptions.unsupportedTypeException(t);
             }
         }else if(t instanceof ArrayType){
             return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());

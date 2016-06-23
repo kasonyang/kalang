@@ -71,7 +71,6 @@ public abstract class ObjectType extends Type{
         return ret;
     }
     
-    //TODO cache 
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean recursive){
         Map<String,MethodDescriptor> descs = new HashMap();
         if(recursive){
@@ -103,8 +102,6 @@ public abstract class ObjectType extends Type{
         return descs.values().toArray(new MethodDescriptor[descs.size()]);
     }
     
-    //TODO cache 
-    //TODO cache 
     public ConstructorDescriptor[] getConstructorDescriptors(@Nullable ClassNode caller){
         Map<String,ConstructorDescriptor> descs = new HashMap();
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
@@ -129,7 +126,6 @@ public abstract class ObjectType extends Type{
         return null;
     }
     
-    //TODO cache
     public FieldDescriptor[] getFieldDescriptors(ClassNode caller){
         List<FieldNode> fields = clazz.fields;
         List<FieldDescriptor>ret = new ArrayList(fields.size());

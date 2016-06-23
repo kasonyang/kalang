@@ -1564,11 +1564,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public Statement visitLocalVarDecl(LocalVarDeclContext ctx) {
-        //TODO create statements
         MultiStmt ms = new MultiStmt();
-        //List<LocalVarNode> list = new LinkedList();
         for (VarDeclContext v : ctx.varDecl()) {
-           ExprNode initExpr = null;
+            ExprNode initExpr = null;
             if(v.expression()!=null){
                 initExpr = visitExpression(v.expression());
             }
@@ -1584,7 +1582,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 ms.statements.add(new ExprStmt(assignExpr));
             }
             mapAst(localVar,ctx);
-            //list.add(localVar);
             requireVarTable().put(localVar.name, localVar);
         }
         return ms;

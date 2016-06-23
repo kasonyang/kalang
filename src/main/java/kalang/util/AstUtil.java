@@ -81,7 +81,7 @@ public class AstUtil {
             mm.parameters = new ArrayList(pds.length);
             for(ParameterDescriptor pd:pds){
                 ParameterNode p = ParameterNode.create(mm);
-                //TODO set modifier
+                //TODO set parameter's modifier
                 p.name = pd.getName();
                 p.type = pd.getType();
             }
