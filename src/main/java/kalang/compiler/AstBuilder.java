@@ -234,10 +234,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         boolean isNull = (onTrue && isEQ) || (!onTrue && !isEQ);
         NullableKind nullable = isNull ? NullableKind.NULLABLE : NullableKind.NONNULL;
         Type type = expr.getType();
-        if(type instanceof ObjectType){
-            ObjectType newType = Types.getClassType((ObjectType)type, nullable);
-            changeTypeTemporarilyIfCould(expr,newType);
+        ObjectType newType;
+        //TODO support generic type and wildcardType
+        if(type instanceof ClassType){
+            newType = Types.getClassType((ClassType)type, nullable);
+        }else if(type instanceof ArrayType){
+            newType = Types.getArrayType((ArrayType)type,nullable);
+        }else{
+            newType = null;
         }
+        if(newType!=null) changeTypeTemporarilyIfCould(expr,newType);
     }
     
     protected void onIf(ExprNode expr,boolean onTrue){
@@ -459,7 +465,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
             return Types.getClassType(clazzType.getClassNode(), typeArguments,nullable);
         }else{
-            return Types.getClassType(clazzType, nullable);
+            return Types.getClassType(clazzType.getClassNode(), nullable);
         }
     }
 

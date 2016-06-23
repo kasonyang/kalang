@@ -113,6 +113,15 @@ class<T>{
         return 0;
     }
     
+    int overrideType2(){
+        List<String>? list = new ArrayList<String>();
+        if(list!=null){
+            list.add("testit");
+            return 6;
+        }
+        return 0;
+    }
+    
     /*
     
     int dynamicField() throws Exception{

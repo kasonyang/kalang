@@ -94,6 +94,10 @@ public class Types {
         return t;
     }
     
+    public static ArrayType getArrayType(ArrayType type,NullableKind nullable){
+        return getArrayType(type.getComponentType(),nullable);
+    }
+    
     @Nonnull
     public static ArrayType getArrayType(@Nonnull Type componentType){
         return getArrayType(componentType,NullableKind.NONNULL);
@@ -320,8 +324,8 @@ public class Types {
         return requireClassType(STRING_CLASS_NAME);
     }
 
-    public static ObjectType getClassType(ObjectType clazzType, NullableKind nullable) {
-        return Types.getClassType(clazzType.getClassNode(),nullable);
+    public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {
+        return Types.getClassType(clazzType.getClassNode(),clazzType.getParameterTypes(),nullable);
     }
 
 }
