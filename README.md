@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/kasonyang/kalang.svg?branch=master)](https://travis-ci.org/kasonyang/kalang)
-
 # Kalang
 A toy compiler front-end
 
