@@ -578,7 +578,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
         mapAst(mse,ctx);
-        //TODO set generic toType
         return mse;
     }
 
@@ -610,7 +609,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             stmts.add(new ExprStmt(iv));
         }
         MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
-        //TODO set generic toType
         mapAst(mse,ctx);
         return mse;
     }
@@ -811,14 +809,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             onIf(expr, true);
             trueBody=requireBlock(ctx.trueStmt);
             popOverrideTypeStack();
-            //TODO pop block state
         }
+        //TODO if last stmt is return?
         if (ctx.falseStmt != null) {
             newOverrideTypeStack();
             onIf(expr,false);
             falseBody=requireBlock(ctx.falseStmt);
             popOverrideTypeStack();
-            //TODO pop block state
         }
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
