@@ -13,26 +13,25 @@ import kalang.ast.ClassNode;
  */
 public class ClassType extends ObjectType {
     
-    Type[] parameterTypes;
+    Type[] typeArguments;
     
-    protected ClassType(ClassNode rawType,Type[] parameterTypes,NullableKind nullable ) {
-        //TODO may be bug
-        super(rawType,nullable);
-        this.parameterTypes = parameterTypes;
-           //TODO check parameterTypes.length
+    protected ClassType(ClassNode clazz,Type[] typeArguments,NullableKind nullable ) {
+        super(clazz,nullable);
+        this.typeArguments = typeArguments;
+        //TODO check typeArguments.length
     }
 
-    public Type[] getParameterTypes() {
-        return parameterTypes.length>0?parameterTypes:clazz.getGenericTypes();
+    public Type[] getTypeArguments() {
+        return typeArguments.length>0?typeArguments:clazz.getGenericTypes();
     }
     
-    public Map<GenericType,Type> getParameterTypesMap(){
+    public Map<GenericType,Type> getTypeArgumentsMap(){
         ClassNode clz = getClassNode();
         GenericType[] gts = clz.getGenericTypes();
         Map<GenericType,Type> ret = new HashMap();
-        if(parameterTypes.length>0){
+        if(typeArguments.length>0){
             for(int i=0;i<gts.length;i++){
-                ret.put(gts[i], parameterTypes[i]);
+                ret.put(gts[i], typeArguments[i]);
             }
         }
         return ret;
@@ -45,7 +44,7 @@ public class ClassType extends ObjectType {
 
     @Override
     public String getName() {
-        Type[] pTypes = getParameterTypes();
+        Type[] pTypes = getTypeArguments();
         List<String> paramTypes = new ArrayList(pTypes.length);
         for(Type t:pTypes){
             paramTypes.add(t.getName());
@@ -69,12 +68,19 @@ public class ClassType extends ObjectType {
         if (!Objects.equals(this.clazz, other.clazz)) {
             return false;
         }
-        Type[] thisPts = this.getParameterTypes();
-        Type[] otherPts = other.getParameterTypes();
+        Type[] thisPts = this.getTypeArguments();
+        Type[] otherPts = other.getTypeArguments();
         if (!Arrays.deepEquals(thisPts,otherPts)) {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + Arrays.deepHashCode(this.typeArguments);
+        return hash;
     }
     
     private static Type[] parseGenericType(Type[] types,Map<GenericType,Type> genericTypes){
@@ -91,10 +97,10 @@ public class ClassType extends ObjectType {
             return actualType == null ? type : actualType;
         }else if(type instanceof ClassType){
             ClassType pt = (ClassType) type;
-            Type[] ptParameterizedTypes = pt.getParameterTypes();
-            Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
-            if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
-            return Types.getClassType(pt.getClassNode(), parsedParamTypes);
+            Type[] ptTypeArguments = pt.getTypeArguments();
+            Type[] parsedTypeArguments = parseGenericType(ptTypeArguments,genericTypes);
+            if(Arrays.equals(parsedTypeArguments, ptTypeArguments)) return type;
+            return Types.getClassType(pt.getClassNode(), parsedTypeArguments);
         }else if(type instanceof PrimitiveType){
             return type;
         }else if(type instanceof WildcardType){
@@ -114,24 +120,12 @@ public class ClassType extends ObjectType {
             return type;
         }        
     }
-    
-    private Type getActualType(Type type){
-        Map<GenericType, Type> genericTypes;
-        genericTypes = this.getParameterTypesMap();    
-        return parseGenericType(type, genericTypes);
-    }
-    
-    private Type[] getActualType(Type[] types){
-        Type[] actTypes = new Type[types.length];
-        for(int i=0;i<types.length;i++){
-            actTypes[i] = getActualType(types[i]);
-        }
-        return actTypes;
-    }
 
     @Override
     protected Type parseType(Type type) {
-        return getActualType(type);
+        Map<GenericType, Type> genericTypes;
+        genericTypes = this.getTypeArgumentsMap();    
+        return parseGenericType(type, genericTypes);
     }
 
     @Override
@@ -148,11 +142,9 @@ public class ClassType extends ObjectType {
     public ObjectType getSuperType() {
         ObjectType superType = super.getSuperType();
         if(superType!=null){
-            superType =(ObjectType) getActualType(superType);
+            superType =(ObjectType) parseType(superType);
         }
         return superType;
-    }
-    
-    
+    }    
 
 }

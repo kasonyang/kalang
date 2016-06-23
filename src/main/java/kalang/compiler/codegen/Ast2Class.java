@@ -173,7 +173,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else if(type instanceof ClassType){
             ClassType pt = (ClassType) type;
             String ptypes = "";
-            for(Type p:pt.getParameterTypes()){
+            for(Type p:pt.getTypeArguments()){
                 ptypes += typeSignature(p);
             }
             if(!ptypes.isEmpty()) ptypes = "<" + ptypes + ">";

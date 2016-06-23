@@ -325,7 +325,7 @@ public class Types {
     }
 
     public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {
-        return Types.getClassType(clazzType.getClassNode(),clazzType.getParameterTypes(),nullable);
+        return Types.getClassType(clazzType.getClassNode(),clazzType.getTypeArguments(),nullable);
     }
 
 }
