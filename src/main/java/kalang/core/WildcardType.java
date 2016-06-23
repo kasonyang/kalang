@@ -2,21 +2,40 @@ package kalang.core;
 
 import java.util.Arrays;
 import javax.annotation.Nullable;
+import kalang.ast.ClassNode;
 import kalang.util.TypeUtil;
 
 /**
  *
  * @author Kason Yang
  */
-public class WildcardType extends Type {
+public class WildcardType extends ObjectType {
     
-    //TODO while upperBounds is array
+    //TODO why upperBounds is array
     private Type[] upperBounds;
     
-    //TODO while lowerBounds is array
+    //TODO why lowerBounds is array
     private Type[] lowerBounds;
+    
+    static ClassNode getClassNode(Type[] upperBounds,Type[] lowerBounds){
+        if(lowerBounds!=null && lowerBounds.length>0){
+            return Types.getRootType().getClassNode();
+        }else if(upperBounds!=null && upperBounds.length>0){
+            Type ub = upperBounds[0];
+            if(ub instanceof ClassType){
+                return ((ClassType)upperBounds[0]).getClassNode();
+            }else{
+                return Types.getRootType().getClassNode();
+            }
+        }else{
+            throw new IllegalArgumentException();
+        }
+    }
 
     public WildcardType(@Nullable Type[] upperBounds,@Nullable Type[] lowerBounds) {
+        //TODO is non-null?
+        //TODO bounds maybe parameterizedType
+        super(getClassNode(upperBounds, lowerBounds),NullableKind.NONNULL);
         this.upperBounds = upperBounds == null ? new Type[0] : upperBounds;
         this.lowerBounds = lowerBounds == null ? new Type[0] : lowerBounds;
     }
