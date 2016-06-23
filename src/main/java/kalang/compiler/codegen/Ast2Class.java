@@ -217,18 +217,20 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return inames;
     }
     
-    protected void annotationNullable(Object obj,ObjectType type){
+    protected String getNullableAnnotation(ObjectType type){
         NullableKind nullable = type.getNullable();
-        String annotation;
         if(nullable == NullableKind.NONNULL){
-            annotation = "Nonnull";
+            return "kalang.annotation.Nonnull";
         }else if(nullable == NullableKind.NULLABLE){
-            annotation = "Nullable";
+            return "kalang.annotation.Nullable";
         }else{
-            annotation  = null;
+            return null;
         }
+    }
+    
+    protected void annotationNullable(Object obj,ObjectType type){
+        String annotation = getNullableAnnotation(type);
         if(annotation!=null){
-            annotation = "kalang.annotation." + annotation;
             try {
                 annotation(obj, new AnnotationNode(AstLoader.BASE_AST_LOADER.loadAst(annotation)));
             } catch (AstNotFoundException ex) {
@@ -301,7 +303,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             varIdCounter = 1;
         }
         BlockStmt body = node.body;
-        visitAll(node.parameters);
+        for(int i=0;i<node.parameters.size();i++){
+            ParameterNode p = node.parameters.get(i);
+            visit(p);
+            if(p.type instanceof ObjectType){
+                md.visitParameterAnnotation(i,getNullableAnnotation((ObjectType)p.type), true).visitEnd();
+            }
+        }
         if(body!=null){
             if(AstUtil.isConstructor(node)){//constructor
                 int stmtsSize = body.statements.size();
