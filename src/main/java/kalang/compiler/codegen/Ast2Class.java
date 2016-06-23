@@ -177,7 +177,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 ptypes += typeSignature(p);
             }
             if(!ptypes.isEmpty()) ptypes = "<" + ptypes + ">";
-            return "L" + pt.getRawType().name.replace('.', '/') + ptypes + ";";
+            return "L" + pt.getClassNode().name.replace('.', '/') + ptypes + ";";
         }else if(type instanceof PrimitiveType){
             return getTypeDescriptor(type);
         }else if(type instanceof ArrayType){

@@ -13,7 +13,7 @@ import kalang.util.MethodUtil;
  */
 public abstract class ObjectType extends Type{
     
-    private ClassNode clazz;
+    protected final ClassNode clazz;
     
     protected NullableKind nullable;
 

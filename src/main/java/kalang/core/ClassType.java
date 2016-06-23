@@ -14,18 +14,16 @@ import kalang.ast.ClassNode;
 public class ClassType extends ObjectType {
     
     Type[] parameterTypes;
-    private final ClassNode rawType;
     
     protected ClassType(ClassNode rawType,Type[] parameterTypes,NullableKind nullable ) {
         //TODO may be bug
         super(rawType,nullable);
-        this.rawType = rawType;
         this.parameterTypes = parameterTypes;
            //TODO check parameterTypes.length
     }
 
     public Type[] getParameterTypes() {
-        return parameterTypes.length>0?parameterTypes:rawType.getGenericTypes();
+        return parameterTypes.length>0?parameterTypes:clazz.getGenericTypes();
     }
     
     public Map<GenericType,Type> getParameterTypesMap(){
@@ -40,13 +38,9 @@ public class ClassType extends ObjectType {
         return ret;
     }
 
-    public ClassNode getRawType() {
-        return rawType;
-    }
-
     @Override
     public String getDeclarationKey() {
-        return rawType.name;
+        return clazz.name;
     }
 
     @Override
@@ -57,7 +51,7 @@ public class ClassType extends ObjectType {
             paramTypes.add(t.getName());
         }
         String suffix = paramTypes.isEmpty() ? "" : "<" + String.join(",",paramTypes) + ">";
-        return rawType.name + suffix;
+        return clazz.name + suffix;
     }
 
     @Override
@@ -72,7 +66,7 @@ public class ClassType extends ObjectType {
             return false;
         }
         final ClassType other = (ClassType) obj;
-        if (!Objects.equals(this.rawType, other.rawType)) {
+        if (!Objects.equals(this.clazz, other.clazz)) {
             return false;
         }
         Type[] thisPts = this.getParameterTypes();
@@ -100,7 +94,7 @@ public class ClassType extends ObjectType {
             Type[] ptParameterizedTypes = pt.getParameterTypes();
             Type[] parsedParamTypes = parseGenericType(ptParameterizedTypes,genericTypes);
             if(Arrays.equals(parsedParamTypes, ptParameterizedTypes)) return type;
-            return Types.getClassType(pt.getRawType(), parsedParamTypes);
+            return Types.getClassType(pt.getClassNode(), parsedParamTypes);
         }else if(type instanceof PrimitiveType){
             return type;
         }else if(type instanceof WildcardType){
