@@ -92,23 +92,6 @@ public class JavaAstLoader extends AstLoader {
         List<Executable> methods = new LinkedList();
         methods.addAll(Arrays.asList(clz.getDeclaredMethods()));
         methods.addAll(Arrays.asList(clz.getDeclaredConstructors()));
-        Class[] itfs = clz.getInterfaces();
-        //TODO should default method of  interface becomes a declared method
-        List<String> declaredMethods = new LinkedList<>();
-        for(Executable m:methods){
-            declaredMethods.add(getMethodDeclarationKey(m));
-        }
-        if(itfs!=null){
-            for(Class i:itfs){
-                for(Method m:i.getMethods()){
-                    if(
-                            m.isDefault() 
-                            && !declaredMethods.contains(getMethodDeclarationKey(m))){
-                        methods.add(m);
-                    }
-                }
-            }
-        }
         for (Executable m : methods) {
             MethodNode methodNode = cn.createMethodNode();
             for (Parameter p : m.getParameters()) {

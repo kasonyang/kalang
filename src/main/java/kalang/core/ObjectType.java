@@ -74,11 +74,19 @@ public abstract class ObjectType extends Type{
     //TODO cache 
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean recursive){
         Map<String,MethodDescriptor> descs = new HashMap();
-        ObjectType superType = getSuperType();
-        if(recursive && superType!=null){
-            MethodDescriptor[] ms = superType.getMethodDescriptors(caller, recursive);
-            for(MethodDescriptor m:ms){
-                descs.put(m.getDeclarationKey(),m);
+        if(recursive){
+            ObjectType[] itfs = getInterfaces();
+            List<ObjectType> superList = new ArrayList(itfs.length+1);
+            ObjectType superType = getSuperType();
+            if(superType!=null){
+                superList.add(superType);
+            }
+            superList.addAll(Arrays.asList(itfs));
+            for(ObjectType st:superList){
+                MethodDescriptor[] ms = st.getMethodDescriptors(caller, recursive);
+                for(MethodDescriptor m:ms){
+                    descs.put(m.getDeclarationKey(),m);
+                }
             }
         }
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
