@@ -39,6 +39,7 @@ import kalang.core.FieldDescriptor;
 import kalang.core.GenericType;
 import kalang.core.MethodDescriptor;
 import kalang.core.ClassType;
+import kalang.core.ParameterDescriptor;
 import kalang.core.Type;
 import kalang.core.Types;
 
@@ -64,20 +65,26 @@ public class AstUtil {
         return list;
     }
     
-    public static void createEmptyConstructor(ClassNode clazzNode){
-        //FIXME support generic type
+    public static boolean createEmptyConstructor(ClassNode clazzNode){
         ObjectType supType = clazzNode.superType;
         if(supType==null){
             throw new RuntimeException("super type is null:" + clazzNode.name);
         }
-       ConstructorDescriptor[] methods = supType.getConstructorDescriptors(clazzNode);
-       for(ConstructorDescriptor m:methods){
+       ConstructorDescriptor[] constructors = supType.getConstructorDescriptors(clazzNode);
+        ConstructorDescriptor m = MethodUtil.getConstructorDescriptor(constructors, null);
+       if(m!=null){
             MethodNode mm = clazzNode.createMethodNode();
             mm.name = m.getName();
             mm.exceptionTypes =Arrays.asList(m.getExceptionTypes());
             mm.modifier = m.getModifier();
-            //TODO bug:here not replace generic type
-            mm.parameters = m.getMethodNode().parameters;
+            ParameterDescriptor[] pds = m.getParameterDescriptors();
+            mm.parameters = new ArrayList(pds.length);
+            for(ParameterDescriptor pd:pds){
+                ParameterNode p = ParameterNode.create(mm);
+                //TODO set modifier
+                p.name = pd.getName();
+                p.type = pd.getType();
+            }
             mm.type = Types.VOID_TYPE;
             BlockStmt body = new BlockStmt(null);
             mm.body = body;
@@ -93,9 +100,11 @@ public class AstUtil {
                                     params)
                     )
             );
+            return true;
+       }else{
+           return false;
        }
     }
-    
     
     public static boolean containsConstructor(ClassNode clazz){
         MethodNode[] dms = clazz.getDeclaredMethodNodes();

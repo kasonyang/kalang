@@ -1,10 +1,15 @@
 package kalang.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import kalang.ast.MethodNode;
 import kalang.ast.ParameterNode;
+import kalang.core.ConstructorDescriptor;
+import kalang.core.ExecutableDescriptor;
+import kalang.core.MethodDescriptor;
 import kalang.core.Type;
 
 /**
@@ -79,6 +84,25 @@ public class MethodUtil {
             types[i] = mn.parameters.get(i).type;
         }
         return types;
+    }
+    
+    @Nullable
+    private static ExecutableDescriptor getExecutableDescriptor(ExecutableDescriptor[] methods,String name,@Nullable Type[] parameterTypes){
+        if(parameterTypes==null){
+            parameterTypes = new Type[0];
+        }
+        for(ExecutableDescriptor m:methods){
+            if(!m.getName().equals(name)) continue;
+            Type[] mParams = m.getParameterTypes();
+            if(!Arrays.equals(mParams, parameterTypes)) continue;
+            return m;
+        }
+        return null;
+    }
+    
+    @Nullable
+    public static ConstructorDescriptor getConstructorDescriptor(ConstructorDescriptor[] constructors,@Nullable Type[] paramTypes){
+        return (ConstructorDescriptor) getExecutableDescriptor(constructors,"<init>", paramTypes);
     }
 
 }
