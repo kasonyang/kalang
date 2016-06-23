@@ -810,12 +810,20 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             trueBody=requireBlock(ctx.trueStmt);
             popOverrideTypeStack();
         }
-        //TODO if last stmt is return?
         if (ctx.falseStmt != null) {
             newOverrideTypeStack();
             onIf(expr,false);
             falseBody=requireBlock(ctx.falseStmt);
             popOverrideTypeStack();
+        }else if(trueBody!=null){
+            //TODO maybe if return else return
+            List<Statement> trueStmts = trueBody.statements;
+            if(!trueStmts.isEmpty()){
+                Statement trueLastStmt = trueStmts.get(trueStmts.size()-1);
+                if(trueLastStmt instanceof ReturnStmt){
+                    onIf(expr,false);
+                }
+            }
         }
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
