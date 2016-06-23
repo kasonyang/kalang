@@ -114,30 +114,30 @@ public class Types {
         return at;
     }
     
-    public static ClassType getClassType(ClassNode rawType,Type[] argumentsType){
-        return getClassType(rawType, argumentsType,NullableKind.NONNULL);
+    public static ClassType getClassType(ClassNode clazz,Type[] typeArguments){
+        return getClassType(clazz, typeArguments,NullableKind.NONNULL);
     }
     
-    public static ClassType getClassType(ClassNode rawType,Type[] argumentsType,NullableKind nullable){
-        List key = new ArrayList(argumentsType.length+2);
-        key.add(rawType);
-        key.addAll(Arrays.asList(argumentsType));
+    public static ClassType getClassType(ClassNode clazz,Type[] typeArguments,NullableKind nullable){
+        List key = new ArrayList(typeArguments.length+2);
+        key.add(clazz);
+        key.addAll(Arrays.asList(typeArguments));
         key.add(nullable);
         ClassType pt = classTypes.get(key);
         if(pt==null){
-            pt = new ClassType(rawType, argumentsType,nullable);
+            pt = new ClassType(clazz, typeArguments,nullable);
             classTypes.put(key, pt);
         }
         return pt;
     }
     
     @Nonnull
-    public static ObjectType getClassType(@Nonnull ClassNode clazz){
+    public static ClassType getClassType(@Nonnull ClassNode clazz){
         return Types.getClassType(clazz,NullableKind.NONNULL);
     }
     
     @Nonnull
-    public static ObjectType getClassType(@Nonnull ClassNode clazz,NullableKind nullable){
+    public static ClassType getClassType(@Nonnull ClassNode clazz,NullableKind nullable){
         return getClassType(clazz, new Type[0],nullable);
     }
     
@@ -156,12 +156,12 @@ public class Types {
     }
     
     @Nonnull
-    public static ObjectType getClassType(String className) throws AstNotFoundException{
+    public static ClassType getClassType(String className) throws AstNotFoundException{
         return Types.getClassType(className,NullableKind.NONNULL);
     }
     
     @Nonnull
-    public static ObjectType getClassType(String className,NullableKind nullable) throws AstNotFoundException{
+    public static ClassType getClassType(String className,NullableKind nullable) throws AstNotFoundException{
         ClassNode ast = AstLoader.BASE_AST_LOADER.loadAst(className);
         return Types.getClassType(ast,nullable);
     }
