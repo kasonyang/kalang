@@ -74,7 +74,6 @@ public class Types {
         primitive2class.put(VOID_TYPE, VOID_CLASS_NAME);
         primitive2class.put(SHORT_TYPE, SHORT_CLASS_NAME);
         primitive2class.put(BYTE_TYPE, BYTE_CLASS_NAME);
-        //m.put(NULL_TYPE, "null");//TODO does null has class type?
     }
     
     private static String[] numberClass = new String[]{
