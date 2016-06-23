@@ -14,7 +14,7 @@ public class JavaStubTest extends FileSystemCompiler{
     @Test
     public void test() throws IOException{
         addSourceDir(new File("examples"));
-        generateJavaStub(null);
+        //generateJavaStub(null);
     }
 
 }

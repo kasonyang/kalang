@@ -15,9 +15,9 @@ import static org.junit.Assert.*;
  *
  * @author Kason Yang <i@kasonyang.com>
  */
-public class ClassNodeTest {
+public class ClassTypeTest {
     
-    public ClassNodeTest() {
+    public ClassTypeTest() {
     }
     
     @Test
