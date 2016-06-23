@@ -1279,7 +1279,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 params[i] = visitExpression(ctx.params.get(i));
             }
             invokeArgs[2] = BoxUtil.createInitializedArray(Types.getRootType(), params);
-            ClassNode dispatcherAst = getAst("kalang.runtime.invoke.MethodDispatcher");
+            ClassNode dispatcherAst = getAst("kalang.runtime.dynamic.MethodDispatcher");
             if(dispatcherAst==null){
                 throw new RuntimeException("Runtime library is required!");
             }
