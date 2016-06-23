@@ -29,5 +29,8 @@ public class ModifierUtil {
                 | (Modifier.PUBLIC);
     }
     
+    public static boolean isDefault(int modifier){
+        return Modifier.isPublic(modifier) && !Modifier.isAbstract(modifier);
+    }
 
 }

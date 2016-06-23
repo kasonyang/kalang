@@ -48,7 +48,7 @@ public class AstUtil {
     public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass, ObjectType theInterface) {
         List<MethodDescriptor> list = new LinkedList();
         for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true)) {
-            //TODO skip default methods
+            if(ModifierUtil.isDefault(m.getModifier())) continue;
             String name = m.getName();
             Type[] types = m.getParameterTypes();
             MethodNode overridingMd = getMethod(theClass,name, types);
