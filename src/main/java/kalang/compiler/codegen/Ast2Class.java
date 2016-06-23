@@ -33,8 +33,11 @@ import java.lang.reflect.Modifier;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import kalang.AstNotFoundException;
 import kalang.ast.AnnotationNode;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
@@ -62,12 +65,14 @@ import kalang.ast.SuperExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
+import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.GenericType;
 import kalang.core.ClassType;
+import kalang.core.NullableKind;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -212,7 +217,27 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return inames;
     }
     
-    protected void annotation(Object obj,AnnotationNode[] annotations){
+    protected void annotationNullable(Object obj,ObjectType type){
+        NullableKind nullable = type.getNullable();
+        String annotation;
+        if(nullable == NullableKind.NONNULL){
+            annotation = "Nonnull";
+        }else if(nullable == NullableKind.NULLABLE){
+            annotation = "Nullable";
+        }else{
+            annotation  = null;
+        }
+        if(annotation!=null){
+            annotation = "kalang.annotation." + annotation;
+            try {
+                annotation(obj, new AnnotationNode(AstLoader.BASE_AST_LOADER.loadAst(annotation)));
+            } catch (AstNotFoundException ex) {
+                throw Exceptions.missingRuntimeClass(ex.getMessage());
+            }
+        }
+    }
+    
+    protected void annotation(Object obj,AnnotationNode... annotations){
         for(AnnotationNode an:annotations){
             AnnotationVisitor av;
             String desc = getTypeDescriptor(Types.getClassType(an.getAnnotationType()));
@@ -266,6 +291,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitMethodNode(MethodNode node) {
         int access = node.modifier;
         md = classWriter.visitMethod(access, internalName(node.name),getMethodDescriptor(node),methodSignature(node),internalName(node.exceptionTypes.toArray(new Type[0])) );
+        if(node.type instanceof ObjectType){
+            annotationNullable(md,(ObjectType)node.type);
+        }
         annotation(md, node.getAnnotations());
         if(AstUtil.isStatic(node.modifier)){
             varIdCounter = 0;

@@ -12,4 +12,8 @@ public class Exceptions {
     public static UnsupportedOperationException unsupportedTypeException(Class clazz){
         return new UnsupportedOperationException("Unsupported type:" + clazz.getName());
     }
+    
+    public static RuntimeException missingRuntimeClass(String className){
+        return new RuntimeException("missing runtime class:" + className);
+    }
 }
