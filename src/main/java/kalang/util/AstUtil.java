@@ -81,9 +81,9 @@ public class AstUtil {
             mm.parameters = new ArrayList(pds.length);
             for(ParameterDescriptor pd:pds){
                 ParameterNode p = ParameterNode.create(mm);
-                //TODO set parameter's modifier
                 p.name = pd.getName();
                 p.type = pd.getType();
+                p.modifier = pd.getModifier();
             }
             mm.type = Types.VOID_TYPE;
             BlockStmt body = new BlockStmt(null);

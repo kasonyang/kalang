@@ -6,11 +6,15 @@ package kalang.core;
 public class ParameterDescriptor {
     
     private String name;
-    private Type type;
 
-    public ParameterDescriptor(String name, Type type) {
+    private Type type;
+    
+    private int modifier;
+
+    public ParameterDescriptor(String name, Type type,int modifier) {
         this.name = name;
         this.type = type;
+        this.modifier = modifier;
     }
 
     public String getName() {
@@ -20,7 +24,9 @@ public class ParameterDescriptor {
     public Type getType() {
         return type;
     }
-    
-    
+
+    public int getModifier() {
+        return modifier;
+    }
 
 }
