@@ -85,7 +85,7 @@ fieldDecl:
 ;
 methodDecl:
    annotation*
-   OVERRIDE? varModifier? 
+   OVERRIDE? DEFAULT? varModifier? 
    (
      (type name=Identifier )
      |(prefix='constructor')

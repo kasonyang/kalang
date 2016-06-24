@@ -728,7 +728,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         String name;
         Type type;
         boolean isOverriding = ctx.OVERRIDE() != null;
-        int mdf = parseModifier(ctx.varModifier());
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
             type = Types.VOID_TYPE;
             name = "<init>";
@@ -742,7 +741,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         method = thisClazz.createMethodNode();
         method.annotations.addAll(getAnnotations(ctx.annotation()));
-        method.modifier = mdf;
+        method.modifier = parseModifier(ctx.varModifier());;
         method.type = type;
         method.name = name;
         if (ctx.varDecl() != null) {
@@ -770,7 +769,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if(!isOverriding && overriddenMd!=null){
             handleSyntaxError("method override a method but not declare", ctx);
         }
-        if (ctx.blockStmt() != null) {
+        BlockStmtContext blockStmt = ctx.blockStmt();
+        if(blockStmt==null){
+            if(thisClazz.isInterface){
+                method.modifier |= Modifier.ABSTRACT;
+            }else if(!Modifier.isAbstract(method.modifier)){
+                handleSyntaxError("method body required", ctx);
+            }else if(!Modifier.isAbstract(thisClazz.modifier)){
+                handleSyntaxError("declare abstract method in non-abstract class", ctx);
+            }
+        }else{
             methodBodys.put(method, ctx.blockStmt());
         }
         if (ctx.exceptionTypes != null) {
