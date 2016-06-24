@@ -220,9 +220,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     protected String getNullableAnnotation(ObjectType type){
         NullableKind nullable = type.getNullable();
         if(nullable == NullableKind.NONNULL){
-            return "kalang.annotation.Nonnull";
+            return "Lkalang/annotation/Nonnull;";
         }else if(nullable == NullableKind.NULLABLE){
-            return "kalang.annotation.Nullable";
+            return "Lkalang/annotation/Nullable;";
         }else{
             return null;
         }

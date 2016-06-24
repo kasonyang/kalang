@@ -32,7 +32,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.kasonyang.kalang'
             artifactId 'kalang-compiler'
-            version '0.0.4'
+            version '0.0.5'
             from components.java
         }
     }
