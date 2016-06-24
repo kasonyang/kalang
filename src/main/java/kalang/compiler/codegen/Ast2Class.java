@@ -250,9 +250,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }else if(obj instanceof MethodVisitor){
                 av = ((MethodVisitor)obj).visitAnnotation(desc, isVisible);
             }else{
-                throw new UnsupportedOperationException(obj.getClass().getName());
+                throw Exceptions.unsupportedTypeException(obj);
             }
             for(String v:an.values.keySet()){
+                //TODO handle enum value
                 Object javaConst = getJavaConst(an.values.get(v));
                 av.visit(v, javaConst);
             }
@@ -622,12 +623,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     protected Object getJavaConst(ConstExpr ce){
-        Type ct = ce.getType();
-        if(ct.equals(Types.NULL_TYPE)){
+        Object v = ce.getValue();
+        if(v==null){
             return null;
-        }else if(ct.equals(Types.getClassClassType())){
-            return asmType(ct);
+        }else if(v instanceof ClassReference){
+            return asmType(Types.getClassType(((ClassReference) v).getReferencedClassNode()));
         }else{
+            Type ct = ce.getType();
             if(
                     Types.isNumber(ct)
                     || Types.isBoolean(ct)
@@ -636,7 +638,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     ){
                 return ce.getValue();
             }
-            throw new UnknownError("unknown const expr:" + ce);
+            throw Exceptions.unsupportedTypeException(ce);
         }
     }
 
