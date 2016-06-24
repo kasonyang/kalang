@@ -22,6 +22,7 @@ public class ClassNode extends AstNode implements Annotationable{
     
     public final List<ObjectType> interfaces = new LinkedList();
     
+    //TODO isInterface should be got by modifier
     public boolean isInterface;
     
     public boolean isArray;
