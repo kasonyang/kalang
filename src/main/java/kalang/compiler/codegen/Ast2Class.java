@@ -841,6 +841,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 return "F";
             }else if(t.equals(DOUBLE_TYPE)){
                 return "D";
+            }else if(t.equals(NULL_TYPE)){
+                return "Ljava/lang/Object;";
             }else{
                 throw Exceptions.unsupportedTypeException(t);
             }
