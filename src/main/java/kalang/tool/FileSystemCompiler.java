@@ -31,8 +31,7 @@ import kalang.compiler.CompileContext;
  * 
  * @author Kason Yang
  */
-//TODO unimplement CodeGenerator
-public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
+public class FileSystemCompiler extends KalangCompiler{
 
     private Map<String, File> sourceFiles = new HashMap<>();
 
@@ -61,7 +60,6 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
 
     public FileSystemCompiler() {
         super();
-        FileSystemCompiler that = this;
         super.compileContext =  new CompileContextProxy(super.compileContext){
             
             @Override
@@ -72,7 +70,15 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
 
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-                return that;
+                return new CodeGenerator(){
+                    @Override
+                    public void generate(ClassNode classNode) {
+                        if(codeGenerator!=null){
+                            codeGenerator.generate(classNode);
+                        }
+                    }
+                    
+                };
             }
             
         };
@@ -105,13 +111,6 @@ public class FileSystemCompiler extends KalangCompiler implements CodeGenerator{
             classPaths.add(path.toURI().toURL());
         } catch (MalformedURLException ex) {
             Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    @Override
-    public void generate(ClassNode classNode) {
-        if(codeGenerator!=null){
-            codeGenerator.generate(classNode);
         }
     }
     
