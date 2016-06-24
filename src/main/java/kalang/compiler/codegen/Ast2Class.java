@@ -205,8 +205,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
     }
 
-    private String internalName(String name){
-        return name.replace(".", "/");
+    private String internalName(String className){
+        return className.replace(".", "/");
     }
     
     private String[] internalNames(String[] names){
@@ -220,9 +220,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     protected String getNullableAnnotation(ObjectType type){
         NullableKind nullable = type.getNullable();
         if(nullable == NullableKind.NONNULL){
-            return "Lkalang/annotation/Nonnull;";
+            return "kalang.annotation.Nonnull";
         }else if(nullable == NullableKind.NULLABLE){
-            return "Lkalang/annotation/Nullable;";
+            return "kalang.annotation.Nullable";
         }else{
             return null;
         }
@@ -267,8 +267,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         annotation(classWriter, clazz.getAnnotations());
         String parentName = "java.lang.Object";
-        if(node.superType!=null){
-            parentName = node.superType.getName();
+        ObjectType superType = node.superType;
+        if(superType!=null){
+            parentName = superType.getName();
         }
         String[] interfaces = null;
         if(node.interfaces!=null){
@@ -308,7 +309,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ParameterNode p = node.parameters.get(i);
             visit(p);
             if(p.type instanceof ObjectType){
-                md.visitParameterAnnotation(i,getNullableAnnotation((ObjectType)p.type), true).visitEnd();
+                md.visitParameterAnnotation(i,internalName(getNullableAnnotation((ObjectType)p.type)), true).visitEnd();
             }
         }
         if(body!=null){

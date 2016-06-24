@@ -211,12 +211,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nullable
     private VarObject getOverrideTypeKey(ExprNode expr){
         VarObject key ;
+        //It isn't supported to override type of field because it is not safe
         if(expr instanceof VarExpr){
             key = ((VarExpr) expr).getVar();
         }else if(expr instanceof ParameterExpr){
             key = ((ParameterExpr) expr).getParameter();
-        }else if(expr instanceof FieldExpr){
-            key = ((FieldExpr) expr).getField().getFieldNode();
         }else{
             key = null;
         }
@@ -1405,7 +1404,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if (thisClazz.fields != null) {
                 for (FieldNode f : thisClazz.fields) {
                     if (f.name!=null && f.name.equals(name)) {
-                        //TODO override field type
                         FieldExpr fe;
                         if(Modifier.isStatic(f.modifier)){
                             fe = new StaticFieldExpr(new ClassReference(thisClazz), f);
@@ -1805,6 +1803,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if(classKind!=null){
             if (classKind.getText().equals("interface")) {
                 thisClazz.isInterface = true;
+                thisClazz.modifier |= Modifier.ABSTRACT|Modifier.INTERFACE;
             }
         }
         List<Token> gnrTypes = ctx.genericTypes;
