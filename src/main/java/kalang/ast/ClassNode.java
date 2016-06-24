@@ -2,7 +2,6 @@ package kalang.ast;
 import java.util.*;
 import javax.annotation.Nullable;
 import kalang.core.*;
-import kalang.util.AstUtil;
 /**
  * 
  * @author Kason Yang
@@ -21,11 +20,6 @@ public class ClassNode extends AstNode implements Annotationable{
     protected final List<MethodNode> methods = new LinkedList();
     
     public final List<ObjectType> interfaces = new LinkedList();
-    
-    //TODO isInterface should be got by modifier
-    public boolean isInterface;
-    
-    public boolean isArray;
     
     public final List<AnnotationNode> annotations = new LinkedList<>();
     

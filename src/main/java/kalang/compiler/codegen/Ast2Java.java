@@ -203,7 +203,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
             }
             impStr = "implements " + String.join(",", interfaces);
         }
-        String classType = node.isInterface ? "interface" : "class";
+        String classType =Modifier.isInterface(node.modifier) ? "interface" : "class";
         c(pkgStr
                 + "\r\n"
                 + imports

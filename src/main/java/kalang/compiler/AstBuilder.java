@@ -770,7 +770,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         BlockStmtContext blockStmt = ctx.blockStmt();
         if(blockStmt==null){
-            if(thisClazz.isInterface){
+            if(ModifierUtil.isInterface(thisClazz.modifier)){
                 method.modifier |= Modifier.ABSTRACT;
             }else if(!Modifier.isAbstract(method.modifier)){
                 handleSyntaxError("method body required", ctx);
@@ -1802,7 +1802,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         Token classKind = ctx.classKind;
         if(classKind!=null){
             if (classKind.getText().equals("interface")) {
-                thisClazz.isInterface = true;
                 thisClazz.modifier |= Modifier.ABSTRACT|Modifier.INTERFACE;
             }
         }

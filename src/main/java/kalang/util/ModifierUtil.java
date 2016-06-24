@@ -32,5 +32,9 @@ public class ModifierUtil {
     public static boolean isDefault(int modifier){
         return Modifier.isPublic(modifier) && !Modifier.isAbstract(modifier);
     }
+    
+    public static boolean isInterface(int modifier){
+        return Modifier.isInterface(modifier);
+    }
 
 }

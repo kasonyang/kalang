@@ -81,6 +81,7 @@ import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
+import kalang.util.ModifierUtil;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -700,7 +701,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             if (target instanceof SuperExpr || method.getName().equals("<init>")) {
                 opc = INVOKESPECIAL;
             } else {
-                opc = targetType.getClassNode().isInterface ?
+                opc =ModifierUtil.isInterface(targetType.getClassNode().modifier) ?
                         INVOKEINTERFACE : INVOKEVIRTUAL;
             }
         }else{

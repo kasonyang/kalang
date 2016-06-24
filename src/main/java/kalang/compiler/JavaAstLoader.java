@@ -66,7 +66,7 @@ public class JavaAstLoader extends AstLoader {
     public ClassNode buildFromClass(@Nonnull Class clz) throws AstNotFoundException {
         ClassNode cn = ClassNode.create();
         cn.name = clz.getName();
-        cn.isInterface = clz.isInterface();
+        cn.modifier = clz.getModifiers();
         loadedClasses.put(clz.getName(), cn);
         Map<TypeVariable,GenericType> genericTypes = new HashMap();
         TypeVariable[] typeParameters = clz.getTypeParameters();

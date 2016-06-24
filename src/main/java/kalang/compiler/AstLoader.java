@@ -80,12 +80,7 @@ public class AstLoader {
     //TODO should  createArrayAst be removed?
     public static ClassNode createArrayAst(String component) {
         ClassNode clazz = ClassNode.create();
-        FieldNode field = clazz.createField();
-        field.modifier = Modifier.PUBLIC;
-        field.type = Types.INT_TYPE;
-        field.name = "length";
         clazz.name = component + "[]";
-        clazz.isArray = true;
         clazz.superType = Types.getRootType();
         return clazz;
     }
