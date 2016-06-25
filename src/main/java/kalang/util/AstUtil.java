@@ -176,19 +176,6 @@ public class AstUtil {
         return newParams;
     }
     
-    /**
-     * get implemented method
-     * @param cls
-     * @param methodName
-     * @param types
-     * @return 
-     */
-    //TODO remove it?
-    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types){
-        return getMethod(cls, methodName, types,true,false);
-    }
-        
-    
     @Nullable
     public static ExecutableDescriptor getExactedMethod(ObjectType targetType,ExecutableDescriptor[] candidates,String methodName,@Nullable Type[] types){
         ExecutableDescriptor[] methods = filterMethodByName(candidates, methodName);
@@ -199,16 +186,6 @@ public class AstUtil {
                if(types==null || types.length==0) return m;
            }
         }
-        return null;
-    }
-
-    //TODO should rename?
-    @Nullable
-    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean includeSuperType,boolean includeInterface) {
-        ObjectType clazzType = Types.getClassType(cls);
-        MethodDescriptor[] clsMethods = clazzType.getMethodDescriptors(null, includeSuperType,includeInterface);
-        ExecutableDescriptor md = getExactedMethod(clazzType, clsMethods, methodName, types);
-        if(md!=null) return md.getMethodNode();
         return null;
     }
 
@@ -257,13 +234,15 @@ public class AstUtil {
     
     
     public static boolean hasSetter(ClassNode clazz,FieldNode field){
-        MethodNode method = getMethod(clazz, "set" + NameUtil.firstCharToUpperCase(field.name),new Type[]{ field.getType()});
-        return method !=null;
+        ClassType type = Types.getClassType(clazz);
+        MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "set" + NameUtil.firstCharToUpperCase(field.name),new Type[]{ field.getType()});
+        return md !=null;
     }
     
     public static boolean hasGetter(ClassNode clazz,FieldNode field){
-        MethodNode method = getMethod(clazz, "get" + NameUtil.firstCharToUpperCase(field.name) , null);
-        return method != null;
+        ClassType type = Types.getClassType(clazz);
+        MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "get" + NameUtil.firstCharToUpperCase(field.name) , null);
+        return md != null;
     }
     
     public static void createGetter(ClassNode clazz,FieldDescriptor field,int accessModifier){
