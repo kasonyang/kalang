@@ -4,6 +4,7 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 import kalang.ast.ClassNode;
 import kalang.util.AstUtil;
+import kalang.util.ModifierUtil;
 import kalang.util.TypeUtil;
 
 /**
@@ -20,25 +21,26 @@ public class WildcardType extends ObjectType {
     
     static ClassNode getClassNode(Type[] upperBounds,Type[] lowerBounds){
         if(lowerBounds!=null && lowerBounds.length>0){
-            //TODO Is Object's class node?
-            return Types.getRootType().getClassNode();
-        }else if(upperBounds!=null && upperBounds.length>0){
-            Type ub = upperBounds[0];
-            if(ub instanceof ClassType){
-                ClassType ct = (ClassType) ub;
-                //TODO may be interface
-                return AstUtil.createClassNodeWithInterfaces(ct.getName(),ct);
-            }else{
-                return Types.getRootType().getClassNode();
-            }
+            return AstUtil.createClassNodeWithInterfaces("?", Types.getRootType());
         }else{
-            throw new IllegalArgumentException();
+            if(upperBounds==null || upperBounds.length==0){
+                upperBounds = new ObjectType[]{Types.getRootType()};
+            }
+            ObjectType ub = (ObjectType) upperBounds[0];
+            ObjectType superType;
+            ObjectType[] interfaces;
+            if(ModifierUtil.isInterface(ub.getModifier())){
+                superType = Types.getRootType();
+                interfaces = new ObjectType[]{ub};
+            }else{
+                superType = ub;
+                interfaces = new ObjectType[0];
+            }
+            return AstUtil.createClassNodeWithInterfaces("?",superType,interfaces);
         }
     }
 
     public WildcardType(@Nullable Type[] upperBounds,@Nullable Type[] lowerBounds) {
-        //TODO is non-null?
-        //TODO bounds maybe parameterizedType
         super(getClassNode(upperBounds, lowerBounds),NullableKind.NONNULL);
         this.upperBounds = upperBounds == null ? new Type[0] : upperBounds;
         this.lowerBounds = lowerBounds == null ? new Type[0] : lowerBounds;
@@ -93,8 +95,13 @@ public class WildcardType extends ObjectType {
         return true;
     }
 
-    
-    
-    
+    @Override
+    public boolean isAssignedFrom(Type type) {
+        if(lowerBounds.length>0){
+            return lowerBounds[0].isAssignedFrom(type);
+        }else{
+            return super.isAssignedFrom(type);
+        }
+    }
 
 }
