@@ -72,21 +72,21 @@ public abstract class ObjectType extends Type{
         return ret;
     }
     
-    public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean recursive){
+    public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean includeSuperType,boolean includeInterfaces){
         Map<String,MethodDescriptor> descs = new HashMap();
-        if(recursive){
-            ObjectType[] itfs = getInterfaces();
-            List<ObjectType> superList = new ArrayList(itfs.length+1);
+        List<ObjectType> superList = new LinkedList();
+        if(includeSuperType){
             ObjectType superType = getSuperType();
-            if(superType!=null){
-                superList.add(superType);
-            }
+            if(superType!=null) superList.add(superType);
+        }
+        if(includeInterfaces){
+            ObjectType[] itfs = getInterfaces();
             superList.addAll(Arrays.asList(itfs));
-            for(ObjectType st:superList){
-                MethodDescriptor[] ms = st.getMethodDescriptors(caller, recursive);
-                for(MethodDescriptor m:ms){
-                    descs.put(m.getDeclarationKey(),m);
-                }
+        }
+        for(ObjectType st:superList){
+            MethodDescriptor[] ms = st.getMethodDescriptors(caller, includeSuperType,includeInterfaces);
+            for(MethodDescriptor m:ms){
+                descs.put(m.getDeclarationKey(),m);
             }
         }
         MethodNode[] mds = clazz.getDeclaredMethodNodes();

@@ -12,8 +12,8 @@ import kalang.core.MethodDescriptor;
 public class ClassTypeUtil {
     
     @Nullable
-    public static MethodDescriptor getMethodDescriptor(ObjectType clazzType,String declarationKey,ClassNode caller,boolean recursive){
-        MethodDescriptor[] mds = clazzType.getMethodDescriptors(caller, recursive);
+    public static MethodDescriptor getMethodDescriptor(ObjectType clazzType,String declarationKey,ClassNode caller,boolean includeSuperType,boolean includeInterface){
+        MethodDescriptor[] mds = clazzType.getMethodDescriptors(caller, includeSuperType,includeInterface);
         for(MethodDescriptor m:mds){
             if(m.getDeclarationKey().equals(declarationKey)) return m;
         }
@@ -21,9 +21,9 @@ public class ClassTypeUtil {
     }
     
     @Nullable
-    public static MethodDescriptor getMethodDescriptor(ObjectType[] clazzType,String declarationKey,ClassNode caller,boolean recursive){
+    public static MethodDescriptor getMethodDescriptor(ObjectType[] clazzType,String declarationKey,ClassNode caller,boolean includeSuperType,boolean includeInterface){
         for(ObjectType c:clazzType){
-            MethodDescriptor m = getMethodDescriptor(c, declarationKey, caller, recursive);
+            MethodDescriptor m = getMethodDescriptor(c, declarationKey, caller, includeSuperType,includeInterface);
             if(m!=null) return m;
         }
         return null;

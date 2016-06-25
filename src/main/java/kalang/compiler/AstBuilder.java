@@ -758,9 +758,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             return null;
         }
         methodDeclared.add(mStr);
-        MethodDescriptor overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.superType, mStr, thisClazz, true);
+        MethodDescriptor overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.superType, mStr, thisClazz, true,true);
         if(overriddenMd==null){
-            overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.interfaces.toArray(new ObjectType[thisClazz.interfaces.size()]), mStr, thisClazz, true);
+            overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.interfaces.toArray(new ObjectType[thisClazz.interfaces.size()]), mStr, thisClazz, true,true);
         }
         if(isOverriding && overriddenMd==null){            
             handleSyntaxError("method does not override any method", ctx);
@@ -1180,7 +1180,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode expr;
         try {
             ObjectType clazzType = thisType;
-            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(thisClazz, true));
+            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(thisClazz, true,true));
             if(Modifier.isStatic(ms.selectedMethod.getModifier())){
                 expr = new StaticInvokeExpr(new ClassReference(thisClazz), ms.selectedMethod, ms.appliedArguments);
             }else{

@@ -28,7 +28,7 @@ public class StaticInvokeExpr extends InvocationExpr{
         ObjectType clazzType = Types.getClassType(clazz.getReferencedClassNode());
         //TODO static only
         //TODO what about generic static method?
-        MethodDescriptor[] candidates = clazzType.getMethodDescriptors(caller, true);
+        MethodDescriptor[] candidates = clazzType.getMethodDescriptors(caller, true,true);
         MethodSelection ms = applyMethod(Types.getClassType( clazz.getReferencedClassNode()) , methodName, args,candidates);
         ExecutableDescriptor md = ms.selectedMethod;
         if(!AstUtil.isStatic(md.getModifier())){

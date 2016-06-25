@@ -29,7 +29,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
         boolean recursive = ! "<init>".equals(methodName);
         //MethodNode[] candidates = AstUtil.listAccessibleMethods(clazz, caller , recursive);
         List<ExecutableDescriptor> candidates = new LinkedList();
-        candidates.addAll(Arrays.asList(targetType.getMethodDescriptors(caller,recursive)));
+        candidates.addAll(Arrays.asList(targetType.getMethodDescriptors(caller,recursive,true)));
         candidates.addAll(Arrays.asList(targetType.getConstructorDescriptors(caller)));
         MethodSelection ms = applyMethod(targetType, methodName, args,candidates.toArray(new ExecutableDescriptor[candidates.size()]));
         ExecutableDescriptor md = ms.selectedMethod;

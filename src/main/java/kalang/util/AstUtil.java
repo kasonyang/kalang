@@ -48,7 +48,7 @@ public class AstUtil {
     @Nonnull
     public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass, ObjectType theInterface) {
         List<MethodDescriptor> list = new LinkedList();
-        for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true)) {
+        for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true,false)) {
             if(ModifierUtil.isDefault(m.getModifier())) continue;
             String name = m.getName();
             Type[] types = m.getParameterTypes();
@@ -162,8 +162,15 @@ public class AstUtil {
         return newParams;
     }
     
+    /**
+     * get implemented method
+     * @param cls
+     * @param methodName
+     * @param types
+     * @return 
+     */
     public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types){
-        return getMethod(cls, methodName, types,true);
+        return getMethod(cls, methodName, types,true,false);
     }
         
     
@@ -182,9 +189,9 @@ public class AstUtil {
 
     //TODO should rename?
     @Nullable
-    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean recursive) {
+    public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types,boolean includeSuperType,boolean includeInterface) {
         ObjectType clazzType = Types.getClassType(cls);
-        MethodDescriptor[] clsMethods = clazzType.getMethodDescriptors(null, recursive);
+        MethodDescriptor[] clsMethods = clazzType.getMethodDescriptors(null, includeSuperType,includeInterface);
         ExecutableDescriptor md = getExactedMethod(clazzType, clsMethods, methodName, types);
         if(md!=null) return md.getMethodNode();
         return null;
