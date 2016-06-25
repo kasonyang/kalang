@@ -16,4 +16,8 @@ public class Exceptions {
     public static RuntimeException missingRuntimeClass(String className){
         return new RuntimeException("missing runtime class:" + className);
     }
+
+    public static RuntimeException unknownValue(String value) {
+        throw new UnsupportedOperationException("unknown value:" + value);
+    }
 }

@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.core.Types;
+import kalang.util.AstUtil;
 
 public class AstLoader {
     
@@ -50,8 +51,7 @@ public class AstLoader {
         if(ast!=null) return ast;
         if(parent!=null){
             try{
-                ast = parent.loadAst(className);
-                if(ast!=null) return ast;
+                return parent.loadAst(className);
             }catch(AstNotFoundException ex){
                 
             }
@@ -59,7 +59,7 @@ public class AstLoader {
         if(className.endsWith("[]")){
             String name = className;
             name = name.substring(0,name.length()-2);
-            ast = createArrayAst(loadAst(name).name);
+            ast = AstUtil.createArrayAst(loadAst(name).name);
         }else{
             ast = findAst(className);
             if(ast==null) throw new AstNotFoundException(className);
@@ -77,12 +77,5 @@ public class AstLoader {
         }
     }
 
-    //TODO should  createArrayAst be removed?
-    public static ClassNode createArrayAst(String component) {
-        ClassNode clazz = ClassNode.create();
-        clazz.name = component + "[]";
-        clazz.superType = Types.getRootType();
-        return clazz;
-    }
 
 }

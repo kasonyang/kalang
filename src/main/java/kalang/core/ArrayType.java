@@ -1,6 +1,7 @@
 
 package kalang.core;
 import kalang.compiler.AstLoader;
+import kalang.util.AstUtil;
 /**
  *
  * @author Kason Yang
@@ -10,7 +11,7 @@ public class ArrayType extends ObjectType{
     private Type componentType;
 
     public ArrayType(Type componentType,NullableKind nullable) {
-        super(AstLoader.createArrayAst(Types.ROOT_CLASS_NAME),nullable);
+        super(AstUtil.createArrayAst(Types.ROOT_CLASS_NAME),nullable);
         this.componentType = componentType;
     }
     

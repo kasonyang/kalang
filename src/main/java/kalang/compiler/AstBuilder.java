@@ -1071,8 +1071,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 return new AssignExpr(toExpr,visitExpression(fromCtx));
             }
         }else if(refKey.equals("->")){
-            //ClassNode ast = getAst("kalang.runtime.dynamic.FieldVisitor");
-            //if(ast==null) throw new UnknownError();
             ExprNode[] params;
             String methodName;
             if(fromCtx==null){
@@ -1083,16 +1081,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 methodName = "set" + NameUtil.firstCharToUpperCase(fname);
             }
             if(expr instanceof ExprNode){
-                //params[0] = (ExprNode) expr;
                 if(fromCtx!=null) params[0] = visitExpression(fromCtx);
                 return getObjectInvokeExpr((ExprNode)expr, methodName, params, to);
             }else{
-                //TODO handle static property
-                throw Exceptions.unsupportedTypeException(expr);
+                //don't support static property
+                handleSyntaxError("object expression required.", to);
+                return null;
             }
-            //return getStaticInvokeExpr(new ClassReference(classAst),methodName,params, to);
         }else{
-            throw new UnsupportedOperationException(refKey);
+            throw Exceptions.unknownValue(refKey);
         }
     }
 

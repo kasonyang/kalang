@@ -313,4 +313,11 @@ public class AstUtil {
         return cn;
     }
     
+    public static ClassNode createArrayAst(String component) {
+        ClassNode clazz = ClassNode.create();
+        clazz.name = component + "[]";
+        clazz.superType = Types.getRootType();
+        return clazz;
+    }
+    
 }
