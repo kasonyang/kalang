@@ -104,5 +104,10 @@ public class MethodUtil {
     public static ConstructorDescriptor getConstructorDescriptor(ConstructorDescriptor[] constructors,@Nullable Type[] paramTypes){
         return (ConstructorDescriptor) getExecutableDescriptor(constructors,"<init>", paramTypes);
     }
+    
+    @Nullable
+    public static MethodDescriptor getMethodDescriptor(MethodDescriptor[] methods, String name,@Nullable Type[] paramTypes){
+        return (MethodDescriptor) getExecutableDescriptor(methods, name, paramTypes);
+    }
 
 }

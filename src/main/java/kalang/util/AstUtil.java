@@ -46,18 +46,32 @@ import kalang.core.Types;
 public class AstUtil {
 
     @Nonnull
+    public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass){
+        List<MethodDescriptor> list = new LinkedList();
+        List<ObjectType> itfs = theClass.interfaces;
+        if(itfs!=null){
+            for(ObjectType i:itfs){
+                list.addAll(getUnimplementedMethod(theClass,i));
+            }
+        }
+        return list;
+    }
+    
+    @Nonnull
     public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass, ObjectType theInterface) {
+        ClassType theType = Types.getClassType(theClass);
+        MethodDescriptor[] implementedMethods = theType.getMethodDescriptors(theClass, true, false);
         List<MethodDescriptor> list = new LinkedList();
         for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true,false)) {
             if(ModifierUtil.isDefault(m.getModifier())) continue;
             String name = m.getName();
             Type[] types = m.getParameterTypes();
-            MethodNode overridingMd = getMethod(theClass,name, types);
+            MethodDescriptor overridingMd = MethodUtil.getMethodDescriptor(implementedMethods,name,types);
             if (overridingMd == null 
                     //TODO move check to where method declare
-                    || !OverrideUtil.overridingCompatible(overridingMd.modifier, m.getModifier()) 
-                    || !OverrideUtil.returnTypeCompatible(overridingMd.type, m.getReturnType())
-                    || !OverrideUtil.exceptionTypeCompatible(overridingMd.exceptionTypes.toArray(new Type[0]), m.getExceptionTypes())
+                    || !OverrideUtil.overridingCompatible(overridingMd.getModifier(), m.getModifier()) 
+                    || !OverrideUtil.returnTypeCompatible(overridingMd.getReturnType(), m.getReturnType())
+                    || !OverrideUtil.exceptionTypeCompatible(overridingMd.getExceptionTypes(), m.getExceptionTypes())
                     ) {
                 list.add(m);
             }
@@ -169,6 +183,7 @@ public class AstUtil {
      * @param types
      * @return 
      */
+    //TODO remove it?
     public static MethodNode getMethod(ClassNode cls, String methodName, @Nullable Type[] types){
         return getMethod(cls, methodName, types,true,false);
     }
