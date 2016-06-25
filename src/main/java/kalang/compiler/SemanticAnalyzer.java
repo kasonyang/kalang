@@ -178,11 +178,11 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitCastExpr(CastExpr node) {
         Type et = visit(node.getExpr());
-        if(!node.getToType().isSubTypeOf(et)
-                && !node.getToType().equals(et)
-                ){
-            err.failedToCast(node, et.getName(), node.getToType().getName());
-        }
+//        if(!node.getToType().isSubTypeOf(et)
+//                && !node.getToType().equals(et)
+//                ){
+//            err.failedToCast(node, et.getName(), node.getToType().getName());
+//        }
         return null;
     }
 
@@ -347,7 +347,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         for (Type e : exTypes) {
                 if (
                         e.equals(type)
-                        || e.isSubTypeOf(type)
+                        || ((ObjectType)e).isSubTypeOf(type)
                         ) {
                     exceptions.remove(e);
                 }

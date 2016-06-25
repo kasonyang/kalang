@@ -134,7 +134,7 @@ public class ClassType extends ObjectType {
         if(!(type instanceof ClassType)) return false;
         ClassType other = (ClassType) type;
         if(!nullable.isAssignedFrom(other.getNullable())) return false;
-        //TODO impl parameterizedTYpe.isAssignedFrom
+        //TODO impl parameterizedType.isAssignedFrom,what aboud wildcard type 
         return super.isAssignedFrom(type);
     }
 

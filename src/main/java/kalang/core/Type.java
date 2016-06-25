@@ -12,13 +12,8 @@ public abstract class Type {
         return getName();
     }
     
-    public boolean isSubTypeOf(Type targetType){
-        return false;
-    }
-    
     public boolean isAssignedFrom(Type type){
-        if(equals(type)) return true;
-        return type.isSubTypeOf(this);
+        return equals(type);
     }
      
     @Override

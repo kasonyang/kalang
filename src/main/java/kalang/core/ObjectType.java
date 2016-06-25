@@ -30,8 +30,7 @@ public abstract class ObjectType extends Type{
     public ClassNode getClassNode() {
         return clazz;
     }
-  
-    @Override
+    
     public boolean isSubTypeOf(Type targetType) {
         if(targetType instanceof ObjectType){
             ObjectType other = (ObjectType) targetType;
@@ -160,8 +159,9 @@ public abstract class ObjectType extends Type{
         ObjectType other = (ObjectType) type;
         NullableKind otherNullable = other.getNullable();
         if(!nullable.isAssignedFrom(otherNullable)) return false;
+        
         if(clazz.equals(other.clazz)) return true;
-        return  type.isSubTypeOf(this);
+        return  other.isSubTypeOf(this);
     }
     
     public ObjectType[] getInterfaces(){
