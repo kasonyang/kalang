@@ -20,11 +20,13 @@ public class WildcardType extends ObjectType {
     
     static ClassNode getClassNode(Type[] upperBounds,Type[] lowerBounds){
         if(lowerBounds!=null && lowerBounds.length>0){
+            //TODO Is Object's class node?
             return Types.getRootType().getClassNode();
         }else if(upperBounds!=null && upperBounds.length>0){
             Type ub = upperBounds[0];
             if(ub instanceof ClassType){
                 ClassType ct = (ClassType) ub;
+                //TODO may be interface
                 return AstUtil.createClassNodeWithInterfaces(ct.getName(),ct);
             }else{
                 return Types.getRootType().getClassNode();
