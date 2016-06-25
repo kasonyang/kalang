@@ -55,6 +55,15 @@ public class JavaAstLoader extends AstLoader {
         }
         return MethodUtil.getDeclarationKey(m.getName(), types);
     }
+    
+    private ObjectType[] castToClassTypes(Type[] types){
+        if(types==null) return null;
+        ObjectType[] cts = new ObjectType[types.length];
+        for(int i=0;i<types.length;i++){
+            cts[i] = (ClassType) types[i];
+        }
+        return cts;
+    }
 
     /**
      * build ast from java class
@@ -72,7 +81,7 @@ public class JavaAstLoader extends AstLoader {
         TypeVariable[] typeParameters = clz.getTypeParameters();
         if(typeParameters.length>0){
             for(TypeVariable pt:typeParameters){
-                GenericType gt = new GenericType(pt.getName(),transType(pt.getBounds(),genericTypes),NullableKind.NONNULL);
+                GenericType gt = new GenericType(pt.getName(),castToClassTypes(transType(pt.getBounds(),genericTypes)),NullableKind.NONNULL);
                 genericTypes.put(pt, gt);
                 cn.declareGenericType(gt);
             }
@@ -166,6 +175,7 @@ public class JavaAstLoader extends AstLoader {
         return ret;
     }
     
+    //TODO why transType could be null?
     @Nullable
     private Type transType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes) throws AstNotFoundException{
         if(t instanceof TypeVariable){

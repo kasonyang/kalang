@@ -304,5 +304,12 @@ public class AstUtil {
         }
         setter.body = body;
     }
+
+    public static ClassNode createClassNodeWithInterfaces(String name, ObjectType[] upperBounds) {
+        ClassNode cn = ClassNode.create();
+        cn.name = name;
+        cn.interfaces.addAll(Arrays.asList(upperBounds));
+        return cn;
+    }
     
 }
