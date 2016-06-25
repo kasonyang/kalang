@@ -103,5 +103,13 @@ public class WildcardType extends ObjectType {
             return super.isAssignedFrom(type);
         }
     }
+    
+    public boolean containsType(ObjectType type){
+        if(lowerBounds.length>0){
+            return type.isAssignedFrom(lowerBounds[0]);
+        }else{
+            return upperBounds[0].isAssignedFrom(type);
+        }
+    }
 
 }

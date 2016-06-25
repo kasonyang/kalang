@@ -134,8 +134,24 @@ public class ClassType extends ObjectType {
         if(!(type instanceof ClassType)) return false;
         ClassType other = (ClassType) type;
         if(!nullable.isAssignedFrom(other.getNullable())) return false;
-        //TODO impl parameterizedType.isAssignedFrom,what aboud wildcard type 
-        return super.isAssignedFrom(type);
+        if(super.isAssignedFrom(type)) return true;
+        //handle parameterizedType
+        Type[] typeArgs = getTypeArguments();
+        if(typeArgs.length==0) return false;
+        Type[] otherTypeArgs = other.getTypeArguments();
+        if(typeArgs.length==otherTypeArgs.length){
+            for(int i=0;i<typeArgs.length;i++){
+                Type a = typeArgs[i];
+                Type oa = otherTypeArgs[i];
+                if(a.equals(oa)) continue;
+                if(a instanceof WildcardType){
+                    WildcardType wt = (WildcardType)a;
+                    if(!wt.containsType((ObjectType)oa)) return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
