@@ -3,6 +3,7 @@ package kalang.core;
 import java.util.Arrays;
 import javax.annotation.Nullable;
 import kalang.ast.ClassNode;
+import kalang.util.AstUtil;
 import kalang.util.TypeUtil;
 
 /**
@@ -23,7 +24,8 @@ public class WildcardType extends ObjectType {
         }else if(upperBounds!=null && upperBounds.length>0){
             Type ub = upperBounds[0];
             if(ub instanceof ClassType){
-                return ((ClassType)upperBounds[0]).getClassNode();
+                ClassType ct = (ClassType) ub;
+                return AstUtil.createClassNodeWithInterfaces(ct.getName(),ct);
             }else{
                 return Types.getRootType().getClassNode();
             }

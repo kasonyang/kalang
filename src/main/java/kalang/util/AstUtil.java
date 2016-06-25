@@ -305,10 +305,11 @@ public class AstUtil {
         setter.body = body;
     }
 
-    public static ClassNode createClassNodeWithInterfaces(String name, ObjectType[] upperBounds) {
+    public static ClassNode createClassNodeWithInterfaces(String name,@Nullable ObjectType superType,@Nullable ObjectType... interfaces) {
         ClassNode cn = ClassNode.create();
         cn.name = name;
-        cn.interfaces.addAll(Arrays.asList(upperBounds));
+        cn.superType = superType==null ? Types.getRootType() : superType;
+        if(interfaces!=null) cn.interfaces.addAll(Arrays.asList(interfaces));
         return cn;
     }
     

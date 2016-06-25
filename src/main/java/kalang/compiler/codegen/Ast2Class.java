@@ -853,11 +853,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else if(t instanceof ArrayType){
             return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());
         }else if(t instanceof GenericType){
-            return "L" + internalName(((GenericType) t).getClassNode()) + ";";
+            return getTypeDescriptor(((GenericType) t).getSuperType());
         }else if(t instanceof ClassType){
             return "L" + internalName(((ClassType) t).getClassNode().name) + ";";
         }else if(t instanceof WildcardType){
-            return "L" +internalName(((WildcardType) t).getClassNode()) + ";";
+            return getTypeDescriptor(((WildcardType) t).getSuperType());
         }else{
             throw Exceptions.unsupportedTypeException(t);
         }

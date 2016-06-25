@@ -172,4 +172,8 @@ public abstract class ObjectType extends Type{
         return itfs;
     }
     
+    public int getModifier(){
+        return clazz.modifier;
+    }
+    
 }

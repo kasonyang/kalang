@@ -33,6 +33,7 @@ import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
+import kalang.util.ModifierUtil;
 
 /**
  * The class loads ast from java class
@@ -81,7 +82,23 @@ public class JavaAstLoader extends AstLoader {
         TypeVariable[] typeParameters = clz.getTypeParameters();
         if(typeParameters.length>0){
             for(TypeVariable pt:typeParameters){
-                GenericType gt = new GenericType(pt.getName(),castToClassTypes(transType(pt.getBounds(),genericTypes)),NullableKind.NONNULL);
+                ObjectType[] bounds = castToClassTypes(transType(pt.getBounds(),genericTypes));
+                ObjectType superType;
+                ObjectType[] interfaces;
+                if(bounds!=null && bounds.length>0){
+                    if(ModifierUtil.isInterface(bounds[0].getModifier())){
+                        superType = Types.getRootType();
+                        interfaces = bounds;
+                    }else{
+                        superType = bounds[0];
+                        interfaces = new ObjectType[bounds.length-1];
+                        System.arraycopy(bounds,1, interfaces, 0, interfaces.length);
+                    }
+                }else{
+                    superType = Types.getRootType();
+                    interfaces = bounds;
+                }
+                GenericType gt = new GenericType(pt.getName(),superType,interfaces,NullableKind.NONNULL);
                 genericTypes.put(pt, gt);
                 cn.declareGenericType(gt);
             }
