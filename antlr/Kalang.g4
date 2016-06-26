@@ -104,12 +104,9 @@ annotation:
          ')'  )?
 ;
 type:
-    singleType
-    |baseType=type  ('[' ']' ) (nullable='?')?
-;
-singleType:
     classType
     | primitiveType
+    |  type '[' ']' (nullable='?')?
 ;
 classType:
     rawClass=Identifier 
@@ -119,7 +116,7 @@ classType:
         (nullable='?')?
 ;
 parameterizedElementType:
-    Identifier | wildcardType
+    type | wildcardType
 ;
 wildcardType:
     '?' boundKind=('extends'|'super') classType
@@ -162,7 +159,7 @@ blockStmt:
 ;
 tryStat:
     'try' exec=blockStmt
-    ('catch' '(' catchTypes+=singleType catchVarNames+=Identifier ')'
+    ('catch' '(' catchTypes+=classType catchVarNames+=Identifier ')'
         catchExec += blockStmt
     )*
     ('finally' finallyExec=blockStmt)?
@@ -233,8 +230,8 @@ expression
     |  expression '[' expression ']' #exprGetArrayElement    
     |   'new' classType
          '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
-    |   ( 'new' singleType '[' size=expression ']' 
-            | 'new' singleType '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}'
+    |   ( 'new' type '[' size=expression ']' 
+            | 'new' type '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}'
         )    #exprNewArray
     |   '(' type ')' expression #castExpr
     |   expression op=('++' | '--') #exprInc

@@ -466,23 +466,19 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Nullable
-    private Type parseSingleType(KalangParser.SingleTypeContext ctx){
-        if(ctx.classType()!=null){
-            return parseClassType(ctx.classType());
-        }else{
-            return Types.getPrimitiveType(ctx.getText());
-        }
-    }
-
-    @Nullable
     private Type parseType(TypeContext ctx) {
-        if(ctx.singleType()!=null){
-            return parseSingleType(ctx.singleType());
+        KalangParser.ClassTypeContext ct = ctx.classType();
+        KalangParser.PrimitiveTypeContext pt = ctx.primitiveType();
+        if(ct!=null){
+            return parseClassType(ct);
+        }else if(pt!=null){
+            return Types.getPrimitiveType(pt.getText());
         }else{
             NullableKind nullable = ctx.nullable!=null ? NullableKind.NULLABLE : NullableKind.NONNULL;
-            Type ct = parseType(ctx.type());
-            if(ct==null) return null;
-            return Types.getArrayType(ct,nullable);
+            TypeContext t = ctx.type();
+            Type cpt = parseType(t);
+            if(cpt==null) return null;
+            return Types.getArrayType(cpt,nullable);
         }
     }
 
@@ -611,7 +607,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
-        Type type = parseSingleType(ctx.singleType());
+        Type type = parseType(ctx.type());
         ExprNode ret;
         if(ctx.size!=null){
             ExprNode size = visitExpression(ctx.size);
@@ -1644,11 +1640,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public Object visitSingleType(KalangParser.SingleTypeContext ctx) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Object visitPrimitiveType(KalangParser.PrimitiveTypeContext ctx) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -1874,12 +1865,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     private Type parseParameterizedElementType(KalangParser.ParameterizedElementTypeContext ctx){
-        if(ctx.Identifier()!=null){
-            String id = ctx.Identifier().getText();
-            if(declarededGenericTypes.containsKey(id)){
-                return declarededGenericTypes.get(id);
-            }
-            return requireClassType(ctx.Identifier().getSymbol());
+        TypeContext type = ctx.type();
+        if(type!=null){
+            return parseType(type);
         }else{
             return parseWildcardType(ctx.wildcardType());
         }
