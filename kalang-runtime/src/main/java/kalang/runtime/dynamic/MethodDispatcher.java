@@ -73,7 +73,13 @@ class JavaMethodSelector extends MethodSelector<Method,Class>{
 
     @Override
     protected boolean isAssignableFrom(Class to, Class from) {
+        //TODO handle boxing and unboxing
         return to.isAssignableFrom(from);
+    }
+
+    @Override
+    protected boolean equalsType(Class type1, Class type2) {
+        return type1.equals(type2);
     }
     
 }
