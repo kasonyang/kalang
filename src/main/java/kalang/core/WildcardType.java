@@ -96,19 +96,19 @@ public class WildcardType extends ObjectType {
     }
 
     @Override
-    public boolean isAssignedFrom(Type type) {
+    public boolean isAssignableFrom(Type type) {
         if(lowerBounds.length>0){
-            return lowerBounds[0].isAssignedFrom(type);
+            return lowerBounds[0].isAssignableFrom(type);
         }else{
-            return super.isAssignedFrom(type);
+            return super.isAssignableFrom(type);
         }
     }
     
     public boolean containsType(ObjectType type){
         if(lowerBounds.length>0){
-            return type.isAssignedFrom(lowerBounds[0]);
+            return type.isAssignableFrom(lowerBounds[0]);
         }else{
-            return upperBounds[0].isAssignedFrom(type);
+            return upperBounds[0].isAssignableFrom(type);
         }
     }
 

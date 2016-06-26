@@ -154,20 +154,20 @@ public abstract class ObjectType extends Type{
     }
 
     @Override
-    public boolean isAssignedFrom(Type type) {
+    public boolean isAssignableFrom(Type type) {
         if(equalAndNullAssignChecked(type)) return true;
         if(!(type instanceof ObjectType)) return false;        
         ObjectType other = (ObjectType) type;
         NullableKind otherNullable = other.getNullable();
-        if(!nullable.isAssignedFrom(otherNullable)) return false;
+        if(!nullable.isAssignableFrom(otherNullable)) return false;
         ObjectType superType = other.getSuperType();
         //the super type of interface is null,but actually it should be Object
         if(superType==null && Modifier.isInterface(other.getModifier())){
             superType = Types.getRootType();
         }
-        if(superType!=null && isAssignedFrom(superType)) return true;
+        if(superType!=null && isAssignableFrom(superType)) return true;
         for(ObjectType itf:other.getInterfaces()){
-            if(isAssignedFrom(itf)) return true;
+            if(isAssignableFrom(itf)) return true;
         }
         return false;
     }

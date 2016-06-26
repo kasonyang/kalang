@@ -71,7 +71,7 @@ public class BoxUtil {
     }
 
     private static int getCastMethod(Type fromType, Type toType) {
-        if (toType.isAssignedFrom(fromType)) {
+        if (toType.isAssignableFrom(fromType)) {
             return CAST_NOTHING;
         }
         if (fromType instanceof PrimitiveType

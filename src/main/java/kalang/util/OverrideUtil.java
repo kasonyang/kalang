@@ -11,7 +11,7 @@ public class OverrideUtil {
     
     private static boolean throwable(Type type,Type[] exceptionTypes){
         for(Type t:exceptionTypes){
-            if(t.isAssignedFrom(type)) return true;
+            if(t.isAssignableFrom(type)) return true;
         }
         return false;
     }
@@ -28,7 +28,7 @@ public class OverrideUtil {
     }
     
     public static boolean returnTypeCompatible(Type newType,Type oldType){
-        return oldType.isAssignedFrom(newType);
+        return oldType.isAssignableFrom(newType);
     }
 
 }

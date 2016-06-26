@@ -154,11 +154,11 @@ public class ClassType extends ObjectType {
     }
 
     @Override
-    public boolean isAssignedFrom(Type type) {
-        if(super.isAssignedFrom(type)) return true;
+    public boolean isAssignableFrom(Type type) {
+        if(super.isAssignableFrom(type)) return true;
         if(type instanceof ClassType){
             ClassType other = (ClassType) type;
-            if(!nullable.isAssignedFrom(other.getNullable())) return false;
+            if(!nullable.isAssignableFrom(other.getNullable())) return false;
             ClassNode otherClazz = other.getClassNode();
             if(!clazz.equals(otherClazz)) return false;
             GenericType[] gts = clazz.getGenericTypes();

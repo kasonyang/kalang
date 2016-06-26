@@ -25,8 +25,8 @@ public class KalangMethodSelector extends MethodSelector<ExecutableDescriptor,Ty
 
     @Override
     protected boolean isMorePreciseType(Type actualType, Type t1, Type t2) {
-        if(t1.isAssignedFrom(t2)) return false;
-        if(t2.isAssignedFrom(t1)) return true;
+        if(t1.isAssignableFrom(t2)) return false;
+        if(t2.isAssignableFrom(t1)) return true;
         if(actualType instanceof ClassType){
             if( (t1 instanceof ClassType) && (t2 instanceof PrimitiveType)) return true;
         }else if(actualType instanceof PrimitiveType){

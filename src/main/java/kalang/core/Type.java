@@ -12,7 +12,7 @@ public abstract class Type {
         return getName();
     }
     
-    public boolean isAssignedFrom(Type type){
+    public boolean isAssignableFrom(Type type){
         return equals(type);
     }
      

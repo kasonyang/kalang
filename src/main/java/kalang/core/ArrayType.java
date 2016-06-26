@@ -25,12 +25,12 @@ public class ArrayType extends ObjectType{
     }
 
     @Override
-    public boolean isAssignedFrom(Type type) {
+    public boolean isAssignableFrom(Type type) {
         if(equalAndNullAssignChecked(type)) return true;
         if(!(type instanceof ArrayType)) return false;
         ArrayType other = (ArrayType) type;
-        if(!nullable.isAssignedFrom(other.getNullable())) return false;
-        return componentType.isAssignedFrom(other.getComponentType());
+        if(!nullable.isAssignableFrom(other.getNullable())) return false;
+        return componentType.isAssignableFrom(other.getComponentType());
     }
 
 }
