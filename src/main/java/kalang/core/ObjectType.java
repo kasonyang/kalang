@@ -1,5 +1,6 @@
 
 package kalang.core;
+import java.lang.reflect.Modifier;
 import kalang.ast.ClassNode;
 import kalang.ast.MethodNode;
 import java.util.*;
@@ -159,10 +160,14 @@ public abstract class ObjectType extends Type{
         ObjectType other = (ObjectType) type;
         NullableKind otherNullable = other.getNullable();
         if(!nullable.isAssignedFrom(otherNullable)) return false;
-        if(clazz.equals(other.clazz)) return true;
         ObjectType superType = other.getSuperType();
-        if(superType!=null){
-            return isAssignedFrom(superType);
+        //the super type of interface is null,but actually it should be Object
+        if(superType==null && Modifier.isInterface(other.getModifier())){
+            superType = Types.getRootType();
+        }
+        if(superType!=null && isAssignedFrom(superType)) return true;
+        for(ObjectType itf:other.getInterfaces()){
+            if(isAssignedFrom(itf)) return true;
         }
         return false;
     }

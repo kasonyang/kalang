@@ -155,34 +155,29 @@ public class ClassType extends ObjectType {
 
     @Override
     public boolean isAssignedFrom(Type type) {
-        if(equalAndNullAssignChecked(type)) return true;
-        if(!(type instanceof ClassType)) return false;
-        ClassType other = (ClassType) type;
-        if(!nullable.isAssignedFrom(other.getNullable())) return false;
         if(super.isAssignedFrom(type)) return true;
-        GenericType[] gts = clazz.getGenericTypes();
-        GenericType[] otherGts = other.getClassNode().getGenericTypes();
-        if(gts.length>0 && gts.length==otherGts.length){//handle parameterizedType
+        if(type instanceof ClassType){
+            ClassType other = (ClassType) type;
+            if(!nullable.isAssignedFrom(other.getNullable())) return false;
+            ClassNode otherClazz = other.getClassNode();
+            if(!clazz.equals(otherClazz)) return false;
+            GenericType[] gts = clazz.getGenericTypes();
+            if(gts.length==0) return true;
+            //handle parameterizedType
             Type[] typeArgs = getTypeArguments();
             Type[] otherTypeArgs = other.getTypeArguments();
-            if(typeArgs.length==0 && otherTypeArgs.length>0){
-                ClassType otherEarsedType = Types.getClassType(other.getClassNode(),new Type[0]);
-                return isAssignedFrom(otherEarsedType);
-            }else if(typeArgs.length>0 && otherTypeArgs.length==0){
-                ClassType myErasedType = Types.getClassType(getClassNode(),new Type[0]);
-                return myErasedType.isAssignedFrom(type);
-            }else if(typeArgs.length==otherTypeArgs.length){
-                for(int i=0;i<typeArgs.length;i++){
-                    Type a = typeArgs[i];
-                    Type oa = otherTypeArgs[i];
-                    if(a.equals(oa)) continue;
-                    if(a instanceof WildcardType){
-                        WildcardType wt = (WildcardType)a;
-                        if(!wt.containsType((ObjectType)oa)) return false;
-                    }
+            if(typeArgs.length==0 || otherTypeArgs.length==0) return true;
+            if(typeArgs.length!=otherTypeArgs.length) return false;
+            for(int i=0;i<typeArgs.length;i++){
+                Type a = typeArgs[i];
+                Type oa = otherTypeArgs[i];
+                if(a.equals(oa)) continue;
+                if(a instanceof WildcardType){
+                    WildcardType wt = (WildcardType)a;
+                    if(!wt.containsType((ObjectType)oa)) return false;
                 }
-                return true;
             }
+            return true;
         }
         return false;
     }
