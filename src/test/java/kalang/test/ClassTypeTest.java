@@ -5,6 +5,7 @@ import kalang.ast.ClassNode;
 import kalang.compiler.AstLoader;
 import kalang.AstNotFoundException;
 import kalang.core.ArrayType;
+import kalang.core.ClassType;
 import kalang.core.ObjectType;
 import kalang.core.Type;
 import kalang.core.Types;
@@ -18,6 +19,15 @@ import static org.junit.Assert.*;
 public class ClassTypeTest {
     
     public ClassTypeTest() {
+    }
+    
+    @Test
+    public void testEarsedType() throws AstNotFoundException{
+        AstLoader astLoader = new AstLoader();
+        ClassType listType = Types.getClassType(astLoader.loadAst("java.util.List"),new Type[0]);
+        ClassType arrayListType = Types.getClassType(astLoader.loadAst("java.util.ArrayList"),new Type[0]);
+        assertTrue(arrayListType.isSubTypeOf(listType));
+        
     }
     
     @Test

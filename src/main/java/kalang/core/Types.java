@@ -132,7 +132,7 @@ public class Types {
     
     @Nonnull
     public static ClassType getClassType(@Nonnull ClassNode clazz){
-        return Types.getClassType(clazz,NullableKind.NONNULL);
+        return Types.getClassType(clazz,clazz.getGenericTypes(),NullableKind.NONNULL);
     }
     
     @Nonnull

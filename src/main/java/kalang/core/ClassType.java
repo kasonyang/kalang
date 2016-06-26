@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import kalang.ast.ClassNode;
+import kalang.exception.Exceptions;
 /**
  *
  * @author Kason Yang
@@ -22,7 +23,7 @@ public class ClassType extends ObjectType {
     }
 
     public Type[] getTypeArguments() {
-        return typeArguments.length>0?typeArguments:clazz.getGenericTypes();
+        return typeArguments;
     }
     
     public Map<GenericType,Type> getTypeArgumentsMap(){
@@ -120,12 +121,36 @@ public class ClassType extends ObjectType {
             return type;
         }        
     }
+    
+    private Type eraseGenericType(Type type){
+        if(type instanceof PrimitiveType){
+            return type;
+        }else if(type instanceof GenericType){
+            GenericType gt = (GenericType) type;
+            ObjectType superType = gt.getSuperType();
+            if(superType!=null) return superType;
+            ObjectType[] bs = gt.getInterfaces();
+            if(bs.length>0) return bs[0];
+            return Types.getRootType();
+        }else if(type instanceof ClassType){
+            ClassType ct = (ClassType) type;
+            Type[] typeArgs = ct.getTypeArguments();
+            if(typeArgs.length==0) return ct;
+            return Types.getClassType(ct.getClassNode(),new Type[0]);
+        }else if(type instanceof WildcardType){
+            return eraseGenericType(((WildcardType) type).getSuperType());
+        }else if(type instanceof ArrayType){
+            ArrayType at = (ArrayType) type;
+            return Types.getArrayType(eraseGenericType(at.getComponentType()));
+        }else{
+            throw Exceptions.unsupportedTypeException(type);
+        }
+    }
 
     @Override
     protected Type parseType(Type type) {
-        Map<GenericType, Type> genericTypes;
-        genericTypes = this.getTypeArgumentsMap();    
-        return parseGenericType(type, genericTypes);
+        Map<GenericType, Type> genericTypes = this.getTypeArgumentsMap();
+            return genericTypes.isEmpty() ? eraseGenericType(type) : parseGenericType(type, genericTypes);
     }
 
     @Override
@@ -135,21 +160,29 @@ public class ClassType extends ObjectType {
         ClassType other = (ClassType) type;
         if(!nullable.isAssignedFrom(other.getNullable())) return false;
         if(super.isAssignedFrom(type)) return true;
-        //handle parameterizedType
-        Type[] typeArgs = getTypeArguments();
-        if(typeArgs.length==0) return false;
-        Type[] otherTypeArgs = other.getTypeArguments();
-        if(typeArgs.length==otherTypeArgs.length){
-            for(int i=0;i<typeArgs.length;i++){
-                Type a = typeArgs[i];
-                Type oa = otherTypeArgs[i];
-                if(a.equals(oa)) continue;
-                if(a instanceof WildcardType){
-                    WildcardType wt = (WildcardType)a;
-                    if(!wt.containsType((ObjectType)oa)) return false;
+        GenericType[] gts = clazz.getGenericTypes();
+        GenericType[] otherGts = other.getClassNode().getGenericTypes();
+        if(gts.length>0 && gts.length==otherGts.length){//handle parameterizedType
+            Type[] typeArgs = getTypeArguments();
+            Type[] otherTypeArgs = other.getTypeArguments();
+            if(typeArgs.length==0 && otherTypeArgs.length>0){
+                ClassType otherEarsedType = Types.getClassType(other.getClassNode(),new Type[0]);
+                return isAssignedFrom(otherEarsedType);
+            }else if(typeArgs.length>0 && otherTypeArgs.length==0){
+                ClassType myErasedType = Types.getClassType(getClassNode(),new Type[0]);
+                return myErasedType.isAssignedFrom(type);
+            }else if(typeArgs.length==otherTypeArgs.length){
+                for(int i=0;i<typeArgs.length;i++){
+                    Type a = typeArgs[i];
+                    Type oa = otherTypeArgs[i];
+                    if(a.equals(oa)) continue;
+                    if(a instanceof WildcardType){
+                        WildcardType wt = (WildcardType)a;
+                        if(!wt.containsType((ObjectType)oa)) return false;
+                    }
                 }
+                return true;
             }
-            return true;
         }
         return false;
     }

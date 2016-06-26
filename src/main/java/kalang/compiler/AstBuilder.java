@@ -320,7 +320,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private ObjectType requireClassType(@Nonnull String id,@Nonnull Token token){
         ClassNode ast = requireAst(id, token);
         if(ast==null) return null;
-        return Types.getClassType(ast);
+        return Types.getClassType(ast,new Type[0]);
     }
 
     public void compile(){
@@ -457,10 +457,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                     if(typeArguments[i]==null) return null;
                 }
             }else{
-                for(int i=0;i<typeArguments.length;i++){
-                    //TODO here should get bounded type,not root type
-                    typeArguments[i] = Types.getRootType();
-                }
+                typeArguments = new Type[0];
             }
             return Types.getClassType(clazzType.getClassNode(), typeArguments,nullable);
         }else{

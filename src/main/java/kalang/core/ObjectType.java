@@ -159,9 +159,12 @@ public abstract class ObjectType extends Type{
         ObjectType other = (ObjectType) type;
         NullableKind otherNullable = other.getNullable();
         if(!nullable.isAssignedFrom(otherNullable)) return false;
-        
         if(clazz.equals(other.clazz)) return true;
-        return  other.isSubTypeOf(this);
+        ObjectType superType = other.getSuperType();
+        if(superType!=null){
+            return isAssignedFrom(superType);
+        }
+        return false;
     }
     
     public ObjectType[] getInterfaces(){
