@@ -1,0 +1,22 @@
+apply plugin:'java'
+apply plugin:'eclipse'
+apply plugin: 'maven-publish'
+//apply plugin:'application'
+//mainClassName='Application'
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile fileTree('libs')
+    testCompile 'junit:junit:4.12'
+}
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.kasonyang'
+            artifactId 'kalang-runtime'
+            version '0.1.4'
+            from components.java
+        }
+    }
+}
