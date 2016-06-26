@@ -1,0 +1,2 @@
+Integer i = Integer.valueOf(1);
+System.out.print(i);

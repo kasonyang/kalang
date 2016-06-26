@@ -44,9 +44,7 @@ public abstract class MethodSelector<M,T> {
                 matched.add(m);
             }
         }
-        if(matched.isEmpty()){
-            return matched;
-        }
+        if(matched.size()<=1) return matched;
         return selectMostPrecise(matched,argTypes);
     }
     
@@ -54,8 +52,12 @@ public abstract class MethodSelector<M,T> {
         if(typesToCompare1.length!=typesToCompare2.length) return false;
         boolean isMorePrecise = false;
         for(int i=0;i<typesToCompare1.length;i++){
-            if(isMorePreciseType(actualTypes[i],typesToCompare2[i],typesToCompare1[i])) return false;
-            if(isMorePreciseType(actualTypes[i],typesToCompare1[i], typesToCompare2[i])){
+            T at = actualTypes[i];
+            T t1 = typesToCompare1[i];
+            T t2 = typesToCompare2[i];
+            if(equalsType(t1, t2)) continue;
+            if(isMorePreciseType(at,t2,t1)) return false;
+            if(isMorePreciseType(at,t1, t2)){
                 isMorePrecise = true;
             }
         }

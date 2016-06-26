@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
+import kalang.compiler.KalangMethodSelector;
 import kalang.core.*;
 import kalang.util.AstUtil;
 import kalang.util.TypeUtil;
@@ -12,6 +13,8 @@ import kalang.util.TypeUtil;
 public abstract class InvocationExpr extends ExprNode {
 
     private final ObjectType clazz;
+    
+    private static final KalangMethodSelector methodSelector = new KalangMethodSelector();
     
     public static class MethodSelection{
         public ExecutableDescriptor selectedMethod;
@@ -39,33 +42,22 @@ public abstract class InvocationExpr extends ExprNode {
      * @param types
      * @return the selected method,or null
      */
-    public static MethodSelection applyMethod(ObjectType clazz,String methodName, ExprNode[] args,ExecutableDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
+    public static MethodSelection applyMethod(ObjectType clazz,String methodName, @Nullable ExprNode[] args,ExecutableDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
+        if(args == null) args = new ExprNode[0];
         Type[] types = AstUtil.getExprTypes(args);
-        ExecutableDescriptor md = AstUtil.getExactedMethod(clazz,candidates, methodName, types);
-        if (md != null) {
-            return new MethodSelection(md, args);
-        } else {
-            ExecutableDescriptor[] methods = AstUtil.filterMethodByName(candidates, methodName);
-            //int matchedCount = 0;
-            ExprNode[] matchedParams=null;
-            List<ExecutableDescriptor> matchedMethod = new ArrayList(methods.length);
-            for (ExecutableDescriptor m : methods) {
-                Type[] mTypes = m.getParameterTypes();
-                ExprNode[] mp = AstUtil.matchTypes(args, types, mTypes);
-                if (mp != null) {
-                    //matchedCount++;
-                    matchedParams = mp;
-                    matchedMethod.add(m);
-                }
-            }
-            if (matchedMethod.isEmpty()) {
-                throw new MethodNotFoundException(methodName);
-            } else if (matchedMethod.size() > 1) {
-                throw new AmbiguousMethodException(matchedMethod);
-            }
-            return new MethodSelection(matchedMethod.get(0), matchedParams);
+        if(types==null) types = new Type[0];
+        List<ExecutableDescriptor> selectedList = methodSelector.select(candidates, methodName, types);
+        if (selectedList.isEmpty()) {
+            throw new MethodNotFoundException(methodName);
+        } else if (selectedList.size() > 1) {
+            throw new AmbiguousMethodException(selectedList);
         }
+        ExecutableDescriptor md = selectedList.get(0);
+        ExprNode[] matchedParam = AstUtil.matchTypes(args, types, md.getParameterTypes());
+        Objects.requireNonNull(matchedParam);
+        return new MethodSelection(md,matchedParam);
     }
+    
 
     public InvocationExpr(ObjectType clazz,ExecutableDescriptor method, ExprNode[] args) {
         this.method = method;
