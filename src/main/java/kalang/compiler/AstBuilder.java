@@ -157,6 +157,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private final ClassNode thisClazz = new ClassNode();
     
+    //TODO may be bug.The genericTypes is uninitilized
     @Nonnull
     private final ObjectType thisType = Types.getClassType(thisClazz);
     
