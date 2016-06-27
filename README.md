@@ -45,6 +45,9 @@ More usages please run
 
     >kalang -h
 
+#IDE plugin support
+
+* [kalang-nb-support](https://github.com/kasonyang/kalang-nb-support) 
 
 #License
 
