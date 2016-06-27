@@ -15,7 +15,7 @@ publishing {
         maven(MavenPublication) {
             groupId 'com.kasonyang'
             artifactId 'kalang-runtime'
-            version '0.1.4'
+            version '0.1.5'
             from components.java
         }
     }
