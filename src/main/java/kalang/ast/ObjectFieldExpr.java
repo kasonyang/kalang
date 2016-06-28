@@ -1,6 +1,7 @@
 
 package kalang.ast;
 import java.io.*;
+import java.lang.reflect.Modifier;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
@@ -10,6 +11,8 @@ import kalang.FieldNotFoundException;
 import kalang.core.ObjectType;
 import kalang.core.FieldDescriptor;
 import kalang.core.Type;
+import kalang.exception.Exceptions;
+import kalang.util.Parameters;
 import kalang.util.AstUtil;
 /**
  *
@@ -21,7 +24,7 @@ public class ObjectFieldExpr extends FieldExpr{
 
     public ObjectFieldExpr(ExprNode target, FieldDescriptor field) {
         super(field);
-        //TODO check non-static
+        Parameters.requireFalse(Modifier.isStatic(field.getModifier()));
         this.target = target;
     }
     

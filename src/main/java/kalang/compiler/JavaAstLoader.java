@@ -197,7 +197,7 @@ public class JavaAstLoader extends AstLoader {
     private Type transType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes) throws AstNotFoundException{
         if(t instanceof TypeVariable){
             GenericType vt = genericTypes.get((TypeVariable)t);
-            //FIXME why it maybe null?
+            //FIXME it may be null if TypeVariable comes from method
             if(vt!=null) return vt;
             return null;
         }else if(t instanceof java.lang.reflect.ParameterizedType){

@@ -19,7 +19,10 @@ public class ClassType extends ObjectType {
     protected ClassType(ClassNode clazz,Type[] typeArguments,NullableKind nullable ) {
         super(clazz,nullable);
         this.typeArguments = typeArguments;
-        //TODO check typeArguments.length
+        //TODO check typeArguments.length.clazz may be uninitailized
+//        if(typeArguments.length>0 && typeArguments.length != clazz.getGenericTypes().length){
+//            throw new IllegalArgumentException("illegal size of typeArguments");
+//        }
     }
 
     public Type[] getTypeArguments() {

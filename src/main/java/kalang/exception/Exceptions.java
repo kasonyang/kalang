@@ -1,4 +1,8 @@
 package kalang.exception;
+
+import java.util.Objects;
+import kalang.core.FieldDescriptor;
+
 /**
  *
  * @author Kason Yang <im@kasonyang.com>
@@ -19,5 +23,9 @@ public class Exceptions {
 
     public static RuntimeException unknownValue(String value) {
         throw new UnsupportedOperationException("unknown value:" + value);
+    }
+
+    public static IllegalArgumentException illegalArgument(Object obj) {
+        throw new IllegalArgumentException(Objects.toString(obj));
     }
 }

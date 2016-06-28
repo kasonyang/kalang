@@ -1,6 +1,7 @@
 
 package kalang.ast;
 import java.io.*;
+import java.lang.reflect.Modifier;
 import java.nio.*;
 import java.net.*;
 import java.util.*;
@@ -12,6 +13,7 @@ import kalang.core.ExecutableDescriptor;
 import kalang.core.MethodDescriptor;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.util.Parameters;
 import kalang.util.AstUtil;
 /**
  *
@@ -45,7 +47,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
 
     public ObjectInvokeExpr(ExprNode invokeTarget, ExecutableDescriptor method, ExprNode[] args) {
         super((ObjectType)invokeTarget.getType(),method, args);
-        //TODO check non-static
+        Parameters.requireTrue(!Modifier.isStatic(method.getModifier()));
         this.invokeTarget = invokeTarget;
     }
 
