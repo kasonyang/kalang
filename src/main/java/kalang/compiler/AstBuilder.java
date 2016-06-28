@@ -337,7 +337,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             parsingPhase = PARSING_PHASE_META;
             this.compilationContext = parser.compilationUnit();
             visit(compilationContext);
-            if(!AstUtil.containsConstructor(thisClazz) && !AstUtil.createEmptyConstructor(thisClazz)){
+            if(!ModifierUtil.isInterface(thisClazz.modifier) && !AstUtil.containsConstructor(thisClazz) && !AstUtil.createEmptyConstructor(thisClazz)){
                 handleSyntaxError("failed to create constructor with no parameters", compilationContext);
             }
         }

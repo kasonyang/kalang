@@ -14,15 +14,17 @@ import kalang.util.NameUtil;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang
  */
 public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     
     protected StringBuilder sb;
+    
+    private boolean isInterface = false;
 
     @Override
     public Void visitFieldNode(FieldNode fieldNode) {
-        sb.append(Modifier.toString(fieldNode.modifier))
+        sb.append(modifier2String(fieldNode.modifier))
                 .append(" ")
                 .append(fieldNode.type)
                 .append(" ")
@@ -33,13 +35,13 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
 
     @Override
     public Void visitMethodNode(MethodNode node) {
-        sb.append(Modifier.toString(node.modifier))
+        sb.append(modifier2String(node.modifier))
                 .append(" ");
         boolean isConstructor = "<init>".equals(node.name);
         if(isConstructor){
             sb.append(NameUtil.getClassNameWithoutPackage(node.classNode.name));
         }else{
-            sb.append("native ")
+            sb.append(this.isInterface ? "" : "native ")
                 .append(node.type)
                 .append(" ")
                 .append(node.name);
@@ -69,16 +71,24 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     }
     
     
+    private String modifier2String(int modifier){
+        if(this.isInterface){
+            modifier &= ~ Modifier.ABSTRACT;
+        }
+        return Modifier.toString(modifier);
+    }
+    
 
     @Override
     public Void visitClassNode(ClassNode node) {
+        this.isInterface = Modifier.isInterface(node.modifier);
         String clsName = node.name;
         String pkgName = NameUtil.getPackageName(clsName);
         if(pkgName!=null){
             sb.append("package ").append(pkgName).append(";\n");
         }
-        sb.append(Modifier.toString(node.modifier))
-                .append(" class ")
+        sb.append(modifier2String(node.modifier))
+                .append(this.isInterface ? " " : " class ")
                 .append(NameUtil.getClassNameWithoutPackage(clsName))
                 ;
         GenericType[] genTypes = node.getGenericTypes();
