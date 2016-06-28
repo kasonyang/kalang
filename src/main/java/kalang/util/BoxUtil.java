@@ -14,6 +14,7 @@ import kalang.ast.NewArrayExpr;
 import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.StaticInvokeExpr;
 import kalang.AmbiguousMethodException;
+import kalang.AstNotFoundException;
 import kalang.MethodNotFoundException;
 import kalang.ast.AssignExpr;
 import kalang.ast.ElementExpr;
@@ -23,6 +24,7 @@ import kalang.ast.MultiStmtExpr;
 import kalang.ast.Statement;
 import kalang.ast.VarDeclStmt;
 import kalang.ast.VarExpr;
+import kalang.compiler.AstLoader;
 import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.PrimitiveType;
@@ -160,8 +162,8 @@ public class BoxUtil {
     private static ExprNode castObject2String(ExprNode expr) {
         InvocationExpr inv;
         try {
-            inv = ObjectInvokeExpr.create(expr, "toString",null);
-        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+            inv = StaticInvokeExpr.create(new ClassReference(AstLoader.BASE_AST_LOADER.loadAst("java.util.Objects")), "toString", new ExprNode[]{expr});
+        } catch (MethodNotFoundException|AmbiguousMethodException|AstNotFoundException ex) {
             throw new RuntimeException(ex);
         }
         return inv;
