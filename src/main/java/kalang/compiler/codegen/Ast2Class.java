@@ -1106,12 +1106,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitUnknownFieldExpr(UnknownFieldExpr node) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("BUG:invoking unknown method:" + node.getFieldName());
     }
 
     @Override
     public Object visitUnknownInvocationExpr(UnknownInvocationExpr node) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("BUG:invoking unknown method:" + node.getMethodName());
     }
 
     @Override
