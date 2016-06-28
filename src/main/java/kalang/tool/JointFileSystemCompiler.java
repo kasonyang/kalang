@@ -97,9 +97,8 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                 if(javaCompiler==null) throw ex;
                 JavaAstLoader javaAstLoader = new JavaAstLoader(javaCompiler);
                 return javaAstLoader.loadAst(className);
-            } catch (IOException ex1) {
-                //TODO handle ex
-                Logger.getLogger(JointFileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex1);
+            } catch (IOException ioEx) {
+                handleIOException(ioEx);
                 throw ex;
             }
         }
@@ -145,8 +144,8 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                                                 try {
                                                     return loadJavaSource(className).getCharContent(true);
                                                 } catch (IOException ex) {
-                                                    //TODO handle ex
-                                                    throw new RuntimeException(ex);
+                                                    JointFileSystemCompiler.this.handleIOException(ex);
+                                                    return "";
                                                 }
                                             }
                                         }
@@ -168,7 +167,6 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
             javaCompiler.addSourcePath(p);
         }
         for(Map.Entry<String, JavaFileObject> e:javaFiles.entrySet()){
-            //TODO handle ex
             javaCompiler.addSource(e.getValue());
         }
         String[] stubNames = javaStubManager.getClassNames();
@@ -195,8 +193,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                     os.write(e.getValue());
                     os.close();
                 } catch (IOException ex) {
-                    //TODO handle ex
-                    throw new RuntimeException(ex);
+                    handleIOException(ex);
                 }
             }
         }

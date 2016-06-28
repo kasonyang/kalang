@@ -147,5 +147,9 @@ public class FileSystemCompiler extends KalangCompiler{
     public void setCodeGenerator(CodeGenerator codeGenerator) {
         this.codeGenerator = codeGenerator;
     }
+    
+    protected void handleIOException(IOException ex){
+        ex.printStackTrace(System.err);
+    }
 
 }

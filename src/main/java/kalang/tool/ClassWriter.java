@@ -26,11 +26,9 @@ public class ClassWriter implements CodeGenerator{
         if (outputManager != null) {
             try {
                 OutputStream os = outputManager.createOutputStream(cls);
-                //os.write(generateJavaCode(classNode).getBytes());
                 os.write(generateClassBytes(classNode));
             } catch (IOException ex) {
-                //TODO handle ex
-                Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
+                throw new RuntimeException(ex);
             }
         }
     }
