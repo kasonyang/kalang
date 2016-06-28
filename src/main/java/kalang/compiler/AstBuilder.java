@@ -157,10 +157,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private final ClassNode thisClazz = new ClassNode();
     
-    //TODO may be bug.The genericTypes is uninitilized
-    @Nonnull
-    private final ObjectType thisType = Types.getClassType(thisClazz);
-    
     private MethodNode method;
     
     private VarTable<VarObject,Type> overrideTypes = new VarTable();
@@ -700,7 +696,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 if(AstUtil.isStatic(fieldNode.modifier)){
                     thisClazz.staticInitStmts.add(new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(thisClazz), fieldNode), initExpr)));
                 }else{
-                    thisClazz.initStmts.add(new ExprStmt(new AssignExpr(new ObjectFieldExpr(new ThisExpr(thisType), fieldNode), initExpr)));
+                    thisClazz.initStmts.add(new ExprStmt(new AssignExpr(new ObjectFieldExpr(new ThisExpr(getThisType()), fieldNode), initExpr)));
                 }
             }else{
                 varDecl(vd,fieldNode, Types.getRootType());
@@ -1169,12 +1165,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
         ExprNode expr;
         try {
-            ObjectType clazzType = thisType;
+            ObjectType clazzType = getThisType();
             InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(thisClazz, true,true));
             if(Modifier.isStatic(ms.selectedMethod.getModifier())){
                 expr = new StaticInvokeExpr(new ClassReference(thisClazz), ms.selectedMethod, ms.appliedArguments);
             }else{
-                expr = new ObjectInvokeExpr(new ThisExpr(thisType), ms.selectedMethod, ms.appliedArguments);
+                expr = new ObjectInvokeExpr(new ThisExpr(getThisType()), ms.selectedMethod, ms.appliedArguments);
             }
         } catch (MethodNotFoundException ex) {
             expr = new UnknownInvocationExpr(null, methodName, args);
@@ -1398,7 +1394,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                         if(Modifier.isStatic(f.modifier)){
                             fe = new StaticFieldExpr(new ClassReference(thisClazz), f);
                         }else{
-                            fe = new ObjectFieldExpr(new ThisExpr(thisType), f);
+                            fe = new ObjectFieldExpr(new ThisExpr(getThisType()), f);
                         }
                         if(token!=null) mapAst(fe, token);
                         return fe;
@@ -1629,7 +1625,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         String key = ctx.ref.getText();
         AstNode expr;
         if(key.equals("this")){
-            expr = new ThisExpr(thisType);
+            expr = new ThisExpr(getThisType());
         }else if(key.equals("super")){
             expr = new SuperExpr(thisClazz);
         }else{
@@ -1888,6 +1884,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }else{
             return new WildcardType(bounds,null);
         }
+    }
+
+    public ObjectType getThisType() {
+        return Types.getClassType(thisClazz);
     }
 
 }
