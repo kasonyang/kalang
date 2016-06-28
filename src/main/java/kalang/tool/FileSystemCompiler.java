@@ -105,10 +105,8 @@ public class FileSystemCompiler extends KalangCompiler{
     }
     
     public void generateJavaStub(OutputManager om) {
-        int oldPhase = getCompileTargetPhase();
         //TODO here has a bug.It will ignore class reference in method body
-        setCompileTargetPhase(CompilePhase.PHASE_PARSING);
-        super.compile();
+        super.compile(CompilePhase.PHASE_PARSING);
         HashMap<String, CompilationUnit> sourceAsts = getCompilationUnits();
         for(Map.Entry<String, CompilationUnit> a:sourceAsts.entrySet()){
             Ast2JavaStub a2js = new Ast2JavaStub();
@@ -128,7 +126,6 @@ public class FileSystemCompiler extends KalangCompiler{
             }
                 
         }
-        setCompileTargetPhase(oldPhase);
     }   
 
     @Override

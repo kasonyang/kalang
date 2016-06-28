@@ -80,20 +80,19 @@ public class KalangCompiler extends AstLoader implements CompileContext,CompileE
     }
     
     public void compile(int targetPhase){
-        setCompileTargetPhase(targetPhase);
-        compile();
+        while(compilingPhase<targetPhase && compilingPhase < this.compileTargetPhase){
+            compilingPhase++;
+            for(CompilationUnit unit:compilationUnits.values()){
+                unit.compile(compilingPhase);
+            }
+        }
     }
 
     /**
      * compile all sources
      */
     public void compile() {
-        while(compilingPhase<compileTargetPhase){
-            compilingPhase++;
-            for(CompilationUnit unit:compilationUnits.values()){
-                unit.compile(compilingPhase);
-            }
-        }
+        compile(compileTargetPhase);
     }
 
     @Override
