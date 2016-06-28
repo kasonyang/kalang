@@ -13,6 +13,9 @@ public class ClassNode extends AstNode implements Annotationable{
     public String name;
     
     @Nullable
+    public String fileName = null;
+    
+    @Nullable
     public ObjectType superType;
     
     public final List<FieldNode> fields = new ArrayList<>();

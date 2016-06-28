@@ -675,6 +675,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public AstNode visitCompilationUnit(CompilationUnitContext ctx) {
         thisClazz.name = this.className;
+        thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         visitChildren(ctx);
         return null;
     }
