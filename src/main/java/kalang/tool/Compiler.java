@@ -60,7 +60,15 @@ public class Compiler {
         if(cli.hasOption("run")){
             return run(cli);
         }else{
-            JointFileSystemCompiler fsc = new JointFileSystemCompiler();
+            JointFileSystemCompiler fsc = new JointFileSystemCompiler(){
+                @Override
+                protected void reportDiagnosis(Diagnosis dn) {
+                    if(dn.getKind().isError()){
+                        Compiler.this.hasError = true;
+                    }
+                    super.reportDiagnosis(dn);
+                }
+            };
             File[] cps = parseClassPath(cli);
             if(cps!=null){
                 for (File cp : cps) {
@@ -104,17 +112,6 @@ public class Compiler {
                     fsc.addKalangOrJavaSource(currentDir , srcFile);
                 }
             }
-            fsc.setCompileErrorHandler(new StandardCompileHandler(){
-                @Override
-                protected void reportDiagnosis(Diagnosis dn) {
-                    if(dn.getKind().isError()){
-                        hasError = true;
-                    }
-                    Compiler.this.hasError = true;
-                    super.reportDiagnosis(dn);
-                }
-                
-            });
             hasError = false;
             fsc.compile();
             return hasError;

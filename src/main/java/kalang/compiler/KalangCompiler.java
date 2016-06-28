@@ -1,5 +1,6 @@
 package kalang.compiler;
 
+import java.io.PrintStream;
 import kalang.AstNotFoundException;
 import kalang.ast.ClassNode;
 import java.util.HashMap;
@@ -8,13 +9,14 @@ import javax.annotation.Nullable;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import static kalang.compiler.CompilePhase.*;
+import kalang.util.DiagnosisUtil;
 import org.antlr.v4.runtime.CommonTokenStream;
 /**
  * The core compiler
  * 
  * @author Kason Yang
  */
-public class KalangCompiler extends AstLoader implements CompileContext{
+public class KalangCompiler extends AstLoader implements CompileContext,CompileErrorHandler{
         
     private int compileTargetPhase = PHASE_ALL;
 
@@ -26,9 +28,6 @@ public class KalangCompiler extends AstLoader implements CompileContext{
     protected CompileContext compileContext = new DefaultCompileContext();
     
     private int compilingPhase;
-    
-    @Nonnull
-    protected CompileErrorHandler compileErrorHandler = StandardCompileHandler.INSTANCE;
     
     protected AstLoader astLoader;
 
@@ -59,12 +58,13 @@ public class KalangCompiler extends AstLoader implements CompileContext{
 
     protected void semanticAnalysis() {
         for (CompilationUnit cunit : compilationUnits.values()) {
-            cunit.semanticAnalysis(compileErrorHandler);
+            cunit.semanticAnalysis(this);
         }
     }
 
+    //TODO remove it
     public void reportError(CompileError error) {
-        compileErrorHandler.handleCompileError(error);
+        this.handleCompileError(error);
     }
     
     public void setCompileTargetPhase(int targetPhase){
@@ -120,15 +120,6 @@ public class KalangCompiler extends AstLoader implements CompileContext{
     @Nullable
     public CompilationUnit getCompilationUnit(@Nonnull String className){
         return compilationUnits.get(className);
-    }
-
-    @Nonnull
-    public CompileErrorHandler getCompileErrrorHandler() {
-        return compileErrorHandler;
-    }
-
-    public void setCompileErrorHandler(@Nonnull CompileErrorHandler compileErrrorHandler) {
-        this.compileErrorHandler = compileErrrorHandler;
     }
     
     protected CompilationUnit newCompilationUnit(KalangSource source){
@@ -187,8 +178,20 @@ public class KalangCompiler extends AstLoader implements CompileContext{
     }
 
     @Override
-    public CompileErrorHandler getCompileErrorHandler() {
-        return compileErrorHandler;
+    public final void handleCompileError(CompileError error) {
+        setCompileTargetPhase(this.compilingPhase);
+        Diagnosis dn = DiagnosisUtil.createFromCompileError(error);
+        reportDiagnosis(dn);
+    }
+    
+    protected void reportDiagnosis(Diagnosis diagnosis){
+        PrintStream out = diagnosis.getKind().isError() ? System.err : System.out;
+        out.print(diagnosis);
+    }
+
+    @Override
+    public final CompileErrorHandler getCompileErrorHandler() {
+        return this;
     }
 
 }

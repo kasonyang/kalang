@@ -1,8 +1,10 @@
 package kalang.test;
 
+import java.util.Objects;
 import junit.framework.Assert;
 import kalang.compiler.CompileError;
 import kalang.compiler.CompileErrorHandler;
+import kalang.compiler.Diagnosis;
 import kalang.tool.JointFileSystemCompiler;
 
 /**
@@ -12,13 +14,15 @@ import kalang.tool.JointFileSystemCompiler;
 public class JointCompilerTestCase extends JointFileSystemCompiler{
 
     public JointCompilerTestCase() {
-        setCompileErrorHandler(new CompileErrorHandler(){
-            @Override
-            public void handleCompileError(CompileError error) {
-                Assert.fail(error.toString());
-            }
-            
-        });
+        
+    }
+
+    @Override
+    protected void reportDiagnosis(Diagnosis diagnosis) {
+        super.reportDiagnosis(diagnosis);
+        if(diagnosis.getKind().isError()){
+            Assert.fail(Objects.toString(diagnosis));
+        }
     }
     
     

@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import kalang.util.DiagnosisUtil;
 
 /**
  *
@@ -26,14 +27,7 @@ public class StandardCompileHandler implements CompileErrorHandler{
 
     @Override
     public void handleCompileError(CompileError error) {
-        String desc = error.getDescription();
-        CompilationUnit cunit = error.getCompilationUnit();
-        KalangSource source = null;
-        if(cunit!=null){
-            source = cunit.getSource();            
-        }
-        Diagnosis dn = new Diagnosis(Diagnosis.Kind.ERROR,error.offset,desc,source);
-        reportDiagnosis(dn);
+        reportDiagnosis(DiagnosisUtil.createFromCompileError(error));
     }
     
     protected void reportDiagnosis(Diagnosis dn){
