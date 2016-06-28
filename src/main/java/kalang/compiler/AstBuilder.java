@@ -188,9 +188,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private KalangParser parser;
     
-    private CompileErrorHandler errorHandler = (error) ->{
-        System.err.println(error);
-    };
+    private CompileErrorHandler errorHandler = StandardCompileHandler.INSTANCE;
     
     private final CompilationUnit compilationUnit;
     private List<String> methodDeclared = new ArrayList<>();

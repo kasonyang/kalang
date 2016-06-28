@@ -59,13 +59,7 @@ public class DefaultCompileContext implements CompileContext{
 
     @Override
     public CompileErrorHandler getCompileErrorHandler() {
-        return new CompileErrorHandler() {
-            @Override
-            public void handleCompileError(CompileError error) {
-                //TODO stop the compile 
-                System.err.println(error.toString());
-            }
-        };
+        return StandardCompileHandler.INSTANCE;
     }
 
 }

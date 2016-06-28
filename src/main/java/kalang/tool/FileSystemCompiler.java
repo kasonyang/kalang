@@ -80,17 +80,7 @@ public class FileSystemCompiler extends KalangCompiler{
                     
                 };
             }
-            
         };
-        super.setCompileErrorHandler(new CompileErrorHandler() {
-            @Override
-            public void handleCompileError(CompileError error) {
-                String cname = error.getCompilationUnit().getSource().getClassName();
-                File fn = sourceFiles.get(cname);
-                System.err.println(fn + ":" + error);
-                setCompileTargetPhase(getCurrentCompilePhase());
-            }
-        });
     }
 
     public void addSource(File srcDir, File file) throws IOException {

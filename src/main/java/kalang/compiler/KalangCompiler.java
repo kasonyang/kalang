@@ -28,10 +28,7 @@ public class KalangCompiler extends AstLoader implements CompileContext{
     private int compilingPhase;
     
     @Nonnull
-    protected CompileErrorHandler compileErrorHandler = (e) -> {
-        System.err.println(e.toString());
-        compileTargetPhase = compilingPhase;
-     };
+    protected CompileErrorHandler compileErrorHandler = StandardCompileHandler.INSTANCE;
     
     protected AstLoader astLoader;
 

@@ -8,6 +8,8 @@ import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.KalangClassLoader;
+import kalang.compiler.Diagnosis;
+import kalang.compiler.StandardCompileHandler;
 import kalang.util.ClassNameUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -24,6 +26,8 @@ public class Compiler {
     private final static String APP_NAME = "kalang";
 
     private final static Options OPTIONS;
+    
+    private boolean hasError = false;
 
     static {
         OPTIONS = new Options();
@@ -40,17 +44,21 @@ public class Compiler {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp(APP_NAME, OPTIONS);
     }
-
+    
     public static void main(String[] args) throws ParseException, IOException {
+        Compiler cper = new Compiler();
+        cper.compile(args);
+    }
+
+    public boolean compile(String[] args) throws ParseException, IOException {
         DefaultParser parser = new DefaultParser();
         CommandLine cli = parser.parse(OPTIONS, args);
         if (args.length == 0 || cli.hasOption("h")) {
             printUsage();
-            return;
+            return false;
         }
         if(cli.hasOption("run")){
-            run(cli);
-            return;
+            return run(cli);
         }else{
             JointFileSystemCompiler fsc = new JointFileSystemCompiler();
             File[] cps = parseClassPath(cli);
@@ -96,11 +104,24 @@ public class Compiler {
                     fsc.addKalangOrJavaSource(currentDir , srcFile);
                 }
             }
+            fsc.setCompileErrorHandler(new StandardCompileHandler(){
+                @Override
+                protected void reportDiagnosis(Diagnosis dn) {
+                    if(dn.getKind().isError()){
+                        hasError = true;
+                    }
+                    Compiler.this.hasError = true;
+                    super.reportDiagnosis(dn);
+                }
+                
+            });
+            hasError = false;
             fsc.compile();
+            return hasError;
         }
     }
     
-    private static File[] parseClassPath(CommandLine cli){
+    private File[] parseClassPath(CommandLine cli){
         if (cli.hasOption("cp")) {
             String[] cps = cli.getOptionValue("cp").split(";");
             File[] file = new File[cps.length];
@@ -112,7 +133,7 @@ public class Compiler {
         return new File[0];
     }
     
-    public static void run(CommandLine cli){
+    public boolean run(CommandLine cli){
         String clsName = cli.getOptionValue("run");
         KalangClassLoader kcl = new KalangClassLoader();
         kcl.addClassPath(new File("."));
@@ -127,26 +148,28 @@ public class Compiler {
              clazz = kcl.loadClass(clsName);
         } catch (ClassNotFoundException ex) {
             System.err.println("Class not found!");
-            return;
+            return false;
         }
         Method mm;
         try {
             mm = clazz.getMethod("main",Class.forName("[Ljava.lang.String;"));
         } catch (NoSuchMethodException ex) {
             System.err.println("main method not found!");
-            return;
+            return false;
         } catch (SecurityException | ClassNotFoundException ex) {
             Logger.getLogger(Compiler.class.getName()).log(Level.SEVERE, null, ex);
-            return;
+            return false;
         }
         if(!Modifier.isStatic(mm.getModifiers())){
             System.out.println("main method is not static");
-            return;
+            return false;
         }
         try {
             mm.invoke(null,new Object[]{cli.getArgs()});
+            return true;
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             ex.printStackTrace();
+            return false;
         }
     }
 
