@@ -36,6 +36,29 @@ class<T>{
         return j;
     }
     
+    private int ifElseIfStmt(int i){
+        if(i==1){
+            return 1;
+        }else if(i==2){
+            return 2;
+        }else if(i==3){
+            return 3;
+        }else{
+            return 0;
+        }
+     }
+     
+     int ifFirst(){ return ifElseIfStmt(1) + 5 ;}
+     
+    int ifSecond(){ return ifElseIfStmt(2) + 4 ;}
+     
+     int ifThird(){ return ifElseIfStmt(3) + 3 ;}
+     
+     int ifLast(){ return ifElseIfStmt(-1) + 6 ;}
+     
+      
+    
+    
     int ifBinary(){
         int i = 1;
         int j = 2;
