@@ -82,6 +82,7 @@ import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
+import kalang.util.Parameters;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -337,7 +338,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             try{
                 md.visitMaxs(0, 0);
             }catch(Exception ex){
-                throw new RuntimeException("exception when visit method:" + node.name, ex);
+                ex.printStackTrace(System.err);
+                //throw new RuntimeException("exception when visit method:" + node.name, ex);
             }
         }
         md.visitEnd();
@@ -559,11 +561,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private void astore(ExprNode expr){
-        org.objectweb.asm.Type type = asmType( ((ArrayType)expr.getType()).getComponentType());
+        visit(expr);
+        org.objectweb.asm.Type type = asmType(expr.getType());
         md.visitInsn(type.getOpcode(IASTORE));
     }
     
     private void assignArrayElement(ExprNode array,ExprNode key,ExprNode value){
+        Parameters.requireNonNull(array);
+        Parameters.requireNonNull(key);
+        Parameters.requireNonNull(value);
         visit(array);
         visit(key);
         astore(value);

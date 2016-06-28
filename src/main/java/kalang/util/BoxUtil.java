@@ -18,8 +18,11 @@ import kalang.MethodNotFoundException;
 import kalang.ast.AssignExpr;
 import kalang.ast.ElementExpr;
 import kalang.ast.ExprStmt;
+import kalang.ast.LocalVarNode;
 import kalang.ast.MultiStmtExpr;
 import kalang.ast.Statement;
+import kalang.ast.VarDeclStmt;
+import kalang.ast.VarExpr;
 import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.PrimitiveType;
@@ -177,16 +180,27 @@ public class BoxUtil {
     
     public static ExprNode createInitializedArray(Type type,ExprNode[] exprs){
         NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(exprs.length));
-        Statement[] initStmts = new Statement[exprs.length];
-        for(int i=0;i<exprs.length;i++){
-            initStmts[i] =new ExprStmt(
-                    new AssignExpr(
-                            new ElementExpr(ae, new ConstExpr(i))
-                            , exprs[i]
-                    )
-            );
+        if(exprs.length>0){
+            Statement[] initStmts = new Statement[exprs.length+2];
+            //TODO create a method for temp var creation
+            //TODO localVarNode should add a type parameter
+            LocalVarNode local = new LocalVarNode();
+            local.type = ae.getType();
+            initStmts[0] = new VarDeclStmt(local);
+            VarExpr arrVar = new VarExpr(local);
+            initStmts[1] = new ExprStmt(new AssignExpr(arrVar,ae));
+            for(int i=0;i<exprs.length;i++){
+                initStmts[i+2] =new ExprStmt(
+                        new AssignExpr(
+                                new ElementExpr(arrVar, new ConstExpr(i))
+                                , exprs[i]
+                        )
+                );
+            }
+            return new MultiStmtExpr(Arrays.asList(initStmts), arrVar);
+        }else{
+            return ae;
         }
-        return new MultiStmtExpr(Arrays.asList(initStmts), ae);
     }
 
 }
