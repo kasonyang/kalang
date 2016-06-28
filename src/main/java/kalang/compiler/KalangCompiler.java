@@ -9,8 +9,12 @@ import javax.annotation.Nullable;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import static kalang.compiler.CompilePhase.*;
+import kalang.util.AntlrErrorString;
 import kalang.util.DiagnosisUtil;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.DefaultErrorStrategy;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
 /**
  * The core compiler
  * 
@@ -149,7 +153,17 @@ public class KalangCompiler extends AstLoader implements CompileContext,CompileE
 
     @Override
     public KalangParser createParser(CompilationUnit compilationUnit, CommonTokenStream tokenStream) {
-        return compileContext.createParser(compilationUnit, tokenStream);
+        KalangParser parser = new KalangParser(tokenStream);
+        parser.setErrorHandler(new DefaultErrorStrategy(){
+            @Override
+            public void reportError(Parser recognizer, RecognitionException e) {
+                String msg = AntlrErrorString.exceptionString(recognizer, e);
+                CompileError ce = new SyntaxError(msg, compilationUnit, null , e.getOffendingToken(),e.getOffendingToken());
+                KalangCompiler.this.handleCompileError(ce);
+            }
+            
+        });
+        return parser;
     }
 
     @Override
@@ -186,7 +200,7 @@ public class KalangCompiler extends AstLoader implements CompileContext,CompileE
     
     protected void reportDiagnosis(Diagnosis diagnosis){
         PrintStream out = diagnosis.getKind().isError() ? System.err : System.out;
-        out.print(diagnosis);
+        out.println(diagnosis);
     }
 
     @Override

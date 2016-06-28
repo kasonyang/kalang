@@ -27,11 +27,11 @@ public class AntlrErrorString {
                 );
             }
         }
-        return "failed to select rule at input:" + input;
+        return "syntax error at input:" + input;
     }
 
     public static String inputMismatch(InputMismatchException e) {
-        return "mismatched input " + e.getOffendingToken().getText();
+        return "mismatched input:" + e.getOffendingToken().getText();
     }
 
     public static String failedPredicate(FailedPredicateException e) {
