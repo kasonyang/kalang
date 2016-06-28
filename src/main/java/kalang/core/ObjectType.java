@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
 import kalang.util.MethodUtil;
+import kalang.util.ModifierUtil;
 /**
  *
  * @author Kason Yang
@@ -77,6 +78,9 @@ public abstract class ObjectType extends Type{
         List<ObjectType> superList = new LinkedList();
         if(includeSuperType){
             ObjectType superType = getSuperType();
+            if(superType==null && ModifierUtil.isInterface(getModifier())){
+                superType = Types.getRootType();
+            }
             if(superType!=null) superList.add(superType);
         }
         if(includeInterfaces){

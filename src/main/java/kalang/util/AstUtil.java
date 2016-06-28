@@ -62,7 +62,7 @@ public class AstUtil {
         ClassType theType = Types.getClassType(theClass);
         MethodDescriptor[] implementedMethods = theType.getMethodDescriptors(theClass, true, false);
         List<MethodDescriptor> list = new LinkedList();
-        for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, true,false)) {
+        for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, false,true)) {
             if(ModifierUtil.isDefault(m.getModifier())) continue;
             String name = m.getName();
             Type[] types = m.getParameterTypes();
