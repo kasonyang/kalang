@@ -84,7 +84,6 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
 
     @Override
     public ClassNode loadAst(String className) throws AstNotFoundException {
-        //TODO here has a bug,when find a java class for compiling kalang
         try{
             return super.loadAst(className);
         }catch(AstNotFoundException ex){
@@ -96,6 +95,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                 }
                 if(javaCompiler==null) throw ex;
                 JavaAstLoader javaAstLoader = new JavaAstLoader(javaCompiler);
+                //TODO the class would not write to disk
                 return javaAstLoader.loadAst(className);
             } catch (IOException ioEx) {
                 handleIOException(ioEx);
