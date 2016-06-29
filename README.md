@@ -99,7 +99,7 @@ write as a script:
 System.out.print("Hello,world");
 ```
 
-## Declare methods
+## Declare method
 
 ```
 int sum(int a,int b){
@@ -126,6 +126,15 @@ for(int i=0;i<9;i++){
 }
 ```
 
+foreach loop
+
+```
+var arr = <Integer>[1,2,3];
+foreach(arr as a){
+    System.out.print(a);
+}
+```
+
 while loop:
 
 ```
@@ -145,10 +154,12 @@ do{
 ## Comments
 
 ```
-//line comments
+//line comment
+
 /*
-multi-line comments
+multi-line comment
 */
+
 ```
 
 ## Declare array
