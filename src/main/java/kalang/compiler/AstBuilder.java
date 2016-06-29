@@ -1784,9 +1784,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
         thisClazz.modifier = parseModifier(ctx.varModifier());
         Token classKind = ctx.classKind;
+        boolean isInterface = false;
         if(classKind!=null){
             if (classKind.getText().equals("interface")) {
                 thisClazz.modifier |= Modifier.ABSTRACT|Modifier.INTERFACE;
+                isInterface = true;
             }
         }
         List<Token> gnrTypes = ctx.genericTypes;
@@ -1798,13 +1800,20 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 thisClazz.declareGenericType(gt);
             }
         }
+        ObjectType superType = null;
         if (ctx.parentClass != null) {
             ObjectType parentClass = parseClassType(ctx.parentClass);
             if(parentClass!=null){
-                thisClazz.superType =  parentClass;
+                superType =  parentClass;
             }
         }else{
-            thisClazz.superType = Types.getRootType();
+            superType = Types.getRootType();
+        }
+        if(isInterface){
+            //TODO update syntax to support:interface extends T1,T2...
+            thisClazz.interfaces.add(superType);
+        }else{
+            thisClazz.superType = superType;
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
