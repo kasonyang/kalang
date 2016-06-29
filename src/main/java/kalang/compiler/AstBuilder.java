@@ -1131,15 +1131,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         boolean isPrimitive2 = (type2 instanceof PrimitiveType);
         ExprNode expr;
         if(isPrimitive1 && isPrimitive2){
-            BinaryExpr be = createBinaryExpr(expr1,expr2,op);
-            expr = be;
+            expr = createBinaryExpr(expr1,expr2,op);
         }else if(Types.isNumber(type1) && Types.isNumber(type2)){
             PrimitiveType t = SemanticAnalyzer.getMathType(type1, type2, op);
             expr1 = BoxUtil.assign(expr1, type1, t);
             expr2 = BoxUtil.assign(expr2, type2, t);
-            if(expr1==null || expr2 == null){
-                throw new UnknownError("cast fail");
-            }
+            if(expr1==null) throw Exceptions.unexceptedValue(expr1);
+            if(expr2==null) throw Exceptions.unexceptedValue(expr2);
             expr = createBinaryExpr(expr1, expr2, op);
         }else if(op.equals("==") || op.equals("!=")){
             expr = createBinaryExpr(expr1, expr2, op);
@@ -1150,19 +1148,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if(!Types.getStringClassType().equals(type2)){
                 expr2 = BoxUtil.castToString(expr2);
             }
-            if(expr1==null || expr2 == null){
-                AstBuilder.this.handleSyntaxError("unsupported types", ctx);
+            if(expr1==null || expr2==null){
+                handleSyntaxError(String.format("unable cast %s to Stirng",type1),expr1==null ? ctx.expression(0) : ctx.expression(1));
                 return null;
             }
-            InvocationExpr ie;
             try {
-                ie = ObjectInvokeExpr.create(expr1, "concat",new ExprNode[]{expr2});
+                expr = ObjectInvokeExpr.create(expr1, "concat",new ExprNode[]{expr2});
             } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                throw new RuntimeException(ex);
+                throw Exceptions.unexceptedException(ex);
             }
-            expr = ie;
         }else{
-            throw new UnknownError("unknown binary expression");
+            handleSyntaxError("unsupported operation", ctx);
+            return null;
         }
         mapAst(expr, ctx);
         return expr;
