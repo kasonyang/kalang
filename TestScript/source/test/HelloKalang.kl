@@ -150,6 +150,24 @@ class<T>{
         return arr[5];
     }
     
+    int foreachArray(){
+        var arr = new int[]{4,5,6};
+        int ret = 0;
+        for(a in arr){
+            ret = a;
+        }
+        return ret;
+    }
+    
+    int foreachList(){
+        var arr = <Integer>[4,5,6];
+        int ret = 0;
+        for(a in arr){
+            ret = a;
+        }
+        return ret;
+    }
+    
     /*
     
     int dynamicField() throws Exception{

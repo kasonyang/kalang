@@ -376,6 +376,18 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterForEachStat(KalangParser.ForEachStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitForEachStat(KalangParser.ForEachStatContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExpressions(KalangParser.ExpressionsContext ctx) { }
 	/**
 	 * {@inheritDoc}

@@ -348,7 +348,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 BlockStmtContext body = methodBodys.get(m);
                 if(body!=null){
                     method = m;
+                    if(this.currentBlock != null){
+                        throw Exceptions.unexceptedValue(this.currentBlock);
+                    }
                     m.body = requireBlock(body);
+                    if(this.currentBlock != null){
+                        throw Exceptions.unexceptedValue(this.currentBlock);
+                    }
                     if(m.body!=null && AstUtil.isConstructor(m)){   
                         @SuppressWarnings("null")
                         List<Statement> bodyStmts = m.body.statements;
@@ -503,8 +509,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return bs;
     }
     
-    void popBlock(){
+    BlockStmt popBlock(){
+        BlockStmt b = currentBlock;
         currentBlock = currentBlock.getParentBlock();
+        return b;
     }
 
     @Nonnull
@@ -1888,6 +1896,95 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     public ObjectType getThisType() {
         return Types.getClassType(thisClazz);
+    }
+
+    @Override
+    public Object visitForEachStat(KalangParser.ForEachStatContext ctx) {
+        BlockStmt block = newBlock();
+        ExprNode expr = this.visitExpression(ctx.expression());
+        Type exprType = expr.getType();
+        LocalVarNode localVarNode = new LocalVarNode();
+        //FIXME check var name
+        localVarNode.name = ctx.Identifier().getText();
+        block.statements.add(new VarDeclStmt(localVarNode));
+        requireVarTable().put(localVarNode.name, localVarNode);
+        VarExpr localVariable = new VarExpr(localVarNode);
+        LoopStmt loopStmt;
+        if(exprType instanceof ArrayType){
+            localVarNode.type = ((ArrayType) exprType).getComponentType();
+            LocalVarNode lenVar = new LocalVarNode();
+            lenVar.type = Types.INT_TYPE;
+            LocalVarNode counterVar = new LocalVarNode();
+            counterVar.type = Types.INT_TYPE;
+            block.statements.add(new VarDeclStmt(lenVar));//var len
+            block.statements.add(new VarDeclStmt(counterVar));//var i
+            VarExpr counterVarExpr = new VarExpr(counterVar);
+            VarExpr lenVarExpr = new VarExpr(lenVar);
+            block.statements.add(
+                    new ExprStmt(new AssignExpr(lenVarExpr,new ArrayLengthExpr(expr)))
+            );//l = array.length
+            block.statements.add(
+                    new ExprStmt(
+                        new AssignExpr(counterVarExpr,new ConstExpr(0))
+                    )
+            );//i=0
+            ExprNode cnd = new CompareExpr(counterVarExpr, lenVarExpr, CompareExpr.OP_LT);
+            BlockStmt loopBody = this.newBlock();
+            loopBody.statements.add(new ExprStmt(
+                    new AssignExpr(localVariable,new ElementExpr(expr, counterVarExpr))
+            ));
+            loopBody.statements.add(visitStat(ctx.stat()));
+            loopBody.statements.add(new ExprStmt(
+                    new AssignExpr(
+                        counterVarExpr,new MathExpr(counterVarExpr, new ConstExpr(1), MathExpr.OP_ADD)
+                    )
+            ));
+            popBlock();
+            loopStmt = new LoopStmt(loopBody, cnd, null);
+        }else{
+            ObjectType iterType = Types.getIterableClassType();
+            if(iterType.isAssignableFrom(exprType)){
+                LocalVarNode iterableVarNode = new LocalVarNode();
+                ObjectInvokeExpr iterableInvExpr;
+                try {
+                    iterableInvExpr = ObjectInvokeExpr.create(expr, "iterator", null);
+                } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+                    throw Exceptions.unexceptedException(ex);
+                }
+                iterableVarNode.type = iterableInvExpr.getType();
+                block.statements.add(new VarDeclStmt(iterableVarNode));
+                VarExpr iterableVarExpr = new VarExpr(iterableVarNode);
+                block.statements.add(new ExprStmt(new AssignExpr(
+                        iterableVarExpr,iterableInvExpr
+                )));
+                ObjectInvokeExpr cnd;
+                try {
+                    cnd = ObjectInvokeExpr.create(iterableVarExpr, "hasNext", null);
+                } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                    throw Exceptions.unexceptedException(ex);
+                }
+                BlockStmt loopBody = this.newBlock();
+                ObjectInvokeExpr nextInvokeExpr;
+                try {
+                    nextInvokeExpr = ObjectInvokeExpr.create(iterableVarExpr, "next", null);
+                } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                    throw Exceptions.unexceptedException(ex);
+                }
+                localVarNode.type = nextInvokeExpr.getType();
+                loopBody.statements.add(new ExprStmt(
+                        new AssignExpr(localVariable,new CastExpr(localVariable.getType(),nextInvokeExpr))
+                ));
+                loopBody.statements.add(visitStat(ctx.stat()));
+                loopStmt = new LoopStmt(loopBody, cnd, null);
+                popBlock();                
+            }else{
+                this.handleSyntaxError("require array type or iterable type", ctx.expression());
+                loopStmt = null;
+            }
+        }        
+        popBlock();
+        if(loopStmt!=null) block.statements.add(loopStmt);
+        return block;
     }
 
 }

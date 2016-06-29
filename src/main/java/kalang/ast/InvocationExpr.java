@@ -48,7 +48,7 @@ public abstract class InvocationExpr extends ExprNode {
         if(types==null) types = new Type[0];
         List<ExecutableDescriptor> selectedList = methodSelector.select(candidates, methodName, types);
         if (selectedList.isEmpty()) {
-            throw new MethodNotFoundException(methodName);
+            throw new MethodNotFoundException(clazz,methodName);
         } else if (selectedList.size() > 1) {
             throw new AmbiguousMethodException(selectedList);
         }

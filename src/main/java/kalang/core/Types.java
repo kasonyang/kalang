@@ -63,6 +63,8 @@ public class Types {
     
     public final static String EXCEPTION_CLASS_NAME = "java.lang.Exception";
     public final static String CLASS_CLASS_NAME = "java.lang.Class";
+    
+    public final static String ITERABLE_CLASS_NAME = "java.lang.Iterable";
             
     static {
         primitive2class.put(INT_TYPE, INT_CLASS_NAME);
@@ -325,6 +327,10 @@ public class Types {
 
     public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {
         return Types.getClassType(clazzType.getClassNode(),clazzType.getTypeArguments(),nullable);
+    }
+    
+    public static ObjectType getIterableClassType(){
+        return requireClassType(ITERABLE_CLASS_NAME);
     }
 
 }

@@ -28,4 +28,12 @@ public class Exceptions {
     public static IllegalArgumentException illegalArgument(Object obj) {
         throw new IllegalArgumentException(Objects.toString(obj));
     }
+
+    public static RuntimeException unexceptedException(java.lang.Exception ex) {
+        return new RuntimeException(ex);
+    }
+    
+    public static RuntimeException unexceptedValue(Object obj) {
+        return new RuntimeException("unexcepted value:" + obj);
+    }
 }

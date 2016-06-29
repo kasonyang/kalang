@@ -141,6 +141,7 @@ stat:
     |whileStat
     |doWhileStat
     |forStat
+    |forEachStat
     |breakStat
     |continueStat
     |returnStat
@@ -200,6 +201,9 @@ doWhileStat:
 forStat:
   FOR '(' localVarDecl? ';' expression? ';' expressions? ')'
   stat
+;
+forEachStat:
+    'for' '(' Identifier 'in' expression ')' stat
 ;
 expressions:
     expression (',' expression)*
