@@ -28,6 +28,10 @@ public class Exceptions {
     public static IllegalArgumentException illegalArgument(Object obj) {
         throw new IllegalArgumentException(Objects.toString(obj));
     }
+    
+     public static RuntimeException unexceptedException(String msg){
+         throw new RuntimeException(msg);
+     }
 
     public static RuntimeException unexceptedException(java.lang.Exception ex) {
         return new RuntimeException(ex);
