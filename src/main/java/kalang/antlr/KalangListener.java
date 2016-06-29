@@ -398,17 +398,17 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitMapExpr(KalangParser.MapExprContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code exprMidOp}
+	 * Enter a parse tree produced by the {@code binaryExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void enterExprMidOp(KalangParser.ExprMidOpContext ctx);
+	void enterBinaryExpr(KalangParser.BinaryExprContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code exprMidOp}
+	 * Exit a parse tree produced by the {@code binaryExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void exitExprMidOp(KalangParser.ExprMidOpContext ctx);
+	void exitBinaryExpr(KalangParser.BinaryExprContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code exprAssign}
 	 * labeled alternative in {@link KalangParser#expression}.

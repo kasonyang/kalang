@@ -472,13 +472,13 @@ public class KalangBaseListener implements KalangListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExprMidOp(KalangParser.ExprMidOpContext ctx) { }
+	@Override public void enterBinaryExpr(KalangParser.BinaryExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExprMidOp(KalangParser.ExprMidOpContext ctx) { }
+	@Override public void exitBinaryExpr(KalangParser.BinaryExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -3130,25 +3130,25 @@ public class KalangParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprMidOpContext extends ExpressionContext {
+	public static class BinaryExprContext extends ExpressionContext {
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
 		}
 		public ExpressionContext expression(int i) {
 			return getRuleContext(ExpressionContext.class,i);
 		}
-		public ExprMidOpContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public BinaryExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprMidOp(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterBinaryExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprMidOp(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitBinaryExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprMidOp(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitBinaryExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -3911,7 +3911,7 @@ public class KalangParser extends Parser {
 					switch ( getInterpreter().adaptivePredict(_input,79,_ctx) ) {
 					case 1:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(608);
 						if (!(precpred(_ctx, 14))) throw new FailedPredicateException(this, "precpred(_ctx, 14)");
@@ -3928,7 +3928,7 @@ public class KalangParser extends Parser {
 						break;
 					case 2:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(611);
 						if (!(precpred(_ctx, 13))) throw new FailedPredicateException(this, "precpred(_ctx, 13)");
@@ -3945,7 +3945,7 @@ public class KalangParser extends Parser {
 						break;
 					case 3:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(614);
 						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
@@ -3984,7 +3984,7 @@ public class KalangParser extends Parser {
 						break;
 					case 4:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(625);
 						if (!(precpred(_ctx, 11))) throw new FailedPredicateException(this, "precpred(_ctx, 11)");
@@ -4001,7 +4001,7 @@ public class KalangParser extends Parser {
 						break;
 					case 5:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(628);
 						if (!(precpred(_ctx, 9))) throw new FailedPredicateException(this, "precpred(_ctx, 9)");
@@ -4018,7 +4018,7 @@ public class KalangParser extends Parser {
 						break;
 					case 6:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(631);
 						if (!(precpred(_ctx, 8))) throw new FailedPredicateException(this, "precpred(_ctx, 8)");
@@ -4030,7 +4030,7 @@ public class KalangParser extends Parser {
 						break;
 					case 7:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(634);
 						if (!(precpred(_ctx, 7))) throw new FailedPredicateException(this, "precpred(_ctx, 7)");
@@ -4042,7 +4042,7 @@ public class KalangParser extends Parser {
 						break;
 					case 8:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(637);
 						if (!(precpred(_ctx, 6))) throw new FailedPredicateException(this, "precpred(_ctx, 6)");
@@ -4054,7 +4054,7 @@ public class KalangParser extends Parser {
 						break;
 					case 9:
 						{
-						_localctx = new ExprMidOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new BinaryExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(640);
 						if (!(precpred(_ctx, 5))) throw new FailedPredicateException(this, "precpred(_ctx, 5)");

@@ -244,12 +244,12 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitMapExpr(KalangParser.MapExprContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code exprMidOp}
+	 * Visit a parse tree produced by the {@code binaryExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprMidOp(KalangParser.ExprMidOpContext ctx);
+	T visitBinaryExpr(KalangParser.BinaryExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprAssign}
 	 * labeled alternative in {@link KalangParser#expression}.

@@ -59,7 +59,7 @@ import kalang.antlr.KalangParser.ExprIdentifierContext;
 import kalang.antlr.KalangParser.ExprInvocationContext;
 import kalang.antlr.KalangParser.ExprLiteralContext;
 import kalang.antlr.KalangParser.ExprMemberInvocationContext;
-import kalang.antlr.KalangParser.ExprMidOpContext;
+import kalang.antlr.KalangParser.BinaryExprContext;
 import kalang.antlr.KalangParser.ExprParenContext;
 import kalang.antlr.KalangParser.ExprSelfOpPreContext;
 import kalang.antlr.KalangParser.ExprSelfRefContext;
@@ -1121,7 +1121,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitExprMidOp(ExprMidOpContext ctx) {
+    public AstNode visitBinaryExpr(BinaryExprContext ctx) {
         String op = ctx.getChild(1).getText();
         ExprNode expr1 = visitExpression(ctx.expression(0));
         ExprNode expr2 = visitExpression(ctx.expression(1));

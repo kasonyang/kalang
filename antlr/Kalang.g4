@@ -247,16 +247,16 @@ expression
     |   ( '+' | '-' ) expression #exprSelfOpPre
     |   op=( '++' | '--' ) expression #exprIncPre
     |   ('~'|'!') expression  #exprSelfOpPre
-    |   expression ('*'|'/'|'%') expression #exprMidOp
-    |   expression ('+'|'-') expression #exprMidOp
-    |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression #exprMidOp
-    |   expression ('<=' | '>=' | '>' | '<') expression #exprMidOp
+    |   expression ('*'|'/'|'%') expression #binaryExpr
+    |   expression ('+'|'-') expression #binaryExpr
+    |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression #binaryExpr
+    |   expression ('<=' | '>=' | '>' | '<') expression #binaryExpr
     |   expression INSTANCEOF Identifier  #exprInstanceOf
-    |   expression ('=='|'!=') expression #exprMidOp
-    |   expression '&' expression #exprMidOp
-    |   expression '^' expression #exprMidOp
-    |   expression '|' expression #exprMidOp
-    |   expression ('&&'|'||') expression #exprMidOp
+    |   expression ('=='|'!=') expression #binaryExpr
+    |   expression '&' expression #binaryExpr
+    |   expression '^' expression #binaryExpr
+    |   expression '|' expression #binaryExpr
+    |   expression ('&&'|'||') expression #binaryExpr
     |   expression '?' expression ':' expression #exprQuestion
     |   Identifier #exprIdentifier 
     |   expression '.' #errorousMemberExpr
