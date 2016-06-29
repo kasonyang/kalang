@@ -293,12 +293,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return className;
     }
     
-    LocalVarNode createTempVar(Type type){
-        LocalVarNode v = new LocalVarNode();
-        v.type = type;
-        return v;
-    }
-    
     @Nullable
     private ClassReference requireClassReference(@Nonnull Token token){
         ClassNode ast = requireAst(token);
@@ -544,7 +538,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 ? requireClassType(ctx.valueType)
                 : Types.getRootType();
         if(keyType==null || valueType == null) return null;
-        LocalVarNode vo = createTempVar(Types.getClassType(Types.getMapImplClassType().getClassNode(),new Type[]{keyType,valueType}));
+        LocalVarNode vo = declareTempLocalVar(Types.getClassType(Types.getMapImplClassType().getClassNode(),new Type[]{keyType,valueType}));
         VarDeclStmt vds = new VarDeclStmt(vo);
         NewObjectExpr newExpr;
         try {
@@ -583,7 +577,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 ?requireClassType(ctx.Identifier().getSymbol())
                 :Types.getRootType();
         if(valueType==null) return null;
-        LocalVarNode vo = createTempVar(Types.getClassType(Types.getListImplClassType().getClassNode(),new Type[]{valueType}));
+        LocalVarNode vo = declareTempLocalVar(Types.getClassType(Types.getListImplClassType().getClassNode(),new Type[]{valueType}));
         VarDeclStmt vds = new VarDeclStmt(vo);
         NewObjectExpr newExpr;
         try {
@@ -1901,25 +1895,38 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public ObjectType getThisType() {
         return Types.getClassType(thisClazz);
     }
+    
+    private LocalVarNode declareTempLocalVar(Type type){
+        return declareLocalVar(null, type,ParserRuleContext.EMPTY);
+    }
+    
+    @Nullable
+    private LocalVarNode declareLocalVar(String name,Type type,ParserRuleContext ctx){
+        LocalVarNode localVarNode = new LocalVarNode();
+        localVarNode.type = type;
+        if(name!=null){
+            VarTable<String, LocalVarNode> vtb = requireVarTable();
+            if(vtb.exist(name)){
+                handleSyntaxError("variable is defined", ctx);
+            }else{
+                requireVarTable().put(name, localVarNode);
+            }
+        }
+        return localVarNode;
+    }
 
     @Override
     public Object visitForEachStat(KalangParser.ForEachStatContext ctx) {
         BlockStmt block = newBlock();
         ExprNode expr = this.visitExpression(ctx.expression());
         Type exprType = expr.getType();
-        LocalVarNode localVarNode = new LocalVarNode();
-        //FIXME check var name
-        localVarNode.name = ctx.Identifier().getText();
-        block.statements.add(new VarDeclStmt(localVarNode));
-        requireVarTable().put(localVarNode.name, localVarNode);
-        VarExpr localVariable = new VarExpr(localVarNode);
         LoopStmt loopStmt;
         if(exprType instanceof ArrayType){
-            localVarNode.type = ((ArrayType) exprType).getComponentType();
-            LocalVarNode lenVar = new LocalVarNode();
-            lenVar.type = Types.INT_TYPE;
-            LocalVarNode counterVar = new LocalVarNode();
-            counterVar.type = Types.INT_TYPE;
+            LocalVarNode localVarNode = this.declareLocalVar(ctx.Identifier().getText(),  ((ArrayType) exprType).getComponentType(),ctx);
+            VarExpr localVariable = new VarExpr(localVarNode);
+            block.statements.add(new VarDeclStmt(localVarNode));
+            LocalVarNode lenVar = this.declareTempLocalVar(Types.INT_TYPE);
+            LocalVarNode counterVar = this.declareTempLocalVar(Types.INT_TYPE);
             block.statements.add(new VarDeclStmt(lenVar));//var len
             block.statements.add(new VarDeclStmt(counterVar));//var i
             VarExpr counterVarExpr = new VarExpr(counterVar);
@@ -1974,7 +1981,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                     throw Exceptions.unexceptedException(ex);
                 }
-                localVarNode.type = nextInvokeExpr.getType();
+                LocalVarNode localVarNode = this.declareLocalVar(ctx.Identifier().getText(), nextInvokeExpr.getType(),ctx);
+                VarExpr localVariable = new VarExpr(localVarNode);
+                loopBody.statements.add(new VarDeclStmt(localVarNode));
                 loopBody.statements.add(new ExprStmt(
                         new AssignExpr(localVariable,new CastExpr(localVariable.getType(),nextInvokeExpr))
                 ));
