@@ -208,7 +208,7 @@ forStat:
   stat
 ;
 forEachStat:
-    'for' '(' expression 'as' Identifier ')' stat
+    'foreach' '(' expression 'as' Identifier ')' stat
 ;
 expressions:
     expression (',' expression)*

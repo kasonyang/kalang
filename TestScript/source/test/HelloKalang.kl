@@ -153,7 +153,7 @@ class<T>{
     int foreachArray(){
         var arr = new int[]{4,5,6};
         int ret = 0;
-        for(arr as a){
+        foreach(arr as a){
             ret = a;
         }
         return ret;
@@ -162,7 +162,7 @@ class<T>{
     int foreachList(){
         var arr = <Integer>[4,5,6];
         int ret = 0;
-        for(arr as a){
+        foreach(arr as a){
             ret = a;
         }
         return ret;
