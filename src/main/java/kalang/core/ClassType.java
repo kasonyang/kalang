@@ -154,7 +154,7 @@ public class ClassType extends ObjectType {
     protected Type parseType(Type type) {
         Map<GenericType, Type> genericTypes = this.getTypeArgumentsMap();
         //FIXME it would also erase generic types declared in method
-        return genericTypes.isEmpty() ? eraseGenericType(type) : parseGenericType(type, genericTypes);
+        return genericTypes.isEmpty() && clazz.getGenericTypes().length>0 ? eraseGenericType(type) : parseGenericType(type, genericTypes);
     }
 
     @Override
