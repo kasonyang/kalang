@@ -114,7 +114,7 @@ public class Compiler {
             }
             hasError = false;
             fsc.compile();
-            return hasError;
+            return !hasError;
         }
     }
     
