@@ -87,10 +87,15 @@ methodDecl:
    annotation*
    OVERRIDE? DEFAULT? varModifier? 
    (
-     (type name=Identifier )
+     (returnType=type name=Identifier )
      |(prefix='constructor')
    )
-   '('    (     varDecl   (',' varDecl)*     )?      ')'
+   '('   
+        (
+            paramTypes+=type paramIds+=Identifier
+            (',' paramTypes+=type paramIds+=Identifier)*
+        )?
+    ')'
    ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
    ( blockStmt | ';')
 ;

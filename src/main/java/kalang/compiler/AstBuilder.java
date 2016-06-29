@@ -731,7 +731,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if (ctx.type() == null) {
                 type = Types.VOID_TYPE;
             } else {
-                type = parseType(ctx.type());
+                type = parseType(ctx.returnType);
             }
             name = ctx.name.getText();
         }
@@ -740,10 +740,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         method.modifier = parseModifier(ctx.varModifier());;
         method.type = type;
         method.name = name;
-        if (ctx.varDecl() != null) {
-            for(VarDeclContext vd:ctx.varDecl()){
+        List<TypeContext> paramTypesCtx = ctx.paramTypes;
+        if (paramTypesCtx != null) {
+            int paramSize = paramTypesCtx.size();
+            for(int i=0;i<paramSize;i++){
+                TypeContext t = paramTypesCtx.get(i);
                 ParameterNode pn = ParameterNode.create(method);
-                varDecl(vd, pn, Types.getRootType());
+                pn.type = parseType(t);
+                pn.name = ctx.paramIds.get(i).getText();
                 method.parameters.add(pn);
             }
         }
