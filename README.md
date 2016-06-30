@@ -141,9 +141,8 @@ for(int i=0;i<9;i++){
 foreach loop
 
 ```
-var arr = <Integer>[1,2,3];
-foreach(arr as a){
-    System.out.print(a);
+foreach([1,2,3] as i,v){
+    println("index:" + i + ",value:"+v);
 }
 ```
 
