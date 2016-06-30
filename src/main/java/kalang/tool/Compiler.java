@@ -37,6 +37,7 @@ public class Compiler {
         OPTIONS.addOption("o", true, "output directory");
         OPTIONS.addOption("f",true,"output format");
         OPTIONS.addOption("run", true, "run the class with special name");
+        OPTIONS.addOption("gui",false,"start a buildin gui");
         //OPTIONS.addOption("t",true,"set the output type,should be one of class,java");
     }
 
@@ -57,7 +58,10 @@ public class Compiler {
             printUsage();
             return false;
         }
-        if(cli.hasOption("run")){
+        if(cli.hasOption("gui")){
+            kalang.gui.Editor.main(args);
+            return true;
+        }else if(cli.hasOption("run")){
             return run(cli);
         }else{
             JointFileSystemCompiler fsc = new JointFileSystemCompiler(){
