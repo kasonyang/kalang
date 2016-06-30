@@ -54,7 +54,7 @@ public class TypeUtil {
         return String.join(delimiter, list);
     }
     
-    public static Type getCommonType(Type[] types){
+    public static Type getCommonType(Type... types){
         if(types.length==0) return Types.getRootType();
         if(types.length==1) return types[0];
         Type ret = types[0];

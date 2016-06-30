@@ -167,6 +167,10 @@ class<T>{
         }
         return ret;
     }
+
+    int questionExpr(){
+        return false ? 0 : 6;
+    }
     
     /*
     

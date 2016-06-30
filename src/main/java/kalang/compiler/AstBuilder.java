@@ -641,8 +641,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if(trueType.equals(falseType)){
             vo.type = trueType;
         }else{
-            //TODO get common type
-            vo.type = Types.getRootType();
+            vo.type = TypeUtil.getCommonType(trueType,falseType);
         }
         stmts.add(is);
         MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
