@@ -1,14 +1,11 @@
 package kalang.gui;
 
 import java.awt.Font;
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JTextArea;
-import kalang.compiler.KalangCompiler;
 import kalang.util.ClassExecutor;
 /**
  *
@@ -47,6 +44,7 @@ public class Editor extends javax.swing.JFrame {
         menuSmallerFont = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Kalang Editor");
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(420);
@@ -54,7 +52,16 @@ public class Editor extends javax.swing.JFrame {
 
         codeArea.setColumns(20);
         codeArea.setRows(5);
+        codeArea.setCaretColor(new java.awt.Color(255, 255, 255));
+        codeArea.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
+        codeArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
         jScrollPane1.setViewportView(codeArea);
+        codeArea.setBackground(Color.BLACK);
+        codeArea.setForeground(new Color(0xF9,0xF9,0xF9));
+        logArea.setBackground(new Color(18,18,18));
+        logArea.setForeground(new Color(0xF9,0xF9,0xF9));
+
+        setFontSize(18);
 
         jSplitPane1.setTopComponent(jScrollPane1);
 
@@ -143,12 +150,22 @@ public class Editor extends javax.swing.JFrame {
         enlargeFontSize(logArea, increment);
     }
     
+    private void setFontSize(float newSize){
+        setFontSize(codeArea,newSize);
+        setFontSize(logArea,newSize);
+    }
+    
+    private void setFontSize(JTextArea area,float newSize){
+        if(newSize<8) newSize = 8;
+        Font f = area.getFont();
+        Font newFont = f.deriveFont(newSize);
+        area.setFont(newFont);
+    }
+    
     private void enlargeFontSize(JTextArea area,int increment){
         Font f = area.getFont();
         float newSize = f.getSize() + increment;
-        if(newSize<8) newSize = 8;
-        Font newFont = f.deriveFont(newSize);
-        area.setFont(newFont);
+        setFontSize(area,newSize);
     }
     
     private void menuLargerFontActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuLargerFontActionPerformed
@@ -184,12 +201,13 @@ public class Editor extends javax.swing.JFrame {
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("SystemLookAndFeel".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("SystemLookAndFeel".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
         } catch (ClassNotFoundException ex) {
             java.util.logging.Logger.getLogger(Editor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
