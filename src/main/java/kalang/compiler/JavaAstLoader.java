@@ -1,5 +1,6 @@
 package kalang.compiler;
 
+import java.lang.annotation.Annotation;
 import kalang.AstNotFoundException;
 import kalang.ast.ClassNode;
 import kalang.ast.VarObject;
@@ -106,28 +107,30 @@ public class JavaAstLoader extends AstLoader {
         java.lang.reflect.Type superType = clz.getGenericSuperclass();
         Class superClazz = clz.getSuperclass();
         if (superType != null) {
-            cn.superType = (ObjectType)getType(superType, genericTypes,superClazz);
+            cn.superType = (ObjectType)getType(superType, genericTypes,superClazz,NullableKind.NONNULL);
         }
         java.lang.reflect.Type[] typeInterfaces = clz.getGenericInterfaces();
         Class[] clzInterfaces = clz.getInterfaces();
         if(clzInterfaces != null){
             for(int i=0;i<clzInterfaces.length;i++){
-                cn.interfaces.add((ObjectType)getType(typeInterfaces[i], genericTypes,clzInterfaces[i]));
+                cn.interfaces.add((ObjectType)getType(typeInterfaces[i], genericTypes,clzInterfaces[i],NullableKind.NONNULL));
             }
         }
         List<Executable> methods = new LinkedList();
         methods.addAll(Arrays.asList(clz.getDeclaredMethods()));
         methods.addAll(Arrays.asList(clz.getDeclaredConstructors()));
         for (Executable m : methods) {
+            NullableKind nullable = getNullable(m.getAnnotations());
             MethodNode methodNode = cn.createMethodNode();
             for (Parameter p : m.getParameters()) {
+                NullableKind pnullable = getNullable(p.getAnnotations());
                 ParameterNode param = ParameterNode.create(methodNode);
                 param.name = p.getName();
-                param.type = getType(p.getParameterizedType(),genericTypes,p.getType());
+                param.type = getType(p.getParameterizedType(),genericTypes,p.getType(),pnullable);
                 methodNode.parameters.add(param);
             }
             if (m instanceof Method) {
-                methodNode.type =getType(((Method) m).getGenericReturnType(),genericTypes,((Method)m).getReturnType());
+                methodNode.type =getType(((Method) m).getGenericReturnType(),genericTypes,((Method)m).getReturnType(),nullable);
                 methodNode.name = m.getName();
                 methodNode.modifier = m.getModifiers();
             } else if (m instanceof Constructor) {
@@ -137,13 +140,14 @@ public class JavaAstLoader extends AstLoader {
             }
             methodNode.body = null;
             for (Class e : m.getExceptionTypes()) {
-                methodNode.exceptionTypes.add(getType(e,genericTypes,e));
+                methodNode.exceptionTypes.add(getType(e,genericTypes,e,NullableKind.NONNULL));
             }
         }
         for (Field f : clz.getFields()) {
+            NullableKind nullable = getNullable(f.getAnnotations());
             FieldNode fn = cn.createField();
             fn.name = f.getName();
-            fn.type =getType(f.getGenericType(),genericTypes,f.getType());
+            fn.type =getType(f.getGenericType(),genericTypes,f.getType(),nullable);
             fn.modifier = f.getModifiers();
         }
         return cn;
@@ -225,7 +229,9 @@ public class JavaAstLoader extends AstLoader {
             if(type.isPrimitive()){
                 return Types.getPrimitiveType(type.getTypeName());
             }else if(type.isArray()){
-                return Types.getArrayType(getType(type.getComponentType(),genericTypes,type.getComponentType()));
+                Type ct = transType(type.getComponentType(),genericTypes);
+                if(ct==null) return null;
+                return Types.getArrayType(ct);
             }else{
                 return Types.getClassType(findAst(type.getName()));
             }
@@ -234,9 +240,33 @@ public class JavaAstLoader extends AstLoader {
         }
     }
 
-    private Type getType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes,Class defaultClass) throws AstNotFoundException {
+    private Type getType(java.lang.reflect.Type t,Map<TypeVariable,GenericType> genericTypes,Class defaultClass,NullableKind nullable) throws AstNotFoundException {
         Type type = this.transType(t, genericTypes);
-        return type==null ? transType(defaultClass,genericTypes) : type;
+        if(type==null){
+            type = transType(defaultClass,genericTypes);
+        }
+        //TODO support nullable for other type
+        if(type instanceof ClassType){
+            return Types.getClassType((ClassType)type, nullable);
+        }else{
+            return type;
+        }
+    }
+
+    private NullableKind getNullable(Annotation[] annotations) {
+        for(Annotation a:annotations){
+            Class<? extends Annotation> at = a.annotationType();
+            String simpleName = at.getSimpleName().toLowerCase();
+            switch(simpleName){
+                case "nullable":
+                case "nullallowed":
+                    return NullableKind.NULLABLE;
+                case "nonnull":
+                case "notnull":
+                    return NullableKind.NONNULL;
+            }
+        }
+        return NullableKind.UNKNOWN;
     }
 
 }
