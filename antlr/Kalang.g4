@@ -244,9 +244,9 @@ expression
         )    #exprNewArray
     |   '(' type ')' expression #castExpr
     |   expression op=('++' | '--') #exprInc
-    |   ( '+' | '-' ) expression #exprSelfOpPre
+    |   ( '+' | '-' ) expression #unaryExpr
     |   op=( '++' | '--' ) expression #exprIncPre
-    |   ('~'|'!') expression  #exprSelfOpPre
+    |   ('~'|'!') expression  #unaryExpr
     |   expression ('*'|'/'|'%') expression #binaryExpr
     |   expression ('+'|'-') expression #binaryExpr
     |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression #binaryExpr

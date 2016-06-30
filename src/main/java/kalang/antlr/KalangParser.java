@@ -3344,6 +3344,25 @@ public class KalangParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
+	public static class UnaryExprContext extends ExpressionContext {
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public UnaryExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterUnaryExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitUnaryExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitUnaryExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
 	public static class ExprIncContext extends ExpressionContext {
 		public Token op;
 		public ExpressionContext expression() {
@@ -3383,25 +3402,6 @@ public class KalangParser extends Parser {
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprQuestion(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-	public static class ExprSelfOpPreContext extends ExpressionContext {
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
-		}
-		public ExprSelfOpPreContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprSelfOpPre(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprSelfOpPre(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprSelfOpPre(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -3512,7 +3512,7 @@ public class KalangParser extends Parser {
 				break;
 			case 2:
 				{
-				_localctx = new ExprSelfOpPreContext(_localctx);
+				_localctx = new UnaryExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(492);
@@ -3545,7 +3545,7 @@ public class KalangParser extends Parser {
 				break;
 			case 4:
 				{
-				_localctx = new ExprSelfOpPreContext(_localctx);
+				_localctx = new UnaryExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(496);

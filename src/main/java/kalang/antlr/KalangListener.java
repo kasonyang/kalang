@@ -518,6 +518,18 @@ public interface KalangListener extends ParseTreeListener {
 	 */
 	void exitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code unaryExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnaryExpr(KalangParser.UnaryExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code unaryExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnaryExpr(KalangParser.UnaryExprContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code exprInc}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -541,18 +553,6 @@ public interface KalangListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExprQuestion(KalangParser.ExprQuestionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code exprSelfOpPre}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterExprSelfOpPre(KalangParser.ExprSelfOpPreContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code exprSelfOpPre}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitExprSelfOpPre(KalangParser.ExprSelfOpPreContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code exprGetArrayElement}
 	 * labeled alternative in {@link KalangParser#expression}.

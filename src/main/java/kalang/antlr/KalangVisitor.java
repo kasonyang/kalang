@@ -314,6 +314,13 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code unaryExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnaryExpr(KalangParser.UnaryExprContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code exprInc}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -327,13 +334,6 @@ public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExprQuestion(KalangParser.ExprQuestionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code exprSelfOpPre}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExprSelfOpPre(KalangParser.ExprSelfOpPreContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exprGetArrayElement}
 	 * labeled alternative in {@link KalangParser#expression}.

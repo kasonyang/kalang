@@ -62,7 +62,6 @@ import kalang.antlr.KalangParser.ExprLiteralContext;
 import kalang.antlr.KalangParser.ExprMemberInvocationContext;
 import kalang.antlr.KalangParser.BinaryExprContext;
 import kalang.antlr.KalangParser.ExprParenContext;
-import kalang.antlr.KalangParser.ExprSelfOpPreContext;
 import kalang.antlr.KalangParser.ExprSelfRefContext;
 import kalang.antlr.KalangParser.ExprStatContext;
 import kalang.antlr.KalangParser.ExpressionContext;
@@ -87,6 +86,7 @@ import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
 import javax.annotation.Nullable;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
+import kalang.antlr.KalangParser.UnaryExprContext;
 import kalang.ast.AnnotationNode;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
@@ -1292,7 +1292,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public UnaryExpr visitExprSelfOpPre(ExprSelfOpPreContext ctx) {
+    public UnaryExpr visitUnaryExpr(UnaryExprContext ctx) {
         String op = ctx.getChild(0).getText();   
         UnaryExpr ue = new UnaryExpr( visitExpression( ctx.expression() ) , op );
         mapAst(ue, ctx);
