@@ -80,11 +80,15 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
         sourceLoader.addSourceDir(path);
     }
     
-    public Class parseFile(String className,File file) throws IOException{
-        String code = FileUtils.readFileToString(file);
-        compiler.addSource(className, code, file.getName());
+    public Class parseSource(String className,String code,String fileName){
+        compiler.addSource(className, code, fileName);
         compiler.compile();
         return loadedClasses.get(className);
+    }
+    
+    public Class parseFile(String className,File file) throws IOException{
+        String code = FileUtils.readFileToString(file);
+        return parseSource(className, code, file.getName());
     }
     
 }
