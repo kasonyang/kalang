@@ -227,7 +227,7 @@ expression
     | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=Identifier ':' values+=expression ( ',' keys+=Identifier ':' values+=expression)*  ']' 
           | '[' ':' ']'
       ) #mapExpr
-    | ('<' Identifier '>')? '[' ( expression ( ',' expression )* )? ']'  # listExpr
+    | ('<' type '>')? '[' ( expression ( ',' expression )* )? ']'  # arrayExpr
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix

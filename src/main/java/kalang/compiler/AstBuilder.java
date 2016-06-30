@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.antlr.KalangParser;
@@ -570,37 +571,37 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return mse;
     }
 
-    @Override
-    public MultiStmtExpr visitListExpr(KalangParser.ListExprContext ctx) {
-        List<Statement> stmts = new LinkedList<>();
-        Type valueType = ctx.Identifier()!=null
-                ?requireClassType(ctx.Identifier().getSymbol())
-                :Types.getRootType();
-        if(valueType==null) return null;
-        LocalVarNode vo = declareTempLocalVar(Types.getClassType(Types.getListImplClassType().getClassNode(),new Type[]{valueType}));
-        VarDeclStmt vds = new VarDeclStmt(vo);
-        NewObjectExpr newExpr;
-        try {
-            newExpr = new NewObjectExpr(Types.getListImplClassType());
-        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-            throw Exceptions.unexceptedException(ex);
-        }
-        stmts.add(vds);
-        VarExpr ve = new VarExpr(vo);
-        stmts.add(new ExprStmt(new AssignExpr(ve, newExpr)));
-        for (ExpressionContext e : ctx.expression()) {
-            InvocationExpr iv;
-            try {
-                iv = ObjectInvokeExpr.create(ve,"add",new ExprNode[]{visitExpression(e)});
-            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                throw Exceptions.unexceptedException(ex);
-            }
-            stmts.add(new ExprStmt(iv));
-        }
-        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
-        mapAst(mse,ctx);
-        return mse;
-    }
+//    @Override
+//    public MultiStmtExpr visitListExpr(KalangParser.ListExprContext ctx) {
+//        List<Statement> stmts = new LinkedList<>();
+//        Type valueType = ctx.Identifier()!=null
+//                ?requireClassType(ctx.Identifier().getSymbol())
+//                :Types.getRootType();
+//        if(valueType==null) return null;
+//        LocalVarNode vo = declareTempLocalVar(Types.getClassType(Types.getListImplClassType().getClassNode(),new Type[]{valueType}));
+//        VarDeclStmt vds = new VarDeclStmt(vo);
+//        NewObjectExpr newExpr;
+//        try {
+//            newExpr = new NewObjectExpr(Types.getListImplClassType());
+//        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+//            throw Exceptions.unexceptedException(ex);
+//        }
+//        stmts.add(vds);
+//        VarExpr ve = new VarExpr(vo);
+//        stmts.add(new ExprStmt(new AssignExpr(ve, newExpr)));
+//        for (ExpressionContext e : ctx.expression()) {
+//            InvocationExpr iv;
+//            try {
+//                iv = ObjectInvokeExpr.create(ve,"add",new ExprNode[]{visitExpression(e)});
+//            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+//                throw Exceptions.unexceptedException(ex);
+//            }
+//            stmts.add(new ExprStmt(iv));
+//        }
+//        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
+//        mapAst(mse,ctx);
+//        return mse;
+//    }
 
     @Override
     public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
@@ -1663,7 +1664,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return new IncrementExpr((AssignableExpr) expr, isDesc, isPrefix);
     }
 
-    private ExprNode checkBox(ExprNode expr1, Type fromType, Type toType,Token token) {
+    private ExprNode requireCastable(ExprNode expr1, Type fromType, Type toType,Token token) {
         ExprNode expr = BoxUtil.assign(expr1,fromType,toType);
         if(expr==null){
             AstBuilder.this.handleSyntaxError("unable to cast " + fromType + " to " + toType, token);
@@ -2004,6 +2005,36 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         popBlock();
         if(loopStmt!=null) block.statements.add(loopStmt);
         return block;
+    }
+
+    @Override
+    public Object visitArrayExpr(KalangParser.ArrayExprContext ctx) {
+        ExprNode[] initExprs;
+        List<ExpressionContext> exprCtx = ctx.expression();
+        if(exprCtx!=null){
+            initExprs = new ExprNode[exprCtx.size()];
+            for(int i=0;i<initExprs.length;i++){
+                initExprs[i] = visitExpression(exprCtx.get(i));
+            }
+        }else{
+            initExprs = new ExprNode[0];
+        }
+        TypeContext typeCtx = ctx.type();
+        Type type;
+        if(typeCtx!=null){
+             type = parseType(typeCtx);
+        }else{
+            //TODO infer type from array's values
+            type = Types.getRootType();
+        }
+        for(int i=0;i<initExprs.length;i++){
+            if(exprCtx==null) throw Exceptions.unexceptedValue(exprCtx);
+            initExprs[i] = requireCastable(initExprs[i], initExprs[i].getType(), type, exprCtx.get(i).getStart());
+            if(initExprs[i]==null) return null;
+        }
+        ExprNode arrExpr = BoxUtil.createInitializedArray(type, initExprs);
+        mapAst(arrExpr, ctx);
+        return arrExpr;
     }
 
 }
