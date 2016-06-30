@@ -10,7 +10,7 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 * flexible syntax
 * compatible with other jvm-based language like java,groovy and so on.
 
-# How to build
+# How to build and install
 
 requirements: 
 
@@ -20,6 +20,30 @@ requirements:
 clone the source,and run
 
     >gradle installDist
+
+add the path`build/install/kalang/bin` to your `PATH` environment variable
+
+# Usage
+
+## use as an editor
+
+```
+> kalang -gui
+```
+
+## use as a compiler
+
+```
+> kalang SOURCE_FILE 
+```
+
+For example:`kalang Helloworld.kl` would compile `Helloworld.kl` in current directory.
+
+More usages please run
+
+```
+> kalang -h
+```
 
 # Helloworld Example
 
@@ -32,18 +56,6 @@ clone the source,and run
     }
 
 More examples could be found in [examples](https://github.com/kasonyang/kalang/tree/master/examples) directory.
-
-# Usage
-
-add the path`build/install/kalang/bin` to your `PATH` environment variable,and run
-
-    >kalang SOURCE_FILE 
-
-For example:`kalang Helloworld.kl` would compile `Helloworld.kl` in current directory.
-
-More usages please run
-
-    >kalang -h
 
 #IDE plugin support
 
