@@ -158,15 +158,27 @@ class<T>{
         }
         return ret;
     }
-    
-    int foreachList(){
-        var arr = [4,5,6];
+
+    int foreachArrayKey(){
         int ret = 0;
-        foreach(arr as a){
-            ret = a;
+        foreach([4,5,6,7] as i,v){
+            ret += i;
         }
         return ret;
     }
+
+    int foreachList(){
+        var arr = new ArrayList<Integer>(3);
+        arr.add(1);
+        arr.add(2);
+        arr.add(3);
+        int ret = 0;
+        foreach(arr as i,a){
+            ret += a + i;
+        }
+        return ret - 3;
+    }
+
 
     int questionExpr(){
         return false ? 0 : 6;

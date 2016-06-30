@@ -1936,9 +1936,21 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         BlockStmt block = newBlock();
         ExprNode expr = this.visitExpression(ctx.expression());
         Type exprType = expr.getType();
+        List<TerminalNode> idsCtx = ctx.Identifier();
+        VarExpr indexVarExpr = null;
+        TerminalNode varId;
+        if(idsCtx.size()==1){
+            varId = idsCtx.get(0);
+        }else{
+            TerminalNode indexId = idsCtx.get(0);
+            LocalVarNode indexVar = this.declareLocalVar(indexId.getText(),Types.INT_TYPE,ctx);
+            block.statements.add(new VarDeclStmt(indexVar));
+            indexVarExpr = new VarExpr(indexVar);         
+            varId = idsCtx.get(1);
+        }
         LoopStmt loopStmt;
         if(exprType instanceof ArrayType){
-            LocalVarNode localVarNode = this.declareLocalVar(ctx.Identifier().getText(),  ((ArrayType) exprType).getComponentType(),ctx);
+            LocalVarNode localVarNode = this.declareLocalVar(varId.getText(),  ((ArrayType) exprType).getComponentType(),ctx);
             VarExpr localVariable = new VarExpr(localVarNode);
             block.statements.add(new VarDeclStmt(localVarNode));
             LocalVarNode lenVar = this.declareTempLocalVar(Types.INT_TYPE);
@@ -1960,6 +1972,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             loopBody.statements.add(new ExprStmt(
                     new AssignExpr(localVariable,new ElementExpr(expr, counterVarExpr))
             ));
+            if(indexVarExpr!=null){
+                loopBody.statements.add(new ExprStmt(
+                     new AssignExpr(indexVarExpr,counterVarExpr)
+                ));
+            }
             loopBody.statements.add(visitStat(ctx.stat()));
             loopBody.statements.add(new ExprStmt(
                     new AssignExpr(
@@ -1972,18 +1989,21 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             ObjectType iterType = Types.getIterableClassType();
             if(iterType.isAssignableFrom(exprType)){
                 LocalVarNode iterableVarNode = new LocalVarNode();
-                ObjectInvokeExpr iterableInvExpr;
+                ObjectInvokeExpr getIterableExpr;
                 try {
-                    iterableInvExpr = ObjectInvokeExpr.create(expr, "iterator", null);
+                    getIterableExpr = ObjectInvokeExpr.create(expr, "iterator", null);
                 } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                     throw Exceptions.unexceptedException(ex);
                 }
-                iterableVarNode.type = iterableInvExpr.getType();
+                iterableVarNode.type = getIterableExpr.getType();
                 block.statements.add(new VarDeclStmt(iterableVarNode));
                 VarExpr iterableVarExpr = new VarExpr(iterableVarNode);
                 block.statements.add(new ExprStmt(new AssignExpr(
-                        iterableVarExpr,iterableInvExpr
+                        iterableVarExpr,getIterableExpr
                 )));
+                if(indexVarExpr!=null){
+                    block.statements.add(new ExprStmt(new AssignExpr(indexVarExpr,new ConstExpr(0))));
+                }
                 ObjectInvokeExpr cnd;
                 try {
                     cnd = ObjectInvokeExpr.create(iterableVarExpr, "hasNext", null);
@@ -1997,13 +2017,21 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                     throw Exceptions.unexceptedException(ex);
                 }
-                LocalVarNode localVarNode = this.declareLocalVar(ctx.Identifier().getText(), nextInvokeExpr.getType(),ctx);
+                LocalVarNode localVarNode = this.declareLocalVar(varId.getText(), nextInvokeExpr.getType(),ctx);
                 VarExpr localVariable = new VarExpr(localVarNode);
                 loopBody.statements.add(new VarDeclStmt(localVarNode));
                 loopBody.statements.add(new ExprStmt(
                         new AssignExpr(localVariable,new CastExpr(localVariable.getType(),nextInvokeExpr))
                 ));
                 loopBody.statements.add(visitStat(ctx.stat()));
+                if(indexVarExpr!=null){
+                    loopBody.statements.add(new ExprStmt(
+                            new AssignExpr(
+                                    indexVarExpr
+                                    ,new MathExpr(indexVarExpr,new ConstExpr(1),BinaryExpr.OP_ADD)
+                            )
+                    ));
+                }
                 loopStmt = new LoopStmt(loopBody, cnd, null);
                 popBlock();                
             }else{
