@@ -3033,6 +3033,54 @@ public class KalangParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
+	public static class InvokeExprContext extends ExpressionContext {
+		public ExpressionContext target;
+		public Token refKey;
+		public ExpressionContext expression;
+		public List<ExpressionContext> params = new ArrayList<ExpressionContext>();
+		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public InvokeExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterInvokeExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitInvokeExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitInvokeExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class InstanceofExprContext extends ExpressionContext {
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public TerminalNode INSTANCEOF() { return getToken(KalangParser.INSTANCEOF, 0); }
+		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
+		public InstanceofExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterInstanceofExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitInstanceofExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitInstanceofExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
 	public static class ArrayExprContext extends ExpressionContext {
 		public TypeContext type() {
 			return getRuleContext(TypeContext.class,0);
@@ -3058,6 +3106,26 @@ public class KalangParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
+	public static class IncExprContext extends ExpressionContext {
+		public Token op;
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public IncExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterIncExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitIncExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitIncExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
 	public static class CastExprContext extends ExpressionContext {
 		public TypeContext type() {
 			return getRuleContext(TypeContext.class,0);
@@ -3077,49 +3145,6 @@ public class KalangParser extends Parser {
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitCastExpr(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-	public static class ExprMemberInvocationContext extends ExpressionContext {
-		public Token key;
-		public ExpressionContext expression;
-		public List<ExpressionContext> params = new ArrayList<ExpressionContext>();
-		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public ExprMemberInvocationContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprMemberInvocation(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprMemberInvocation(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprMemberInvocation(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-	public static class ExprIdentifierContext extends ExpressionContext {
-		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
-		public ExprIdentifierContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprIdentifier(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprIdentifier(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprIdentifier(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -3177,151 +3202,109 @@ public class KalangParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprAssignContext extends ExpressionContext {
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public ExprAssignContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprAssign(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprAssign(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprAssign(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-	public static class ExprInvocationContext extends ExpressionContext {
-		public ExpressionContext target;
+	public static class GetFieldExprContext extends ExpressionContext {
 		public Token refKey;
-		public ExpressionContext expression;
-		public List<ExpressionContext> params = new ArrayList<ExpressionContext>();
-		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public ExprInvocationContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprInvocation(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprInvocation(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprInvocation(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-	public static class ExprSelfRefContext extends ExpressionContext {
-		public Token ref;
-		public ExprSelfRefContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprSelfRef(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprSelfRef(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprSelfRef(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-	public static class ExprLiteralContext extends ExpressionContext {
-		public LiteralContext literal() {
-			return getRuleContext(LiteralContext.class,0);
-		}
-		public ExprLiteralContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprLiteral(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprLiteral(this);
-		}
-		@Override
-		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprLiteral(this);
-			else return visitor.visitChildren(this);
-		}
-	}
-	public static class ExprInstanceOfContext extends ExpressionContext {
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
-		public TerminalNode INSTANCEOF() { return getToken(KalangParser.INSTANCEOF, 0); }
 		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
-		public ExprInstanceOfContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public GetFieldExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprInstanceOf(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterGetFieldExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprInstanceOf(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitGetFieldExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprInstanceOf(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitGetFieldExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprParenContext extends ExpressionContext {
+	public static class QuestionExprContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public QuestionExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterQuestionExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitQuestionExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitQuestionExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class ParenExprContext extends ExpressionContext {
 		public TerminalNode LPAREN() { return getToken(KalangParser.LPAREN, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
 		public TerminalNode RPAREN() { return getToken(KalangParser.RPAREN, 0); }
-		public ExprParenContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public ParenExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprParen(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterParenExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprParen(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitParenExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprParen(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitParenExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprGetFieldContext extends ExpressionContext {
-		public Token refKey;
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
+	public static class GetArrayElementExprContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
 		}
-		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
-		public ExprGetFieldContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public GetArrayElementExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprGetField(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterGetArrayElementExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprGetField(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitGetArrayElementExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprGetField(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitGetArrayElementExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class PreIncExprContext extends ExpressionContext {
+		public Token op;
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public PreIncExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterPreIncExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitPreIncExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitPreIncExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -3363,71 +3346,74 @@ public class KalangParser extends Parser {
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprIncContext extends ExpressionContext {
-		public Token op;
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
+	public static class LiteralExprContext extends ExpressionContext {
+		public LiteralContext literal() {
+			return getRuleContext(LiteralContext.class,0);
 		}
-		public ExprIncContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public LiteralExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprInc(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterLiteralExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprInc(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitLiteralExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprInc(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitLiteralExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprQuestionContext extends ExpressionContext {
+	public static class MemberInvocationExprContext extends ExpressionContext {
+		public Token key;
+		public ExpressionContext expression;
+		public List<ExpressionContext> params = new ArrayList<ExpressionContext>();
+		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
 		}
 		public ExpressionContext expression(int i) {
 			return getRuleContext(ExpressionContext.class,i);
 		}
-		public ExprQuestionContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public MemberInvocationExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprQuestion(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterMemberInvocationExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprQuestion(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitMemberInvocationExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprQuestion(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitMemberInvocationExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprGetArrayElementContext extends ExpressionContext {
+	public static class AssignExprContext extends ExpressionContext {
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
 		}
 		public ExpressionContext expression(int i) {
 			return getRuleContext(ExpressionContext.class,i);
 		}
-		public ExprGetArrayElementContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public AssignExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprGetArrayElement(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterAssignExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprGetArrayElement(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitAssignExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprGetArrayElement(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitAssignExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprNewArrayContext extends ExpressionContext {
+	public static class NewArrayExprContext extends ExpressionContext {
 		public ExpressionContext size;
 		public ExpressionContext expression;
 		public List<ExpressionContext> initExpr = new ArrayList<ExpressionContext>();
@@ -3440,38 +3426,52 @@ public class KalangParser extends Parser {
 		public ExpressionContext expression(int i) {
 			return getRuleContext(ExpressionContext.class,i);
 		}
-		public ExprNewArrayContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public NewArrayExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprNewArray(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterNewArrayExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprNewArray(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitNewArrayExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprNewArray(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitNewArrayExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class ExprIncPreContext extends ExpressionContext {
-		public Token op;
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
-		}
-		public ExprIncPreContext(ExpressionContext ctx) { copyFrom(ctx); }
+	public static class SelfRefExprContext extends ExpressionContext {
+		public Token ref;
+		public SelfRefExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterExprIncPre(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterSelfRefExpr(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitExprIncPre(this);
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitSelfRefExpr(this);
 		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitExprIncPre(this);
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitSelfRefExpr(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class IdentifierExprContext extends ExpressionContext {
+		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
+		public IdentifierExprContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).enterIdentifierExpr(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KalangListener ) ((KalangListener)listener).exitIdentifierExpr(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof KalangVisitor ) return ((KalangVisitor<? extends T>)visitor).visitIdentifierExpr(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -3528,14 +3528,14 @@ public class KalangParser extends Parser {
 				break;
 			case 3:
 				{
-				_localctx = new ExprIncPreContext(_localctx);
+				_localctx = new PreIncExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(494);
-				((ExprIncPreContext)_localctx).op = _input.LT(1);
+				((PreIncExprContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !(_la==INC || _la==DEC) ) {
-					((ExprIncPreContext)_localctx).op = (Token)_errHandler.recoverInline(this);
+					((PreIncExprContext)_localctx).op = (Token)_errHandler.recoverInline(this);
 				} else {
 					consume();
 				}
@@ -3561,7 +3561,7 @@ public class KalangParser extends Parser {
 				break;
 			case 5:
 				{
-				_localctx = new ExprParenContext(_localctx);
+				_localctx = new ParenExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(498);
@@ -3574,14 +3574,14 @@ public class KalangParser extends Parser {
 				break;
 			case 6:
 				{
-				_localctx = new ExprSelfRefContext(_localctx);
+				_localctx = new SelfRefExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(502);
-				((ExprSelfRefContext)_localctx).ref = _input.LT(1);
+				((SelfRefExprContext)_localctx).ref = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !(_la==SUPER || _la==THIS) ) {
-					((ExprSelfRefContext)_localctx).ref = (Token)_errHandler.recoverInline(this);
+					((SelfRefExprContext)_localctx).ref = (Token)_errHandler.recoverInline(this);
 				} else {
 					consume();
 				}
@@ -3589,7 +3589,7 @@ public class KalangParser extends Parser {
 				break;
 			case 7:
 				{
-				_localctx = new ExprLiteralContext(_localctx);
+				_localctx = new LiteralExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(503);
@@ -3722,7 +3722,7 @@ public class KalangParser extends Parser {
 				break;
 			case 10:
 				{
-				_localctx = new ExprMemberInvocationContext(_localctx);
+				_localctx = new MemberInvocationExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(552);
@@ -3736,13 +3736,13 @@ public class KalangParser extends Parser {
 				case THIS:
 					{
 					setState(550);
-					((ExprMemberInvocationContext)_localctx).key = match(THIS);
+					((MemberInvocationExprContext)_localctx).key = match(THIS);
 					}
 					break;
 				case SUPER:
 					{
 					setState(551);
-					((ExprMemberInvocationContext)_localctx).key = match(SUPER);
+					((MemberInvocationExprContext)_localctx).key = match(SUPER);
 					}
 					break;
 				default:
@@ -3755,8 +3755,8 @@ public class KalangParser extends Parser {
 				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 					{
 					setState(555);
-					((ExprMemberInvocationContext)_localctx).expression = expression(0);
-					((ExprMemberInvocationContext)_localctx).params.add(((ExprMemberInvocationContext)_localctx).expression);
+					((MemberInvocationExprContext)_localctx).expression = expression(0);
+					((MemberInvocationExprContext)_localctx).params.add(((MemberInvocationExprContext)_localctx).expression);
 					setState(560);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
@@ -3766,8 +3766,8 @@ public class KalangParser extends Parser {
 						setState(556);
 						match(COMMA);
 						setState(557);
-						((ExprMemberInvocationContext)_localctx).expression = expression(0);
-						((ExprMemberInvocationContext)_localctx).params.add(((ExprMemberInvocationContext)_localctx).expression);
+						((MemberInvocationExprContext)_localctx).expression = expression(0);
+						((MemberInvocationExprContext)_localctx).params.add(((MemberInvocationExprContext)_localctx).expression);
 						}
 						}
 						setState(562);
@@ -3825,7 +3825,7 @@ public class KalangParser extends Parser {
 				break;
 			case 12:
 				{
-				_localctx = new ExprNewArrayContext(_localctx);
+				_localctx = new NewArrayExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(604);
@@ -3839,7 +3839,7 @@ public class KalangParser extends Parser {
 					setState(583);
 					match(LBRACK);
 					setState(584);
-					((ExprNewArrayContext)_localctx).size = expression(0);
+					((NewArrayExprContext)_localctx).size = expression(0);
 					setState(585);
 					match(RBRACK);
 					}
@@ -3861,8 +3861,8 @@ public class KalangParser extends Parser {
 					if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 						{
 						setState(592);
-						((ExprNewArrayContext)_localctx).expression = expression(0);
-						((ExprNewArrayContext)_localctx).initExpr.add(((ExprNewArrayContext)_localctx).expression);
+						((NewArrayExprContext)_localctx).expression = expression(0);
+						((NewArrayExprContext)_localctx).initExpr.add(((NewArrayExprContext)_localctx).expression);
 						setState(597);
 						_errHandler.sync(this);
 						_la = _input.LA(1);
@@ -3872,8 +3872,8 @@ public class KalangParser extends Parser {
 							setState(593);
 							match(COMMA);
 							setState(594);
-							((ExprNewArrayContext)_localctx).expression = expression(0);
-							((ExprNewArrayContext)_localctx).initExpr.add(((ExprNewArrayContext)_localctx).expression);
+							((NewArrayExprContext)_localctx).expression = expression(0);
+							((NewArrayExprContext)_localctx).initExpr.add(((NewArrayExprContext)_localctx).expression);
 							}
 							}
 							setState(599);
@@ -3892,7 +3892,7 @@ public class KalangParser extends Parser {
 				break;
 			case 13:
 				{
-				_localctx = new ExprIdentifierContext(_localctx);
+				_localctx = new IdentifierExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(606);
@@ -4073,7 +4073,7 @@ public class KalangParser extends Parser {
 						break;
 					case 10:
 						{
-						_localctx = new ExprQuestionContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new QuestionExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(644);
 						if (!(precpred(_ctx, 4))) throw new FailedPredicateException(this, "precpred(_ctx, 4)");
@@ -4089,7 +4089,7 @@ public class KalangParser extends Parser {
 						break;
 					case 11:
 						{
-						_localctx = new ExprAssignContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new AssignExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(650);
 						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
@@ -4106,16 +4106,16 @@ public class KalangParser extends Parser {
 						break;
 					case 12:
 						{
-						_localctx = new ExprInvocationContext(new ExpressionContext(_parentctx, _parentState));
-						((ExprInvocationContext)_localctx).target = _prevctx;
+						_localctx = new InvokeExprContext(new ExpressionContext(_parentctx, _parentState));
+						((InvokeExprContext)_localctx).target = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(653);
 						if (!(precpred(_ctx, 25))) throw new FailedPredicateException(this, "precpred(_ctx, 25)");
 						setState(654);
-						((ExprInvocationContext)_localctx).refKey = _input.LT(1);
+						((InvokeExprContext)_localctx).refKey = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !(_la==T__6 || _la==DOT) ) {
-							((ExprInvocationContext)_localctx).refKey = (Token)_errHandler.recoverInline(this);
+							((InvokeExprContext)_localctx).refKey = (Token)_errHandler.recoverInline(this);
 						} else {
 							consume();
 						}
@@ -4128,8 +4128,8 @@ public class KalangParser extends Parser {
 						if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral) | (1L << StringLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (Identifier - 64)))) != 0)) {
 							{
 							setState(657);
-							((ExprInvocationContext)_localctx).expression = expression(0);
-							((ExprInvocationContext)_localctx).params.add(((ExprInvocationContext)_localctx).expression);
+							((InvokeExprContext)_localctx).expression = expression(0);
+							((InvokeExprContext)_localctx).params.add(((InvokeExprContext)_localctx).expression);
 							setState(662);
 							_errHandler.sync(this);
 							_la = _input.LA(1);
@@ -4139,8 +4139,8 @@ public class KalangParser extends Parser {
 								setState(658);
 								match(COMMA);
 								setState(659);
-								((ExprInvocationContext)_localctx).expression = expression(0);
-								((ExprInvocationContext)_localctx).params.add(((ExprInvocationContext)_localctx).expression);
+								((InvokeExprContext)_localctx).expression = expression(0);
+								((InvokeExprContext)_localctx).params.add(((InvokeExprContext)_localctx).expression);
 								}
 								}
 								setState(664);
@@ -4156,15 +4156,15 @@ public class KalangParser extends Parser {
 						break;
 					case 13:
 						{
-						_localctx = new ExprGetFieldContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new GetFieldExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(668);
 						if (!(precpred(_ctx, 24))) throw new FailedPredicateException(this, "precpred(_ctx, 24)");
 						setState(669);
-						((ExprGetFieldContext)_localctx).refKey = _input.LT(1);
+						((GetFieldExprContext)_localctx).refKey = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !(_la==T__6 || _la==DOT) ) {
-							((ExprGetFieldContext)_localctx).refKey = (Token)_errHandler.recoverInline(this);
+							((GetFieldExprContext)_localctx).refKey = (Token)_errHandler.recoverInline(this);
 						} else {
 							consume();
 						}
@@ -4174,7 +4174,7 @@ public class KalangParser extends Parser {
 						break;
 					case 14:
 						{
-						_localctx = new ExprGetArrayElementContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new GetArrayElementExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(671);
 						if (!(precpred(_ctx, 22))) throw new FailedPredicateException(this, "precpred(_ctx, 22)");
@@ -4188,15 +4188,15 @@ public class KalangParser extends Parser {
 						break;
 					case 15:
 						{
-						_localctx = new ExprIncContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new IncExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(676);
 						if (!(precpred(_ctx, 18))) throw new FailedPredicateException(this, "precpred(_ctx, 18)");
 						setState(677);
-						((ExprIncContext)_localctx).op = _input.LT(1);
+						((IncExprContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !(_la==INC || _la==DEC) ) {
-							((ExprIncContext)_localctx).op = (Token)_errHandler.recoverInline(this);
+							((IncExprContext)_localctx).op = (Token)_errHandler.recoverInline(this);
 						} else {
 							consume();
 						}
@@ -4204,7 +4204,7 @@ public class KalangParser extends Parser {
 						break;
 					case 16:
 						{
-						_localctx = new ExprInstanceOfContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new InstanceofExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(678);
 						if (!(precpred(_ctx, 10))) throw new FailedPredicateException(this, "precpred(_ctx, 10)");

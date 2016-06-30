@@ -221,9 +221,9 @@ exprStat:
 expression
     :   LPAREN 
         expression 
-        RPAREN #exprParen
-    |   ref=('this'|'super') #exprSelfRef
-    |   literal #exprLiteral
+        RPAREN #parenExpr
+    |   ref=('this'|'super') #selfRefExpr
+    |   literal #literalExpr
     | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=Identifier ':' values+=expression ( ',' keys+=Identifier ':' values+=expression)*  ']' 
           | '[' ':' ']'
       ) #mapExpr
@@ -232,33 +232,33 @@ expression
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
     |    target=expression refKey=('.'|'->') Identifier 
-        '(' (params+=expression (',' params+=expression)*)? ')'  #exprInvocation
-    |   expression refKey=('.'|'->') Identifier #exprGetField
+        '(' (params+=expression (',' params+=expression)*)? ')'  #invokeExpr
+    |   expression refKey=('.'|'->') Identifier #getFieldExpr
     |     (Identifier|key='this'|key='super') 
-        '(' (params+=expression (',' params+=expression)*)? ')'   #exprMemberInvocation
-    |  expression '[' expression ']' #exprGetArrayElement    
+        '(' (params+=expression (',' params+=expression)*)? ')'   #memberInvocationExpr
+    |  expression '[' expression ']' #getArrayElementExpr    
     |   'new' classType
          '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
     |   ( 'new' type '[' size=expression ']' 
             | 'new' type '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}'
-        )    #exprNewArray
+        )    #newArrayExpr
     |   '(' type ')' expression #castExpr
-    |   expression op=('++' | '--') #exprInc
+    |   expression op=('++' | '--') #incExpr
     |   ( '+' | '-' ) expression #unaryExpr
-    |   op=( '++' | '--' ) expression #exprIncPre
+    |   op=( '++' | '--' ) expression #preIncExpr
     |   ('~'|'!') expression  #unaryExpr
     |   expression ('*'|'/'|'%') expression #binaryExpr
     |   expression ('+'|'-') expression #binaryExpr
     |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression #binaryExpr
     |   expression ('<=' | '>=' | '>' | '<') expression #binaryExpr
-    |   expression INSTANCEOF Identifier  #exprInstanceOf
+    |   expression INSTANCEOF Identifier  #instanceofExpr
     |   expression ('=='|'!=') expression #binaryExpr
     |   expression '&' expression #binaryExpr
     |   expression '^' expression #binaryExpr
     |   expression '|' expression #binaryExpr
     |   expression ('&&'|'||') expression #binaryExpr
-    |   expression '?' expression ':' expression #exprQuestion
-    |   Identifier #exprIdentifier 
+    |   expression '?' expression ':' expression #questionExpr
+    |   Identifier #identifierExpr 
     |   expression '.' #errorousMemberExpr
     |   <assoc=right> expression
          ( '=' 
@@ -274,7 +274,7 @@ expression
         |   '<<='
         |   '%='
         )
-        expression #exprAssign
+        expression #assignExpr
 ;
 
 literal

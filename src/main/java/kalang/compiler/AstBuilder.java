@@ -53,16 +53,16 @@ import kalang.antlr.KalangParser.ClassBodyContext;
 import kalang.antlr.KalangParser.CompilationUnitContext;
 import kalang.antlr.KalangParser.ContinueStatContext;
 import kalang.antlr.KalangParser.DoWhileStatContext;
-import kalang.antlr.KalangParser.ExprAssignContext;
-import kalang.antlr.KalangParser.ExprGetArrayElementContext;
-import kalang.antlr.KalangParser.ExprGetFieldContext;
-import kalang.antlr.KalangParser.ExprIdentifierContext;
-import kalang.antlr.KalangParser.ExprInvocationContext;
-import kalang.antlr.KalangParser.ExprLiteralContext;
-import kalang.antlr.KalangParser.ExprMemberInvocationContext;
+import kalang.antlr.KalangParser.AssignExprContext;
+import kalang.antlr.KalangParser.GetArrayElementExprContext;
+import kalang.antlr.KalangParser.GetFieldExprContext;
+import kalang.antlr.KalangParser.IdentifierExprContext;
+import kalang.antlr.KalangParser.InvokeExprContext;
+import kalang.antlr.KalangParser.LiteralExprContext;
+import kalang.antlr.KalangParser.MemberInvocationExprContext;
 import kalang.antlr.KalangParser.BinaryExprContext;
-import kalang.antlr.KalangParser.ExprParenContext;
-import kalang.antlr.KalangParser.ExprSelfRefContext;
+import kalang.antlr.KalangParser.ParenExprContext;
+import kalang.antlr.KalangParser.SelfRefExprContext;
 import kalang.antlr.KalangParser.ExprStatContext;
 import kalang.antlr.KalangParser.ExpressionContext;
 import kalang.antlr.KalangParser.ExpressionsContext;
@@ -605,7 +605,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 //    }
 
     @Override
-    public ExprNode visitExprNewArray(KalangParser.ExprNewArrayContext ctx) {
+    public ExprNode visitNewArrayExpr(KalangParser.NewArrayExprContext ctx) {
         Type type = parseType(ctx.type());
         ExprNode ret;
         if(ctx.size!=null){
@@ -623,7 +623,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitExprQuestion(KalangParser.ExprQuestionContext ctx) {
+    public AstNode visitQuestionExpr(KalangParser.QuestionExprContext ctx) {
         List<Statement> stmts = new LinkedList<>();
         LocalVarNode vo = new LocalVarNode();
         VarDeclStmt vds = new VarDeclStmt(vo);
@@ -1005,7 +1005,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public ExprNode visitExprMemberInvocation(ExprMemberInvocationContext ctx) {
+    public ExprNode visitMemberInvocationExpr(MemberInvocationExprContext ctx) {
         String methodName;
         if (ctx.key != null) {
             methodName = ctx.key.getText();
@@ -1039,7 +1039,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
     }
     
-    protected ExprNode createFieldExpr(ExprGetFieldContext to,@Nullable ExpressionContext fromCtx){
+    protected ExprNode createFieldExpr(GetFieldExprContext to,@Nullable ExpressionContext fromCtx){
         String refKey = to.refKey.getText();
         ExpressionContext exp = to.expression();
         String fname = to.Identifier().getText();
@@ -1090,13 +1090,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public ExprNode visitExprAssign(ExprAssignContext ctx) {
+    public ExprNode visitAssignExpr(AssignExprContext ctx) {
         ExprNode expr;
         String assignOp = ctx.getChild(1).getText();
         ExpressionContext toCtx = ctx.expression(0);
         ExpressionContext fromCtx = ctx.expression(1);
-        if(toCtx instanceof ExprGetFieldContext){
-            expr = createFieldExpr((ExprGetFieldContext)toCtx,fromCtx);
+        if(toCtx instanceof GetFieldExprContext){
+            expr = createFieldExpr((GetFieldExprContext)toCtx,fromCtx);
         }else{
             ExprNode to = visitExpression(toCtx);
             ExprNode from = visitExpression(fromCtx);
@@ -1250,7 +1250,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitExprInvocation(ExprInvocationContext ctx) {
+    public AstNode visitInvokeExpr(InvokeExprContext ctx) {
         Object target = visit(ctx.target);
         if(target==null) return null;
         String mdName = ctx.Identifier().getText();
@@ -1287,7 +1287,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public ExprNode visitExprGetField(ExprGetFieldContext ctx) {
+    public ExprNode visitGetFieldExpr(GetFieldExprContext ctx) {
         return createFieldExpr(ctx, null);
     }
 
@@ -1300,7 +1300,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public ElementExpr visitExprGetArrayElement(ExprGetArrayElementContext ctx) {
+    public ElementExpr visitGetArrayElementExpr(GetArrayElementExprContext ctx) {
         ElementExpr ee = new ElementExpr(
                 visitExpression(ctx.expression(0))
                 ,visitExpression(ctx.expression(1))
@@ -1584,7 +1584,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitExprIdentifier(ExprIdentifierContext ctx) {
+    public AstNode visitIdentifierExpr(IdentifierExprContext ctx) {
         String name = ctx.Identifier().getText();
         AstNode expr = this.getNodeById(name,ctx.Identifier().getSymbol());
         if (expr == null) {
@@ -1596,12 +1596,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitExprLiteral(ExprLiteralContext ctx) {
+    public AstNode visitLiteralExpr(LiteralExprContext ctx) {
         return visitLiteral(ctx.literal());
     }
 
     @Override
-    public AstNode visitExprParen(ExprParenContext ctx) {
+    public AstNode visitParenExpr(ParenExprContext ctx) {
         return visitExpression(ctx.expression());
     }
 
@@ -1625,7 +1625,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public AstNode visitExprSelfRef(ExprSelfRefContext ctx) {
+    public AstNode visitSelfRefExpr(SelfRefExprContext ctx) {
         String key = ctx.ref.getText();
         AstNode expr;
         if(key.equals("this")){
@@ -1645,12 +1645,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public IncrementExpr visitExprInc(KalangParser.ExprIncContext ctx) {
+    public IncrementExpr visitIncExpr(KalangParser.IncExprContext ctx) {
         return getIncrementExpr(ctx.expression(), ctx.op.getText(), false);
     }
 
     @Override
-    public IncrementExpr visitExprIncPre(KalangParser.ExprIncPreContext ctx) {
+    public IncrementExpr visitPreIncExpr(KalangParser.PreIncExprContext ctx) {
         return getIncrementExpr(ctx.expression(), ctx.op.getText(), true);
     }
     
@@ -1718,7 +1718,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
 
     @Override
-    public Object visitExprInstanceOf(KalangParser.ExprInstanceOfContext ctx) {
+    public Object visitInstanceofExpr(KalangParser.InstanceofExprContext ctx) {
         ExprNode expr = visitExpression(ctx.expression());
         Token ts = ctx.Identifier().getSymbol();
         AstNode tnode = getNodeById(ts.getText(), ts);
