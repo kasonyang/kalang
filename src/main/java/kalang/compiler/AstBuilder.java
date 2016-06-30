@@ -1166,8 +1166,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         return expr;
     }
     
+    @Nullable
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
-        ExprNode expr;
+        ExprNode expr = null;
         try {
             ObjectType clazzType = getThisType();
             InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(thisClazz, true,true));
@@ -1177,7 +1178,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 expr = new ObjectInvokeExpr(new ThisExpr(getThisType()), ms.selectedMethod, ms.appliedArguments);
             }
         } catch (MethodNotFoundException ex) {
-            expr = new UnknownInvocationExpr(null, methodName, args);
+            if(args.length==1 && (methodName.equals("print") || methodName.equals("println"))){
+                try {
+                    StaticFieldExpr fieldExpr = StaticFieldExpr.create(new ClassReference(Types.requireClassType("java.lang.System").getClassNode()),"out",null);
+                    expr = getObjectInvokeExpr(fieldExpr, methodName, args, ctx);
+                } catch (FieldNotFoundException fnfEx) {
+                    throw Exceptions.unexceptedException(fnfEx);
+                }
+            }
+            if(expr==null) expr = new UnknownInvocationExpr(null, methodName, args);
         } catch (AmbiguousMethodException ex) {
             methodIsAmbiguous(ctx.start, ex);
             return null;

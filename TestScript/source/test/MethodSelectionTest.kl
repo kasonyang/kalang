@@ -1,2 +1,3 @@
 Integer i = Integer.valueOf(1);
-System.out.print(i);
+System.out.println(i);
+println(i);
