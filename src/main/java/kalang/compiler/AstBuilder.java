@@ -129,6 +129,7 @@ import kalang.util.ModifierUtil;
 import kalang.util.NameUtil;
 import kalang.util.OffsetRangeHelper;
 import kalang.util.StringLiteralUtil;
+import kalang.util.TypeUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -2024,8 +2025,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         if(typeCtx!=null){
              type = parseType(typeCtx);
         }else{
-            //TODO infer type from array's values
-            type = Types.getRootType();
+             type = TypeUtil.getCommonType(AstUtil.getExprTypes(initExprs));
         }
         for(int i=0;i<initExprs.length;i++){
             if(exprCtx==null) throw Exceptions.unexceptedValue(exprCtx);

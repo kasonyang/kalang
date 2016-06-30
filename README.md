@@ -181,12 +181,12 @@ int[] arr = new int[10];//length is 10
 int[] arr2 = new int[]{1,2,3];arr2 is initialized and it's length is 3
 ```
 
-## Declare list
+or
 
 ```
-var objectList = [1,2,3];//List<Object>
-var intList = <Integer>[1,2,3];//List<Integer>
-var stringList = <String>["hello","world"];//List<String>
+var objectArray = [1,2,3];//int[]
+var intArray= <Integer>[1,2,3];//Integer[]
+var stringArray = ["hello","world"];//String[]
 ```
 
 ## Declare map

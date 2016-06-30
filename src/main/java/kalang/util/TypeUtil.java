@@ -13,6 +13,7 @@ import kalang.core.GenericType;
 import kalang.core.ClassType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
+import kalang.core.Types;
 
 /**
  *
@@ -51,6 +52,27 @@ public class TypeUtil {
             list.add(t.toString());
         }
         return String.join(delimiter, list);
+    }
+    
+    public static Type getCommonType(Type[] types){
+        if(types.length==0) return Types.getRootType();
+        if(types.length==1) return types[0];
+        Type ret = types[0];
+        for(int i=1;i<types.length;i++){
+            Type t = types[i];
+            if(!t.equals(ret)){
+                if((ret instanceof PrimitiveType) && (t instanceof PrimitiveType)){
+                    ret = Types.getHigherType(ret, t);
+                }else{
+                    if(t.isAssignableFrom(ret)){
+                        ret = t;
+                    }else if(!ret.isAssignableFrom(t)){
+                        ret = Types.getRootType();
+                    }
+                }
+            }
+        }
+        return ret;
     }
     
 }
