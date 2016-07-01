@@ -77,7 +77,7 @@ public class ClassType extends ObjectType {
         if (!Arrays.deepEquals(thisPts,otherPts)) {
             return false;
         }
-        return true;
+        return nullable.equals(other.getNullable());
     }
 
     @Override
