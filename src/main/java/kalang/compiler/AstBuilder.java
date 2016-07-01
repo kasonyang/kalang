@@ -159,6 +159,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Nonnull
     private final ClassNode thisClazz = new ClassNode();
     
+    private boolean inScriptMode = false;
+    
     private MethodNode method;
     
     private VarTable<VarObject,Type> overrideTypes = new VarTable();
@@ -732,7 +734,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         method = thisClazz.createMethodNode();
         method.annotations.addAll(getAnnotations(ctx.annotation()));
-        method.modifier = parseModifier(ctx.varModifier());;
+        method.modifier = parseModifier(ctx.varModifier());
+        if(inScriptMode){
+            method.modifier |= Modifier.STATIC;
+        }
         method.type = type;
         method.name = name;
         List<TypeContext> paramTypesCtx = ctx.paramTypes;
@@ -1778,6 +1783,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
+        this.inScriptMode = true;
         thisClazz.modifier = Modifier.PUBLIC;
         thisClazz.superType = Types.getRootType();
         List<MethodDeclContext> mds = ctx.methodDecl();
