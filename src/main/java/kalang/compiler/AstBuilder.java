@@ -1040,6 +1040,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     protected ExprNode createFieldExpr(GetFieldExprContext to,@Nullable ExpressionContext fromCtx){
+        //TODO support iterating syntax
         String refKey = to.refKey.getText();
         ExpressionContext exp = to.expression();
         String fname = to.Identifier().getText();
