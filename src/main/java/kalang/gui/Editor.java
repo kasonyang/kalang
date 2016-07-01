@@ -180,13 +180,16 @@ public class Editor extends javax.swing.JFrame {
         kalang.KalangClassLoader classLoader = new kalang.KalangClassLoader();
         String code = codeArea.getText();
         String className = "Code" + (new Date()).getTime();
-        Class clazz = classLoader.parseSource(className, code,className);
-        if(clazz!=null){
-            try {
+        try{
+            Class clazz = classLoader.parseSource(className, code,className);
+            if(clazz!=null){
+                //TODO it seems that the compilation will not stop when encountering an error
+                //System.out.println("compile " + className + " successfully.");
                 ClassExecutor.executeMain(clazz, new String[0]);
-            } catch (Exception ex) {
-                ex.printStackTrace(ps);
             }
+        } catch (Exception ex) {
+            //System.out.println("compile " + className + " unsuccessfully.");
+            ex.printStackTrace(ps);
         }
         logArea.setText(os.toString());
     }//GEN-LAST:event_menuRunActionPerformed
