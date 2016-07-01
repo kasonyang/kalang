@@ -7,8 +7,8 @@ public class NewArrayExpr extends ExprNode{
     
     protected ExprNode size;
     
-    public NewArrayExpr(Type type,ExprNode size){
-            this.componentType = type;
+    public NewArrayExpr(Type componentType,ExprNode size){
+            this.componentType = componentType;
             this.size = size;
     }
 

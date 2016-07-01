@@ -179,6 +179,11 @@ class<T>{
         return ret - 3;
     }
 
+    int iteratingInvoke(){
+        var ints = (<Integer>[4,5,6])*.intValue();
+        return ints[2];
+    }
+
 
     int questionExpr(){
         return false ? 0 : 6;

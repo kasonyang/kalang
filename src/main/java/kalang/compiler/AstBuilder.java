@@ -1290,6 +1290,40 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 throw Exceptions.unexceptedException("Runtime library is required!");
             }
             return getStaticInvokeExpr(new ClassReference(dispatcherAst), "invokeMethod", invokeArgs, ctx);
+        }else if(refKey.equals("*.")){
+            if(!(target instanceof ExprNode)){
+                handleSyntaxError("expression required", ctx.expression);
+                return null;
+            }
+            ExprNode targetExpr = (ExprNode) target;
+            Type targetType = targetExpr.getType();
+            if(!(targetType instanceof ArrayType)){
+                handleSyntaxError("array required",ctx.expression);
+                return null;
+            }
+            List<Statement> stats = new LinkedList();
+            LocalVarNode varArrLen = this.declareTempLocalVar(Types.INT_TYPE);
+            LocalVarNode varCounter = this.declareTempLocalVar(Types.INT_TYPE);
+            stats.add(new VarDeclStmt(Arrays.asList(varArrLen,varCounter)));
+            VarExpr varArrLenExpr = new VarExpr(varArrLen);
+            VarExpr varCounterExpr = new VarExpr(varCounter);
+            stats.add(new ExprStmt(new AssignExpr(varArrLenExpr,new ArrayLengthExpr(targetExpr))));
+            stats.add(new ExprStmt(new AssignExpr(varCounterExpr,new ConstExpr(0))));
+            CompareExpr conditionExpr = new CompareExpr(varCounterExpr,varArrLenExpr,CompareExpr.OP_LT);
+            ExprNode targetEleExpr = new ElementExpr(targetExpr, varCounterExpr);
+            ExprNode invokeExpr = getObjectInvokeExpr(targetEleExpr, mdName, ctx.params, ctx);
+            if(invokeExpr==null) return null;
+            LocalVarNode varRet = this.declareTempLocalVar(Types.getArrayType(invokeExpr.getType()));
+            VarExpr varRetExpr = new VarExpr(varRet);
+            stats.add(new VarDeclStmt(varRet));
+            stats.add(new ExprStmt(new AssignExpr(varRetExpr,new NewArrayExpr(invokeExpr.getType(),varArrLenExpr))));
+            BlockStmt loopBody = this.newBlock();
+            loopBody.statements.add(new ExprStmt(new AssignExpr(new ElementExpr(varRetExpr,varCounterExpr),invokeExpr)));
+            loopBody.statements.add(new ExprStmt(new AssignExpr(varCounterExpr,new MathExpr(varCounterExpr,new ConstExpr(1),MathExpr.OP_ADD))));
+            this.popBlock();
+            LoopStmt loopStmt = new LoopStmt(loopBody,conditionExpr,null);
+            stats.add(loopStmt);
+            return new MultiStmtExpr(stats,varRetExpr);
         }else{
             throw Exceptions.unexceptedException(refKey);
         }
