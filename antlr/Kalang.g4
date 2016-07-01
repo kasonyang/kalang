@@ -233,7 +233,7 @@ expression
     //|   expression '.' 'super' superSuffix
     |    target=expression refKey=('.'|'->'|'*.') Identifier 
         '(' (params+=expression (',' params+=expression)*)? ')'  #invokeExpr
-    |   expression refKey=('.'|'->'|'*.') Identifier #getFieldExpr
+    |   expression refKey=('.'|'->') Identifier #getFieldExpr
     |     (Identifier|key='this'|key='super') 
         '(' (params+=expression (',' params+=expression)*)? ')'   #memberInvocationExpr
     |  expression '[' expression ']' #getArrayElementExpr    
