@@ -190,6 +190,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public Type visitAssignExpr(AssignExpr node) {
         AssignableExpr to = node.getTo();
         ExprNode from = node.getFrom();
+        visit(from);
         if(to instanceof VarExpr){
             assignedVars.put(((VarExpr)to).getVar(), null);
         }
