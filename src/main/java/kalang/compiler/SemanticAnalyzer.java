@@ -418,13 +418,16 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return null;
     }
 
+    
     @Override
     public Type visitLoopStmt(LoopStmt node) {
         if (node.preConditionExpr != null) {
             requireBoolean(node.preConditionExpr);
         }
         if (node.loopBody != null) {
+            enterNewFrame();
             visit(node.loopBody);
+            exitFrame();
         }
         if (node.postConditionExpr != null) {
             requireBoolean(node.postConditionExpr);
