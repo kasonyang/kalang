@@ -146,6 +146,13 @@ foreach([1,2,3] as i,v){
 }
 ```
 
+loop invoke
+
+```
+var arr = ["a","ab","abc"];
+var lens = arr*.length();//lens will be [1,2,3]
+```
+
 while loop:
 
 ```
