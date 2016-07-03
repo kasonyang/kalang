@@ -66,10 +66,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
    private  MethodNode method;
 
-    //private List<String> methodDeclared;
-
-    private boolean returned;
-
     private SemanticErrorReporter err;
 
     private CompileErrorHandler errHandler;
@@ -154,10 +150,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visit(AstNode node) {
         if(node==null) return null;
-        if (node instanceof Statement && returned) {
-            err.fail("unable to reach statement", SemanticError.LACKS_OF_STATEMENT, node);
-            return null;
-        }
         if(node instanceof Annotationable){
             validateAnnotation(((Annotationable)node).getAnnotations());
         }
@@ -363,26 +355,21 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         assignedList.add(assignedVars);
         visit(node.getExecStmt());
         exitFrame();
-        boolean tryReturned = this.returned;
         for(CatchBlock cs:node.getCatchStmts()){
-            this.returned = false;
             enterNewFrame();
             assignedList.add(assignedVars);
             visit(cs);
             exitFrame();
-            tryReturned = tryReturned && this.returned;
         }
         addIntersectedAssignedVar(assignedList.toArray(new VarTable[assignedList.size()]));
         Map<Type, AstNode> uncaught = this.exceptionStack.pop();
         if (uncaught.size() > 0) {
             this.exceptionStack.peek().putAll(uncaught);
         }
-        returned = false;
         Statement finallyStmt = node.getFinallyStmt();
         if(finallyStmt!=null){
             visit(finallyStmt);
         }        
-        this.returned = tryReturned || returned;
         return null;
     }
 
@@ -402,17 +389,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             visit(node.getTrueBody());
             exitFrame();
         }
-        boolean returnedOld = returned;
-        returned = false;
         if (node.getFalseBody() != null) {
             enterNewFrame();
             falseAssignedVars = assignedVars;
             visit(node.getFalseBody());
             exitFrame();
-        } else {
-            returned = false;
         }
-        returned = returnedOld && returned;
         if(trueAssignedVars!=null && falseAssignedVars!=null){
             addIntersectedAssignedVar(trueAssignedVars,falseAssignedVars);
         }
@@ -439,7 +421,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitMethodNode(MethodNode node) {
         method = node;
-        returned = false;
         this.exceptionStack.push(new HashMap<>());
         super.visitMethodNode(node);
         if (method.exceptionTypes != null) {
@@ -450,13 +431,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         Map<Type, AstNode> uncaught = this.exceptionStack.pop();
         for(Type k:uncaught.keySet()){
             err.uncaughtException(uncaught.get(k),k.getName());
-        }
-        boolean needReturn = (
-            node.type != null
-            && !node.type.equals(Types.VOID_TYPE)
-        );
-        if (node.body != null && needReturn && !returned) {
-            err.fail("Missing return statement in method:" + MethodUtil.toString(node), SemanticError.LACKS_OF_STATEMENT, node);
         }
         return null;
     }
@@ -472,7 +446,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             Type exType = visit(node.expr);
             node.expr = this.checkAssign(node.expr, exType, retType, node);
         }
-        returned = true;
         return null;
     }
 
@@ -544,7 +517,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visitThrowStmt(ThrowStmt node) {
         Type ret = super.visitThrowStmt(node);
-        returned = true;
         return ret;
     }
 

@@ -161,6 +161,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private boolean inScriptMode = false;
     
+    private boolean returned = false;
+    
     private MethodNode method;
     
     private VarTable<VarObject,Type> overrideTypes = new VarTable();
@@ -491,6 +493,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             System.err.println("visit null");
             return null;
         }
+        if(tree instanceof StatContext && returned){
+            handleSyntaxError("unreachable statement", (ParserRuleContext) tree);
+        }
         return super.visit(tree);
     }
 
@@ -534,6 +539,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public ThrowStmt visitThrowStat(KalangParser.ThrowStatContext ctx) {
         ThrowStmt ts = new ThrowStmt(visitExpression(ctx.expression()));
         mapAst(ts, ctx);
+        this.returned = true;
         return ts;
     }
 
@@ -722,6 +728,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
+        returned = false;
         String name;
         Type type;
         boolean isOverriding = ctx.OVERRIDE() != null;
@@ -794,6 +801,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
         mapAst(method, ctx);
+        boolean needReturn = (
+            method.type != null
+            && !method.type.equals(Types.VOID_TYPE)
+        );
+        if (method.body != null && needReturn && !returned) {
+            handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(method),ctx);
+        }
         return method;
     }
 
@@ -825,6 +839,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         popOverrideTypeStack();
         this.nullState = this.nullState.popStack();
+        boolean trueReturned = this.returned;
+        this.returned = false;
         this.nullState = falseAssigned = this.nullState.newStack();
         newOverrideTypeStack();
         onIf(expr,false);
@@ -834,6 +850,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         popOverrideTypeStack();
         this.nullState = this.nullState.popStack();
         handleMultiBranchedAssign(trueAssigned.vars(),falseAssigned.vars());
+        this.returned = this.returned && trueReturned;
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
         return ifStmt;
@@ -1656,9 +1673,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public AstNode visitTryStat(TryStatContext ctx) {
         //TODO handle multi-branched assign
         BlockStmt tryExecStmt = requireBlock(ctx.exec);
+        boolean tryReturned = this.returned;
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
+                this.returned = false;
                 String vName = ctx.catchVarNames.get(i).getText();
                 String vType = ctx.catchTypes.get(i).getText();
                 LocalVarNode vo = new LocalVarNode();
@@ -1667,6 +1686,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 BlockStmt catchExecStmt = requireBlock(ctx.catchExec.get(i));
                 CatchBlock catchStmt = new CatchBlock(vo,catchExecStmt); 
                 tryCatchBlocks.add(catchStmt);
+                this.returned = this.returned && tryReturned;
             }
         }
         BlockStmt tryFinallyStmt = null;
