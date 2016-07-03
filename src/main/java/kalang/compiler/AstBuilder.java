@@ -355,6 +355,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                     if(this.currentBlock != null){
                         throw Exceptions.unexceptedValue(this.currentBlock);
                     }
+                    returned = false;
                     m.body = requireBlock(body);
                     if(this.currentBlock != null){
                         throw Exceptions.unexceptedValue(this.currentBlock);
@@ -728,7 +729,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
-        returned = false;
         String name;
         Type type;
         boolean isOverriding = ctx.OVERRIDE() != null;
@@ -850,7 +850,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         popOverrideTypeStack();
         this.nullState = this.nullState.popStack();
         handleMultiBranchedAssign(trueAssigned.vars(),falseAssigned.vars());
-        this.returned = this.returned && trueReturned;
+        boolean falseReturned = this.returned;
+        if(trueReturned) onIf(expr,false);
+        if(falseReturned) onIf(expr,true);
+        this.returned = falseReturned && trueReturned;
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
         return ifStmt;
@@ -910,6 +913,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             rs.expr = visitExpression(ctx.expression());
         }
         mapAst(rs,ctx);
+        this.returned = true;
         return rs;
     }
 
