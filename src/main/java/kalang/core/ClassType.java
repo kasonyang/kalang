@@ -54,7 +54,10 @@ public class ClassType extends ObjectType {
             paramTypes.add(t.getName());
         }
         String suffix = paramTypes.isEmpty() ? "" : "<" + String.join(",",paramTypes) + ">";
-        return clazz.name + suffix;
+        if(nullable.equals(NullableKind.NULLABLE)){
+            suffix += "?";
+        }
+        return  clazz.name + suffix;
     }
 
     @Override
