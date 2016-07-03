@@ -174,7 +174,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private static final int NULLSTATE_MUST_NULL = 0,
             NULLSTATE_MUST_NONNULL = 1,
-            NULLSTATE_UNKNOW = 2,
+            NULLSTATE_UNKNOWN = 2,
             NULLSTATE_NULLABLE = 3;
     
     private VarTable<VarObject,Integer> nullState = new VarTable();
@@ -875,9 +875,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 else{
                     int ns;
                     if(
-                            (oneNullable.equals(NULLSTATE_MUST_NONNULL) && otherNullable.equals(NULLSTATE_UNKNOW))                           || (otherNullable.equals(NULLSTATE_MUST_NONNULL) && oneNullable.equals(NULLSTATE_UNKNOW))
+                            (oneNullable.equals(NULLSTATE_MUST_NONNULL) && otherNullable.equals(NULLSTATE_UNKNOWN))                           || (otherNullable.equals(NULLSTATE_MUST_NONNULL) && oneNullable.equals(NULLSTATE_UNKNOWN))
                             ){
-                        ns = NULLSTATE_UNKNOW;
+                        ns = NULLSTATE_UNKNOWN;
                     }else{
                         ns = NULLSTATE_NULLABLE;
                     }
@@ -1186,7 +1186,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }else if(nullable==NullableKind.NULLABLE){
             ns = NULLSTATE_NULLABLE;
         }else if(nullable==NullableKind.UNKNOWN){
-            ns = NULLSTATE_UNKNOW;
+            ns = NULLSTATE_UNKNOWN;
         }else{
             throw Exceptions.unexceptedValue(nullable);
         }
@@ -2220,7 +2220,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 nullable = ((ObjectType) type).getNullable();
             }else if(ns==NULLSTATE_MUST_NONNULL){
                 nullable = NullableKind.NONNULL;
-            }else if(ns==NULLSTATE_UNKNOW){
+            }else if(ns==NULLSTATE_UNKNOWN){
                 nullable = NullableKind.UNKNOWN;
             }else if(ns==NULLSTATE_MUST_NULL|| ns== NULLSTATE_NULLABLE){
                 nullable = NullableKind.NULLABLE;
