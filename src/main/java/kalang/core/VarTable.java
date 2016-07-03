@@ -1,6 +1,7 @@
 package kalang.core;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -80,6 +81,22 @@ public class VarTable<T, V> {
     
     public Set<T> keySet(){
         return vars.keySet();
+    }
+    
+    public VarTable<T,V> newStack(){
+        return new VarTable(this);
+    }
+    
+    public VarTable<T,V> popStack(){
+        return this.getParent();
+    }
+    
+    public Collection<V> values(){
+        return vars.values();
+    }
+    
+    public HashMap<T, V> vars(){
+        return vars;
     }
 
 }

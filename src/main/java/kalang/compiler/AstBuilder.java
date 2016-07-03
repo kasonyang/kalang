@@ -165,6 +165,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private VarTable<VarObject,Type> overrideTypes = new VarTable();
     
+    //TODO merge SemanticAnalyzer.assignedVars
+    //private VarTable<VarObject,NullableKind> assignedNullables = new VarTable();
+    
+    //private VarTable<VarObject,Boolean> mustNullorNonnull = new VarTable();
+    
+    private static final int NULLSTATE_MUST_NULL = 0,
+            NULLSTATE_MUST_NONNULL = 1,
+            NULLSTATE_UNKNOW = 2,
+            NULLSTATE_NULLABLE = 3;
+    
+    private VarTable<VarObject,Integer> nullState = new VarTable();
+    
     protected BlockStmt currentBlock = null;
     private final HashMap<MethodNode,BlockStmtContext> methodBodys = new HashMap<>();
 
@@ -229,19 +241,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     }
     
     private void onNull(ExprNode expr,boolean onTrue,boolean isEQ){
-        boolean isNull = (onTrue && isEQ) || (!onTrue && !isEQ);
-        NullableKind nullable = isNull ? NullableKind.NULLABLE : NullableKind.NONNULL;
-        Type type = expr.getType();
-        ObjectType newType;
-        //TODO support generic type and wildcardType
-        if(type instanceof ClassType){
-            newType = Types.getClassType((ClassType)type, nullable);
-        }else if(type instanceof ArrayType){
-            newType = Types.getArrayType((ArrayType)type,nullable);
-        }else{
-            newType = null;
+        boolean mustNull = (onTrue && isEQ) || (!onTrue && !isEQ);
+        VarObject key = this.getOverrideTypeKey(expr);
+        if(key!=null){
+            nullState.put(key,mustNull ? NULLSTATE_MUST_NULL : NULLSTATE_MUST_NONNULL);
         }
-        if(newType!=null) changeTypeTemporarilyIfCould(expr,newType);
     }
     
     protected void onIf(ExprNode expr,boolean onTrue){
@@ -812,17 +816,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode expr = visitExpression(ctx.expression());
         BlockStmt trueBody = null;
         BlockStmt falseBody = null;
+        VarTable<VarObject,Integer> trueAssigned=null,falseAssigned=null;
         if (ctx.trueStmt != null) {
+            //this.assignedNullables = trueAssigned = this.assignedNullables.newStack();
+            this.nullState = trueAssigned = this.nullState.newStack();
             newOverrideTypeStack();
             onIf(expr, true);
             trueBody=requireBlock(ctx.trueStmt);
             popOverrideTypeStack();
+            //this.assignedNullables = this.assignedNullables.popStack();
+            this.nullState = this.nullState.popStack();
         }
         if (ctx.falseStmt != null) {
+            //this.assignedNullables = falseAssigned = this.assignedNullables.newStack();
+            this.nullState = falseAssigned = this.nullState.newStack();
             newOverrideTypeStack();
             onIf(expr,false);
             falseBody=requireBlock(ctx.falseStmt);
             popOverrideTypeStack();
+            //this.assignedNullables = this.assignedNullables.popStack();
+            this.nullState = this.nullState.popStack();
         }else if(trueBody!=null){
             //TODO maybe if return else return
             List<Statement> trueStmts = trueBody.statements;
@@ -833,9 +846,36 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 }
             }
         }
+        handleMultiBranchedAssign(
+                trueAssigned==null ? Collections.emptyMap():trueAssigned.vars() 
+                ,falseAssigned==null ? Collections.emptyMap() : falseAssigned.vars()
+        );
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
         return ifStmt;
+    }
+    
+    private void handleMultiBranchedAssign(Map<VarObject,Integer>... assignedTable){
+        if(assignedTable.length<2){
+            throw Exceptions.illegalArgument(assignedTable);
+        }
+        HashMap<VarObject,Integer> ret = new HashMap();
+        ret.putAll(assignedTable[0]);
+        for(int i=1;i<assignedTable.length;i++){
+            Map<VarObject,Integer> other = assignedTable[i];
+            for(Map.Entry<VarObject,Integer> e:ret.entrySet()){
+                Integer oneNullable = e.getValue();
+                Integer otherNullable = other.get(e.getKey());
+                if(oneNullable.equals(otherNullable)) continue;
+                if(otherNullable==null) ret.remove(e.getKey());
+                else{
+                    ret.put(e.getKey(), NULLSTATE_UNKNOW);
+                }
+            }
+        }
+        for(Map.Entry<VarObject,Integer> e:ret.entrySet()){
+            this.nullState.put(e.getKey(), e.getValue());
+        }
     }
 
     private ExprNode visitExpression(ExpressionContext expression) {
@@ -1115,16 +1155,41 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 toExpr = (AssignableExpr) to;
                 AssignExpr aexpr = new AssignExpr(toExpr,from);
                 mapAst(aexpr, ctx);
+                //TODO remove override information before assign
+                onAssign(toExpr,from);
                 expr = aexpr;
             }else{
                 AstBuilder.this.handleSyntaxError("unsupported assign statement",ctx);
                 return null;
             }
         }
-        if(expr!=null){
-            removeOverrideType(expr);
-        }
         return expr;
+    }
+    
+    private void onAssign(ExprNode to,ExprNode expr){
+        removeOverrideType(to);
+        VarObject key = getOverrideTypeKey(to);
+        if(key!=null){
+            Type type = expr.getType();
+            if(type instanceof ObjectType){
+                ObjectType ot = (ObjectType) type;
+                //TODO what about:if(a!=null) a=null;
+                if(this.nullState.exist(key) && this.nullState.get(key)==NULLSTATE_MUST_NULL){
+                    NullableKind nullable = ot.getNullable();
+                    int ns;
+                    if(nullable==NullableKind.NONNULL){
+                        ns = NULLSTATE_MUST_NONNULL;
+                    }else if(nullable==NullableKind.NULLABLE){
+                        ns = NULLSTATE_NULLABLE;
+                    }else if(nullable==NullableKind.UNKNOWN){
+                        ns = NULLSTATE_UNKNOW;
+                    }else{
+                        throw Exceptions.unexceptedValue(nullable);
+                    }
+                    this.nullState.getParent().put(key,ns);
+                }
+            }
+        }
     }
 
     @Override
@@ -1426,7 +1491,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         VarTable<String, LocalVarNode> vtb = getVarTable();
         if (vtb!=null && vtb.exist(name)) {
             LocalVarNode var = vtb.get(name); //vars.indexOf(vo);
-            VarExpr ve = new VarExpr(var,overrideTypes.get(var));
+            VarExpr ve = new VarExpr(var,getVarObjectType(var));
             if(token!=null) mapAst(ve, token);
             return ve;
         } else {
@@ -1434,7 +1499,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             if (method != null && method.parameters != null) {
                 for (ParameterNode p : method.parameters) {
                     if (p.name.equals(name)) {
-                        ParameterExpr ve = new ParameterExpr(p,overrideTypes.get(p));
+                        ParameterExpr ve = new ParameterExpr(p,this.getVarObjectType(p));
                         if(token!=null) mapAst(ve, token);
                         return ve;
                     }
@@ -1584,6 +1649,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitTryStat(TryStatContext ctx) {
+        //TODO handle multi-branched assign
         BlockStmt tryExecStmt = requireBlock(ctx.exec);
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
         if (ctx.catchTypes != null) {
@@ -2112,6 +2178,30 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ExprNode arrExpr = BoxUtil.createInitializedArray(type, initExprs);
         mapAst(arrExpr, ctx);
         return arrExpr;
+    }
+
+    private Type getVarObjectType(VarObject p) {
+        Type type = this.overrideTypes.get(p);
+        if(type==null) type = p.getType();
+        //TODO handle other object type
+        if(type instanceof ClassType){
+            Integer ns = nullState.get(p);
+            NullableKind nullable;
+            if(ns==null){
+                nullable = ((ObjectType) type).getNullable();
+            }else if(ns==NULLSTATE_MUST_NONNULL){
+                nullable = NullableKind.NONNULL;
+            }else if(ns==NULLSTATE_UNKNOW){
+                nullable = NullableKind.UNKNOWN;
+            }else if(ns==NULLSTATE_MUST_NULL|| ns== NULLSTATE_NULLABLE){
+                nullable = NullableKind.NULLABLE;
+            }else{
+                throw Exceptions.unexceptedValue(ns);
+            }
+            return Types.getClassType((ClassType)type,nullable);
+        }else{
+            return type;
+        }
     }
 
 }
