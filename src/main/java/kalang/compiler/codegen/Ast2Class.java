@@ -61,6 +61,7 @@ import kalang.ast.PrimitiveCastExpr;
 import kalang.ast.Statement;
 import kalang.ast.StaticFieldExpr;
 import kalang.ast.StaticInvokeExpr;
+import kalang.ast.StoreArrayElementExpr;
 import kalang.ast.SuperExpr;
 import kalang.ast.UnknownFieldExpr;
 import kalang.ast.UnknownInvocationExpr;
@@ -1204,6 +1205,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMultiStmt(MultiStmt node) {
         visitAll(node.statements);
+        return null;
+    }
+
+    @Override
+    public Object visitStoreArrayElementExpr(StoreArrayElementExpr node) {
+        md.visitVarInsn(ALOAD, this.getVarId(node.getArray()));
+        visit(node.getIndex());
+        astore(node.getValueExpr());
         return null;
     }
 

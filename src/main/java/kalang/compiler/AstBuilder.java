@@ -1168,6 +1168,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     
     private void onAssign(ExprNode to,ExprNode expr){
         removeOverrideType(to);
+        if(to instanceof VarExpr){
+            ((VarExpr)to).removeOverrideType();
+        }else if(to instanceof ParameterExpr){
+            ((ParameterExpr) to).removeOverrideType();
+        }
         VarObject key = getOverrideTypeKey(to);
         if(key!=null){
             Type type = expr.getType();

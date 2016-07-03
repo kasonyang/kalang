@@ -14,7 +14,7 @@ public class StoreArrayElementExpr extends ExprNode {
     
     private ExprNode index;
     
-    private ExprNode from;
+    private ExprNode valueExpr;
 
     public StoreArrayElementExpr(VarObject array, ExprNode index, ExprNode from) {
         if(!(array.type instanceof ArrayType)){
@@ -22,7 +22,7 @@ public class StoreArrayElementExpr extends ExprNode {
         }
         this.array = array;
         this.index = index;
-        this.from = from;
+        this.valueExpr = from;
     }
 
     @Override
@@ -38,8 +38,8 @@ public class StoreArrayElementExpr extends ExprNode {
         return index;
     }
 
-    public ExprNode getFrom() {
-        return from;
+    public ExprNode getValueExpr() {
+        return valueExpr;
     }
     
     

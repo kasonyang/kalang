@@ -35,6 +35,10 @@ public class VarExpr extends AssignableExpr{
         return var.name;
     }
     
+    public void removeOverrideType(){
+        overrideType = null;
+    }
+    
     
     
 }

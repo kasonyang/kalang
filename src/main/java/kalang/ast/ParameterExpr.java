@@ -28,5 +28,9 @@ public class ParameterExpr extends ExprNode{
     public ParameterNode getParameter() {
         return parameter;
     }
+    
+    public void removeOverrideType(){
+        overrideType = null;
+    }
 
 }
