@@ -613,4 +613,10 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         return null;
     }
 
+    @Override
+    public String visitStoreArrayElementExpr(StoreArrayElementExpr node) {
+        //TODO support needed
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

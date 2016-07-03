@@ -241,5 +241,11 @@ public class AstVisitor<T> extends AbstractAstVisitor<T>{
         visitChildren(node);
         return null;
     }
+
+    @Override
+    public T visitStoreArrayElementExpr(StoreArrayElementExpr node) {
+        visitChildren(node);
+        return null;
+    }
     
 }

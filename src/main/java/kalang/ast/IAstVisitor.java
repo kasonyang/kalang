@@ -73,12 +73,14 @@ public interface IAstVisitor<T>{
     
     public T visitLocalVarNode(LocalVarNode localVarNode);
 
-    public T visitParameterNode(ParameterNode parameterNode);
+    public T visitParameterNode(ParameterNode node);
 
     public T visitFieldNode(FieldNode fieldNode);
     
     public T visitNewObjectExpr(NewObjectExpr node);
     
     public T visitMultiStmt(MultiStmt node);
+    
+    public T visitStoreArrayElementExpr(StoreArrayElementExpr node);
     
 }
