@@ -45,6 +45,7 @@ public class Editor extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Kalang Editor");
+        setLocationByPlatform(true);
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(420);
