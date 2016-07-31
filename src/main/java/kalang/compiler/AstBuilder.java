@@ -770,7 +770,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             return null;
         }
         methodDeclared.add(mStr);
-        MethodDescriptor overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.superType, mStr, thisClazz, true,true);
+        ObjectType superType = thisClazz.superType;
+        if(superType==null){//the superType of interface may be null
+            superType = Types.getRootType();
+        }
+        MethodDescriptor overriddenMd = ClassTypeUtil.getMethodDescriptor(superType, mStr, thisClazz, true,true);
         if(overriddenMd==null){
             overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.interfaces.toArray(new ObjectType[thisClazz.interfaces.size()]), mStr, thisClazz, true,true);
         }
