@@ -313,7 +313,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ParameterNode p = node.parameters.get(i);
             visit(p);
             if(p.type instanceof ObjectType){
-                md.visitParameterAnnotation(i,internalName(getNullableAnnotation((ObjectType)p.type)), true).visitEnd();
+                md.visitParameterAnnotation(i,getClassDescriptor(getNullableAnnotation((ObjectType)p.type)), true).visitEnd();
             }
         }
         if(body!=null){
@@ -869,6 +869,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else{
             throw Exceptions.unsupportedTypeException(t);
         }
+    }
+    
+    private String getClassDescriptor(String className){
+        return "L" + internalName(className) + ";" ;
     }
     
     private String getMethodDescriptor(Type returnType,Type[] parameterTypes){
