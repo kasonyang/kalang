@@ -109,6 +109,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private Stack<Label> breakLabels = new Stack<>();
     private Stack<Label> continueLabels = new Stack<>();
     
+    private Label methodStartLabel ;
+    private Label methodEndLabel;
+    
     private final static int 
             T_I = 0,
             T_L = 1,
@@ -145,6 +148,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         int vSize = asmType(vo.type).getSize();
         varIdCounter+= vSize;
         varIds.put(vo, vid);
+        if(vo.name!=null){
+            md.visitLocalVariable(vo.name, getTypeDescriptor(vo.getType()), null, methodStartLabel,methodEndLabel, vid);
+        }
     }
     
     @Nullable
@@ -279,7 +285,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             interfaces = internalName(node.interfaces.toArray(new Type[0]));
         }
         int access = node.modifier;
-        classWriter.visit(V1_5, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);        String fileName = node.fileName;
+        classWriter.visit(V1_6, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);        String fileName = node.fileName;
         if(fileName!=null && !fileName.isEmpty()){
             classWriter.visitSource(fileName, null);
         }
@@ -308,6 +314,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else{
             varIdCounter = 1;
         }
+        this.methodStartLabel = new Label();
+        this.methodEndLabel = new Label();
         BlockStmt body = node.body;
         for(int i=0;i<node.parameters.size();i++){
             ParameterNode p = node.parameters.get(i);
@@ -316,6 +324,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 md.visitParameterAnnotation(i,getClassDescriptor(getNullableAnnotation((ObjectType)p.type)), true).visitEnd();
             }
         }
+        md.visitLabel(methodStartLabel);
         if(body!=null){
             if(AstUtil.isConstructor(node)){//constructor
                 int stmtsSize = body.statements.size();
@@ -336,6 +345,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             if(node.type.equals(VOID_TYPE)){
                 md.visitInsn(RETURN);
             }
+            md.visitLabel(methodEndLabel);
             try{
                 md.visitMaxs(0, 0);
             }catch(Exception ex){
