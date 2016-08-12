@@ -105,6 +105,7 @@ import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.ParameterExpr;
 import kalang.ast.ParameterNode;
+import kalang.ast.PrimitiveCastExpr;
 import kalang.ast.StaticFieldExpr;
 import kalang.ast.StaticInvokeExpr;
 import kalang.ast.SuperExpr;
@@ -1670,11 +1671,27 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
 
     @Override
     public AstNode visitCastExpr(CastExprContext ctx) {
+        ExprNode castExpr;
         ExprNode expr = visitExpression(ctx.expression());
         Type toType = parseType(ctx.type());
-        CastExpr ce = new CastExpr(toType,expr);
-        mapAst(ce,ctx);
-        return ce;
+        Type fromType = expr.getType();
+        if(fromType instanceof PrimitiveType){
+            if(toType instanceof PrimitiveType){
+                castExpr = new PrimitiveCastExpr((PrimitiveType)fromType,(PrimitiveType)toType, expr);
+            }else{
+                this.handleSyntaxError("unable to cast primitive type to class type", ctx);
+                return null;
+            }
+        }else{
+            if(toType instanceof PrimitiveType){
+                this.handleSyntaxError("unable to cast class type to primitive type", ctx);
+                return null;
+            }else{
+                castExpr = new CastExpr(toType,expr);
+            }
+        }
+        mapAst(castExpr,ctx);
+        return castExpr;
     }
 
     @Override
