@@ -1559,9 +1559,20 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         String t = ctx.getText();
         Object v;
         if (ctx.IntegerLiteral() != null) {
-            v = ( Integer.parseInt(t));
+            //NOTE should show tip for autocast?
+            try{
+                v =(int)StringLiteralUtil.parseLong(t);
+            }catch(NumberFormatException ex){
+                this.handleSyntaxError("invalid number", ctx);
+                return null;
+            }
         } else if (ctx.FloatingPointLiteral() != null) {
-            v = ( Float.parseFloat(t));
+            try{
+                v = Float.parseFloat(t);
+            }catch(NumberFormatException ex){
+                this.handleSyntaxError("invalid float value", ctx);
+                return null;
+            }
         } else if (ctx.BooleanLiteral() != null) {
             v = ( Boolean.parseBoolean(t));
         } else if (ctx.CharacterLiteral() != null) {
