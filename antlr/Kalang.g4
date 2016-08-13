@@ -260,6 +260,7 @@ expression
     |   expression '?' expression ':' expression #questionExpr
     |   Identifier #identifierExpr 
     |   expression '.' #errorousMemberExpr
+    |   InterpolationPreffixString expression (InterpolationMidString expression)* InterpolationSuffixString #interpolationExpr 
     |   <assoc=right> expression
          ( '=' 
         |   '+='
@@ -567,7 +568,7 @@ StringCharacters
 
 fragment
 StringCharacter
-    :   ~["\\]
+    :   ~["\\\$\{]
     |   EscapeSequence
     ;
 
@@ -576,6 +577,7 @@ StringCharacter
 fragment
 EscapeSequence
     :   '\\' [btnfr"'\\]
+    |  '$' ~[\{]
     |   OctalEscape
     |   UnicodeEscape
     ;
@@ -654,6 +656,20 @@ MOD_ASSIGN      : '%=';
 LSHIFT_ASSIGN   : '<<=';
 RSHIFT_ASSIGN   : '>>=';
 URSHIFT_ASSIGN  : '>>>=';
+
+//Inline elements
+InterpolationPreffixString
+    : '"'    StringCharacters?   '${'
+    ;
+
+InterpolationSuffixString
+    : '}' StringCharacters? '"'
+    ;
+
+InterpolationMidString
+    :   '}' StringCharacters? '${'
+    ;
+
 
 // §3.8 Identifiers (must appear after all keywords in the grammar)
 

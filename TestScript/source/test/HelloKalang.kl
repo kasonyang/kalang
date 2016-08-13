@@ -189,6 +189,11 @@ class<T>{
         return false ? 0 : 6;
     }
     
+    int interpolationTest(){
+        var name = "kalang";
+        return "hello,kalang!".equals("hello,${name}!") ? 6 : 0 ;
+    }
+    
     /*
     
     int dynamicField() throws Exception{

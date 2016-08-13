@@ -85,6 +85,7 @@ import kalang.antlr.KalangParser.WhileStatContext;
 import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
 import javax.annotation.Nullable;
+import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.antlr.KalangParser.UnaryExprContext;
 import kalang.ast.AnnotationNode;
@@ -969,6 +970,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         AstBuilder.this.handleSyntaxError("method not found:" + MethodUtil.toString(className,methodName, types), token);
     }
     
+    //TODO add stop token
     public void handleSyntaxError(String msg, Token token) {
         //TODO what does EMPTY means?
         handleSyntaxError(msg, (ParserRuleContext.EMPTY), token, token);
@@ -1222,6 +1224,32 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
     }
+    
+    @Nullable
+    private ExprNode concatExpressionsToStringExpr(ExprNode[] expr,Token[] startTokens){
+        ExprNode ret = null;
+        for(int i=0;i<expr.length;i++){
+            ExprNode e = expr[i];
+            Type t = e.getType();
+            if(!Types.getStringClassType().equals(t)){
+                e = BoxUtil.castToString(e);
+            }
+            if(e==null){
+                handleSyntaxError(String.format("unable cast %s to Stirng",t),startTokens[i]);
+                return null;
+            }
+            if(ret==null){
+                ret = e;
+            }else{
+                try {
+                    ret = ObjectInvokeExpr.create(ret, "concat",new ExprNode[]{e});
+                } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+                    throw Exceptions.unexceptedException(ex);
+                }
+            }
+        }
+        return ret;         
+    }
 
     @Override
     public AstNode visitBinaryExpr(BinaryExprContext ctx) {
@@ -1245,21 +1273,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }else if(op.equals("==") || op.equals("!=")){
             expr = createBinaryExpr(expr1, expr2, op);
         }else if(op.equals("+")){
-            if(!Types.getStringClassType().equals(type1)){
-                expr1 = BoxUtil.castToString(expr1);
-            }
-            if(!Types.getStringClassType().equals(type2)){
-                expr2 = BoxUtil.castToString(expr2);
-            }
-            if(expr1==null || expr2==null){
-                handleSyntaxError(String.format("unable cast %s to Stirng",type1),expr1==null ? ctx.expression(0) : ctx.expression(1));
-                return null;
-            }
-            try {
-                expr = ObjectInvokeExpr.create(expr1, "concat",new ExprNode[]{expr2});
-            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                throw Exceptions.unexceptedException(ex);
-            }
+            expr = this.concatExpressionsToStringExpr(new ExprNode[]{expr1,expr2}, new Token[]{ctx.expression(0).getStart(),ctx.expression(1).getStart()});
         }else{
             handleSyntaxError("unsupported operation", ctx);
             return null;
@@ -2263,6 +2277,41 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }else{
             return type;
         }
+    }
+
+    @Override
+    public Object visitInterpolationExpr(KalangParser.InterpolationExprContext ctx) {
+        List<ParseTree> children = ctx.children;
+        ExprNode[] exprs = new ExprNode[children.size()];
+        Token[] exprTokens = new Token[children.size()];
+        for(int i=0;i<exprs.length;i++){
+            ParseTree c = children.get(i);
+            if(c instanceof TerminalNode){
+                Token token = ((TerminalNode) c).getSymbol();
+                int t = token.getType();
+                String rawText = c.getText();
+                String text;
+                if(t == KalangLexer.InterpolationPreffixString){
+                    text = rawText.substring(1,rawText.length()-2);
+                }else if(t==KalangLexer.InterpolationMidString){
+                    text = rawText.substring(1,rawText.length()-2);
+                }else if(t==KalangLexer.InterpolationSuffixString){
+                    text = rawText.substring(1,rawText.length()-1);
+                }else{
+                    throw Exceptions.unexceptedValue(t);
+                }
+                exprs[i]=new ConstExpr(StringLiteralUtil.parse(text));
+                exprTokens[i] = token;
+            }else if(c instanceof ExpressionContext){
+                ExprNode expr = this.visitExpression((ExpressionContext) c);
+                if(expr==null) return null;
+                exprs[i]=expr;
+                exprTokens[i] = ((ExpressionContext) c).getStart();
+            }else{
+                throw Exceptions.unexceptedValue(c);
+            }
+        }
+        return this.concatExpressionsToStringExpr(exprs,exprTokens);
     }
 
 }
