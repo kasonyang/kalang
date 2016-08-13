@@ -128,6 +128,13 @@ var c = 3;//type is inferred,here the type of c is int
 var d = String.format("%d",4);//type is String
 ```
 
+## Interpolation
+
+```
+var name = "kalang";
+println( "hello,${name}!" );//output:hello,kalang!
+```
+
 ## Loop
 
 for loop:
