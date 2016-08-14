@@ -78,6 +78,7 @@ import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import static kalang.core.Types.*;
+import kalang.core.VarTable;
 import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.AstUtil;
@@ -141,16 +142,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 t = T_A;
             }
             return t;
-    }
-    
-    private void newVar(VarObject vo){
-        int vid = varIdCounter;
-        int vSize = asmType(vo.type).getSize();
-        varIdCounter+= vSize;
-        varIds.put(vo, vid);
-        if(vo.name!=null){
-            md.visitLocalVariable(vo.name, getTypeDescriptor(vo.getType()), null, methodStartLabel,methodEndLabel, vid);
-        }
     }
     
     @Nullable
@@ -314,7 +305,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if(AstUtil.isStatic(node.modifier)){
             varIdCounter = 0;
         }else{
-            md.visitLocalVariable("this", this.getClassDescriptor(this.clazz.name) , null, methodStartLabel, methodEndLabel, 0);
             varIdCounter = 1;
         }
         BlockStmt body = node.body;
@@ -327,26 +317,17 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         md.visitLabel(methodStartLabel);
         if(body!=null){
-            if(AstUtil.isConstructor(node)){//constructor
-                int stmtsSize = body.statements.size();
-                assert stmtsSize > 0;
-                Statement firstStmt = body.statements.get(0);
-                if(!AstUtil.isConstructorCallStatement(firstStmt)){
-                    throw new RuntimeException("missing constructor call");
-                }
-                visit(firstStmt);
-                //init class
-                visitAll(clazz.initStmts);
-                for(int i=1;i<stmtsSize;i++){
-                    visit(body.statements.get(i));
-                }
-            }else{
-                visitAll(body.statements);
-            }
+            visit(body);
             if(node.type.equals(VOID_TYPE)){
                 md.visitInsn(RETURN);
             }
             md.visitLabel(methodEndLabel);
+            for(ParameterNode p:node.parameters){
+                this.saveVarInfomation(p, methodStartLabel, methodEndLabel);
+            }
+            if(!AstUtil.isStatic(node.modifier)){
+                md.visitLocalVariable("this", this.getClassDescriptor(this.clazz.name) , null, methodStartLabel, methodEndLabel, 0);
+            }
             try{
                 md.visitMaxs(0, 0);
             }catch(Exception ex){
@@ -357,10 +338,35 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitEnd();
         return null;
     }
+    
+    private void declareNewVar(VarObject vo){
+        int vid = varIdCounter;
+        int vSize = asmType(vo.type).getSize();
+        varIdCounter+= vSize;
+        varIds.put(vo, vid);            
+    }
+    
+    private void saveVarInfomation(VarObject vo,Label startLabel,Label endLabel){
+            int vid = this.getVarId(vo);
+            if(vo.name!=null){
+                md.visitLocalVariable(vo.name, getTypeDescriptor(vo.getType()), null, startLabel,endLabel, vid);
+            }
+    }
 
     @Override
     public Object visitBlockStmt(BlockStmt node) {
+        VarTable<String, LocalVarNode> varTable = node.getScopeVarTable();
+        int varCounter = this.varIdCounter;
+        LocalVarNode[] vars = varTable.toArray(new LocalVarNode[0]);
+        Label startLabel = new Label();
+        Label endLabel = new Label();
+        md.visitLabel(startLabel);
         visitChildren(node);
+        md.visitLabel(endLabel);
+        for(int i=0;i<vars.length;i++){
+            this.saveVarInfomation(vars[i], startLabel, endLabel);
+        }
+        this.varIdCounter = varCounter;
         return null;
     }
 
@@ -1006,16 +1012,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitLocalVarNode(LocalVarNode localVarNode) {
-        //md.visitLocalVariable(localVarNode.name, getTypeDescriptor(localVarNode.componentType), null, start, end, 0);
-        newVar(localVarNode);
+        this.declareNewVar(localVarNode);
         return null;
     }
 
     @Override
     public Object visitParameterNode(ParameterNode parameterNode) {
-        //TODO init parameter
         md.visitParameter(parameterNode.name, parameterNode.modifier);
-        newVar(parameterNode);
+        this.declareNewVar(parameterNode);
         return null;
     }
 

@@ -61,14 +61,17 @@ public class VarTable<T, V> {
         if(includeParent && parent!=null) parent.remove(key, includeParent);
     }
 
-    public V[] toArray() {
-        return (V[]) vars.values().toArray();
+    /**
+     * get all variables not including parent's
+     * @return 
+     */
+    public V[] toArray(V[] arr) {
+        return vars.values().toArray(arr);
     }
 
     @Override
     public String toString() {
-        V[] vos = toArray();
-        return Arrays.toString(vos);
+        return Arrays.toString(vars.values().toArray());
     }
 
     public VarTable<T, V> getParent() {
@@ -79,6 +82,10 @@ public class VarTable<T, V> {
         this.parent = parent;
     }
     
+    /**
+     * all keys not including parent's
+     * @return 
+     */
     public Set<T> keySet(){
         return vars.keySet();
     }
@@ -91,10 +98,18 @@ public class VarTable<T, V> {
         return this.getParent();
     }
     
+    /**
+     * get all values not including parent's
+     * @return 
+     */
     public Collection<V> values(){
         return vars.values();
     }
     
+    /**
+     * get all variables not including parent's
+     * @return 
+     */
     public HashMap<T, V> vars(){
         return vars;
     }

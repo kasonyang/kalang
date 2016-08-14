@@ -2016,6 +2016,23 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             }
         }
         visit(ctx.classBody());
+        MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
+        for(int i=0;i<methods.length;i++){
+            MethodNode node = methods[i];
+            BlockStmt body = node.body;
+            if(body!=null){
+                if(AstUtil.isConstructor(node)){//constructor
+                    int stmtsSize = body.statements.size();
+                    assert stmtsSize > 0;
+                    Statement firstStmt = body.statements.get(0);
+                    if(!AstUtil.isConstructorCallStatement(firstStmt)){
+                        //TODO handle error
+                        throw new RuntimeException("missing constructor call");
+                    }
+                    body.statements.addAll(1, this.thisClazz.initStmts);
+                }
+            }
+        }        
         mapAst(thisClazz, ctx);
         return null;
     }
