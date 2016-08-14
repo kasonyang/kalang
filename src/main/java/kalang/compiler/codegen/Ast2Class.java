@@ -309,13 +309,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             annotationNullable(md,(ObjectType)node.type);
         }
         annotation(md, node.getAnnotations());
+        this.methodStartLabel = new Label();
+        this.methodEndLabel = new Label();
         if(AstUtil.isStatic(node.modifier)){
             varIdCounter = 0;
         }else{
+            md.visitLocalVariable("this", this.getClassDescriptor(this.clazz.name) , null, methodStartLabel, methodEndLabel, 0);
             varIdCounter = 1;
         }
-        this.methodStartLabel = new Label();
-        this.methodEndLabel = new Label();
         BlockStmt body = node.body;
         for(int i=0;i<node.parameters.size();i++){
             ParameterNode p = node.parameters.get(i);
