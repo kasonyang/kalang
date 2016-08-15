@@ -113,6 +113,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private Label methodStartLabel ;
     private Label methodEndLabel;
     
+    List<LocalVariableInfo> localVarInfos;
+    
     private final static int 
             T_I = 0,
             T_L = 1,
@@ -302,9 +304,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         annotation(md, node.getAnnotations());
         this.methodStartLabel = new Label();
         this.methodEndLabel = new Label();
+        localVarInfos = new LinkedList();
         if(AstUtil.isStatic(node.modifier)){
             varIdCounter = 0;
         }else{
+            localVarInfos.add(new LocalVariableInfo("this", this.getClassDescriptor(this.clazz.name) , null, methodStartLabel, methodEndLabel, 0));
             varIdCounter = 1;
         }
         BlockStmt body = node.body;
@@ -325,8 +329,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             for(ParameterNode p:node.parameters){
                 this.saveVarInfomation(p, methodStartLabel, methodEndLabel);
             }
-            if(!AstUtil.isStatic(node.modifier)){
-                md.visitLocalVariable("this", this.getClassDescriptor(this.clazz.name) , null, methodStartLabel, methodEndLabel, 0);
+            for(LocalVariableInfo li:localVarInfos){
+                md.visitLocalVariable(li.getName(), li.getDescriptor(), li.getSignature(), li.getStartLabel(), li.getEndLabel(), li.getIndex());
             }
             try{
                 md.visitMaxs(0, 0);
@@ -349,7 +353,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private void saveVarInfomation(VarObject vo,Label startLabel,Label endLabel){
             int vid = this.getVarId(vo);
             if(vo.name!=null){
-                md.visitLocalVariable(vo.name, getTypeDescriptor(vo.getType()), null, startLabel,endLabel, vid);
+                this.localVarInfos.add(new LocalVariableInfo(vo.name, getTypeDescriptor(vo.getType()), null, startLabel, endLabel, vid));
             }
     }
 
