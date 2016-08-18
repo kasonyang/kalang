@@ -1567,25 +1567,47 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         }
         return null;
     }
-
-    @Override
-    public ConstExpr visitLiteral(LiteralContext ctx) {
+    
+    public ConstExpr parseLiteral(LiteralContext ctx,@Nullable Type exceptedType){
         String t = ctx.getText();
         Object v;
         if (ctx.IntegerLiteral() != null) {
             //NOTE should show tip for autocast?
+            if(t.toUpperCase().endsWith("L")){
+                t = t.substring(0,t.length()-1);
+                exceptedType = Types.LONG_TYPE;
+            }else if(t.toLowerCase().endsWith("i")){
+                t = t.substring(0,t.length()-1);
+                exceptedType = Types.INT_TYPE;
+            }
+            long longValue;
             try{
-                v =(int)StringLiteralUtil.parseLong(t);
+                longValue =(int)StringLiteralUtil.parseLong(t);
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid number", ctx);
                 return null;
             }
+            if(Types.BYTE_TYPE.equals(exceptedType)){
+                //TODO check range
+                v = (byte)longValue;
+            }else if(Types.LONG_TYPE.equals(exceptedType)){
+                v =  longValue;
+            }else{
+                //TODO check range
+                v = (int)longValue;
+            }
         } else if (ctx.FloatingPointLiteral() != null) {
+            double doubleValue;
             try{
-                v = Float.parseFloat(t);
+                doubleValue = Double.parseDouble(t);
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid float value", ctx);
                 return null;
+            }
+            if(Types.FLOAT_TYPE.equals(exceptedType)){
+                v = (float) doubleValue;
+            }else{
+                v = doubleValue;
             }
         } else if (ctx.BooleanLiteral() != null) {
             v = ( Boolean.parseBoolean(t));
@@ -1605,6 +1627,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
         ConstExpr ce = new ConstExpr(v);
         mapAst(ce,ctx);
         return ce;
+    }
+
+    @Override
+    public ConstExpr visitLiteral(LiteralContext ctx) {
+        return this.parseLiteral(ctx, null);
     }
 
     @Override
@@ -1752,9 +1779,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     public Statement visitLocalVarDecl(LocalVarDeclContext ctx) {
         MultiStmt ms = new MultiStmt();
         for (VarDeclContext v : ctx.varDecl()) {
+            TypeContext varType = v.varType;
+            Type exceptedType =varType==null ? null :  parseType(varType);
             ExprNode initExpr = null;
-            if(v.expression()!=null){
-                initExpr = visitExpression(v.expression());
+            ExpressionContext initExprContext = v.expression();
+            if(initExprContext!=null){
+                if(initExprContext instanceof LiteralExprContext){
+                    initExpr = this.parseLiteral(((LiteralExprContext) initExprContext).literal(), exceptedType);
+                }else{
+                    initExpr = visitExpression(initExprContext);
+                }
             }
             LocalVarNode localVar = new LocalVarNode();
             VarDeclStmt vds = new VarDeclStmt(localVar);

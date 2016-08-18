@@ -194,6 +194,10 @@ class<T>{
         return "hello,kalang!".equals("hello,${name}!") ? 6 : 0 ;
     }
     
+    int byteDeclTest(){
+        byte b = 6;
+        return b;
+    }    
     /*
     
     int dynamicField() throws Exception{

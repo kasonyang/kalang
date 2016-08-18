@@ -998,6 +998,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             if(tt.equals(INT_TYPE)) return D2I;
             if(tt.equals(LONG_TYPE)) return D2L;
             if(tt.equals(FLOAT_TYPE)) return D2F;
+        }else if(f.equals(BYTE_TYPE)){
+            if(tt.equals(SHORT_TYPE)) return 0;
+            if(tt.equals(INT_TYPE)) return 0;
+            if(tt.equals(LONG_TYPE)) return I2L;
+            if(tt.equals(FLOAT_TYPE)) return I2F;
+            if(tt.equals(DOUBLE_TYPE)) return I2D;
         }
         throw new UnsupportedOperationException("It is unable to cast " + fromType + " to " + toType);
     }
@@ -1010,7 +1016,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Type ft = expr.getType();
         Type tt = node.getToType();
         opc = getPrimitiveCastOpc(ft, tt);
-        md.visitInsn(opc);
+        if(opc>0){
+            md.visitInsn(opc);
+        }
         return null;
     }
 

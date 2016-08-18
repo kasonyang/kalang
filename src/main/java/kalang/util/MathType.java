@@ -10,10 +10,12 @@ public class MathType   {
      public static final int LONG=2;
      public static final int FLOAT=3;
      public static final int DOUBLE=4;
+     public static final int BYTE = 5;
      public static final java.lang.String INT_STR="int";
      public static final java.lang.String LONG_STR="long";
      public static final java.lang.String FLOAT_STR="float";
      public static final java.lang.String DOUBLE_STR="double";
+     public static final String BYTE_STR = "byte";
      public static final int OP_ADD=1;
      public static final int OP_SUB=2;
      public static final int OP_MUL=3;
@@ -29,25 +31,19 @@ public class MathType   {
          
     }
      public static boolean isFloatPoint(int type) {
-         return ((type==kalang.util.MathType.FLOAT)||(type==kalang.util.MathType.DOUBLE));
-         
+         return ((type==kalang.util.MathType.FLOAT)||(type==kalang.util.MathType.DOUBLE));         
     }
      public static int getType(java.lang.String type) {
          if((type.equals(kalang.util.MathType.INT_STR))) {
              return kalang.util.MathType.INT;
-             
-        }
-         if((type.equals(kalang.util.MathType.LONG_STR))) {
+        }else if((type.equals(kalang.util.MathType.LONG_STR))) {
              return kalang.util.MathType.LONG;
-             
-        }
-         if((type.equals(kalang.util.MathType.FLOAT_STR))) {
+        }else if((type.equals(kalang.util.MathType.FLOAT_STR))) {
              return kalang.util.MathType.FLOAT;
-             
-        }
-         if((type.equals(kalang.util.MathType.DOUBLE_STR))) {
+        }else if((type.equals(kalang.util.MathType.DOUBLE_STR))) {
              return kalang.util.MathType.DOUBLE;
-             
+        }else if(type.equals(BYTE_STR)){
+            return BYTE;
         }
          return 0;
          
@@ -55,22 +51,16 @@ public class MathType   {
      public static java.lang.String getTypeStr(int type) {
          if((type==kalang.util.MathType.INT)) {
              return kalang.util.MathType.INT_STR;
-             
-        }
-         if((type==kalang.util.MathType.LONG)) {
+        }else if((type==kalang.util.MathType.LONG)) {
              return kalang.util.MathType.LONG_STR;
-             
-        }
-         if((type==kalang.util.MathType.FLOAT)) {
+        }else if((type==kalang.util.MathType.FLOAT)) {
              return kalang.util.MathType.FLOAT_STR;
-             
-        }
-         if((type==kalang.util.MathType.DOUBLE)) {
+        }else if((type==kalang.util.MathType.DOUBLE)) {
              return kalang.util.MathType.DOUBLE_STR;
-             
-        }
+        }else if(type == BYTE){
+             return BYTE_STR;
+         }
          return "";
-         
     }
      public static int getOperation(java.lang.String op) {
          if((op.equals(kalang.util.MathType.OP_ADD_STR))) {
@@ -146,6 +136,7 @@ public class MathType   {
             return true;
         }
         HashMap<Integer, List> baseMap = new HashMap();
+        baseMap.put(BYTE,Arrays.asList(new Integer[]{INT,LONG,FLOAT,DOUBLE}));
         baseMap.put(INT, Arrays.asList(new Integer[]{LONG, FLOAT, DOUBLE}));
         baseMap.put(LONG, Arrays.asList(new Integer[]{FLOAT, DOUBLE}));
         baseMap.put(FLOAT, Arrays.asList(new Integer[]{DOUBLE}));

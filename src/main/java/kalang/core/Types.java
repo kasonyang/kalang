@@ -79,10 +79,10 @@ public class Types {
     }
     
     private static String[] numberClass = new String[]{
-        INT_CLASS_NAME,LONG_CLASS_NAME,FLOAT_CLASS_NAME,DOUBLE_CLASS_NAME};
+        BYTE_CLASS_NAME,SHORT_CLASS_NAME , INT_CLASS_NAME,LONG_CLASS_NAME,FLOAT_CLASS_NAME,DOUBLE_CLASS_NAME};
 
     private static PrimitiveType[] numberPrimitive = new PrimitiveType[]{
-        INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
+        BYTE_TYPE,SHORT_TYPE, INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
     };
     
     @Nonnull
