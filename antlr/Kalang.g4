@@ -283,6 +283,7 @@ literal
     |   FloatingPointLiteral 
     |   CharacterLiteral 
     |   StringLiteral 
+    |   MultiLineStringLiteral
     |   BooleanLiteral 
     |   Identifier '.' 'class'
     |   'null' 
@@ -561,23 +562,40 @@ StringLiteral
     :   '"' StringCharacters? '"'
     ;
 
+MultiLineStringLiteral
+    :   '\'\'\'' MultiLineStringCharacters? '\'\'\''
+;
+
 fragment
 StringCharacters
     :   StringCharacter+
     ;
 
 fragment
+MultiLineStringCharacters
+    :   MultiLineStringCharacter+
+    ;
+
+fragment
 StringCharacter
     :   ~["\\\$\{]
+    |  '$' ~[\{]
     |   EscapeSequence
     ;
+
+fragment
+MultiLineStringCharacter
+    : ~[\'\\]
+    | '\'' ~[\']
+    | '\'\'' ~[\']
+    | EscapeSequence
+    ; 
 
 // §3.10.6 Escape Sequences for Character and String Literals
 
 fragment
 EscapeSequence
     :   '\\' [btnfr"'\\]
-    |  '$' ~[\{]
     |   OctalEscape
     |   UnicodeEscape
     ;

@@ -1616,6 +1616,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
             v = ( chars[1]);
         } else if (ctx.StringLiteral() != null) {
             v = (StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
+        } else if(ctx.MultiLineStringLiteral()!=null){
+            v = StringLiteralUtil.parse(t.substring(3,t.length()-3));
         }else if(ctx.Identifier()!=null){
             ClassReference cr = requireClassReference(ctx.Identifier().getSymbol());
             v = (cr);
