@@ -493,7 +493,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
     @Override
     public Object visit(ParseTree tree) {
         if (tree == null) {
-            System.err.println("visit null");
+            Exception ex = new Exception();
+            ex.printStackTrace(System.err);
             return null;
         }
         if(tree instanceof StatContext && returned){
