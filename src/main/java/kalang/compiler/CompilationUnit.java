@@ -43,6 +43,7 @@ public class CompilationUnit {
         astBuilder.importPackage("java.net");
         astBuilder.importPackage("java.io");
         astBuilder.importPackage("java.nio");
+        astBuilder.importPackage("kalang.io");
         ast = astBuilder.getAst();        
         semanticAnalyzer = context.createSemanticAnalyzer(this,context.getAstLoader());
     }
