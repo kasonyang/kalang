@@ -1,0 +1,2 @@
+var name = "kalang";
+println("hello,${name}!");

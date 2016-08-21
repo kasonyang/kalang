@@ -1,4 +1,4 @@
-// Generated from Kalang.g4 by ANTLR 4.5.1
+// Generated from KalangParser.g4 by ANTLR 4.5.1
 package kalang.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  * This interface defines a complete listener for a parse tree produced by
  * {@link KalangParser}.
  */
-public interface KalangListener extends ParseTreeListener {
+public interface KalangParserListener extends ParseTreeListener {
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#compilationUnit}.
 	 * @param ctx the parse tree

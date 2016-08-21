@@ -1,4 +1,4 @@
-// Generated from Kalang.g4 by ANTLR 4.5.1
+// Generated from KalangParser.g4 by ANTLR 4.5.1
 package kalang.antlr;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -6,11 +6,11 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
- * This class provides an empty implementation of {@link KalangListener},
+ * This class provides an empty implementation of {@link KalangParserListener},
  * which can be extended to create a listener which only needs to handle a subset
  * of the available methods.
  */
-public class KalangBaseListener implements KalangListener {
+public class KalangParserBaseListener implements KalangParserListener {
 	/**
 	 * {@inheritDoc}
 	 *

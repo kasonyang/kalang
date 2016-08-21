@@ -1,4 +1,4 @@
-// Generated from Kalang.g4 by ANTLR 4.5.1
+// Generated from KalangParser.g4 by ANTLR 4.5.1
 package kalang.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  * @param <T> The return type of the visit operation. Use {@link Void} for
  * operations with no return type.
  */
-public interface KalangVisitor<T> extends ParseTreeVisitor<T> {
+public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	/**
 	 * Visit a parse tree produced by {@link KalangParser#compilationUnit}.
 	 * @param ctx the parse tree

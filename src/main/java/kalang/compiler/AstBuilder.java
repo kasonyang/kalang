@@ -42,9 +42,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
@@ -82,12 +79,12 @@ import kalang.antlr.KalangParser.VarDeclContext;
 import kalang.antlr.KalangParser.VarDeclStatContext;
 import kalang.antlr.KalangParser.VarModifierContext;
 import kalang.antlr.KalangParser.WhileStatContext;
-import kalang.antlr.KalangVisitor;
 import kalang.core.VarTable;
 import javax.annotation.Nullable;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser.LocalVarDeclContext;
 import kalang.antlr.KalangParser.UnaryExprContext;
+import kalang.antlr.KalangParserVisitor;
 import kalang.ast.AnnotationNode;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
@@ -144,7 +141,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * 
  * @author Kason Yang
  */
-public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisitor {
+public class AstBuilder extends AbstractParseTreeVisitor implements KalangParserVisitor {
     
     public static final int 
             PARSING_PHASE_META = 1,
@@ -2347,14 +2344,21 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangVisito
                 int t = token.getType();
                 String rawText = c.getText();
                 String text;
-                if(t == KalangLexer.InterpolationPreffixString){
-                    text = rawText.substring(1,rawText.length()-2);
-                }else if(t==KalangLexer.InterpolationMidString){
-                    text = rawText.substring(1,rawText.length()-2);
-                }else if(t==KalangLexer.InterpolationSuffixString){
-                    text = rawText.substring(1,rawText.length()-1);
-                }else{
-                    throw Exceptions.unexceptedValue(t);
+                switch(t){
+                    case KalangLexer.InterpolationPreffixString:
+                        text = rawText.substring(1,rawText.length()-2);
+                        break;
+                    case KalangLexer.INTERPOLATION_STRING:
+                        text = rawText;
+                        break;
+                    case KalangLexer.RBRACE:
+                    case KalangLexer.INTERPOLATION_END:
+                    case KalangLexer.INTERPOLATION_INTERUPT:
+                        //TODO optimize empty string
+                        text = "";
+                        break;
+                    default :
+                        throw Exceptions.unexceptedValue(t);
                 }
                 exprs[i]=new ConstExpr(StringLiteralUtil.parse(text));
                 exprTokens[i] = token;
