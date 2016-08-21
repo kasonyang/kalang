@@ -279,6 +279,13 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitGetFieldExpr(KalangParser.GetFieldExprContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code bitShiftExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBitShiftExpr(KalangParser.BitShiftExprContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code questionExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree

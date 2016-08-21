@@ -458,6 +458,18 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitGetFieldExpr(KalangParser.GetFieldExprContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code bitShiftExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterBitShiftExpr(KalangParser.BitShiftExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code bitShiftExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitBitShiftExpr(KalangParser.BitShiftExprContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code questionExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree

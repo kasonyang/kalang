@@ -359,9 +359,6 @@ COMMA           : ',';
 DOT             : '.';
 
 // §3.12 Operators
-LEFT_SHIFT   : '<<';
-RIGHT_SHIFT   : '>>';
-UNSIGNED_RIGHT_SHIFT : '>>>';
 ASSIGN          : '=';
 GT              : '>';
 LT              : '<';

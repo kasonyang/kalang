@@ -980,6 +980,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         handleSyntaxError(msg, tree, tree.start, tree.stop);
     }
     
+    //TODO remove rule
     public void handleSyntaxError(String desc,ParserRuleContext rule,Token start,Token stop){
         SyntaxError syntaxError = new SyntaxError(desc, compilationUnit, rule, start,stop);
         errorHandler.handleCompileError(syntaxError);
@@ -1250,12 +1251,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         return ret;         
     }
-
-    @Override
-    public AstNode visitBinaryExpr(BinaryExprContext ctx) {
-        String op = ctx.getChild(1).getText();
-        ExprNode expr1 = visitExpression(ctx.expression(0));
-        ExprNode expr2 = visitExpression(ctx.expression(1));
+    
+    private ExprNode createBinaryExpr(String op,ExpressionContext exprCtx1,ExpressionContext exprCtx2,Token opStart,Token opEnd, ParserRuleContext ctx){
+        ExprNode expr1 = visitExpression(exprCtx1);
+        ExprNode expr2 = visitExpression(exprCtx2);
         Type type1 = expr1.getType();
         Type type2 = expr2.getType();
         boolean isPrimitive1 = (type1 instanceof PrimitiveType);
@@ -1273,13 +1272,20 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }else if(op.equals("==") || op.equals("!=")){
             expr = createBinaryExpr(expr1, expr2, op);
         }else if(op.equals("+")){
-            expr = this.concatExpressionsToStringExpr(new ExprNode[]{expr1,expr2}, new Token[]{ctx.expression(0).getStart(),ctx.expression(1).getStart()});
+            expr = this.concatExpressionsToStringExpr(new ExprNode[]{expr1,expr2}, new Token[]{exprCtx1.getStart(),exprCtx2.getStart()});
         }else{
-            handleSyntaxError("unsupported operation", ctx);
+            handleSyntaxError("unsupported operation",ParserRuleContext.EMPTY,opStart,opEnd);
             return null;
         }
-        mapAst(expr, ctx);
+        if(expr!=null) mapAst(expr, ctx);
         return expr;
+    }
+
+    @Override
+    public AstNode visitBinaryExpr(BinaryExprContext ctx) {
+        TerminalNode opNode = (TerminalNode) ctx.getChild(1);
+        String op = opNode.getText();
+        return createBinaryExpr(op, ctx.expression(0), ctx.expression(1),opNode.getSymbol(),opNode.getSymbol(),ctx);
     }
     
     @Nullable
@@ -2372,6 +2378,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
         }
         return this.concatExpressionsToStringExpr(exprs,exprTokens);
+    }
+
+    @Override
+    public Object visitBitShiftExpr(KalangParser.BitShiftExprContext ctx) {
+        String op;
+        Token opStart;
+        if(ctx.left!=null){
+            op = "<<";
+            opStart = ctx.left;
+        }else if(ctx.right!=null){
+            op = ">>";
+            opStart = ctx.right;
+        }else if(ctx.uright!=null){
+            op = ">>>";
+            opStart = ctx.uright;
+        }else{
+            throw Exceptions.unexceptedValue(ctx);
+        }
+        return this.createBinaryExpr(op, ctx.expression(0), ctx.expression(1)
+                , opStart,ctx.stop, ctx);
     }
 
 }

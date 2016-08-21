@@ -245,7 +245,12 @@ expression
     |   ('~'|'!') expression  #unaryExpr
     |   expression ('*'|'/'|'%') expression #binaryExpr
     |   expression ('+'|'-') expression #binaryExpr
-    |   expression ('<<' | '>>>' | '>>') expression #binaryExpr
+    //don't write as '<<' , '>>>' or '>>' because it would cause problem when visit HashMap<String,List<String>>
+    |   expression (
+                  left='<'    stop='<' 
+                | uright='>'  '>'  stop='>' 
+                | right='>'     stop='>'
+        ) expression #bitShiftExpr
     |   expression ('<=' | '>=' | '>' | '<') expression #binaryExpr
     |   expression INSTANCEOF Identifier  #instanceofExpr
     |   expression ('=='|'!=') expression #binaryExpr
