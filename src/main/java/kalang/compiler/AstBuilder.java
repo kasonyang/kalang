@@ -1083,7 +1083,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }else if(methodName.equals("super")){
             methodName = "<init>";
         }
-        ExprNode[] args = visitAll(ctx.params).toArray(new ExprNode[0]);
+        List<Object> argsList = visitAll(ctx.params);
+        if(argsList.contains(null)) return null;
+        ExprNode[] args = argsList.toArray(new ExprNode[argsList.size()]);
         ExprNode ie = getImplicitInvokeExpr(methodName,args,ctx);
         return ie;
     }
