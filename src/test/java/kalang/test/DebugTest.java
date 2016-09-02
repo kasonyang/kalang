@@ -2,6 +2,8 @@ package kalang.test;
 
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Assert;
+import kalang.compiler.Diagnosis;
 import kalang.compiler.codegen.Ast2Class;
 import org.junit.Test;
 
@@ -11,8 +13,18 @@ import org.junit.Test;
  */
 public class DebugTest extends JointCompilerTestCase {
     
+    boolean hasError = false;
+    
     public DebugTest() {
     }
+
+    @Override
+    protected void reportDiagnosis(Diagnosis diagnosis) {
+        System.err.print(diagnosis);
+        this.hasError = true;
+    }
+    
+    
     
     @Test
     public void test() throws IOException{
@@ -22,6 +34,7 @@ public class DebugTest extends JointCompilerTestCase {
             this.setCodeGenerator(new Ast2Class());
             compile();
         }
+        if(this.hasError) Assert.fail("compile error");
     }
     
 }
