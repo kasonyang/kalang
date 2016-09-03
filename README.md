@@ -191,14 +191,14 @@ multi-line comment
 
 ```
 int[] arr = new int[10];//length is 10
-int[] arr2 = new int[]{1,2,3];arr2 is initialized and it's length is 3
+int[] arr2 = new int[]{1,2,3};arr2 is initialized and it's length is 3
 ```
 
 or
 
 ```
-var objectArray = [1,2,3];//int[]
-var intArray= <Integer>[1,2,3];//Integer[]
+var intArray = [1,2,3];//int[]
+var integerArray= <Integer>[1,2,3];//Integer[]
 var stringArray = ["hello","world"];//String[]
 ```
 
