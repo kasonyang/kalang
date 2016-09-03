@@ -51,7 +51,7 @@ More usages please run
     class {
         static void main(String[] args){
             var s = "Hello,world!";
-            System.out.println(s);
+            println(s);
         }
     }
 
