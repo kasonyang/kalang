@@ -25,13 +25,15 @@ add the path`build/install/kalang/bin` to your `PATH` environment variable
 
 # Usage
 
-## use as an editor
+## run as an editor
 
 ```
 > kalang -gui
 ```
 
-## use as a compiler
+![Kalang Editor](https://github.com/kasonyang/kalang/blob/master/snapshot/kalang-editor.png?raw=true)
+
+## run as a compiler
 
 ```
 > kalang SOURCE_FILE 
@@ -45,15 +47,11 @@ More usages please run
 > kalang -h
 ```
 
-# Helloworld Example
+# HelloWorld Example
 
-    //Helloworld.kl
-    class {
-        static void main(String[] args){
-            var s = "Hello,world!";
-            println(s);
-        }
-    }
+    var s = "Hello,world!";
+    println(s);
+
 
 More examples could be found in [examples](https://github.com/kasonyang/kalang/tree/master/examples) directory.
 
