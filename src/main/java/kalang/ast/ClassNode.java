@@ -32,6 +32,11 @@ public class ClassNode extends AstNode implements Annotationable{
     
     protected List<GenericType> genericTypes = new LinkedList<>();
     
+    public final List<ClassNode> classes = new LinkedList();
+    
+    @Nullable
+    public ClassNode enclosingClass;
+    
     public ClassNode(){
     
     }
@@ -55,6 +60,7 @@ public class ClassNode extends AstNode implements Annotationable{
         List<AstNode> ls = new LinkedList();
         addChild(ls,fields);
         addChild(ls,methods);
+        ls.addAll(this.classes);
         return ls;
     }
 

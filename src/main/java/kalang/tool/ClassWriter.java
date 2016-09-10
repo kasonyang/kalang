@@ -22,21 +22,10 @@ public class ClassWriter implements CodeGenerator{
 
     @Override
     public void generate(ClassNode classNode) {
-        String cls = classNode.name;
         if (outputManager != null) {
-            try {
-                OutputStream os = outputManager.createOutputStream(cls);
-                os.write(generateClassBytes(classNode));
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+            Ast2Class ast2class = new Ast2Class(outputManager);
+            ast2class.generate(classNode);
         }
     }
     
-    private byte[] generateClassBytes(ClassNode clazz){
-        Ast2Class ast2Class = new Ast2Class();
-        ast2Class.generate(clazz);
-        return ast2Class.getClassBytes();
-    }
-
 }

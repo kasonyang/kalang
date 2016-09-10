@@ -5,6 +5,7 @@ import java.io.IOException;
 import junit.framework.Assert;
 import kalang.compiler.Diagnosis;
 import kalang.compiler.codegen.Ast2Class;
+import kalang.tool.MemoryOutputManager;
 import org.junit.Test;
 
 /**
@@ -31,7 +32,7 @@ public class DebugTest extends JointCompilerTestCase {
         File debugDir = new File("debug");
         if(debugDir.exists()){
             this.addKalangAndJavaSourceDir(debugDir);
-            this.setCodeGenerator(new Ast2Class());
+            this.setCodeGenerator(new Ast2Class(new MemoryOutputManager()));
             compile();
         }
         if(this.hasError) Assert.fail("compile error");

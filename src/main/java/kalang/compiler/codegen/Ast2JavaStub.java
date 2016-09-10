@@ -81,6 +81,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
 
     @Override
     public Void visitClassNode(ClassNode node) {
+        //TODO maybe inner class
         this.isInterface = Modifier.isInterface(node.modifier);
         String clsName = node.name;
         String pkgName = NameUtil.getPackageName(clsName);

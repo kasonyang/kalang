@@ -81,6 +81,7 @@ import static kalang.core.Types.*;
 import kalang.core.VarTable;
 import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
+import kalang.tool.OutputManager;
 import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
@@ -100,6 +101,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     private ClassWriter classWriter;
     private MethodVisitor md;
+    
+    OutputManager outputManager;
     
     private Map<Integer,Label> lineLabels = new HashMap();
     
@@ -123,6 +126,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             T_A = 4;
     private ClassNode clazz;
     private String classInternalName;
+
+    public Ast2Class(OutputManager outputManager) {
+        this.outputManager = outputManager;
+    }
     
     private int getT(Type type){
         int t;
@@ -264,9 +271,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     @Override
     public Object visitClassNode(ClassNode node) {        
-        clazz = node;
-        classInternalName = internalName(clazz);
-        classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        ClassNode oldClass = this.clazz;
+        this.clazz = node;
+        String oldClassInternalName = this.classInternalName;
+        this.classInternalName = internalName(clazz);
+        ClassWriter oldClassWriter = this.classWriter;
+        this.classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
         annotation(classWriter, clazz.getAnnotations());
         String parentName = "java.lang.Object";
         ObjectType superType = node.superType;
@@ -291,8 +301,23 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             md.visitMaxs(1, 1);
         }
         classWriter.visitEnd();
+        if(outputManager!=null){
+            try {
+                try (OutputStream os = outputManager.createOutputStream(node.name)) {
+                    os.write(this.classWriter.toByteArray());
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }else{
+            LOG.log(Level.WARNING, "outputManager is null");
+        }
+        this.clazz = oldClass;
+        this.classInternalName = oldClassInternalName;
+        this.classWriter = oldClassWriter;
         return null;
     }
+    private static final Logger LOG = Logger.getLogger(Ast2Class.class.getName());
 
     @Override
     public Object visitMethodNode(MethodNode node) {
@@ -964,10 +989,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public void generate(ClassNode classNode){
         visitClassNode(classNode);
-    }
-    
-    public byte [] getClassBytes(){
-        return classWriter.toByteArray();
     }
 
     @Override

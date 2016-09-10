@@ -120,20 +120,17 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return ast;
     }
 
-    public void check(ClassNode clz) {
-        err = new SemanticErrorReporter(clz,source ,new SemanticErrorReporter.AstSemanticReporterCallback() {
-            @Override
-            public void handleAstSemanticError(SemanticError error) {
-                errHandler.handleCompileError(error);
-            }
-        });
+    @Override
+    public Type visitClassNode(ClassNode clz) {
+        HashMap<String, VarObject> oldFiels = this.fields;
         this.fields = new HashMap();
         //this.methodDeclared = new LinkedList();
         for (VarObject f : clz.fields) {
             this.fields.put(f.name, f);
         }
+        ClassNode oldClazz = this.clazz;
         this.clazz = clz;
-        visit(clazz);
+        super.visitClassNode(clz);
         if (clazz.interfaces.size() > 0) {
             for (ObjectType itfNode : clazz.interfaces) {
                 if (itfNode == null) {
@@ -145,6 +142,21 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 }
             }
         }
+        this.clazz = oldClazz;
+        this.fields = oldFiels;
+        return null;
+    }
+    
+    
+
+    public void check(ClassNode clz) {
+        err = new SemanticErrorReporter(clz,source ,new SemanticErrorReporter.AstSemanticReporterCallback() {
+            @Override
+            public void handleAstSemanticError(SemanticError error) {
+                errHandler.handleCompileError(error);
+            }
+        });
+        this.visit(clz);
     }
 
     @Override
