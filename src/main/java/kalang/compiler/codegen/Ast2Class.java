@@ -85,6 +85,7 @@ import kalang.tool.OutputManager;
 import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
+import kalang.util.NameUtil;
 import kalang.util.Parameters;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -299,6 +300,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             visitAll(node.staticInitStmts);
             md.visitInsn(RETURN);
             md.visitMaxs(1, 1);
+        }
+        if(node.enclosingClass!=null){
+            this.classWriter.visitInnerClass(this.internalName(node), this.internalName(node.enclosingClass), NameUtil.getSimpleClassName(node.name), node.modifier);
+        }
+        for(ClassNode ic:node.classes){
+            classWriter.visitInnerClass(internalName(ic), internalName(node), NameUtil.getSimpleClassName(ic.name), ic.modifier);
         }
         classWriter.visitEnd();
         if(outputManager!=null){
