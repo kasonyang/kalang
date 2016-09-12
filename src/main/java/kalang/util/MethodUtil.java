@@ -26,6 +26,14 @@ public class MethodUtil {
         }
         return names;
     }
+    
+    public static String getDeclarationKey(String name,ParameterNode[] params){
+        Type[] types = new Type[params.length];
+        for(int i=0;i<types.length; i++){
+            types[i] = params[i].getType();
+        }
+        return getDeclarationKey(name, types);
+    }
 
     public static String getDeclarationKey(String name, String... paramTypes) {
         return String.format("%s(%s)", name, String.join(",", paramTypes));

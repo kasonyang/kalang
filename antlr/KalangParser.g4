@@ -37,7 +37,7 @@ compilationUnit:
     (classDef | scriptDef)
 ;
 scriptDef:
-        (methodDecl | stat)*
+        (methodDecl | stat | classDef)*
 ;
 classDef:
     annotation*
@@ -46,6 +46,7 @@ classDef:
         classKind='class' ('<' genericTypes+=Identifier (',' genericTypes+=Identifier)* '>')?
         |classKind='interface'
     ) 
+    Identifier?
     ('extends' parentClass = classType)? 
     ( 'implements' interfaces+=classType ( ',' interfaces+=classType)* )?
     '{' classBody '}'
@@ -73,8 +74,7 @@ qualifiedName:
    Identifier ('.' Identifier)*
 ;
 classBody:
-  fieldDecl*
-  methodDecl*
+  ( fieldDecl | methodDecl | classDef )*
 ;
 fieldDecl:
    varModifier? varDecl (',' varDecl)* ';'

@@ -155,8 +155,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private final Map<String, String> fullNames = new HashMap<>();
     @Nonnull
     private final List<String> importPaths = new LinkedList<>();
-    @Nonnull
-    private final ClassNode thisClazz = new ClassNode();
+    
+    private ClassNode thisClazz;
+    
+    private ClassNode topClass = new ClassNode();
     
     private boolean inScriptMode = false;
     
@@ -194,9 +196,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Nonnull
     private String classPath;
-
-    //@Nonnull
-    //private VarTable<String, LocalVarNode> vtb;
     
     @Nonnull
     private KalangParser parser;
@@ -204,8 +203,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private CompileErrorHandler errorHandler = StandardCompileHandler.INSTANCE;
     
     private final CompilationUnit compilationUnit;
-    private List<String> methodDeclared = new ArrayList<>();
-    private final Map<String,GenericType> declarededGenericTypes = new HashMap<>();
     
     private void newOverrideTypeStack(){
         overrideTypes = new VarTable(overrideTypes);
@@ -339,46 +336,50 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 && parsingPhase < PARSING_PHASE_META){
             parsingPhase = PARSING_PHASE_META;
             this.compilationContext = parser.compilationUnit();
-            visit(compilationContext);
-            if(!ModifierUtil.isInterface(thisClazz.modifier) && !AstUtil.containsConstructor(thisClazz) && !AstUtil.createEmptyConstructor(thisClazz)){
-                handleSyntaxError("failed to create constructor with no parameters", compilationContext);
-            }
+            visit(compilationContext);            
         }
         if(targetPhase>=PARSING_PHASE_ALL
                 && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
-            for(MethodNode m:thisClazz.getDeclaredMethodNodes()){
-                BlockStmtContext body = methodBodys.get(m);
-                if(body!=null){
-                    method = m;
-                    if(this.currentBlock != null){
-                        throw Exceptions.unexceptedValue(this.currentBlock);
-                    }
-                    returned = false;
-                    m.body = requireBlock(body);
-                    if(this.currentBlock != null){
-                        throw Exceptions.unexceptedValue(this.currentBlock);
-                    }
-                    if(m.body!=null && AstUtil.isConstructor(m)){   
-                        @SuppressWarnings("null")
-                        List<Statement> bodyStmts = m.body.statements;
-                        if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
-                            try {
-                                bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
-                            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                                AstBuilder.this.handleSyntaxError("default constructor not found", body.start);
-                            }
+            visitMethods(topClass);
+        }
+    }
+    
+    private void visitMethods(ClassNode clazz){
+        thisClazz = clazz;
+        for(MethodNode m:thisClazz.getDeclaredMethodNodes()){
+            BlockStmtContext body = methodBodys.get(m);
+            if(body!=null){
+                method = m;
+                if(this.currentBlock != null){
+                    throw Exceptions.unexceptedValue(this.currentBlock);
+                }
+                returned = false;
+                m.body = requireBlock(body);
+                if(this.currentBlock != null){
+                    throw Exceptions.unexceptedValue(this.currentBlock);
+                }
+                if(m.body!=null && AstUtil.isConstructor(m)){   
+                    @SuppressWarnings("null")
+                    List<Statement> bodyStmts = m.body.statements;
+                    if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
+                        try {
+                            bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
+                        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+                            AstBuilder.this.handleSyntaxError("default constructor not found", body.start);
                         }
                     }
                 }
             }
+        }
+        for(ClassNode c:clazz.classes){
+            this.visitMethods(c);
         }
     }
 
     public AstBuilder(@Nonnull CompilationUnit compilationUnit, @Nonnull KalangParser parser) {
         this.compilationUnit = compilationUnit;
         this.className = compilationUnit.getSource().getClassName();
-        thisClazz.name = className;
         this.classPath = "";
         this.parser = parser;
         tokenStream = parser.getTokenStream();
@@ -442,8 +443,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
         Token rawTypeToken = ctx.rawClass;
         String rawType = rawTypeToken.getText();
-        GenericType gt = declarededGenericTypes.get(rawType);
-        if(gt!=null) return gt;
+        for(GenericType gt:thisClazz.getGenericTypes()){
+            if(rawType.equals(gt.getName())) return gt;
+        }
         ObjectType clazzType = requireClassType(rawTypeToken);
         if(clazzType==null) return null;
         ClassNode clazzNode = clazzType.getClassNode();
@@ -526,7 +528,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Nonnull
     public ClassNode getAst() {
-        return this.thisClazz;
+        return this.topClass;
     }
     
     private void mapAst(@Nonnull AstNode node,@Nonnull ParserRuleContext tree){
@@ -687,8 +689,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Override
     public AstNode visitCompilationUnit(CompilationUnitContext ctx) {
-        thisClazz.name = this.className;
-        thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         visitChildren(ctx);
         return null;
     }
@@ -744,6 +744,28 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
             name = ctx.name.getText();
         }
+        List<TypeContext> paramTypesCtx = ctx.paramTypes;
+        List<ParameterNode> params = new LinkedList();
+        if (paramTypesCtx != null) {
+            int paramSize = paramTypesCtx.size();
+            for(int i=0;i<paramSize;i++){
+                TypeContext t = paramTypesCtx.get(i);
+                ParameterNode pn = ParameterNode.create(method);
+                pn.type = parseType(t);
+                pn.name = ctx.paramIds.get(i).getText();
+                params.add(pn);
+            }
+        }
+        //check method duplicated before generate java stub
+        String mStr = MethodUtil.getDeclarationKey(name,params.toArray(new ParameterNode[params.size()]));
+        boolean existed = Arrays.asList(thisClazz.getDeclaredMethodNodes()).stream().anyMatch((m)->{
+            return MethodUtil.getDeclarationKey(m).equals(mStr);
+        });
+        if (existed) {
+            //TODO should remove the duplicated method
+            handleSyntaxError("declare method duplicately:"+mStr, ctx);
+            return null;
+        }
         method = thisClazz.createMethodNode();
         method.annotations.addAll(getAnnotations(ctx.annotation()));
         method.modifier = parseModifier(ctx.varModifier());
@@ -752,25 +774,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         method.type = type;
         method.name = name;
-        List<TypeContext> paramTypesCtx = ctx.paramTypes;
-        if (paramTypesCtx != null) {
-            int paramSize = paramTypesCtx.size();
-            for(int i=0;i<paramSize;i++){
-                TypeContext t = paramTypesCtx.get(i);
-                ParameterNode pn = ParameterNode.create(method);
-                pn.type = parseType(t);
-                pn.name = ctx.paramIds.get(i).getText();
-                method.parameters.add(pn);
-            }
-        }
-        //check method duplicated before generate java stub
-        String mStr = MethodUtil.getDeclarationKey(method);
-        if (methodDeclared.contains(mStr)) {
-            //TODO should remove the duplicated method
-            handleSyntaxError("declare method duplicately:"+mStr, ctx);
-            return null;
-        }
-        methodDeclared.add(mStr);
+        method.parameters.addAll(params);
         ObjectType superType = thisClazz.superType;
         if(superType==null){//the superType of interface may be null
             superType = Types.getRootType();
@@ -1969,6 +1973,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Override
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
         this.inScriptMode = true;
+        thisClazz = topClass;
+        thisClazz.fileName = this.compilationUnit.getSource().getFileName();
+        thisClazz.name = this.className;
         thisClazz.modifier = Modifier.PUBLIC;
         thisClazz.superType = Types.getRootType();
         List<MethodDeclContext> mds = ctx.methodDecl();
@@ -2001,6 +2008,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         popBlock();
         body.statements.addAll(ss);
         mm.body = body;
+        AstUtil.createEmptyConstructor(thisClazz);
         return null;
     }
     
@@ -2017,8 +2025,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Override
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
+        ClassNode oldClass = thisClazz;
+        if(oldClass==null){
+            thisClazz = this.topClass;
+        }else{
+            thisClazz = new ClassNode();
+        }
+        Token identifier = ctx.Identifier;
+        if(oldClass!=null){
+            if(identifier==null){
+                this.handleSyntaxError("Identifier excepted", ctx);
+                return null;
+            }
+            //FIXME wrong class name
+            thisClazz.name = identifier.getText();
+        }else{
+            thisClazz.name = this.className;
+        }
         thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
         thisClazz.modifier = parseModifier(ctx.varModifier());
+        thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         Token classKind = ctx.classKind;
         boolean isInterface = false;
         if(classKind!=null){
@@ -2032,7 +2058,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             for(Token g:gnrTypes){
                 //TODO suport generic type bounds in syntax
                 GenericType gt = new GenericType(g.getText(),Types.getRootType(),null,NullableKind.NONNULL);
-                this.declarededGenericTypes.put(gt.getName(),gt);
                 thisClazz.declareGenericType(gt);
             }
         }
@@ -2078,6 +2103,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
         }        
         mapAst(thisClazz, ctx);
+        if(oldClass!=null){
+            oldClass.classes.add(thisClazz);
+            thisClazz.enclosingClass = oldClass;
+        }
+        if(!ModifierUtil.isInterface(thisClazz.modifier) && !AstUtil.containsConstructor(thisClazz) && !AstUtil.createEmptyConstructor(thisClazz)){
+            handleSyntaxError("failed to create constructor with no parameters", compilationContext);
+        }
+        thisClazz = oldClass;
         return null;
     }
 
