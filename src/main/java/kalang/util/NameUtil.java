@@ -26,6 +26,12 @@ public class NameUtil {
             return name;
         }
     }
+    
+    public static String getSimpleClassName(String className){
+        String name = getClassNameWithoutPackage(className);
+        String[] parts = name.split("\\$");
+        return parts[parts.length-1];
+    }
 
     @Nullable
     public static String getPackageName(String name) {

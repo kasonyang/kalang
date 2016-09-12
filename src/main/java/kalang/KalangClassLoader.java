@@ -26,8 +26,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
     
     private final HashMap<String,Class> loadedClasses = new HashMap<>();
     private final FileSystemSourceLoader sourceLoader;
-    private final MemoryOutputManager outputManager = new MemoryOutputManager();
-
+    
     public KalangClassLoader() {
         this(new File[0]);
     }
@@ -66,14 +65,17 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
 
     @Override
     public void generate(ClassNode classNode) {
-        Ast2Class ast2Class = new Ast2Class(this.outputManager);
+        final MemoryOutputManager outputManager = new MemoryOutputManager();
+        Ast2Class ast2Class = new Ast2Class(outputManager);
         ast2Class.generate(classNode);
-        String name = classNode.name;
-        byte[] bs = this.outputManager.getBytes(name);
-        if(bs!=null){
-            Class<?> clazz = defineClass(name, bs,0,bs.length);
-           loadedClasses.put(name, clazz);
-        }    
+        String[] names = outputManager.getClassNames();
+        for(String name:names){
+            byte[] bs = outputManager.getBytes(name);
+            if(bs!=null){
+                Class<?> clazz = defineClass(name, bs,0,bs.length);
+                loadedClasses.put(name, clazz);
+            }    
+        }
     }
 
     public void addClassPath(File path) {

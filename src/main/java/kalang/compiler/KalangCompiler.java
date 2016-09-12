@@ -94,11 +94,29 @@ public class KalangCompiler extends AstLoader implements CompileContext,CompileE
     public void compile() {
         compile(compileTargetPhase);
     }
+    
+    private ClassNode findInnerClass(ClassNode topClass,String className){
+        for(ClassNode c:topClass.classes){
+            if(className.equals(c.name)) return c;
+            ClassNode ic = findInnerClass(c,className);
+            if(ic!=null) return ic;
+        }
+        return null;
+    }
 
     @Override
     protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
-        if (compilationUnits.containsKey(className)) {
-            return compilationUnits.get(className).getAst();
+        String[] classNameInfo = className.split("\\$",2);
+        String topClassName = classNameInfo[0];
+        if (compilationUnits.containsKey(topClassName)) {
+            CompilationUnit compilationUnit = compilationUnits.get(topClassName);
+            ClassNode clazz = compilationUnit.getAst();
+            if(classNameInfo.length==1){
+                return clazz;
+            }else{
+                ClassNode c = findInnerClass(clazz, className);
+                if(c!=null) return c;
+            }
         }
         SourceLoader sourceLoader = getSourceLoader();
         if (sourceLoader != null) {

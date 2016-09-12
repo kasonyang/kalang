@@ -39,7 +39,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
                 .append(" ");
         boolean isConstructor = "<init>".equals(node.name);
         if(isConstructor){
-            sb.append(NameUtil.getClassNameWithoutPackage(node.classNode.name));
+            sb.append(NameUtil.getSimpleClassName(node.classNode.name));
         }else{
             sb.append(this.isInterface ? "" : "native ")
                 .append(node.type)
@@ -84,14 +84,16 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
         //TODO maybe inner class
         this.isInterface = Modifier.isInterface(node.modifier);
         String clsName = node.name;
-        String pkgName = NameUtil.getPackageName(clsName);
-        if(pkgName!=null){
-            sb.append("package ").append(pkgName).append(";\n");
+        boolean isInnerClass = node.enclosingClass!=null;
+        if(!isInnerClass){
+            String pkgName = NameUtil.getPackageName(clsName);
+            if(pkgName!=null){
+                sb.append("package ").append(pkgName).append(";\n");
+            }
         }
         sb.append(modifier2String(node.modifier))
-                .append(this.isInterface ? " " : " class ")
-                .append(NameUtil.getClassNameWithoutPackage(clsName))
-                ;
+                .append(this.isInterface ? " " : " class ")        
+                .append(NameUtil.getSimpleClassName(clsName));
         GenericType[] genTypes = node.getGenericTypes();
         if(genTypes.length>0){
             String[] genTypeStrs = new String[genTypes.length];

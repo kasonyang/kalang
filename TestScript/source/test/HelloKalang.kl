@@ -1,4 +1,9 @@
 class<T>{
+    class InnerClass{
+        int test(){
+                return 6;
+        }
+    }
     int f = 6;
     static int  sf = 6;
     int fieldTest(){
@@ -198,6 +203,10 @@ class<T>{
         byte b = 6;
         return b;
     }    
+    
+    int innerClassTest(){
+        return new InnerClass().test();
+    }
     /*
     
     int dynamicField() throws Exception{

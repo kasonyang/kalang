@@ -46,7 +46,7 @@ classDef:
         classKind='class' ('<' genericTypes+=Identifier (',' genericTypes+=Identifier)* '>')?
         |classKind='interface'
     ) 
-    Identifier?
+    name=Identifier?
     ('extends' parentClass = classType)? 
     ( 'implements' interfaces+=classType ( ',' interfaces+=classType)* )?
     '{' classBody '}'

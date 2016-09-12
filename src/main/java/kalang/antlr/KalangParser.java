@@ -319,6 +319,7 @@ public class KalangParser extends Parser {
 		public Token classKind;
 		public Token Identifier;
 		public List<Token> genericTypes = new ArrayList<Token>();
+		public Token name;
 		public ClassTypeContext parentClass;
 		public ClassTypeContext classType;
 		public List<ClassTypeContext> interfaces = new ArrayList<ClassTypeContext>();
@@ -446,7 +447,7 @@ public class KalangParser extends Parser {
 			if (_la==Identifier) {
 				{
 				setState(115);
-				match(Identifier);
+				((ClassDefContext)_localctx).name = match(Identifier);
 				}
 			}
 

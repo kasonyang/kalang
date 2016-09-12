@@ -1480,6 +1480,19 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return ee;
     }
     
+    private String fixInnerClassName(String className){
+        String name = "";
+        for(String n:className.split("\\.")){
+            name += n;
+            if(astLoader.getAst(name)!=null){
+                name += "$";
+            }else{
+                name += ".";
+            }
+        }
+        return name.substring(0,name.length()-1);
+    }
+    
     /**
      * expand the class name if could
      * @param id
@@ -1487,8 +1500,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
      */
     private String expandClassName(String id){
         if (fullNames.containsKey(id)) {
-            return fullNames.get(id);
+            return this.fixInnerClassName(fullNames.get(id));
         } else {
+            for(ClassNode ic : thisClazz.classes){
+                String mySimpleName = NameUtil.getClassNameWithoutPackage(thisClazz.name);
+                if((mySimpleName + "$" +  id).equals(NameUtil.getClassNameWithoutPackage(ic.name))) return ic.name;
+            }
             List<String> paths = new ArrayList<>(importPaths.size()+1);
             paths.add(classPath);
             paths.addAll(importPaths);
@@ -1499,7 +1516,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 }else{
                     clsName = id;
                 }
-                ClassNode cls = astLoader.getAst(clsName);
+                ClassNode cls = astLoader.getAst(this.fixInnerClassName(clsName));
                 if (cls != null) {
                     return clsName;
                 }
@@ -1978,6 +1995,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         thisClazz.name = this.className;
         thisClazz.modifier = Modifier.PUBLIC;
         thisClazz.superType = Types.getRootType();
+        List<KalangParser.ClassDefContext> classCtxs = ctx.classDef();
+        if(classCtxs!=null){
+            for(KalangParser.ClassDefContext c:classCtxs){
+                visit(c);
+            }
+        }
         List<MethodDeclContext> mds = ctx.methodDecl();
         if(mds!=null){
             for(MethodDeclContext m:mds){
@@ -2031,19 +2054,23 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }else{
             thisClazz = new ClassNode();
         }
-        Token identifier = ctx.Identifier;
+        Token nameIdentifier = ctx.name;
         if(oldClass!=null){
-            if(identifier==null){
+            if(nameIdentifier==null){
                 this.handleSyntaxError("Identifier excepted", ctx);
                 return null;
             }
-            //FIXME wrong class name
-            thisClazz.name = identifier.getText();
+            oldClass.classes.add(thisClazz);
+            thisClazz.enclosingClass = oldClass;
+            thisClazz.name = oldClass.name + "$" + nameIdentifier.getText();
         }else{
             thisClazz.name = this.className;
         }
         thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
         thisClazz.modifier = parseModifier(ctx.varModifier());
+        if(inScriptMode){
+            thisClazz.modifier |= Modifier.STATIC;
+        }
         thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         Token classKind = ctx.classKind;
         boolean isInterface = false;
@@ -2084,7 +2111,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 }
             }
         }
+        boolean oldScriptMode = this.inScriptMode;
+        this.inScriptMode = false;
         visit(ctx.classBody());
+        this.inScriptMode = oldScriptMode;
         MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
         for(int i=0;i<methods.length;i++){
             MethodNode node = methods[i];
@@ -2103,10 +2133,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
         }        
         mapAst(thisClazz, ctx);
-        if(oldClass!=null){
-            oldClass.classes.add(thisClazz);
-            thisClazz.enclosingClass = oldClass;
-        }
         if(!ModifierUtil.isInterface(thisClazz.modifier) && !AstUtil.containsConstructor(thisClazz) && !AstUtil.createEmptyConstructor(thisClazz)){
             handleSyntaxError("failed to create constructor with no parameters", compilationContext);
         }
