@@ -1,0 +1,8 @@
+class InnerClass{
+    public String hello(){
+        return "InnerClass";
+    }
+}
+
+var ic = new InnerClass();
+ic.hello();
