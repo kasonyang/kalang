@@ -110,7 +110,7 @@ type:
     |  type '[' ']' (nullable='?')?
 ;
 classType:
-    rawClass=Identifier 
+     ( paths +=Identifier '\\')* rawClass=Identifier 
         ('<' parameterTypes+=parameterizedElementType 
                     ( ',' parameterTypes+=parameterizedElementType)* 
         '>')?

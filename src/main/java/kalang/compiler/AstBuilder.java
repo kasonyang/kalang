@@ -442,7 +442,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private ObjectType parseClassType(KalangParser.ClassTypeContext ctx){
         NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
         Token rawTypeToken = ctx.rawClass;
-        String rawType = rawTypeToken.getText();
+        List<String> classNameParts = new LinkedList();
+        for(Token p:ctx.paths){
+            classNameParts.add(p.getText());
+        }
+        classNameParts.add(rawTypeToken.getText());
+        String rawType = String.join(".", classNameParts);
         for(GenericType gt:thisClazz.getGenericTypes()){
             if(rawType.equals(gt.getName())) return gt;
         }
@@ -2176,6 +2181,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Override
     public Object visitClassType(KalangParser.ClassTypeContext ctx) {
+        //see parseClassType
         return null;
     }
 
