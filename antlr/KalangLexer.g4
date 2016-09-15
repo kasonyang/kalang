@@ -6,6 +6,7 @@ lexer grammar KalangLexer;
 } 
 // LEXER
 // §3.9 Keywords
+DOUBLE_COLON : '::' ;
 AS:'as';
 CONSTRUCTOR:'constructor';
 VAR:'var';

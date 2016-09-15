@@ -1,8 +1,15 @@
-class InnerClass{
+class Inner{
+    static class InnerInInner{
+        public String helloInnerInInner(){
+            return "InnerInInner";
+        }
+    }
     public String hello(){
-        return "InnerClass";
+        return "Inner";
     }
 }
 
-var ic = new InnerClass();
+var ic = new Inner();
 ic.hello();
+var icInIc = new Inner::InnerInInner();
+icInIc.helloInnerInInner();

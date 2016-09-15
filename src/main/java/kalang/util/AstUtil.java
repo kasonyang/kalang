@@ -320,4 +320,24 @@ public class AstUtil {
         return clazz;
     }
     
+    public static ClassNode[] listInnerClasses(ClassNode classNode,boolean recursive){
+        List<ClassNode> classes = new LinkedList();
+        for(ClassNode ic:classNode.classes){
+            classes.add(ic);
+            if(recursive){
+                classes.addAll(Arrays.asList(listInnerClasses(ic,true)));
+            }
+        }
+        return classes.toArray(new ClassNode[classes.size()]);
+    }
+    
+    public static String[] listInnerClassesNames(ClassNode clazz,boolean recursive){
+        ClassNode[] classes = listInnerClasses(clazz, recursive);
+        String[] names = new String[classes.length];
+        for(int i=0;i<classes.length;i++){
+            names[i] = classes[i].name;
+        }
+        return names;
+    }
+    
 }

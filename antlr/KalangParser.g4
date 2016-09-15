@@ -111,6 +111,7 @@ type:
 ;
 classType:
      ( paths +=Identifier '\\')* rawClass=Identifier 
+     ('::' innerClass=Identifier)?
         ('<' parameterTypes+=parameterizedElementType 
                     ( ',' parameterTypes+=parameterizedElementType)* 
         '>')?

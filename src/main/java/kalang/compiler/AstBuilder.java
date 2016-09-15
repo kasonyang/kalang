@@ -446,12 +446,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         for(Token p:ctx.paths){
             classNameParts.add(p.getText());
         }
-        classNameParts.add(rawTypeToken.getText());
+        if(ctx.innerClass!=null){
+            classNameParts.add(rawTypeToken.getText() + "$" + ctx.innerClass.getText());
+        }else{
+            classNameParts.add(rawTypeToken.getText());
+        }
         String rawType = String.join(".", classNameParts);
         for(GenericType gt:thisClazz.getGenericTypes()){
             if(rawType.equals(gt.getName())) return gt;
         }
-        ObjectType clazzType = requireClassType(rawTypeToken);
+        ObjectType clazzType = requireClassType(rawType,rawTypeToken);
         if(clazzType==null) return null;
         ClassNode clazzNode = clazzType.getClassNode();
         GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
@@ -1507,11 +1511,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if (fullNames.containsKey(id)) {
             return this.fixInnerClassName(fullNames.get(id));
         } else {
-            for(ClassNode ic : thisClazz.classes){
-                String mySimpleName = NameUtil.getClassNameWithoutPackage(thisClazz.name);
-                if((mySimpleName + "$" +  id).equals(NameUtil.getClassNameWithoutPackage(ic.name))) return ic.name;
+            String[] innerClassesNames = AstUtil.listInnerClassesNames(topClass, true);
+            List<String> candidates = new ArrayList(innerClassesNames.length+1);
+            candidates.add(topClass.name);
+            candidates.addAll(Arrays.asList(innerClassesNames));
+            for(String c:candidates){
+                if(id.equals(NameUtil.getClassNameWithoutPackage(c))) return c;
+                if((thisClazz.name + "$" + id).equals(c)) return c;
             }
-            List<String> paths = new ArrayList<>(importPaths.size()+1);
+            List<String> paths = new ArrayList<>(importPaths.size() + 1);
             paths.add(classPath);
             paths.addAll(importPaths);
             for (String p : paths) {
