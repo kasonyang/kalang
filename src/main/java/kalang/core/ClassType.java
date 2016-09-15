@@ -123,7 +123,8 @@ public class ClassType extends ObjectType {
             if(parsedCt.equals(ct)) return type;
             return Types.getArrayType(parsedCt, ((ArrayType) type).getNullable());
         }else{
-            System.err.println("unknown type:" + type);
+            Exception ex = new Exception("unknown type:" + type);
+            ex.printStackTrace(System.err);
             return type;
         }        
     }

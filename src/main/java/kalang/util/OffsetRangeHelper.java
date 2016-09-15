@@ -20,6 +20,7 @@ public class OffsetRangeHelper {
     public static OffsetRange getOffsetRange(ParserRuleContext tree) {
         Token start = tree.getStart();
         Token stop = tree.getStop();
+        if(start==null || stop==null) return OffsetRange.NONE;
         return getOffsetRange(start, stop);
     }
 
