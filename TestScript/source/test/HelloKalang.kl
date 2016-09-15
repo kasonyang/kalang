@@ -1,5 +1,6 @@
 class<T>{
     class InnerClass{
+        int field = 6;
         int test(){
                 return 6;
         }
@@ -11,6 +12,9 @@ class<T>{
     }
     int fieldStaticTest(){
         return sf;
+    }
+    int fieldGetterTest(){
+        return this.getF();
     }
     int nullTest(){
         String? s = null;
@@ -206,6 +210,9 @@ class<T>{
     
     int innerClassTest(){
         return new InnerClass().test();
+    }
+    int innerFieldTest(){
+        return new InnerClass().getField();
     }
     /*
     

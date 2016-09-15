@@ -2128,6 +2128,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         this.inScriptMode = false;
         visit(ctx.classBody());
         this.inScriptMode = oldScriptMode;
+        if(!ModifierUtil.isInterface(thisClazz.modifier) && !AstUtil.containsConstructor(thisClazz) && !AstUtil.createEmptyConstructor(thisClazz)){
+            handleSyntaxError("failed to create constructor with no parameters", compilationContext);
+        }
         MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
         for(int i=0;i<methods.length;i++){
             MethodNode node = methods[i];
@@ -2146,9 +2149,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
         }        
         mapAst(thisClazz, ctx);
-        if(!ModifierUtil.isInterface(thisClazz.modifier) && !AstUtil.containsConstructor(thisClazz) && !AstUtil.createEmptyConstructor(thisClazz)){
-            handleSyntaxError("failed to create constructor with no parameters", compilationContext);
-        }
         thisClazz = oldClass;
         return null;
     }

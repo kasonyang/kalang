@@ -21,12 +21,16 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     protected StringBuilder sb;
     
     private boolean isInterface = false;
+    
+    private static String getJavaTypeName(String typeName){
+        return typeName.replace('$', '.');
+    }
 
     @Override
     public Void visitFieldNode(FieldNode fieldNode) {
         sb.append(modifier2String(fieldNode.modifier))
                 .append(" ")
-                .append(fieldNode.type)
+                .append(getJavaTypeName(fieldNode.type.getName()))
                 .append(" ")
                 .append(fieldNode.name)
                 .append(";\n");
@@ -42,7 +46,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
             sb.append(NameUtil.getSimpleClassName(node.classNode.name));
         }else{
             sb.append(this.isInterface ? "" : "native ")
-                .append(node.type)
+                .append(getJavaTypeName(node.type.getName()))
                 .append(" ")
                 .append(node.name);
         }
@@ -64,7 +68,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
         if(last!='('){
             sb.append(",");
         }
-        sb.append(parameterNode.type)
+        sb.append(getJavaTypeName(parameterNode.type.getName()))
                 .append(" ")
                 .append(parameterNode.name);
         return super.visitParameterNode(parameterNode);
