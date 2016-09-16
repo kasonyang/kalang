@@ -1279,7 +1279,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Nullable
     private ExprNode concatExpressionsToStringExpr(ExprNode[] expr,Token[] startTokens){
-        ExprNode ret = null;
+        ExprNode ret;
+        try {
+            ret = new NewObjectExpr(Types.requireClassType("java.lang.StringBuilder"),new ExprNode[0]);
+        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+            throw Exceptions.unexceptedException(ex);
+        }
         for(int i=0;i<expr.length;i++){
             ExprNode e = expr[i];
             Type t = e.getType();
@@ -1290,17 +1295,17 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 handleSyntaxError(String.format("unable cast %s to Stirng",t),startTokens[i]);
                 return null;
             }
-            if(ret==null){
-                ret = e;
-            }else{
-                try {
-                    ret = ObjectInvokeExpr.create(ret, "concat",new ExprNode[]{e});
-                } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                    throw Exceptions.unexceptedException(ex);
-                }
+            try {
+                ret = ObjectInvokeExpr.create(ret, "append",new ExprNode[]{e});
+            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+                throw Exceptions.unexceptedException(ex);
             }
         }
-        return ret;         
+        try {         
+            return ObjectInvokeExpr.create(ret,"toString",new ExprNode[0]);
+        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+            throw Exceptions.unexceptedException(ex);
+        }
     }
     
     private ExprNode createBinaryExpr(String op,ExpressionContext exprCtx1,ExpressionContext exprCtx2,Token opStart,Token opEnd, ParserRuleContext ctx){
