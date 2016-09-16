@@ -230,7 +230,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     public String visitMethodNode(MethodNode node) {
         this.method = node;
         List<String> psList = new LinkedList<>();
-        for (ParameterNode p : node.parameters) {
+        for (ParameterNode p : node.getParameters()) {
             psList.add(this.getVarStr(p));
         }
         String ps = String.join(",", psList);//.join(",");

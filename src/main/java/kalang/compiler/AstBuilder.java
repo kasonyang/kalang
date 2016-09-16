@@ -773,19 +773,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         List<TypeContext> paramTypesCtx = ctx.paramTypes;
         method = thisClazz.createMethodNode();
-        List<ParameterNode> params = new LinkedList();
         if (paramTypesCtx != null) {
             int paramSize = paramTypesCtx.size();
             for(int i=0;i<paramSize;i++){
                 TypeContext t = paramTypesCtx.get(i);
-                ParameterNode pn = ParameterNode.create(method);
-                pn.type = parseType(t);
-                pn.name = ctx.paramIds.get(i).getText();
-                params.add(pn);
+                method.createParameter(parseType(t),ctx.paramIds.get(i).getText());
             }
         }
         //check method duplicated before generate java stub
-        String mStr = MethodUtil.getDeclarationKey(name,params.toArray(new ParameterNode[params.size()]));
+        String mStr = MethodUtil.getDeclarationKey(name,method.getParameters());
         boolean existed = Arrays.asList(thisClazz.getDeclaredMethodNodes()).stream().anyMatch((m)->{
             return MethodUtil.getDeclarationKey(m).equals(mStr);
         });
@@ -801,7 +797,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         method.type = type;
         method.name = name;
-        method.parameters.addAll(params);
         ObjectType superType = thisClazz.superType;
         if(superType==null){//the superType of interface may be null
             superType = Types.getRootType();
@@ -1619,8 +1614,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             return ve;
         } else {
             //find parameters
-            if (method != null && method.parameters != null) {
-                for (ParameterNode p : method.parameters) {
+            if (method != null) {
+                for (ParameterNode p : method.getParameters()) {
                     if (p.name.equals(name)) {
                         ParameterExpr ve = new ParameterExpr(p,this.getVarObjectType(p));
                         if(token!=null) mapAst(ve, token);
@@ -2087,10 +2082,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         mm.modifier = Modifier.PUBLIC  + Modifier.STATIC;
         mm.type = Types.VOID_TYPE;
         mm.exceptionTypes = Collections.singletonList(Types.getExceptionClassType());
-        ParameterNode pn = ParameterNode.create(mm);
-        pn.name = "args";
-        pn.type = Types.getArrayType(Types.getStringClassType());
-        mm.parameters = Collections.singletonList(pn);
+        mm.createParameter(Types.getArrayType(Types.getStringClassType()), "args");
         method = mm;
         List<StatContext> stats = ctx.stat();
         List<Statement> ss = new LinkedList<>();
@@ -2216,12 +2208,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             if(body!=null){
                 if(AstUtil.isConstructor(node)){//constructor
                     if(this.isDeclaringNonStaticInnerClass()){
-                        ParameterNode outerInstanceParam = ParameterNode.create(method);
                         ClassNode enclosingClass = thisClazz.enclosingClass;
                         if(enclosingClass==null) throw Exceptions.unexceptedValue(enclosingClass);
-                        outerInstanceParam.type =Types.getClassType(enclosingClass);
-                        outerInstanceParam.name = "this$0";
-                        node.parameters.add(0, outerInstanceParam);
+                        ParameterNode outerInstanceParam = node.createParameter(0,Types.getClassType(enclosingClass), "this$0");
                         ExprNode parentFieldExpr = this.getObjectFieldExpr(new ThisExpr(this.getThisType()), "this$0", ParserRuleContext.EMPTY);
                         if(parentFieldExpr==null) throw Exceptions.unexceptedValue(parentFieldExpr);
                         node.body.statements.add(1,new ExprStmt(new AssignExpr((AssignableExpr) parentFieldExpr,new ParameterExpr(outerInstanceParam))));

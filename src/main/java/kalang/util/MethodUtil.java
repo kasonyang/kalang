@@ -84,12 +84,10 @@ public class MethodUtil {
     }
 
     public static Type[] getParameterTypes(MethodNode mn) {
-        if (mn.parameters == null) {
-            return new Type[0];
-        }
-        Type[] types = new Type[mn.parameters.size()];
+        ParameterNode[] parameters = mn.getParameters();
+        Type[] types = new Type[parameters.length];
         for (int i = 0; i < types.length; i++) {
-            types[i] = mn.parameters.get(i).type;
+            types[i] = parameters[i].type;
         }
         return types;
     }

@@ -92,19 +92,18 @@ public class AstUtil {
             mm.exceptionTypes =Arrays.asList(m.getExceptionTypes());
             mm.modifier = m.getModifier();
             ParameterDescriptor[] pds = m.getParameterDescriptors();
-            mm.parameters = new ArrayList(pds.length);
             for(ParameterDescriptor pd:pds){
-                ParameterNode p = ParameterNode.create(mm);
-                p.name = pd.getName();
-                p.type = pd.getType();
+                ParameterNode p = mm.createParameter(pd.getType(), pd.getName());
+                //TODO update mm.createParameter
                 p.modifier = pd.getModifier();
             }
             mm.type = Types.VOID_TYPE;
             BlockStmt body = new BlockStmt(null);
             mm.body = body;
-            ExprNode[] params = new ExprNode[mm.parameters.size()];
+            ParameterNode[] parameters = mm.getParameters();
+            ExprNode[] params = new ExprNode[parameters.length];
             for(int i=0;i<params.length;i++){
-                params[i] = new ParameterExpr(mm.parameters.get(i));
+                params[i] = new ParameterExpr(parameters[i]);
             }
             body.statements.add(
                     new ExprStmt(
@@ -282,10 +281,7 @@ public class AstUtil {
         }else{
             setter.type = Types.getClassType(clazz);
         }
-        ParameterNode param = ParameterNode.create(setter);
-        param.type = field.getType();
-        param.name = field.getName();
-        setter.parameters.add(param);
+        ParameterNode param = setter.createParameter(field.getType(), field.getName());
         BlockStmt body = new BlockStmt(null);
         FieldExpr fe;
         ExprNode paramVal = new ParameterExpr(param);

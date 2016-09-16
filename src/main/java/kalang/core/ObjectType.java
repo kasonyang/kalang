@@ -51,11 +51,11 @@ public abstract class ObjectType extends Type{
     }
     
     private ParameterDescriptor[] getParameterDescriptors(MethodNode method){
-        List<ParameterNode> pms = method.parameters;
+        ParameterNode[] pms = method.getParameters();
         Type[] ptypes = parseTypes(MethodUtil.getParameterTypes(method));
         ParameterDescriptor[] pds = new ParameterDescriptor[ptypes.length];
         for(int j=0;j<pds.length;j++){
-            ParameterNode p = pms.get(j);
+            ParameterNode p = pms[j];
             pds[j] = new ParameterDescriptor(p.name,ptypes[j],p.modifier);
         }
         return pds;

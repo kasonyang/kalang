@@ -124,10 +124,7 @@ public class JavaAstLoader extends AstLoader {
             MethodNode methodNode = cn.createMethodNode();
             for (Parameter p : m.getParameters()) {
                 NullableKind pnullable = getNullable(p.getAnnotations());
-                ParameterNode param = ParameterNode.create(methodNode);
-                param.name = p.getName();
-                param.type = getType(p.getParameterizedType(),genericTypes,p.getType(),pnullable);
-                methodNode.parameters.add(param);
+                methodNode.createParameter(getType(p.getParameterizedType(),genericTypes,p.getType(),pnullable) , p.getName());
             }
             if (m instanceof Method) {
                 methodNode.type =getType(((Method) m).getGenericReturnType(),genericTypes,((Method)m).getReturnType(),nullable);

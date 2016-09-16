@@ -175,7 +175,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private String methodSignature(MethodNode m){
         String ptype = "";
-        for(ParameterNode p:m.parameters){
+        for(ParameterNode p:m.getParameters()){
             ptype += typeSignature(p.type);
         }
         return "(" + ptype + ")" + typeSignature(m.type);
@@ -344,8 +344,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             varIdCounter = 1;
         }
         BlockStmt body = node.body;
-        for(int i=0;i<node.parameters.size();i++){
-            ParameterNode p = node.parameters.get(i);
+        ParameterNode[] parameters = node.getParameters();
+        for(int i=0;i<parameters.length;i++){
+            ParameterNode p = parameters[i];
             visit(p);
             if(p.type instanceof ObjectType){
                 md.visitParameterAnnotation(i,getClassDescriptor(getNullableAnnotation((ObjectType)p.type)), true).visitEnd();
@@ -358,7 +359,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 md.visitInsn(RETURN);
             }
             md.visitLabel(methodEndLabel);
-            for(ParameterNode p:node.parameters){
+            for(ParameterNode p:node.getParameters()){
                 this.saveVarInfomation(p, methodStartLabel, methodEndLabel);
             }
             for(LocalVariableInfo li:localVarInfos){

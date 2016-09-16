@@ -11,7 +11,7 @@ public class MethodNode extends AstNode implements Annotationable{
     
     public String name;
     
-    public List<ParameterNode> parameters;
+    private final List<ParameterNode> parameters = new LinkedList();
     
     public final List<AnnotationNode> annotations = new LinkedList<>();
     
@@ -25,8 +25,6 @@ public class MethodNode extends AstNode implements Annotationable{
     
     protected MethodNode(ClassNode classNode){
             this.classNode = classNode;
-            if(parameters == null) parameters = new LinkedList();
-        
             if(exceptionTypes == null) exceptionTypes = new LinkedList();
         
     }
@@ -34,12 +32,10 @@ public class MethodNode extends AstNode implements Annotationable{
     
     protected MethodNode(ClassNode classNode,Integer modifier,Type type,String name,List<ParameterNode> parameters,BlockStmt body,List<Type> exceptionTypes){
         this.classNode = classNode;
-            if(parameters == null) parameters = new LinkedList();
             if(exceptionTypes == null) exceptionTypes = new LinkedList();
             this.modifier = modifier;
             this.type = type;
             this.name = name;
-            this.parameters = parameters;
             this.body = body;
             this.exceptionTypes = exceptionTypes;
     }
@@ -47,9 +43,26 @@ public class MethodNode extends AstNode implements Annotationable{
     
     protected static MethodNode create(ClassNode classNode){
         MethodNode node = new MethodNode(classNode);
-        node.parameters = new LinkedList();
         node.exceptionTypes = new LinkedList();
         return node;
+    }
+    
+    public ParameterNode createParameter(Type type,String name){
+        return _createParameter(null, type, name);
+    }
+    
+    public ParameterNode createParameter(int index,Type type,String name){
+        return _createParameter(index, type, name);
+    }
+    
+    private ParameterNode _createParameter(Integer index,Type type,String name){
+        ParameterNode param = new ParameterNode(this, type, name);
+        if(index==null){
+            parameters.add(param);
+        }else{
+            this.parameters.add(index,param);
+        }
+        return param;
     }
     
     @Override
@@ -74,6 +87,9 @@ public class MethodNode extends AstNode implements Annotationable{
         return String.format("%s %s %s(%s)", Modifier.toString(modifier),type.toString(),name,String.join(",", params));
     }
     
+    public ParameterNode[] getParameters(){
+        return parameters.toArray(new ParameterNode[parameters.size()]);
+    }
     
     
 }
