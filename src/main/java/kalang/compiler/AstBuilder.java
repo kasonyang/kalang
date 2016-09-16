@@ -1286,17 +1286,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             throw Exceptions.unexceptedException(ex);
         }
         for(int i=0;i<expr.length;i++){
-            ExprNode e = expr[i];
-            Type t = e.getType();
-            if(!Types.getStringClassType().equals(t)){
-                e = BoxUtil.castToString(e);
-            }
-            if(e==null){
-                handleSyntaxError(String.format("unable cast %s to Stirng",t),startTokens[i]);
-                return null;
-            }
             try {
-                ret = ObjectInvokeExpr.create(ret, "append",new ExprNode[]{e});
+                ret = ObjectInvokeExpr.create(ret, "append",new ExprNode[]{expr[i]});
             } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                 throw Exceptions.unexceptedException(ex);
             }
