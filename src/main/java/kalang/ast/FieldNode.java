@@ -5,6 +5,7 @@ import java.nio.*;
 import java.net.*;
 import java.util.*;
 import kalang.core.FieldDescriptor;
+import kalang.core.Type;
 /**
  *
  * @author Kason Yang <i@kasonyang.com>
@@ -13,13 +14,11 @@ public class FieldNode extends VarObject implements FieldDescriptor{
     
     public final ClassNode classNode;
 
-    private FieldNode(ClassNode classNode) {
+    protected FieldNode(ClassNode classNode,Type type,String name,int modifier) {
         this.classNode = classNode;
-    }
-    
-    public static FieldNode create(ClassNode clazz){
-        FieldNode fn = new FieldNode(clazz);
-        return fn;
+        this.type = type;
+        this.name = name;
+        this.modifier = modifier;
     }
 
     @Override

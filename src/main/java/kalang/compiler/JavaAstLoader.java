@@ -145,10 +145,7 @@ public class JavaAstLoader extends AstLoader {
         }
         for (Field f : clz.getFields()) {
             NullableKind nullable = getNullable(f.getAnnotations());
-            FieldNode fn = cn.createField();
-            fn.name = f.getName();
-            fn.type =getType(f.getGenericType(),genericTypes,f.getType(),nullable);
-            fn.modifier = f.getModifiers();
+            FieldNode fn = cn.createField(getType(f.getGenericType(),genericTypes,f.getType(),nullable),f.getName(),f.getModifiers());
         }
         return cn;
     }

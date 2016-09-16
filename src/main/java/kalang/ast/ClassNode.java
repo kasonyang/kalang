@@ -65,8 +65,8 @@ public class ClassNode extends AstNode implements Annotationable{
     }
 
 
-    public FieldNode createField(){
-        FieldNode fieldNode = FieldNode.create(this);
+    public FieldNode createField(Type type,String name,int modifier){
+        FieldNode fieldNode =new FieldNode(this,type,name,modifier);
         fields.add(fieldNode);
         return fieldNode;
     }
