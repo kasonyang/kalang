@@ -42,6 +42,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
@@ -1099,6 +1101,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Override
     public ExprNode visitMemberInvocationExpr(MemberInvocationExprContext ctx) {
         String methodName;
+        ExprNode target;
+        ObjectType clazz;
         if (ctx.key != null) {
             methodName = ctx.key.getText();
         } else {
@@ -1106,13 +1110,32 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         if(methodName.equals("this")){
             methodName = "<init>";
+            target = new ThisExpr(this.getThisType());
+            clazz = this.getThisType();
         }else if(methodName.equals("super")){
             methodName = "<init>";
+            target = new SuperExpr(thisClazz);
+            clazz = thisClazz.superType;
+        }else{
+            target = new ThisExpr(this.getThisType());
+            clazz = this.getThisType();
         }
         List<Object> argsList = visitAll(ctx.params);
         if(argsList.contains(null)) return null;
         ExprNode[] args = argsList.toArray(new ExprNode[argsList.size()]);
-        ExprNode ie = getImplicitInvokeExpr(methodName,args,ctx);
+        ExprNode ie;
+        if(methodName.equals("<init>")){
+            if(clazz==null) throw Exceptions.unexceptedValue(clazz);
+            try {
+                InvocationExpr.MethodSelection apply = InvocationExpr.applyMethod(clazz, methodName, args,clazz.getConstructorDescriptors(thisClazz));
+                ie = new ObjectInvokeExpr(target, apply.selectedMethod, apply.appliedArguments);
+            } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                this.methodNotFound(ctx.start, clazz.getName(), methodName, args);
+                return null;
+            }
+        }else{
+            ie= getImplicitInvokeExpr(methodName,args,ctx);
+        }
         return ie;
     }
     
