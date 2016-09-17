@@ -655,7 +655,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             for(int i=0;i<initExprs.length;i++){
                 initExprs[i] = visitExpression(ctx.initExpr.get(i));
             }
-            ret= BoxUtil.createInitializedArray(type, initExprs);
+            ret= createInitializedArray(type, initExprs);
         }
         mapAst(ret, ctx);
         return ret;
@@ -1470,7 +1470,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             for(int i=0;i<params.length;i++){
                 params[i] = visitExpression(ctx.params.get(i));
             }
-            invokeArgs[2] = BoxUtil.createInitializedArray(Types.getRootType(), params);
+            invokeArgs[2] = createInitializedArray(Types.getRootType(), params);
             ClassNode dispatcherAst = getAst("kalang.runtime.dynamic.MethodDispatcher");
             if(dispatcherAst==null){
                 throw Exceptions.unexceptedException("Runtime library is required!");
@@ -2505,7 +2505,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             initExprs[i] = requireCastable(initExprs[i], initExprs[i].getType(), type, exprCtx.get(i).getStart());
             if(initExprs[i]==null) return null;
         }
-        ExprNode arrExpr = BoxUtil.createInitializedArray(type, initExprs);
+        ExprNode arrExpr = createInitializedArray(type, initExprs);
         mapAst(arrExpr, ctx);
         return arrExpr;
     }
@@ -2594,6 +2594,30 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         return this.createBinaryExpr(op, ctx.expression(0), ctx.expression(1)
                 , opStart,ctx.stop, ctx);
+    }
+    
+    public ExprNode createInitializedArray(Type type,ExprNode[] exprs){
+        NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(exprs.length));
+        if(exprs.length>0){
+            Statement[] initStmts = new Statement[exprs.length+2];
+            //TODO create a method for temp var creation
+            //TODO localVarNode should add a type parameter
+            LocalVarNode local = this.declareTempLocalVar(ae.getType());
+            initStmts[0] = new VarDeclStmt(local);
+            VarExpr arrVar = new VarExpr(local);
+            initStmts[1] = new ExprStmt(new AssignExpr(arrVar,ae));
+            for(int i=0;i<exprs.length;i++){
+                initStmts[i+2] =new ExprStmt(
+                        new AssignExpr(
+                                new ElementExpr(arrVar, new ConstExpr(i))
+                                , exprs[i]
+                        )
+                );
+            }
+            return new MultiStmtExpr(Arrays.asList(initStmts), arrVar);
+        }else{
+            return ae;
+        }
     }
 
 }

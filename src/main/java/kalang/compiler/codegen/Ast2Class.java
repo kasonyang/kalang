@@ -397,6 +397,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Label startLabel = new Label();
         Label endLabel = new Label();
         md.visitLabel(startLabel);
+        for(LocalVarNode v:vars){
+            this.declareNewVar(v);
+        }
         visitChildren(node);
         md.visitLabel(endLabel);
         for(int i=0;i<vars.length;i++){
@@ -1052,7 +1055,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitLocalVarNode(LocalVarNode localVarNode) {
-        this.declareNewVar(localVarNode);
         return null;
     }
 
