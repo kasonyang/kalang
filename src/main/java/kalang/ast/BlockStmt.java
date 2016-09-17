@@ -8,13 +8,11 @@ import kalang.core.*;
 public class BlockStmt extends Statement implements ScopeBlock{
     
     public final List<Statement> statements = new LinkedList<>();
-    protected final VarTable<String, LocalVarNode> varTable;
+    protected final List<LocalVarNode> vars = new LinkedList();
     
     protected BlockStmt parentBlock = null;
     
     public BlockStmt(@Nullable BlockStmt parent){
-        VarTable<String, LocalVarNode> parentVarTable = parent==null ? null : parent.getScopeVarTable();
-        varTable = new VarTable<>(parentVarTable);
         parentBlock = parent;
     }
     
@@ -31,8 +29,12 @@ public class BlockStmt extends Statement implements ScopeBlock{
     }
 
     @Override
-    public VarTable<String, LocalVarNode> getScopeVarTable() {
-        return this.varTable;
+    public LocalVarNode[] getScopeVars() {
+        return vars.toArray(new LocalVarNode[vars.size()]);
+    }
+    
+    public void declareLocalVar(LocalVarNode var){
+        vars.add(var);
     }
 
     public BlockStmt getParentBlock() {

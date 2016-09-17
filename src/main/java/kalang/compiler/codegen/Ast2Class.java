@@ -392,9 +392,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitBlockStmt(BlockStmt node) {
-        VarTable<String, LocalVarNode> varTable = node.getScopeVarTable();
+        LocalVarNode[] vars = node.getScopeVars();
         int varCounter = this.varIdCounter;
-        LocalVarNode[] vars = varTable.toArray(new LocalVarNode[0]);
         Label startLabel = new Label();
         Label endLabel = new Label();
         md.visitLabel(startLabel);

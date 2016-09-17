@@ -1608,13 +1608,32 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return n;
     }
     
-    protected VarTable<String, LocalVarNode> requireVarTable(){
-        return currentBlock.getScopeVarTable();
+    @Nullable
+    private ParameterNode getNamedParameter(String name){
+        if (method != null) {
+            for (ParameterNode p : method.getParameters()) {
+                if (p.getName().equals(name)) {
+                    return p;
+                }
+            }
+        }
+        return null;
     }
     
     @Nullable
-    protected VarTable<String, LocalVarNode> getVarTable(){
-        return currentBlock==null ? null : currentBlock.getScopeVarTable();
+    private LocalVarNode getNamedLocalVar(String name){
+        BlockStmt curBlock = this.currentBlock;
+        while(curBlock!=null){
+            LocalVarNode[] declaredVars = curBlock.getScopeVars();
+            for(LocalVarNode v:declaredVars){
+                String n = v.getName();
+                if(n!=null && n.equals(name)){
+                    return v;
+                }
+            }
+            curBlock = curBlock.getParentBlock();
+        }
+        return null;
     }
 
     @Nullable
@@ -1624,33 +1643,30 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             if(token!=null) mapAst(clsRef, token);
             return clsRef;
         }
-        VarTable<String, LocalVarNode> vtb = getVarTable();
-        if (vtb!=null && vtb.exist(name)) {
-            LocalVarNode var = vtb.get(name); //vars.indexOf(vo);
+        //find local var
+        LocalVarNode var = this.getNamedLocalVar(name);
+        if(var!=null){
             VarExpr ve = new VarExpr(var,getVarObjectType(var));
             if(token!=null) mapAst(ve, token);
             return ve;
-        } else {
-            //find parameters
-            if (method != null) {
-                for (ParameterNode p : method.getParameters()) {
-                    if (p.getName().equals(name)) {
-                        ParameterExpr ve = new ParameterExpr(p,this.getVarObjectType(p));
-                        if(token!=null) mapAst(ve, token);
-                        return ve;
-                    }
-                }
-            }
-            ExprNode fieldExpr = this.getObjectFieldExpr(new ThisExpr(this.getThisType()), name, ParserRuleContext.EMPTY);
-            if(fieldExpr==null) fieldExpr = this.getStaticFieldExpr(new ClassReference(thisClazz), name, ParserRuleContext.EMPTY);
-            if(fieldExpr!=null) return fieldExpr;
-            ExprNode outerClassInstanceExpr = this.getOuterClassInstanceExpr(new ThisExpr(this.getThisType()));
-            while(outerClassInstanceExpr!=null){
-                ExprNode fe = this.getObjectFieldExpr(outerClassInstanceExpr, name, ParserRuleContext.EMPTY);
-                if(fe==null) fe = this.getStaticFieldExpr(new ClassReference(thisClazz), name, ParserRuleContext.EMPTY);
-                if(fe!=null) return fe;
-                outerClassInstanceExpr = this.getOuterClassInstanceExpr(outerClassInstanceExpr);
-            }
+        }
+        //find parameters
+        ParameterNode paramNode = this.getNamedParameter(name);
+        if(paramNode!=null){
+            ParameterExpr ve = new ParameterExpr(paramNode,this.getVarObjectType(paramNode));
+            if(token!=null) mapAst(ve, token);
+            return ve;
+        }
+        //find field
+        ExprNode fieldExpr = this.getObjectFieldExpr(new ThisExpr(this.getThisType()), name, ParserRuleContext.EMPTY);
+        if(fieldExpr==null) fieldExpr = this.getStaticFieldExpr(new ClassReference(thisClazz), name, ParserRuleContext.EMPTY);
+        if(fieldExpr!=null) return fieldExpr;
+        ExprNode outerClassInstanceExpr = this.getOuterClassInstanceExpr(new ThisExpr(this.getThisType()));
+        while(outerClassInstanceExpr!=null){
+            ExprNode fe = this.getObjectFieldExpr(outerClassInstanceExpr, name, ParserRuleContext.EMPTY);
+            if(fe==null) fe = this.getStaticFieldExpr(new ClassReference(thisClazz), name, ParserRuleContext.EMPTY);
+            if(fe!=null) return fe;
+            outerClassInstanceExpr = this.getOuterClassInstanceExpr(outerClassInstanceExpr);
         }
         return null;
     }
@@ -1896,7 +1912,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 ms.statements.add(new ExprStmt(assignExpr));
             }
             mapAst(localVar,ctx);
-            requireVarTable().put(localVar.getName(), localVar);
         }
         return ms;
     }
@@ -2339,14 +2354,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Nullable
     private LocalVarNode declareLocalVar(String name,Type type,ParserRuleContext ctx){
         LocalVarNode localVarNode = new LocalVarNode(type,name);
-        if(name!=null){
-            VarTable<String, LocalVarNode> vtb = requireVarTable();
-            if(vtb.exist(name)){
-                handleSyntaxError("variable is defined", ctx);
-            }else{
-                requireVarTable().put(name, localVarNode);
-            }
+        BlockStmt curBlock = this.currentBlock;
+        if(curBlock==null) throw Exceptions.unexceptedValue(curBlock);
+        ParameterNode param = this.getNamedParameter(name);
+        LocalVarNode var = this.getNamedLocalVar(name);
+        if(param!=null || var!=null){
+            handleSyntaxError("variable is defined", ctx);
+            return null;
         }
+        curBlock.declareLocalVar(localVarNode);
         return localVarNode;
     }
 

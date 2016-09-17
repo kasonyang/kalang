@@ -9,6 +9,6 @@ import kalang.core.VarTable;
  */
 public interface ScopeBlock {
     
-    public VarTable<String,LocalVarNode> getScopeVarTable();
+    public LocalVarNode[] getScopeVars();
 
 }
