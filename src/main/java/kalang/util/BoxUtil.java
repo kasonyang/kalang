@@ -186,8 +186,7 @@ public class BoxUtil {
             Statement[] initStmts = new Statement[exprs.length+2];
             //TODO create a method for temp var creation
             //TODO localVarNode should add a type parameter
-            LocalVarNode local = new LocalVarNode();
-            local.type = ae.getType();
+            LocalVarNode local = new LocalVarNode(ae.getType(),null);
             initStmts[0] = new VarDeclStmt(local);
             VarExpr arrVar = new VarExpr(local);
             initStmts[1] = new ExprStmt(new AssignExpr(arrVar,ae));

@@ -14,9 +14,9 @@ public class ParameterNode extends VarObject{
     private final MethodNode method;
 
     protected ParameterNode(MethodNode method,Type type,String name) {
+        //TODO add modifier parameter
+        super(0,type,name);
         this.method = method;
-        this.type = type;
-        this.name = name;
     }
 
     public MethodNode getMethod() {

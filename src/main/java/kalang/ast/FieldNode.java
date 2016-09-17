@@ -15,10 +15,8 @@ public class FieldNode extends VarObject implements FieldDescriptor{
     private final ClassNode classNode;
 
     protected FieldNode(ClassNode classNode,Type type,String name,int modifier) {
+        super(modifier,type,name);
         this.classNode = classNode;
-        this.type = type;
-        this.name = name;
-        this.modifier = modifier;
     }
 
     @Override

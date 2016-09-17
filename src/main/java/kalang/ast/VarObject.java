@@ -9,22 +9,10 @@ public abstract class VarObject extends AstNode{
     
     public String name;
     
-    //public ExprNode initExpr;
-
-    public VarObject() {
-    }
-    
-    public VarObject(int modifier,Type type,String name,ExprNode initExpr){
+    protected VarObject(int modifier,Type type,String name){
             this.modifier = modifier;
             this.type = type;
             this.name = name;
-            //this.initExpr = initExpr;
-    }
-    
-    public List<AstNode> getChildren(){
-        List<AstNode> ls = new LinkedList();
-        //addChild(ls,initExpr);
-        return ls;
     }
     
     public Type getType(){
