@@ -602,7 +602,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         visit(expr);
         md.visitFieldInsn(opc,
-                asmType(Types.getClassType(fn.classNode)).getInternalName(), fn.name, getTypeDescriptor(fn.type));
+                asmType(Types.getClassType(fn.getClassNode())).getInternalName(), fn.name, getTypeDescriptor(fn.type));
     }
     
     private void assignField(FieldExpr fieldExpr,ExprNode expr){
@@ -729,7 +729,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitFieldExpr(FieldExpr node) {
         int   opc ;
-        String owner = internalName(node.getField().getFieldNode().classNode);
+        String owner = internalName(node.getField().getFieldNode().getClassNode());
         if(node instanceof ObjectFieldExpr){
             ExprNode target =((ObjectFieldExpr)node).getTarget();
             visit(target);

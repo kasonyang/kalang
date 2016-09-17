@@ -8,11 +8,11 @@ import kalang.core.FieldDescriptor;
 import kalang.core.Type;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class FieldNode extends VarObject implements FieldDescriptor{
     
-    public final ClassNode classNode;
+    private final ClassNode classNode;
 
     protected FieldNode(ClassNode classNode,Type type,String name,int modifier) {
         this.classNode = classNode;
@@ -34,6 +34,10 @@ public class FieldNode extends VarObject implements FieldDescriptor{
     @Override
     public FieldNode getFieldNode() {
         return this;
+    }
+
+    public ClassNode getClassNode() {
+        return classNode;
     }
 
 }

@@ -11,12 +11,16 @@ import kalang.core.Type;
  */
 public class ParameterNode extends VarObject{
     
-    public final MethodNode method;
+    private final MethodNode method;
 
     protected ParameterNode(MethodNode method,Type type,String name) {
         this.method = method;
         this.type = type;
         this.name = name;
+    }
+
+    public MethodNode getMethod() {
+        return method;
     }
 
 }
