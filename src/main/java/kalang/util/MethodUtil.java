@@ -22,7 +22,7 @@ public class MethodUtil {
     public static String[] getParameterNames(@Nonnull ParameterNode[] parameterNodes) {
         String[] names = new String[parameterNodes.length];
         for (int i = 0; i < names.length; i++) {
-            names[i] = parameterNodes[i].name;
+            names[i] = parameterNodes[i].getName();
         }
         return names;
     }
@@ -87,7 +87,7 @@ public class MethodUtil {
         ParameterNode[] parameters = mn.getParameters();
         Type[] types = new Type[parameters.length];
         for (int i = 0; i < types.length; i++) {
-            types[i] = parameters[i].type;
+            types[i] = parameters[i].getType();
         }
         return types;
     }

@@ -30,9 +30,9 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     public Void visitFieldNode(FieldNode fieldNode) {
         sb.append(modifier2String(fieldNode.modifier))
                 .append(" ")
-                .append(getJavaTypeName(fieldNode.type.getName()))
+                .append(getJavaTypeName(fieldNode.getType().getName()))
                 .append(" ")
-                .append(fieldNode.name)
+                .append(fieldNode.getName())
                 .append(";\n");
         return super.visitFieldNode(fieldNode);
     }
@@ -68,9 +68,9 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
         if(last!='('){
             sb.append(",");
         }
-        sb.append(getJavaTypeName(parameterNode.type.getName()))
+        sb.append(getJavaTypeName(parameterNode.getType().getName()))
                 .append(" ")
-                .append(parameterNode.name);
+                .append(parameterNode.getName());
         return super.visitParameterNode(parameterNode);
     }
     

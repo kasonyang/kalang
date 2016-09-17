@@ -64,7 +64,7 @@ public class MethodNode extends AstNode implements Annotationable{
     public String toString() {
         List<String> params = new ArrayList();
         for(ParameterNode p:parameters){
-            params.add(String.format("%s %s", p.type,p.name));
+            params.add(String.format("%s %s", p.getType(), p.getName()));
         }
         return String.format("%s %s %s(%s)", Modifier.toString(modifier),type.toString(),name,String.join(",", params));
     }

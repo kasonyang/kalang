@@ -32,7 +32,7 @@ public class VarExpr extends AssignableExpr{
 
     @Override
     public String toString() {
-        return var.name;
+        return var.getName();
     }
     
     public void removeOverrideType(){

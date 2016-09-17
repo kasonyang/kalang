@@ -23,12 +23,12 @@ public class StandardFieldDescriptor implements FieldDescriptor{
 
     @Override
     public String getName() {
-        return field.name;
+        return field.getName();
     }
 
     @Override
     public Type getType() {
-        return type == null ? field.type : type ;
+        return type == null ? field.getType() : type ;
     }
 
     @Override

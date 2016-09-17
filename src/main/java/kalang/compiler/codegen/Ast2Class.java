@@ -176,7 +176,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private String methodSignature(MethodNode m){
         String ptype = "";
         for(ParameterNode p:m.getParameters()){
-            ptype += typeSignature(p.type);
+            ptype += typeSignature(p.getType());
         }
         return "(" + ptype + ")" + typeSignature(m.getType());
     }
@@ -348,8 +348,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         for(int i=0;i<parameters.length;i++){
             ParameterNode p = parameters[i];
             visit(p);
-            if(p.type instanceof ObjectType){
-                md.visitParameterAnnotation(i,getClassDescriptor(getNullableAnnotation((ObjectType)p.type)), true).visitEnd();
+            if(p.getType() instanceof ObjectType){
+                md.visitParameterAnnotation(i,getClassDescriptor(getNullableAnnotation((ObjectType)p.getType())), true).visitEnd();
             }
         }
         md.visitLabel(methodStartLabel);
@@ -378,15 +378,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private void declareNewVar(VarObject vo){
         int vid = varIdCounter;
-        int vSize = asmType(vo.type).getSize();
+        int vSize = asmType(vo.getType()).getSize();
         varIdCounter+= vSize;
         varIds.put(vo, vid);            
     }
     
     private void saveVarInfomation(VarObject vo,Label startLabel,Label endLabel){
             int vid = this.getVarId(vo);
-            if(vo.name!=null){
-                this.localVarInfos.add(new LocalVariableInfo(vo.name, getTypeDescriptor(vo.getType()), null, startLabel, endLabel, vid));
+            if(vo.getName()!=null){
+                this.localVarInfos.add(new LocalVariableInfo(vo.getName(), getTypeDescriptor(vo.getType()), null, startLabel, endLabel, vid));
             }
     }
 
@@ -555,7 +555,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 md.visitLabel(handler);
                 visit(s);
                 md.visitJumpInsn(GOTO, stopLabel);
-                String type = asmType(s.catchVar.type).getInternalName();
+                String type = asmType(s.catchVar.getType()).getInternalName();
                 md.visitTryCatchBlock(startLabel, endLabel, handler,type);
             }
         }
@@ -587,7 +587,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private void assignVarObject(VarObject to,ExprNode from){
-        org.objectweb.asm.Type type = asmType(to.type);
+        org.objectweb.asm.Type type = asmType(to.getType());
         visit(from);
         int vid = getVarId(to);
         md.visitVarInsn(type.getOpcode(ISTORE), vid);
@@ -602,7 +602,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         visit(expr);
         md.visitFieldInsn(opc,
-                asmType(Types.getClassType(fn.getClassNode())).getInternalName(), fn.name, getTypeDescriptor(fn.type));
+                asmType(Types.getClassType(fn.getClassNode())).getInternalName(), fn.getName(), getTypeDescriptor(fn.getType()));
     }
     
     private void assignField(FieldExpr fieldExpr,ExprNode expr){
@@ -958,7 +958,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private void visitVarObject(VarObject vo){
-        org.objectweb.asm.Type type = asmType(vo.type);
+        org.objectweb.asm.Type type = asmType(vo.getType());
         int vid = getVarId(vo);
         md.visitVarInsn(type.getOpcode(ILOAD),vid);
     }
@@ -1059,14 +1059,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitParameterNode(ParameterNode parameterNode) {
-        md.visitParameter(parameterNode.name, parameterNode.modifier);
+        md.visitParameter(parameterNode.getName(), parameterNode.modifier);
         this.declareNewVar(parameterNode);
         return null;
     }
 
     @Override
     public Object visitFieldNode(FieldNode fieldNode) {
-        classWriter.visitField(fieldNode.modifier, fieldNode.name, getTypeDescriptor(fieldNode.type), null, null);
+        classWriter.visitField(fieldNode.modifier, fieldNode.getName(), getTypeDescriptor(fieldNode.getType()), null, null);
         return null;
     }
 

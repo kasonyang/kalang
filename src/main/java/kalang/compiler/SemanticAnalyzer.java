@@ -126,7 +126,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         this.fields = new HashMap();
         //this.methodDeclared = new LinkedList();
         for (VarObject f : clz.fields) {
-            this.fields.put(f.name, f);
+            this.fields.put(f.getName(), f);
         }
         ClassNode oldClazz = this.clazz;
         this.clazz = clz;
@@ -387,7 +387,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitCatchBlock(CatchBlock node) {
-        this.caughException(node.catchVar.type);
+        this.caughException(node.catchVar.getType());
         return super.visitCatchBlock(node);
     }
 

@@ -1625,7 +1625,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             //find parameters
             if (method != null) {
                 for (ParameterNode p : method.getParameters()) {
-                    if (p.name.equals(name)) {
+                    if (p.getName().equals(name)) {
                         ParameterExpr ve = new ParameterExpr(p,this.getVarObjectType(p));
                         if(token!=null) mapAst(ve, token);
                         return ve;
@@ -1887,7 +1887,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 ms.statements.add(new ExprStmt(assignExpr));
             }
             mapAst(localVar,ctx);
-            requireVarTable().put(localVar.name, localVar);
+            requireVarTable().put(localVar.getName(), localVar);
         }
         return ms;
     }

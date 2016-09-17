@@ -45,7 +45,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
     }
 
     private String getVarName(VarObject vo) {
-        String name = vo.name;
+        String name = vo.getName();
         String tmpNamePrefix = "tmp";
         if (name == null || name.startsWith(tmpNamePrefix)) {
             if (!varList.contains(vo)) {
@@ -147,7 +147,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
 
     @Override
     public String visitParameterExpr(ParameterExpr node) {
-        return node.getParameter().name;
+        return node.getParameter().getName();
     }
 
 //    @Override
@@ -170,7 +170,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         String fs = "";
         String mdf = "";
         fs += Modifier.toString(f.modifier) + " ";
-        fs += f.type + " " + f.name;
+        fs += f.getType() + " " + f.getName();
 //        if (f.initExpr != null) {
 //            fs += "=" + visit(f.initExpr);
 //        }
@@ -353,7 +353,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
 
     public void visitVarObject(VarObject var) {
         //varNames.put(node.varId,node.varName)
-        String type = var.type != null ? var.type.getName() : "Object";
+        String type = var.getType() != null ? var.getType().getName() : "Object";
         type = className(type);
         String name = getVarName(var);
         String code = type

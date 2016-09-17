@@ -5,9 +5,9 @@ public abstract class VarObject extends AstNode{
     
     public int modifier;
     
-    public Type type;
+    private final Type type;
     
-    public String name;
+    private final String name;
     
     protected VarObject(int modifier,Type type,String name){
             this.modifier = modifier;
@@ -19,4 +19,9 @@ public abstract class VarObject extends AstNode{
         if(type!=null) return type;
         return Types.getRootType();
     }
+
+    public String getName() {
+        return name;
+    }
+    
 }

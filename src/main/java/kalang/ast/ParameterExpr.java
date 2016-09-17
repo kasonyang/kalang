@@ -19,7 +19,7 @@ public class ParameterExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        return overrideType !=null ? overrideType : parameter.type;
+        return overrideType !=null ? overrideType : parameter.getType();
     }
 
     /**

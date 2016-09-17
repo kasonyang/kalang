@@ -20,11 +20,6 @@ public class FieldNode extends VarObject implements FieldDescriptor{
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
     public int getModifier() {
         return modifier;
     }

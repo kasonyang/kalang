@@ -231,13 +231,13 @@ public class AstUtil {
     
     public static boolean hasSetter(ClassNode clazz,FieldNode field){
         ClassType type = Types.getClassType(clazz);
-        MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "set" + NameUtil.firstCharToUpperCase(field.name),new Type[]{ field.getType()});
+        MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "set" + NameUtil.firstCharToUpperCase(field.getName()),new Type[]{ field.getType()});
         return md !=null;
     }
     
     public static boolean hasGetter(ClassNode clazz,FieldNode field){
         ClassType type = Types.getClassType(clazz);
-        MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "get" + NameUtil.firstCharToUpperCase(field.name) , null);
+        MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "get" + NameUtil.firstCharToUpperCase(field.getName()) , null);
         return md != null;
     }
     

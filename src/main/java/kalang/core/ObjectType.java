@@ -56,7 +56,7 @@ public abstract class ObjectType extends Type{
         ParameterDescriptor[] pds = new ParameterDescriptor[ptypes.length];
         for(int j=0;j<pds.length;j++){
             ParameterNode p = pms[j];
-            pds[j] = new ParameterDescriptor(p.name,ptypes[j],p.modifier);
+            pds[j] = new ParameterDescriptor(p.getName(),ptypes[j],p.modifier);
         }
         return pds;
     }
@@ -135,7 +135,7 @@ public abstract class ObjectType extends Type{
         List<FieldNode> fields = clazz.fields;
         List<FieldDescriptor>ret = new ArrayList(fields.size());
         for(FieldNode f:fields){
-            ret.add(new StandardFieldDescriptor(f,parseType(f.type)));
+            ret.add(new StandardFieldDescriptor(f,parseType(f.getType())));
         }
         return ret.toArray(new FieldDescriptor[ret.size()]);
     }

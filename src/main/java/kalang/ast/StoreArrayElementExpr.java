@@ -17,7 +17,7 @@ public class StoreArrayElementExpr extends ExprNode {
     private ExprNode valueExpr;
 
     public StoreArrayElementExpr(VarObject array, ExprNode index, ExprNode from) {
-        if(!(array.type instanceof ArrayType)){
+        if(!(array.getType() instanceof ArrayType)){
             throw Exceptions.illegalArgument(array);
         }
         this.array = array;
@@ -27,7 +27,7 @@ public class StoreArrayElementExpr extends ExprNode {
 
     @Override
     public Type getType() {
-        return ((ArrayType)array.type).getComponentType();
+        return ((ArrayType)array.getType()).getComponentType();
     }
 
     public VarObject getArray() {
