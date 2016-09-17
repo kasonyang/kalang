@@ -90,6 +90,11 @@ class<T>{
         }
         return j;
     }
+    int forStmt2(){
+        int j;
+        for(j=0;j<6;j++);
+        return j;
+    }
     int whileStmt(){
         int i=1;
         while(i<6) i++;

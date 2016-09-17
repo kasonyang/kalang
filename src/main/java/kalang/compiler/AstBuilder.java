@@ -145,6 +145,12 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * @author Kason Yang
  */
 public class AstBuilder extends AbstractParseTreeVisitor implements KalangParserVisitor {
+
+    @Override
+    public Object visitEmptyStat(KalangParser.EmptyStatContext ctx) {
+        this.newBlock();
+        return this.popBlock();
+    }
     
     static class VarInfo{
         public Type type;
@@ -1063,13 +1069,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Override
     public AstNode visitForStat(ForStatContext ctx) {
-        //It seems that here lacks of var stack
+        //TODO It seems that here lacks of var stack
         BlockStmt forStmt = newBlock();
         if(ctx.localVarDecl()!=null){
             Statement vars = visitLocalVarDecl(ctx.localVarDecl());
             forStmt.statements.add(vars);
         }
-        ExprNode preConditionExpr = (ExprNode) visit(ctx.expression());
+        if(ctx.initExpressions!=null){
+            forStmt.statements.addAll(visitExpressions(ctx.initExpressions));
+        }
+        ExprNode preConditionExpr = visitExpression(ctx.condition);
         BlockStmt bs =newBlock();
         if (ctx.stat() != null) {
             Statement st = visitStat(ctx.stat());
@@ -1078,7 +1087,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
         }
         if(ctx.expressions()!=null){
-            bs.statements.addAll(visitExpressions(ctx.expressions()));
+            bs.statements.addAll(visitExpressions(ctx.updateExpressions));
         }
         popBlock();
         LoopStmt ls = new LoopStmt(bs, preConditionExpr, null);

@@ -135,7 +135,8 @@ ifStat:
     IF '(' expression ')' trueStmt=stat ( ELSE falseStmt=stat)?
     ;
 stat:
-    blockStmt
+    emptyStat
+    |blockStmt
     |varDeclStat
     |postIfStmt
     |exprStat
@@ -150,6 +151,9 @@ stat:
     |tryStat
     |throwStat
     |errorousStat
+;
+emptyStat:
+    ';'
 ;
 errorousStat:
     expression
@@ -201,8 +205,12 @@ doWhileStat:
 ;
 
 forStat:
-  FOR '(' localVarDecl? ';' expression? ';' expressions? ')'
-  stat
+    FOR '(' 
+        (localVarDecl | initExpressions=expressions)?
+        ';'  condition=expression?  
+        ';'  updateExpressions=expressions? 
+    ')'
+    stat
 ;
 forEachStat:
     'foreach' '(' expression 'as' ( Identifier ',' )? Identifier ')' stat
