@@ -757,11 +757,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         String name;
         Type type;
         boolean isOverriding = ctx.OVERRIDE() != null;
-        boolean isConstructor;
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
             type = Types.VOID_TYPE;
             name = "<init>";
-            isConstructor = true;
         } else {
             if (ctx.type() == null) {
                 type = Types.VOID_TYPE;
@@ -769,19 +767,29 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 type = parseType(ctx.returnType);
             }
             name = ctx.name.getText();
-            isConstructor = false;
         }
         List<TypeContext> paramTypesCtx = ctx.paramTypes;
-        method = thisClazz.createMethodNode();
+        int modifier = parseModifier(ctx.varModifier());
+        if(inScriptMode){
+            modifier |= Modifier.STATIC;
+        }
+        Type[] paramTypes;
+        String[] paramNames;
         if (paramTypesCtx != null) {
             int paramSize = paramTypesCtx.size();
+            paramTypes = new Type[paramSize];
+            paramNames = new String[paramSize];
             for(int i=0;i<paramSize;i++){
                 TypeContext t = paramTypesCtx.get(i);
-                method.createParameter(parseType(t),ctx.paramIds.get(i).getText());
+                paramTypes[i] = parseType(t);
+                paramNames[i] = ctx.paramIds.get(i).getText();
             }
+        }else{
+            paramTypes = new Type[0];
+            paramNames = new String[0];
         }
         //check method duplicated before generate java stub
-        String mStr = MethodUtil.getDeclarationKey(name,method.getParameters());
+        String mStr = MethodUtil.getDeclarationKey(name,paramTypes);
         boolean existed = Arrays.asList(thisClazz.getDeclaredMethodNodes()).stream().anyMatch((m)->{
             return MethodUtil.getDeclarationKey(m).equals(mStr);
         });
@@ -790,13 +798,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             handleSyntaxError("declare method duplicately:"+mStr, ctx);
             return null;
         }
-        method.annotations.addAll(getAnnotations(ctx.annotation()));
-        method.modifier = parseModifier(ctx.varModifier());
-        if(inScriptMode){
-            method.modifier |= Modifier.STATIC;
+        method = thisClazz.createMethodNode(type,name,modifier);
+        for(int i=0;i<paramTypes.length;i++){
+            method.createParameter(paramTypes[i], paramNames[i]);
         }
-        method.type = type;
-        method.name = name;
+        method.annotations.addAll(getAnnotations(ctx.annotation()));
         ObjectType superType = thisClazz.superType;
         if(superType==null){//the superType of interface may be null
             superType = Types.getRootType();
@@ -839,7 +845,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if (method.body != null && needReturn && !returned) {
             handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(method),ctx);
         }
-        return method;
+        MethodNode m = method;
+        method=null;
+        return m;
     }
 
     @Override
@@ -2077,11 +2085,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 visit(m);
             }
         }
-        MethodNode mm = thisClazz.createMethodNode();
-        mm.name = "main";
-        mm.modifier = Modifier.PUBLIC  + Modifier.STATIC;
-        mm.type = Types.VOID_TYPE;
-        mm.exceptionTypes = Collections.singletonList(Types.getExceptionClassType());
+        MethodNode mm = thisClazz.createMethodNode(Types.VOID_TYPE,"main",Modifier.PUBLIC  + Modifier.STATIC);
+        mm.exceptionTypes.add(Types.getExceptionClassType());
         mm.createParameter(Types.getArrayType(Types.getStringClassType()), "args");
         method = mm;
         List<StatContext> stats = ctx.stat();

@@ -121,19 +121,24 @@ public class JavaAstLoader extends AstLoader {
         methods.addAll(Arrays.asList(clz.getDeclaredConstructors()));
         for (Executable m : methods) {
             NullableKind nullable = getNullable(m.getAnnotations());
-            MethodNode methodNode = cn.createMethodNode();
+            Type mType;
+            String mName;
+            int mModifier;
+            if (m instanceof Method) {
+                mType =getType(((Method) m).getGenericReturnType(),genericTypes,((Method)m).getReturnType(),nullable);
+                mName = m.getName();
+                mModifier = m.getModifiers();
+            } else if (m instanceof Constructor) {
+                mName = "<init>";
+                mType = Types.VOID_TYPE;// getType(clz);
+                mModifier = m.getModifiers();// | Modifier.STATIC;
+            }else{
+                throw Exceptions.unexceptedValue(m);
+            }
+            MethodNode methodNode = cn.createMethodNode(mType,mName,mModifier);
             for (Parameter p : m.getParameters()) {
                 NullableKind pnullable = getNullable(p.getAnnotations());
                 methodNode.createParameter(getType(p.getParameterizedType(),genericTypes,p.getType(),pnullable) , p.getName());
-            }
-            if (m instanceof Method) {
-                methodNode.type =getType(((Method) m).getGenericReturnType(),genericTypes,((Method)m).getReturnType(),nullable);
-                methodNode.name = m.getName();
-                methodNode.modifier = m.getModifiers();
-            } else if (m instanceof Constructor) {
-                methodNode.name = "<init>";
-                methodNode.type = Types.VOID_TYPE;// getType(clz);
-                methodNode.modifier = m.getModifiers();// | Modifier.STATIC;
             }
             methodNode.body = null;
             for (Class e : m.getExceptionTypes()) {

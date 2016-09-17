@@ -87,17 +87,14 @@ public class AstUtil {
        ConstructorDescriptor[] constructors = supType.getConstructorDescriptors(clazzNode);
         ConstructorDescriptor m = MethodUtil.getConstructorDescriptor(constructors, null);
        if(m!=null){
-            MethodNode mm = clazzNode.createMethodNode();
-            mm.name = m.getName();
-            mm.exceptionTypes =Arrays.asList(m.getExceptionTypes());
-            mm.modifier = m.getModifier();
+            MethodNode mm = clazzNode.createMethodNode(Types.VOID_TYPE,m.getName(),m.getModifier());
+            mm.exceptionTypes.addAll(Arrays.asList(m.getExceptionTypes()));
             ParameterDescriptor[] pds = m.getParameterDescriptors();
             for(ParameterDescriptor pd:pds){
                 ParameterNode p = mm.createParameter(pd.getType(), pd.getName());
                 //TODO update mm.createParameter
                 p.modifier = pd.getModifier();
             }
-            mm.type = Types.VOID_TYPE;
             BlockStmt body = new BlockStmt(null);
             mm.body = body;
             ParameterNode[] parameters = mm.getParameters();
@@ -248,11 +245,8 @@ public class AstUtil {
         String fn = field.getName();
         String getterName = "get" + NameUtil.firstCharToUpperCase(fn);
         boolean isStatic = isStatic(field.getModifier());
-        MethodNode getter = clazz.createMethodNode();
+        MethodNode getter = clazz.createMethodNode(field.getType(),getterName,accessModifier);
         //getter.offset = field.offset;
-        getter.name = getterName;
-        getter.modifier = accessModifier;
-        getter.type = field.getType();
         BlockStmt body = new BlockStmt(null);
         FieldExpr fe;
         ClassReference cr = new ClassReference(clazz);
@@ -272,15 +266,14 @@ public class AstUtil {
         String fn = field.getName();
         String setterName = "set" + NameUtil.firstCharToUpperCase(fn);
         boolean isStatic = isStatic(field.getModifier());
-        MethodNode setter = clazz.createMethodNode();
-        //setter.offset = field.offset;
-        setter.name = setterName;
-        setter.modifier = accessModifier;
+        Type type;
         if(isStatic(accessModifier)){
-            setter.type = Types.VOID_TYPE;
+            type = Types.VOID_TYPE;
         }else{
-            setter.type = Types.getClassType(clazz);
+            type = Types.getClassType(clazz);
         }
+        MethodNode setter = clazz.createMethodNode(type,setterName,accessModifier);
+        //setter.offset = field.offset;
         ParameterNode param = setter.createParameter(field.getType(), field.getName());
         BlockStmt body = new BlockStmt(null);
         FieldExpr fe;

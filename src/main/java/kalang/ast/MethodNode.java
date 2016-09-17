@@ -18,33 +18,15 @@ public class MethodNode extends AstNode implements Annotationable{
     @Nullable
     public BlockStmt body = null;
     
-    public List<Type> exceptionTypes;
+    public final List<Type> exceptionTypes = new LinkedList();
     
     public ClassNode classNode;
     
-    
-    protected MethodNode(ClassNode classNode){
-            this.classNode = classNode;
-            if(exceptionTypes == null) exceptionTypes = new LinkedList();
-        
-    }
-    
-    
-    protected MethodNode(ClassNode classNode,Integer modifier,Type type,String name,List<ParameterNode> parameters,BlockStmt body,List<Type> exceptionTypes){
+    protected MethodNode(ClassNode classNode,Type type,String name,int modifier){
         this.classNode = classNode;
-            if(exceptionTypes == null) exceptionTypes = new LinkedList();
-            this.modifier = modifier;
-            this.type = type;
-            this.name = name;
-            this.body = body;
-            this.exceptionTypes = exceptionTypes;
-    }
-    
-    
-    protected static MethodNode create(ClassNode classNode){
-        MethodNode node = new MethodNode(classNode);
-        node.exceptionTypes = new LinkedList();
-        return node;
+        this.modifier = modifier;
+        this.type = type;
+        this.name = name;
     }
     
     public ParameterNode createParameter(Type type,String name){
