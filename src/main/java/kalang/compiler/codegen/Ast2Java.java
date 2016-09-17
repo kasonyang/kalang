@@ -242,7 +242,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
             }
             exStr = "throws " + String.join(",", types);//.join(",");
         }
-        String mname = node.name;
+        String mname = node.getName();
         String typeStr = "";
         int mdf = node.modifier;
         if (mname.equals("<init>")) {
@@ -255,7 +255,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
                 mname = cls.name.substring(lastIdx + 1);
             }
         } else {
-            typeStr = node.type.getName();
+            typeStr = node.getType().getName();
         }
         c(visitModifier(mdf)
                 + " "

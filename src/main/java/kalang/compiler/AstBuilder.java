@@ -839,8 +839,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         mapAst(method, ctx);
         boolean needReturn = (
-            method.type != null
-            && !method.type.equals(Types.VOID_TYPE)
+            method.getType() != null
+            && !method.getType().equals(Types.VOID_TYPE)
         );
         if (method.body != null && needReturn && !returned) {
             handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(method),ctx);
@@ -1395,7 +1395,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         ExprNode expr;
         try {
             ObjectInvokeExpr invoke = ObjectInvokeExpr.create(target, methodName, args,thisClazz);
-            if(invoke.getMethod().getMethodNode().type instanceof GenericType){
+            if(invoke.getMethod().getMethodNode().getType() instanceof GenericType){
                 Type invokeType = invoke.getType();
                 if(invokeType instanceof ObjectType){
                     expr = new CastExpr(invokeType, invoke);

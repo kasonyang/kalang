@@ -7,9 +7,9 @@ public class MethodNode extends AstNode implements Annotationable{
     
     public int modifier;
     
-    public Type type;
+    private Type type;
     
-    public String name;
+    private String name;
     
     private final List<ParameterNode> parameters = new LinkedList();
     
@@ -20,7 +20,7 @@ public class MethodNode extends AstNode implements Annotationable{
     
     public final List<Type> exceptionTypes = new LinkedList();
     
-    public ClassNode classNode;
+    private final ClassNode classNode;
     
     protected MethodNode(ClassNode classNode,Type type,String name,int modifier){
         this.classNode = classNode;
@@ -71,6 +71,18 @@ public class MethodNode extends AstNode implements Annotationable{
     
     public ParameterNode[] getParameters(){
         return parameters.toArray(new ParameterNode[parameters.size()]);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public ClassNode getClassNode() {
+        return classNode;
     }
     
     

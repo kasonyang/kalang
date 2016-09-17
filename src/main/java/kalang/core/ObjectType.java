@@ -95,11 +95,11 @@ public abstract class ObjectType extends Type{
         }
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
-            if("<init>".equals(mds[i].name)) continue;
+            if("<init>".equals(mds[i].getName())) continue;
             MethodDescriptor md = new MethodDescriptor(
                     mds[i]
                     ,getParameterDescriptors(mds[i])
-                    ,parseType(mds[i].type)
+                    ,parseType(mds[i].getType())
                     ,parseTypes(mds[i].exceptionTypes.toArray(new Type[0]))
             );
             descs.put(md.getDeclarationKey(), md);
@@ -111,7 +111,7 @@ public abstract class ObjectType extends Type{
         Map<String,ConstructorDescriptor> descs = new HashMap();
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
-            if(!"<init>".equals(mds[i].name)) continue;
+            if(!"<init>".equals(mds[i].getName())) continue;
             ConstructorDescriptor md = new ConstructorDescriptor(
                     mds[i]
                     ,getParameterDescriptors(mds[i])

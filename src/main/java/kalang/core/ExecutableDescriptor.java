@@ -25,7 +25,7 @@ public abstract class ExecutableDescriptor {
     public ExecutableDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors,Type returnType,Type[] exceptionTypes) {
         this.modifier = method.modifier;
         this.methodNode = method;
-        this.name = method.name;
+        this.name = method.getName();
         this.parameterDescriptors = parameterDescriptors;
         Type[] ptypes = new Type[parameterDescriptors.length];
         for(int i=0;i<this.parameterDescriptors.length;i++){

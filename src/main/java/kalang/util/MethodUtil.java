@@ -48,7 +48,7 @@ public class MethodUtil {
     }
 
     public static String getDeclarationKey(MethodNode node) {
-        return MethodUtil.getDeclarationKey(node.name, getParameterTypes(node));
+        return MethodUtil.getDeclarationKey(node.getName(), getParameterTypes(node));
     }
 
     public static String getParametersDescription(Type[] types) {
@@ -65,14 +65,14 @@ public class MethodUtil {
 
     public static String toString(MethodNode node) {
         String className = "";
-        if (node.classNode != null) {
-            className = node.classNode.name + "#";
+        if (node.getClassNode() != null) {
+            className = node.getClassNode().name + "#";
         }
-        return String.format("%s.%s(%s)", className, node.name, getParametersDescription(getParameterTypes(node)));
+        return String.format("%s.%s(%s)", className, node.getName(), getParametersDescription(getParameterTypes(node)));
     }
 
     public static String toString(MethodNode node, String className) {
-        return String.format("%s.%s(%s)", className, node.name, getParametersDescription(getParameterTypes(node)));
+        return String.format("%s.%s(%s)", className, node.getName(), getParametersDescription(getParameterTypes(node)));
     }
 
     public static String toString(MethodNode[] methods, String delimiter) {

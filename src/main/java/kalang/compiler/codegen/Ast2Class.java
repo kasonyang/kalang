@@ -178,7 +178,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         for(ParameterNode p:m.getParameters()){
             ptype += typeSignature(p.type);
         }
-        return "(" + ptype + ")" + typeSignature(m.type);
+        return "(" + ptype + ")" + typeSignature(m.getType());
     }
     
     @Nullable
@@ -329,9 +329,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMethodNode(MethodNode node) {
         int access = node.modifier;
-        md = classWriter.visitMethod(access, internalName(node.name),getMethodDescriptor(node),methodSignature(node),internalName(node.exceptionTypes.toArray(new Type[0])) );
-        if(node.type instanceof ObjectType){
-            annotationNullable(md,(ObjectType)node.type);
+        md = classWriter.visitMethod(access, internalName(node.getName()),getMethodDescriptor(node),methodSignature(node),internalName(node.exceptionTypes.toArray(new Type[0])) );
+        if(node.getType() instanceof ObjectType){
+            annotationNullable(md,(ObjectType)node.getType());
         }
         annotation(md, node.getAnnotations());
         this.methodStartLabel = new Label();
@@ -355,7 +355,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitLabel(methodStartLabel);
         if(body!=null){
             visit(body);
-            if(node.type.equals(VOID_TYPE)){
+            if(node.getType().equals(VOID_TYPE)){
                 md.visitInsn(RETURN);
             }
             md.visitLabel(methodEndLabel);
@@ -941,7 +941,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
         
     private String getMethodDescriptor(MethodNode node) {
-        return getMethodDescriptor(node.type , MethodUtil.getParameterTypes(node));
+        return getMethodDescriptor(node.getType(), MethodUtil.getParameterTypes(node));
     }
     
     private org.objectweb.asm.Type asmType(Type type){

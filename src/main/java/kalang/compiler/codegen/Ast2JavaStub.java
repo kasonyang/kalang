@@ -41,14 +41,14 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     public Void visitMethodNode(MethodNode node) {
         sb.append(modifier2String(node.modifier))
                 .append(" ");
-        boolean isConstructor = "<init>".equals(node.name);
+        boolean isConstructor = "<init>".equals(node.getName());
         if(isConstructor){
-            sb.append(NameUtil.getSimpleClassName(node.classNode.name));
+            sb.append(NameUtil.getSimpleClassName(node.getClassNode().name));
         }else{
             sb.append(this.isInterface ? "" : "native ")
-                .append(getJavaTypeName(node.type.getName()))
+                .append(getJavaTypeName(node.getType().getName()))
                 .append(" ")
-                .append(node.name);
+                .append(node.getName());
         }
         sb.append("(");
         super.visitMethodNode(node);

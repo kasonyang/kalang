@@ -449,7 +449,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     @Override
     public Type visitReturnStmt(ReturnStmt node) {
-        Type retType = method.type;
+        Type retType = method.getType();
         if (node.expr == null) {
             if(!retType.equals(Types.VOID_TYPE)){
                 err.fail("expression expected", 0, node);
@@ -566,7 +566,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         Set<String> attrKeys = annotation.values.keySet();
         List<String> missingValues = new LinkedList<>();
         for(MethodNode m:mds){
-            String name = m.name;
+            String name = m.getName();
             if(!attrKeys.contains(name)){
                 missingValues.add(name);
             }

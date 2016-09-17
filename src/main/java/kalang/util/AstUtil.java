@@ -119,7 +119,7 @@ public class AstUtil {
     public static boolean containsConstructor(ClassNode clazz){
         MethodNode[] dms = clazz.getDeclaredMethodNodes();
         for(MethodNode m:dms){
-            if("<init>".equals(m.name)) return true;
+            if("<init>".equals(m.getName())) return true;
         }
         return false;
     }
@@ -211,7 +211,7 @@ public class AstUtil {
     }
 
     public static boolean isConstructor(MethodNode m) {
-        return !isStatic(m.modifier) && m.name.equals("<init>");
+        return !isStatic(m.modifier) && m.getName().equals("<init>");
     }
 
     public static boolean hasConstructorCallStatement(List<Statement> statements) {
