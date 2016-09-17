@@ -760,7 +760,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ownerClass = internalName(targetType);
             ExprNode target = oie.getInvokeTarget();
             visit(target);
-            if (target instanceof SuperExpr || method.getName().equals("<init>")) {
+            if (Modifier.isPrivate(method.getModifier()) || (target instanceof SuperExpr) || method.getName().equals("<init>")) {
                 opc = INVOKESPECIAL;
             } else {
                 opc =ModifierUtil.isInterface(targetType.getClassNode().modifier) ?
