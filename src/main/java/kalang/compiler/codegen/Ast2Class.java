@@ -1012,31 +1012,36 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Type tt = toType;
         if(f.equals(INT_TYPE)){
             if(tt.equals(LONG_TYPE)) return I2L;
-            if(tt.equals(FLOAT_TYPE)) return I2F;
-            if(tt.equals(DOUBLE_TYPE)) return I2D;
-            if(tt.equals(SHORT_TYPE)) return I2S;
-            if(tt.equals(BYTE_TYPE)) return I2B;
-            if(tt.equals(CHAR_TYPE)) return I2C;
+            else if(tt.equals(FLOAT_TYPE)) return I2F;
+            else if(tt.equals(DOUBLE_TYPE)) return I2D;
+            else if(tt.equals(SHORT_TYPE)) return I2S;
+            else if(tt.equals(BYTE_TYPE)) return I2B;
+            else if(tt.equals(CHAR_TYPE)) return I2C;
         }else if(f.equals(FLOAT_TYPE)){
             if(tt.equals(INT_TYPE)) return F2I;
-            if(tt.equals(LONG_TYPE)) return F2L;
-            if(tt.equals(DOUBLE_TYPE)) return F2D;
+            else if(tt.equals(LONG_TYPE)) return F2L;
+            else if(tt.equals(DOUBLE_TYPE)) return F2D;
         }else if(f.equals(LONG_TYPE)){
             if(tt.equals(INT_TYPE)) return L2I;
-            if(tt.equals(FLOAT_TYPE)) return L2F;
-            if(tt.equals(DOUBLE_TYPE)) return L2D;
+            else if(tt.equals(FLOAT_TYPE)) return L2F;
+            else if(tt.equals(DOUBLE_TYPE)) return L2D;
         }else if(f.equals(DOUBLE_TYPE)){
             if(tt.equals(INT_TYPE)) return D2I;
-            if(tt.equals(LONG_TYPE)) return D2L;
-            if(tt.equals(FLOAT_TYPE)) return D2F;
+            else if(tt.equals(LONG_TYPE)) return D2L;
+            else if(tt.equals(FLOAT_TYPE)) return D2F;
         }else if(f.equals(BYTE_TYPE)){
             if(tt.equals(SHORT_TYPE)) return 0;
+            else if(tt.equals(INT_TYPE)) return 0;
+            else if(tt.equals(LONG_TYPE)) return I2L;
+            else if(tt.equals(FLOAT_TYPE)) return I2F;
+            else if(tt.equals(DOUBLE_TYPE)) return I2D;
+        }else if(f.equals(CHAR_TYPE) || f.equals(SHORT_TYPE)){
             if(tt.equals(INT_TYPE)) return 0;
-            if(tt.equals(LONG_TYPE)) return I2L;
-            if(tt.equals(FLOAT_TYPE)) return I2F;
-            if(tt.equals(DOUBLE_TYPE)) return I2D;
+            else if(tt.equals(LONG_TYPE)) return I2L;
+            else if(tt.equals(FLOAT_TYPE)) return I2F;
+            else if(tt.equals(DOUBLE_TYPE)) return I2D;
         }
-        throw new UnsupportedOperationException("It is unable to cast " + fromType + " to " + toType);
+        throw Exceptions.unexceptedException("It is unable to cast " + fromType + " to " + toType);
     }
 
     @Override
