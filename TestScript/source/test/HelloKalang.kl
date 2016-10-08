@@ -95,6 +95,14 @@ class<T>{
         for(j=0;j<6;j++);
         return j;
     }
+    int forStmtDead(){
+        int i = 0;
+        for(;;){
+            i++;
+            if(i==6) return i;
+        }
+        return -1;
+    }
     int whileStmt(){
         int i=1;
         while(i<6) i++;

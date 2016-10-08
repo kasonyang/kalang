@@ -1078,7 +1078,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if(ctx.initExpressions!=null){
             forStmt.statements.addAll(visitExpressions(ctx.initExpressions));
         }
-        ExprNode preConditionExpr = visitExpression(ctx.condition);
+        ExprNode preConditionExpr = ctx.condition!=null ? visitExpression(ctx.condition) : null;
         BlockStmt bs =newBlock();
         if (ctx.stat() != null) {
             Statement st = visitStat(ctx.stat());
@@ -1086,7 +1086,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 bs.statements.addAll(((BlockStmt)st).statements);
             }
         }
-        if(ctx.expressions()!=null){
+        if(ctx.updateExpressions!=null){
             bs.statements.addAll(visitExpressions(ctx.updateExpressions));
         }
         popBlock();
