@@ -247,11 +247,11 @@ expression
     |   ( 'new' type '[' size=expression ']' 
             | 'new' type '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}'
         )    #newArrayExpr
-    |   '(' type ')' expression #castExpr
     |   expression op=('++' | '--') #incExpr
     |   ( '+' | '-' ) expression #unaryExpr
     |   op=( '++' | '--' ) expression #preIncExpr
     |   ('~'|'!') expression  #unaryExpr
+    |   '(' type ')' expression #castExpr
     |   expression ('*'|'/'|'%') expression #binaryExpr
     |   expression ('+'|'-') expression #binaryExpr
     //don't write as '<<' , '>>>' or '>>' because it would cause problem when visit HashMap<String,List<String>>

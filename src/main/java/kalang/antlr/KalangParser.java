@@ -3701,42 +3701,27 @@ public class KalangParser extends Parser {
 			switch ( getInterpreter().adaptivePredict(_input,82,_ctx) ) {
 			case 1:
 				{
-				_localctx = new CastExprContext(_localctx);
+				_localctx = new UnaryExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 
 				setState(508);
-				match(LPAREN);
-				setState(509);
-				type(0);
-				setState(510);
-				match(RPAREN);
-				setState(511);
-				expression(20);
-				}
-				break;
-			case 2:
-				{
-				_localctx = new UnaryExprContext(_localctx);
-				_ctx = _localctx;
-				_prevctx = _localctx;
-				setState(513);
 				_la = _input.LA(1);
 				if ( !(_la==ADD || _la==SUB) ) {
 				_errHandler.recoverInline(this);
 				} else {
 					consume();
 				}
-				setState(514);
-				expression(18);
+				setState(509);
+				expression(19);
 				}
 				break;
-			case 3:
+			case 2:
 				{
 				_localctx = new PreIncExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(515);
+				setState(510);
 				((PreIncExprContext)_localctx).op = _input.LT(1);
 				_la = _input.LA(1);
 				if ( !(_la==INC || _la==DEC) ) {
@@ -3744,23 +3729,38 @@ public class KalangParser extends Parser {
 				} else {
 					consume();
 				}
-				setState(516);
-				expression(17);
+				setState(511);
+				expression(18);
 				}
 				break;
-			case 4:
+			case 3:
 				{
 				_localctx = new UnaryExprContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(517);
+				setState(512);
 				_la = _input.LA(1);
 				if ( !(_la==BANG || _la==TILDE) ) {
 				_errHandler.recoverInline(this);
 				} else {
 					consume();
 				}
-				setState(518);
+				setState(513);
+				expression(17);
+				}
+				break;
+			case 4:
+				{
+				_localctx = new CastExprContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(514);
+				match(LPAREN);
+				setState(515);
+				type(0);
+				setState(516);
+				match(RPAREN);
+				setState(517);
 				expression(16);
 				}
 				break;
@@ -4449,7 +4449,7 @@ public class KalangParser extends Parser {
 						_localctx = new IncExprContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(716);
-						if (!(precpred(_ctx, 19))) throw new FailedPredicateException(this, "precpred(_ctx, 19)");
+						if (!(precpred(_ctx, 20))) throw new FailedPredicateException(this, "precpred(_ctx, 20)");
 						setState(717);
 						((IncExprContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
@@ -4716,7 +4716,7 @@ public class KalangParser extends Parser {
 		case 14:
 			return precpred(_ctx, 23);
 		case 15:
-			return precpred(_ctx, 19);
+			return precpred(_ctx, 20);
 		case 16:
 			return precpred(_ctx, 11);
 		case 17:
@@ -4925,10 +4925,10 @@ public class KalangParser extends Parser {
 		"\7L\2\2\u01f4\u01f6\5F$\2\u01f5\u01f3\3\2\2\2\u01f6\u01f9\3\2\2\2\u01f7"+
 		"\u01f5\3\2\2\2\u01f7\u01f8\3\2\2\2\u01f8C\3\2\2\2\u01f9\u01f7\3\2\2\2"+
 		"\u01fa\u01fb\5F$\2\u01fb\u01fc\7K\2\2\u01fcE\3\2\2\2\u01fd\u01fe\b$\1"+
-		"\2\u01fe\u01ff\7E\2\2\u01ff\u0200\5\24\13\2\u0200\u0201\7F\2\2\u0201\u0202"+
-		"\5F$\26\u0202\u028a\3\2\2\2\u0203\u0204\t\5\2\2\u0204\u028a\5F$\24\u0205"+
-		"\u0206\t\6\2\2\u0206\u028a\5F$\23\u0207\u0208\t\7\2\2\u0208\u028a\5F$"+
-		"\22\u0209\u020a\7E\2\2\u020a\u020b\5F$\2\u020b\u020c\7F\2\2\u020c\u028a"+
+		"\2\u01fe\u01ff\t\5\2\2\u01ff\u028a\5F$\25\u0200\u0201\t\6\2\2\u0201\u028a"+
+		"\5F$\24\u0202\u0203\t\7\2\2\u0203\u028a\5F$\23\u0204\u0205\7E\2\2\u0205"+
+		"\u0206\5\24\13\2\u0206\u0207\7F\2\2\u0207\u0208\5F$\22\u0208\u028a\3\2"+
+		"\2\2\u0209\u020a\7E\2\2\u020a\u020b\5F$\2\u020b\u020c\7F\2\2\u020c\u028a"+
 		"\3\2\2\2\u020d\u028a\t\b\2\2\u020e\u028a\5H%\2\u020f\u0210\7P\2\2\u0210"+
 		"\u0211\7q\2\2\u0211\u0212\7L\2\2\u0212\u0213\7q\2\2\u0213\u0215\7O\2\2"+
 		"\u0214\u020f\3\2\2\2\u0214\u0215\3\2\2\2\u0215\u0228\3\2\2\2\u0216\u0217"+
@@ -4968,8 +4968,8 @@ public class KalangParser extends Parser {
 		"\u0282\3\2\2\2\u0280\u027e\3\2\2\2\u0280\u0281\3\2\2\2\u0281\u0283\3\2"+
 		"\2\2\u0282\u0280\3\2\2\2\u0283\u0285\7H\2\2\u0284\u0286\7z\2\2\u0285\u0284"+
 		"\3\2\2\2\u0285\u0286\3\2\2\2\u0286\u0287\3\2\2\2\u0287\u0288\7y\2\2\u0288"+
-		"\u028a\3\2\2\2\u0289\u01fd\3\2\2\2\u0289\u0203\3\2\2\2\u0289\u0205\3\2"+
-		"\2\2\u0289\u0207\3\2\2\2\u0289\u0209\3\2\2\2\u0289\u020d\3\2\2\2\u0289"+
+		"\u028a\3\2\2\2\u0289\u01fd\3\2\2\2\u0289\u0200\3\2\2\2\u0289\u0202\3\2"+
+		"\2\2\u0289\u0204\3\2\2\2\u0289\u0209\3\2\2\2\u0289\u020d\3\2\2\2\u0289"+
 		"\u020e\3\2\2\2\u0289\u0214\3\2\2\2\u0289\u022e\3\2\2\2\u0289\u023f\3\2"+
 		"\2\2\u0289\u024d\3\2\2\2\u0289\u0273\3\2\2\2\u0289\u0275\3\2\2\2\u0289"+
 		"\u0276\3\2\2\2\u028a\u02d7\3\2\2\2\u028b\u028c\f\21\2\2\u028c\u028d\t"+
@@ -4992,7 +4992,7 @@ public class KalangParser extends Parser {
 		"\2\2\u02c3\u02c4\3\2\2\2\u02c4\u02c5\3\2\2\2\u02c5\u02d6\7F\2\2\u02c6"+
 		"\u02c7\f\33\2\2\u02c7\u02c8\t\17\2\2\u02c8\u02d6\7q\2\2\u02c9\u02ca\f"+
 		"\31\2\2\u02ca\u02cb\7I\2\2\u02cb\u02cc\5F$\2\u02cc\u02cd\7J\2\2\u02cd"+
-		"\u02d6\3\2\2\2\u02ce\u02cf\f\25\2\2\u02cf\u02d6\t\6\2\2\u02d0\u02d1\f"+
+		"\u02d6\3\2\2\2\u02ce\u02cf\f\26\2\2\u02cf\u02d6\t\6\2\2\u02d0\u02d1\f"+
 		"\r\2\2\u02d1\u02d2\7%\2\2\u02d2\u02d6\7q\2\2\u02d3\u02d4\f\5\2\2\u02d4"+
 		"\u02d6\7M\2\2\u02d5\u028b\3\2\2\2\u02d5\u028e\3\2\2\2\u02d5\u0291\3\2"+
 		"\2\2\u02d5\u029c\3\2\2\2\u02d5\u029f\3\2\2\2\u02d5\u02a2\3\2\2\2\u02d5"+
