@@ -18,7 +18,7 @@ public class MethodNode extends AstNode implements Annotationable{
     @Nullable
     private final BlockStmt body;
     
-    public final List<Type> exceptionTypes = new LinkedList();
+    private final List<Type> exceptionTypes = new LinkedList();
     
     private final ClassNode classNode;
     
@@ -96,6 +96,14 @@ public class MethodNode extends AstNode implements Annotationable{
     
     public void addAnnotation(AnnotationNode annotation){
         this.annotations.add(annotation);
+    }
+    
+    public void addExceptionType(Type type){
+        this.exceptionTypes.add(type);
+    }
+    
+    public Type[] getExceptionTypes(){
+        return this.exceptionTypes.toArray(new Type[exceptionTypes.size()]);
     }
     
 }

@@ -435,10 +435,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         method = node;
         this.exceptionStack.push(new HashMap<>());
         super.visitMethodNode(node);
-        if (method.exceptionTypes != null) {
-            for (Type e : method.exceptionTypes) {
-                this.caughException(e);
-            }
+        for (Type e : method.getExceptionTypes()) {
+            this.caughException(e);
         }
         Map<Type, AstNode> uncaught = this.exceptionStack.pop();
         for(Type k:uncaught.keySet()){

@@ -329,7 +329,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMethodNode(MethodNode node) {
         int access = node.getModifier();
-        md = classWriter.visitMethod(access, internalName(node.getName()),getMethodDescriptor(node),methodSignature(node),internalName(node.exceptionTypes.toArray(new Type[0])) );
+        md = classWriter.visitMethod(access, internalName(node.getName()),getMethodDescriptor(node),methodSignature(node),internalName(node.getExceptionTypes()) );
         if(node.getType() instanceof ObjectType){
             annotationNullable(md,(ObjectType)node.getType());
         }

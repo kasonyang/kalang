@@ -85,7 +85,7 @@ public class AstUtil {
         ConstructorDescriptor m = MethodUtil.getConstructorDescriptor(constructors, null);
        if(m!=null){
             MethodNode mm = clazzNode.createMethodNode(Types.VOID_TYPE,m.getName(),m.getModifier());
-            mm.exceptionTypes.addAll(Arrays.asList(m.getExceptionTypes()));
+            for(Type e : m.getExceptionTypes()) mm.addExceptionType(e);
             ParameterDescriptor[] pds = m.getParameterDescriptors();
             for(ParameterDescriptor pd:pds){
                 ParameterNode p = mm.createParameter(pd.getType(), pd.getName());

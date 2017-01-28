@@ -858,7 +858,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             for (Token et : ctx.exceptionTypes) {
                 ObjectType exType = requireClassType(et);
                 if(exType!=null){
-                    method.exceptionTypes.add(exType);
+                    method.addExceptionType(exType);
                 }
             }
         }
@@ -2128,7 +2128,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
         }
         MethodNode mm = thisClazz.createMethodNode(Types.VOID_TYPE,"main",Modifier.PUBLIC  + Modifier.STATIC);
-        mm.exceptionTypes.add(Types.getExceptionClassType());
+        mm.addExceptionType(Types.getExceptionClassType());
         mm.createParameter(Types.getArrayType(Types.getStringClassType()), "args");
         method = mm;
         this.currentBlock = mm.getBody();

@@ -235,11 +235,10 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         }
         String ps = String.join(",", psList);//.join(",");
         String exStr = "";
-        if (node.exceptionTypes.size() > 0) {
-            List<String> types = new ArrayList<>(node.exceptionTypes.size());
-            for (Type et : node.exceptionTypes) {
-                types.add(et.getName());
-            }
+        Type[] exceptionTypes = node.getExceptionTypes();
+        if (exceptionTypes.length > 0) {
+            List<String> types = new ArrayList<>(exceptionTypes.length);
+            for (Type et : exceptionTypes)  types.add(et.getName());
             exStr = "throws " + String.join(",", types);//.join(",");
         }
         String mname = node.getName();

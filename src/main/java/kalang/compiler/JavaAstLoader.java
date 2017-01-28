@@ -141,7 +141,7 @@ public class JavaAstLoader extends AstLoader {
                 methodNode.createParameter(getType(p.getParameterizedType(),genericTypes,p.getType(),pnullable) , p.getName());
             }
             for (Class e : m.getExceptionTypes()) {
-                methodNode.exceptionTypes.add(getType(e,genericTypes,e,NullableKind.NONNULL));
+                methodNode.addExceptionType(getType(e,genericTypes,e,NullableKind.NONNULL));
             }
         }
         for (Field f : clz.getFields()) {

@@ -100,7 +100,7 @@ public abstract class ObjectType extends Type{
                     mds[i]
                     ,getParameterDescriptors(mds[i])
                     ,parseType(mds[i].getType())
-                    ,parseTypes(mds[i].exceptionTypes.toArray(new Type[0]))
+                    ,parseTypes(mds[i].getExceptionTypes())
             );
             descs.put(md.getDeclarationKey(), md);
         }
@@ -115,7 +115,7 @@ public abstract class ObjectType extends Type{
             ConstructorDescriptor md = new ConstructorDescriptor(
                     mds[i]
                     ,getParameterDescriptors(mds[i])
-                    ,parseTypes(mds[i].exceptionTypes.toArray(new Type[0]))
+                    ,parseTypes(mds[i].getExceptionTypes())
             );
             descs.put(md.getDeclarationKey(), md);
         }
