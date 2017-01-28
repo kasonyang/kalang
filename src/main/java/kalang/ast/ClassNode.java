@@ -40,12 +40,6 @@ public class ClassNode extends AstNode implements Annotationable{
     public ClassNode(){
     
     }
-              
-    
-    public static ClassNode create(){
-        ClassNode node = new ClassNode();
-        return node;
-    }
     
     public void declareGenericType(GenericType type){
         genericTypes.add(type);

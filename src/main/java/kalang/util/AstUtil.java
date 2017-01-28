@@ -295,7 +295,7 @@ public class AstUtil {
     }
 
     public static ClassNode createClassNodeWithInterfaces(String name,@Nullable ObjectType superType,@Nullable ObjectType... interfaces) {
-        ClassNode cn = ClassNode.create();
+        ClassNode cn = new ClassNode();
         cn.name = name;
         cn.superType = superType==null ? Types.getRootType() : superType;
         if(interfaces!=null) cn.interfaces.addAll(Arrays.asList(interfaces));
@@ -303,7 +303,7 @@ public class AstUtil {
     }
     
     public static ClassNode createArrayAst(String component) {
-        ClassNode clazz = ClassNode.create();
+        ClassNode clazz = new ClassNode();
         clazz.name = component + "[]";
         clazz.superType = Types.getRootType();
         return clazz;

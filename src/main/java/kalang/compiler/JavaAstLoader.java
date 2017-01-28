@@ -75,7 +75,7 @@ public class JavaAstLoader extends AstLoader {
      */
     @Nonnull
     public ClassNode buildFromClass(@Nonnull Class clz) throws AstNotFoundException {
-        ClassNode cn = ClassNode.create();
+        ClassNode cn = new ClassNode();
         cn.name = clz.getName();
         cn.modifier = clz.getModifiers();
         loadedClasses.put(clz.getName(), cn);
