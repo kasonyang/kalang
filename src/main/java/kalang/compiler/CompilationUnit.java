@@ -19,9 +19,6 @@ public class CompilationUnit {
     
     private final SemanticAnalyzer semanticAnalyzer;
     
-    @Nonnull
-    private final ClassNode ast;
-    
     private final CommonTokenStream tokens;
     
     private int compilingPhase;
@@ -44,13 +41,13 @@ public class CompilationUnit {
         astBuilder.importPackage("java.io");
         astBuilder.importPackage("java.nio");
         astBuilder.importPackage("kalang.io");
-        ast = astBuilder.getAst();        
         semanticAnalyzer = context.createSemanticAnalyzer(this,context.getAstLoader());
+        compile(PHASE_INITIALIZE);
     }
     
     protected void doCompilePhase(int phase){
         if(phase==PHASE_INITIALIZE){
-            
+            parseInit(context.getCompileErrorHandler());
         }else if(phase==PHASE_PARSING){
             parseMeta(context.getCompileErrorHandler());
         }else if(phase == PHASE_BUILDAST){
@@ -62,7 +59,7 @@ public class CompilationUnit {
             if(codeGenerator==null){
                 throw new IllegalStateException("CodeGenerator is missing");
             }
-            codeGenerator.generate(ast);
+            codeGenerator.generate(this.getAst());
         }
     }
     
@@ -71,6 +68,10 @@ public class CompilationUnit {
             compilingPhase++;
             doCompilePhase(compilingPhase);
         }
+    }
+    
+    protected void parseInit(CompileErrorHandler semanticErrorHandler){
+        parse(semanticErrorHandler,AstBuilder.PARSING_PHASE_INIT);
     }
     
     protected void parseMeta(CompileErrorHandler semanticErrorHandler){
@@ -88,12 +89,12 @@ public class CompilationUnit {
 
     protected void semanticAnalysis(CompileErrorHandler handler) {
         semanticAnalyzer.setAstSemanticErrorHandler(handler);
-        semanticAnalyzer.check(ast);
+        semanticAnalyzer.check(this.getAst());
     }
 
     @Nonnull
     public ClassNode getAst() {
-        return ast;
+        return astBuilder.getAst();
     }
 
     @Nonnull

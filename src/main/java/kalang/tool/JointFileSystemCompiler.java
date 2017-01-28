@@ -3,6 +3,7 @@ package kalang.tool;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -77,8 +78,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
     }
     
     private ClassNode createMockClass(String className){
-        ClassNode node = new ClassNode();
-        node.name = className;
+        ClassNode node = new ClassNode(className,Modifier.PUBLIC);
         return node;
     }
 
