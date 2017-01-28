@@ -2254,7 +2254,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 }
             }
         }
-        for(FieldNode fieldNode:thisClazz.fields){
+        for(FieldNode fieldNode:thisClazz.getFields()){
             int mdf = fieldNode.modifier;
             if(!AstUtil.hasGetter(thisClazz, fieldNode)){
                 AstUtil.createGetter(thisClazz, fieldNode, mdf);

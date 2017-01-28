@@ -218,7 +218,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
                 + " "
                 + impStr
                 + " {");
-        for (FieldNode f : node.fields) {
+        for (FieldNode f : node.getFields()) {
             c(this.getVarStr(f) + ";\r\n");
         }
         visitAll(Arrays.asList(node.getDeclaredMethodNodes()));

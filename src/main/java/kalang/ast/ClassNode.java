@@ -18,7 +18,7 @@ public class ClassNode extends AstNode implements Annotationable{
     @Nullable
     public ObjectType superType;
     
-    public final List<FieldNode> fields = new ArrayList<>();
+    private final List<FieldNode> fields = new ArrayList<>();
     
     protected final List<MethodNode> methods = new LinkedList();
     
@@ -78,6 +78,10 @@ public class ClassNode extends AstNode implements Annotationable{
     @Override
     public AnnotationNode[] getAnnotations() {
         return annotations.toArray(new AnnotationNode[0]);
+    }
+    
+    public FieldNode[] getFields(){
+        return this.fields.toArray(new FieldNode[fields.size()]);
     }
     
 }

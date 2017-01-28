@@ -125,7 +125,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         HashMap<String, VarObject> oldFiels = this.fields;
         this.fields = new HashMap();
         //this.methodDeclared = new LinkedList();
-        for (VarObject f : clz.fields) {
+        for (VarObject f : clz.getFields()) {
             this.fields.put(f.getName(), f);
         }
         ClassNode oldClazz = this.clazz;
