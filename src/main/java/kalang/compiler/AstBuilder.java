@@ -836,7 +836,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         for(int i=0;i<paramTypes.length;i++){
             method.createParameter(paramTypes[i], paramNames[i]);
         }
-        method.annotations.addAll(getAnnotations(ctx.annotation()));
+        for(AnnotationNode a:getAnnotations(ctx.annotation()))  method.addAnnotation(a);
         ObjectType superType = thisClazz.superType;
         if(superType==null){//the superType of interface may be null
             superType = Types.getRootType();

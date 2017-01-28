@@ -13,7 +13,7 @@ public class MethodNode extends AstNode implements Annotationable{
     
     private final List<ParameterNode> parameters = new LinkedList();
     
-    public final List<AnnotationNode> annotations = new LinkedList<>();
+    private final List<AnnotationNode> annotations = new LinkedList<>();
     
     @Nullable
     private final BlockStmt body;
@@ -58,7 +58,7 @@ public class MethodNode extends AstNode implements Annotationable{
 
     @Override
     public AnnotationNode[] getAnnotations() {
-        return annotations.toArray(new AnnotationNode[0]);
+        return annotations.toArray(new AnnotationNode[annotations.size()]);
     }
 
     @Override
@@ -92,6 +92,10 @@ public class MethodNode extends AstNode implements Annotationable{
 
     public BlockStmt getBody() {
         return body;
+    }
+    
+    public void addAnnotation(AnnotationNode annotation){
+        this.annotations.add(annotation);
     }
     
 }
