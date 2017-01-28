@@ -166,7 +166,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         String superTypeStr = "";
         if(c.superType!=null) superTypeStr += typeSignature(c.superType);
-        for(ObjectType itf:c.interfaces){
+        for(ObjectType itf:c.getInterfaces()){
             superTypeStr += typeSignature(itf);
         }
         return "<" + gnrTypeStr + ">" + superTypeStr ;
@@ -285,8 +285,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             parentName = superType.getName();
         }
         String[] interfaces = null;
-        if(node.interfaces!=null){
-            interfaces = internalName(node.interfaces.toArray(new Type[0]));
+        if(node.getInterfaces().length>0){
+            interfaces = internalName(node.getInterfaces());
         }
         int access = node.modifier;
         classWriter.visit(V1_6, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);        String fileName = node.fileName;

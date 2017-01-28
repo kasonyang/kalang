@@ -113,7 +113,7 @@ public class JavaAstLoader extends AstLoader {
         Class[] clzInterfaces = clz.getInterfaces();
         if(clzInterfaces != null){
             for(int i=0;i<clzInterfaces.length;i++){
-                cn.interfaces.add((ObjectType)getType(typeInterfaces[i], genericTypes,clzInterfaces[i],NullableKind.NONNULL));
+                cn.addInterface((ObjectType)getType(typeInterfaces[i], genericTypes,clzInterfaces[i],NullableKind.NONNULL));
             }
         }
         List<Executable> methods = new LinkedList();

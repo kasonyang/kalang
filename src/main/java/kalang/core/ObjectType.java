@@ -178,7 +178,7 @@ public abstract class ObjectType extends Type{
     }
     
     public ObjectType[] getInterfaces(){
-        ObjectType[] itfs = clazz.interfaces.toArray(new ObjectType[clazz.interfaces.size()]);
+        ObjectType[] itfs = clazz.getInterfaces();
         for(int i=0;i<itfs.length;i++){
             itfs[i] = (ObjectType) parseType(itfs[i]);
         }

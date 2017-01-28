@@ -816,7 +816,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         MethodDescriptor overriddenMd = ClassTypeUtil.getMethodDescriptor(superType, mStr, thisClazz, true,true);
         if(overriddenMd==null){
-            overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.interfaces.toArray(new ObjectType[thisClazz.interfaces.size()]), mStr, thisClazz, true,true);
+            overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.getInterfaces(), mStr, thisClazz, true,true);
         }
         if(isOverriding && overriddenMd==null){            
             handleSyntaxError("method does not override any method", ctx);
@@ -2205,7 +2205,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         if(isInterface){
             //TODO update syntax to support:interface extends T1,T2...
-            thisClazz.interfaces.add(superType);
+            thisClazz.addInterface(superType);
         }else{
             thisClazz.superType = superType;
         }
@@ -2213,7 +2213,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
                 ObjectType itfClz = parseClassType(itf);
                 if(itfClz!=null){
-                    thisClazz.interfaces.add(itfClz);
+                    thisClazz.addInterface(itfClz);
                 }
             }
         }

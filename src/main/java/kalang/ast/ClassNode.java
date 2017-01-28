@@ -22,7 +22,7 @@ public class ClassNode extends AstNode implements Annotationable{
     
     protected final List<MethodNode> methods = new LinkedList();
     
-    public final List<ObjectType> interfaces = new LinkedList();
+    private final List<ObjectType> interfaces = new LinkedList();
     
     public final List<AnnotationNode> annotations = new LinkedList<>();
     
@@ -82,6 +82,14 @@ public class ClassNode extends AstNode implements Annotationable{
     
     public FieldNode[] getFields(){
         return this.fields.toArray(new FieldNode[fields.size()]);
+    }
+    
+    public void addInterface(ObjectType type){
+        this.interfaces.add(type);
+    }
+    
+    public ObjectType[] getInterfaces(){
+        return this.interfaces.toArray(new ObjectType[interfaces.size()]);
     }
     
 }

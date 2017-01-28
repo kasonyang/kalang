@@ -48,11 +48,8 @@ public class AstUtil {
     @Nonnull
     public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass){
         List<MethodDescriptor> list = new LinkedList();
-        List<ObjectType> itfs = theClass.interfaces;
-        if(itfs!=null){
-            for(ObjectType i:itfs){
-                list.addAll(getUnimplementedMethod(theClass,i));
-            }
+        for(ObjectType i:theClass.getInterfaces()){
+            list.addAll(getUnimplementedMethod(theClass,i));
         }
         return list;
     }
@@ -298,7 +295,9 @@ public class AstUtil {
         ClassNode cn = new ClassNode();
         cn.name = name;
         cn.superType = superType==null ? Types.getRootType() : superType;
-        if(interfaces!=null) cn.interfaces.addAll(Arrays.asList(interfaces));
+        if(interfaces!=null){
+            for(ObjectType itf:interfaces) cn.addInterface(itf);
+        }
         return cn;
     }
     

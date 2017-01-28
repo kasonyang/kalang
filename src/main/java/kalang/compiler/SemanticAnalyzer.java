@@ -131,8 +131,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         ClassNode oldClazz = this.clazz;
         this.clazz = clz;
         super.visitClassNode(clz);
-        if (clazz.interfaces.size() > 0) {
-            for (ObjectType itfNode : clazz.interfaces) {
+        if (clazz.getInterfaces().length > 0) {
+            for (ObjectType itfNode : clazz.getInterfaces()) {
                 if (itfNode == null) {
                     continue;
                 }
