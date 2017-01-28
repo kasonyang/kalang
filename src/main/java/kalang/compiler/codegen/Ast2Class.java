@@ -343,7 +343,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             localVarInfos.add(new LocalVariableInfo("this", this.getClassDescriptor(this.clazz.name) , null, methodStartLabel, methodEndLabel, 0));
             varIdCounter = 1;
         }
-        BlockStmt body = node.body;
+        BlockStmt body = node.getBody();
         ParameterNode[] parameters = node.getParameters();
         for(int i=0;i<parameters.length;i++){
             ParameterNode p = parameters[i];

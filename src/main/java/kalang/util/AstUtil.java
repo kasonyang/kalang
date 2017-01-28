@@ -92,8 +92,7 @@ public class AstUtil {
                 //TODO update mm.createParameter
                 p.modifier = pd.getModifier();
             }
-            BlockStmt body = new BlockStmt(null);
-            mm.body = body;
+            BlockStmt body = mm.getBody();
             ParameterNode[] parameters = mm.getParameters();
             ExprNode[] params = new ExprNode[parameters.length];
             for(int i=0;i<params.length;i++){
@@ -247,7 +246,7 @@ public class AstUtil {
         }
         MethodNode getter = clazz.createMethodNode(field.getType(),getterName,accessModifier);
         //getter.offset = field.offset;
-        BlockStmt body = new BlockStmt(null);
+        BlockStmt body = getter.getBody();
         FieldExpr fe;
         ClassReference cr = new ClassReference(clazz);
         if(isStatic){
@@ -256,7 +255,6 @@ public class AstUtil {
             fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
         }
         body.statements.add(new ReturnStmt(fe));
-        getter.body = body;
     }
     
     public static void createSetter(ClassNode clazz,FieldDescriptor field,int accessModifier){
@@ -269,7 +267,7 @@ public class AstUtil {
         MethodNode setter = clazz.createMethodNode(Types.VOID_TYPE,setterName,accessModifier);
         //setter.offset = field.offset;
         ParameterNode param = setter.createParameter(field.getType(), field.getName());
-        BlockStmt body = new BlockStmt(null);
+        BlockStmt body = setter.getBody();
         FieldExpr fe;
         ExprNode paramVal = new ParameterExpr(param);
         ClassReference cr = new ClassReference(clazz);
@@ -279,7 +277,6 @@ public class AstUtil {
             fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
         }
         body.statements.add(new ExprStmt(new AssignExpr(fe,paramVal)));
-        setter.body = body;
     }
 
     public static ClassNode createClassNodeWithInterfaces(String name,@Nullable ObjectType superType,@Nullable ObjectType... interfaces) {

@@ -140,7 +140,6 @@ public class JavaAstLoader extends AstLoader {
                 NullableKind pnullable = getNullable(p.getAnnotations());
                 methodNode.createParameter(getType(p.getParameterizedType(),genericTypes,p.getType(),pnullable) , p.getName());
             }
-            methodNode.body = null;
             for (Class e : m.getExceptionTypes()) {
                 methodNode.exceptionTypes.add(getType(e,genericTypes,e,NullableKind.NONNULL));
             }

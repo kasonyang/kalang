@@ -267,8 +267,8 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
                 + ")"
                 + " "
                 + exStr);
-        if (node.body != null) {
-            c(visit(node.body));
+        if (node.getBody() != null) {
+            c(visit(node.getBody()));
         } else {
             c(";");
         }

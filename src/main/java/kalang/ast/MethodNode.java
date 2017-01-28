@@ -16,7 +16,7 @@ public class MethodNode extends AstNode implements Annotationable{
     public final List<AnnotationNode> annotations = new LinkedList<>();
     
     @Nullable
-    public BlockStmt body = null;
+    private final BlockStmt body;
     
     public final List<Type> exceptionTypes = new LinkedList();
     
@@ -27,6 +27,7 @@ public class MethodNode extends AstNode implements Annotationable{
         this.modifier = modifier;
         this.type = type;
         this.name = name;
+        this.body = Modifier.isAbstract(modifier) ? null : new BlockStmt(null);
     }
     
     public ParameterNode createParameter(Type type,String name){
@@ -87,6 +88,10 @@ public class MethodNode extends AstNode implements Annotationable{
 
     public int getModifier() {
         return modifier;
+    }
+
+    public BlockStmt getBody() {
+        return body;
     }
     
 }
