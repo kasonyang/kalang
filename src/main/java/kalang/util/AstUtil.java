@@ -208,7 +208,7 @@ public class AstUtil {
     }
 
     public static boolean isConstructor(MethodNode m) {
-        return !isStatic(m.modifier) && m.getName().equals("<init>");
+        return !isStatic(m.getModifier()) && m.getName().equals("<init>");
     }
 
     public static boolean hasConstructorCallStatement(List<Statement> statements) {
@@ -242,15 +242,15 @@ public class AstUtil {
         String fn = field.getName();
         String getterName = "get" + NameUtil.firstCharToUpperCase(fn);
         boolean isStatic = isStatic(field.getModifier());
+        if(isStatic){
+            accessModifier |= Modifier.STATIC;
+        }
         MethodNode getter = clazz.createMethodNode(field.getType(),getterName,accessModifier);
         //getter.offset = field.offset;
         BlockStmt body = new BlockStmt(null);
         FieldExpr fe;
         ClassReference cr = new ClassReference(clazz);
         if(isStatic){
-            if(!isStatic(getter.modifier)){
-                getter.modifier |= Modifier.STATIC;
-            }
             fe = new StaticFieldExpr(cr, field);
         }else{
             fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
@@ -263,13 +263,10 @@ public class AstUtil {
         String fn = field.getName();
         String setterName = "set" + NameUtil.firstCharToUpperCase(fn);
         boolean isStatic = isStatic(field.getModifier());
-        Type type;
-        if(isStatic(accessModifier)){
-            type = Types.VOID_TYPE;
-        }else{
-            type = Types.getClassType(clazz);
+        if(isStatic){
+            accessModifier |= Modifier.STATIC;
         }
-        MethodNode setter = clazz.createMethodNode(type,setterName,accessModifier);
+        MethodNode setter = clazz.createMethodNode(Types.VOID_TYPE,setterName,accessModifier);
         //setter.offset = field.offset;
         ParameterNode param = setter.createParameter(field.getType(), field.getName());
         BlockStmt body = new BlockStmt(null);
@@ -277,17 +274,11 @@ public class AstUtil {
         ExprNode paramVal = new ParameterExpr(param);
         ClassReference cr = new ClassReference(clazz);
         if(isStatic){
-            if(!isStatic(setter.modifier)){
-                setter.modifier |= Modifier.STATIC;
-            }
             fe = new StaticFieldExpr(cr, field);
         }else{
             fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
         }
         body.statements.add(new ExprStmt(new AssignExpr(fe,paramVal)));
-        if(!isStatic(accessModifier)){
-            body.statements.add(new ReturnStmt(new ThisExpr(Types.getClassType(clazz))));
-        }
         setter.body = body;
     }
 

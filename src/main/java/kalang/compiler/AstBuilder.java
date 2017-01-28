@@ -805,6 +805,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             handleSyntaxError("declare method duplicately:"+mStr, ctx);
             return null;
         }
+        BlockStmtContext blockStmt = ctx.blockStmt();
+        if(blockStmt==null){
+            if(ModifierUtil.isInterface(thisClazz.modifier)){
+                modifier |= Modifier.ABSTRACT;
+            }else if(!Modifier.isAbstract(modifier)){
+                handleSyntaxError("method body required", ctx);
+            }else if(!Modifier.isAbstract(thisClazz.modifier)){
+                handleSyntaxError("declare abstract method in non-abstract class", ctx);
+            }
+        }
         method = thisClazz.createMethodNode(type,name,modifier);
         for(int i=0;i<paramTypes.length;i++){
             method.createParameter(paramTypes[i], paramNames[i]);
@@ -824,17 +834,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if(!isOverriding && overriddenMd!=null){
             handleSyntaxError("method override a method but not declare", ctx);
         }
-        BlockStmtContext blockStmt = ctx.blockStmt();
-        if(blockStmt==null){
-            if(ModifierUtil.isInterface(thisClazz.modifier)){
-                method.modifier |= Modifier.ABSTRACT;
-            }else if(!Modifier.isAbstract(method.modifier)){
-                handleSyntaxError("method body required", ctx);
-            }else if(!Modifier.isAbstract(thisClazz.modifier)){
-                handleSyntaxError("declare abstract method in non-abstract class", ctx);
-            }
-        }else{
-            methodBodys.put(method, ctx.blockStmt());
+        if(blockStmt!=null){
+            methodBodys.put(method, blockStmt);
         }
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {

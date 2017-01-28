@@ -39,7 +39,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
 
     @Override
     public Void visitMethodNode(MethodNode node) {
-        sb.append(modifier2String(node.modifier))
+        sb.append(modifier2String(node.getModifier()))
                 .append(" ");
         boolean isConstructor = "<init>".equals(node.getName());
         if(isConstructor){

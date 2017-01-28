@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import kalang.core.*;
 public class MethodNode extends AstNode implements Annotationable{
     
-    public int modifier;
+    private final int modifier;
     
     private Type type;
     
@@ -84,6 +84,9 @@ public class MethodNode extends AstNode implements Annotationable{
     public ClassNode getClassNode() {
         return classNode;
     }
-    
+
+    public int getModifier() {
+        return modifier;
+    }
     
 }

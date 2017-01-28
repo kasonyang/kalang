@@ -244,7 +244,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         }
         String mname = node.getName();
         String typeStr = "";
-        int mdf = node.modifier;
+        int mdf = node.getModifier();
         if (mname.equals("<init>")) {
             mdf = mdf & (~Modifier.STATIC);
             Objects.requireNonNull(cls, "cls must be not null");

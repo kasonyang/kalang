@@ -23,7 +23,7 @@ public abstract class ExecutableDescriptor {
     protected final Type[] exceptionTypes;
 
     public ExecutableDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors,Type returnType,Type[] exceptionTypes) {
-        this.modifier = method.modifier;
+        this.modifier = method.getModifier();
         this.methodNode = method;
         this.name = method.getName();
         this.parameterDescriptors = parameterDescriptors;

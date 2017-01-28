@@ -328,7 +328,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitMethodNode(MethodNode node) {
-        int access = node.modifier;
+        int access = node.getModifier();
         md = classWriter.visitMethod(access, internalName(node.getName()),getMethodDescriptor(node),methodSignature(node),internalName(node.exceptionTypes.toArray(new Type[0])) );
         if(node.getType() instanceof ObjectType){
             annotationNullable(md,(ObjectType)node.getType());
@@ -337,7 +337,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         this.methodStartLabel = new Label();
         this.methodEndLabel = new Label();
         localVarInfos = new LinkedList();
-        if(AstUtil.isStatic(node.modifier)){
+        if(AstUtil.isStatic(node.getModifier())){
             varIdCounter = 0;
         }else{
             localVarInfos.add(new LocalVariableInfo("this", this.getClassDescriptor(this.clazz.name) , null, methodStartLabel, methodEndLabel, 0));
