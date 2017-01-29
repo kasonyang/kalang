@@ -96,12 +96,4 @@ public abstract class BinaryExpr extends ExprNode{
         return operation;
     }
 
-    /**
-     * @param operation the operation to set
-     */
-    public void setOperation(String operation) {
-        Objects.requireNonNull(operation);
-        this.operation = operation;
-    }
-
 }
