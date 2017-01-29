@@ -34,24 +34,10 @@ public class CastExpr extends ExprNode{
     }
 
     /**
-     * @param toType the toType to set
-     */
-    public void setToType(Type toType) {
-        Objects.requireNonNull(toType);
-        this.toType = toType;
-    }
-
-    /**
      * @return the expr
      */
     public ExprNode getExpr() {
         return expr;
     }
 
-    /**
-     * @param expr the expr to set
-     */
-    public void setExpr(ExprNode expr) {
-        this.expr = expr;
-    }
 }
