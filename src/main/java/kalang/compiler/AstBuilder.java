@@ -375,14 +375,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         thisClazz = clazz;
         for(MethodNode m:thisClazz.getDeclaredMethodNodes()){
             BlockStmt mbody = m.getBody();
-            BlockStmtContext body = classNodeMetaBuilder.getMethodBodyContext(m);            
-            if(body!=null){
+            StatContext[] stats = classNodeMetaBuilder.getStatContexts(m);
+            if(stats!=null){
                 method = m;
                 if(this.currentBlock != null){
                     throw Exceptions.unexceptedValue(this.currentBlock);
                 }
                 returned = false;
-                visitBlockStmt(body,mbody);
+                visitBlockStmt(stats,mbody);
                 if(this.currentBlock != null){
                     throw Exceptions.unexceptedValue(this.currentBlock);
                 }                
@@ -391,7 +391,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     && !m.getType().equals(Types.VOID_TYPE)
                 );
                 if (m.getBody() != null && needReturn && !returned) {
-                    handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(method),body);
+                    handleSyntaxError(
+                            "Missing return statement in method:" + MethodUtil.toString(method)
+                            ,classNodeMetaBuilder.getMethodDeclContext(m)
+                    );
                 }
             }
             if(AstUtil.isConstructor(m)){   
@@ -401,7 +404,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     try {
                         bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
                     } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                        AstBuilder.this.handleSyntaxError("default constructor not found", body.start);
+                        AstBuilder.this.handleSyntaxError("default constructor not found",classNodeMetaBuilder.getMethodDeclContext(m));
                     }
                 }
                 //check super()
@@ -1875,23 +1878,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return visitExpression(ctx.expression());
     }
     
-    public void visitBlockStmt(BlockStmtContext ctx,BlockStmt blockStmt){
+    public void visitBlockStmt(StatContext[] stats,BlockStmt blockStmt){
         BlockStmt oBlock = this.currentBlock;
         this.currentBlock = blockStmt;
-        if (ctx.stat() == null) {
+        if (stats == null) {
             return;
         }
-        for (StatContext s : ctx.stat()) {
+        for (StatContext s : stats) {
             blockStmt.statements.add(visitStat(s));
         }
-        mapAst(blockStmt,ctx);
         this.currentBlock = oBlock;
     }
 
     @Override
     public AstNode visitBlockStmt(BlockStmtContext ctx) {
         BlockStmt bs =newBlock();
-        this.visitBlockStmt(ctx, bs);
+        List<StatContext> stats = ctx.stat();
+        if(stats!=null){
+            this.visitBlockStmt(stats.toArray(new StatContext[stats.size()]), bs);
+        }
+        mapAst(bs,ctx);
         popBlock();
         return bs;
     }

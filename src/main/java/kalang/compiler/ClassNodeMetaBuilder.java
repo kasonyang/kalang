@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.MethodDeclContext;
 import kalang.antlr.KalangParserBaseVisitor;
@@ -48,7 +49,10 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     private final ClassNodeBuilder classNodeBuilder;
     private ClassNode thisClazz;
     
-    private Map<MethodNode,KalangParser.MethodDeclContext> methodContexts = new HashMap();
+    private Map<MethodNode,KalangParser.StatContext[]> methodStatsContexts = new HashMap();
+    
+    private Map<MethodNode,MethodDeclContext> methodContexts = new HashMap();
+    
     private MethodNode method;
     private boolean inScriptMode;
 
@@ -235,6 +239,11 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             astBuilder.handleSyntaxError("method override a method but not declare", ctx);
         }
         this.methodContexts.put(method, ctx);
+        KalangParser.BlockStmtContext bstm = ctx.blockStmt();
+        if(bstm!=null){
+            List<KalangParser.StatContext> stats = bstm.stat();
+            if(stats!=null) this.methodStatsContexts.put(method, stats.toArray(new KalangParser.StatContext[stats.size()]));
+        }
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {
                 ObjectType exType = astBuilder.requireClassType(et);
@@ -249,14 +258,9 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         return m;
     }
     
-    public KalangParser.MethodDeclContext getMethodContext(MethodNode methodNode){
-        return this.methodContexts.get(methodNode);
-    }
-    
-    public KalangParser.BlockStmtContext getMethodBodyContext(MethodNode mn){
-        KalangParser.MethodDeclContext ctx = this.methodContexts.get(mn);
-        if(ctx==null) return null;
-        return ctx.blockStmt();
+    @Nullable
+    public KalangParser.StatContext[] getStatContexts(MethodNode mn){
+        return this.methodStatsContexts.get(mn);
     }
 
     @Override
@@ -320,12 +324,18 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         mm.addExceptionType(Types.getExceptionClassType());
         mm.createParameter(Types.getArrayType(Types.getStringClassType()), "args");
         method = mm;
-        //FIXME map method to statements;
-        //this.methodContexts.put(mm, value);
+        List<KalangParser.StatContext> stats = ctx.stat();
+        if(stats!=null){
+            this.methodStatsContexts.put(mm, stats.toArray(new KalangParser.StatContext[stats.size()]));
+        }
         AstUtil.createEmptyConstructor(thisClazz);
         return null;
     }
     
+    
+    public MethodDeclContext getMethodDeclContext(MethodNode mn){
+        return this.methodContexts.get(mn);
+    }
     
 
 }
