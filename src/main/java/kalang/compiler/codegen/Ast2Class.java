@@ -535,7 +535,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if(node.preConditionExpr!=null){
             ifExpr(false,node.preConditionExpr,stopLabel);
         }
-        visit(node.loopBody);
+        visit(node.getLoopBody());
         if(node.postConditionExpr!=null){
             ifExpr(false,node.postConditionExpr,stopLabel);
         }

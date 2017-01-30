@@ -419,9 +419,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (node.preConditionExpr != null) {
             requireBoolean(node.preConditionExpr);
         }
-        if (node.loopBody != null) {
+        if (node.getLoopBody() != null) {
             enterNewFrame();
-            visit(node.loopBody);
+            visit(node.getLoopBody());
             exitFrame();
         }
         if (node.postConditionExpr != null) {

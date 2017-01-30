@@ -3,14 +3,14 @@
 */
 package kalang.ast;
 import java.util.*;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.core.*;
 public class LoopStmt extends Statement{
     
     //public final List<Statement> initStmts = new LinkedList<>();
-    
-    @Nullable
-    public BlockStmt loopBody;
+
+    private BlockStmt loopBody;
     
     @Nullable
     public ExprNode preConditionExpr;
@@ -20,7 +20,7 @@ public class LoopStmt extends Statement{
     
     
     public LoopStmt(@Nullable BlockStmt loopBody,@Nullable ExprNode preConditionExpr,@Nullable ExprNode postConditionExpr){
-        this.loopBody = loopBody;
+        this.loopBody = loopBody==null ? new BlockStmt() : loopBody;
         this.preConditionExpr = preConditionExpr;
         this.postConditionExpr = postConditionExpr;
     }
@@ -33,6 +33,11 @@ public class LoopStmt extends Statement{
         addChild(ls,preConditionExpr);
         addChild(ls,postConditionExpr);
         return ls;
+    }
+
+    @Nonnull
+    public BlockStmt getLoopBody() {
+        return loopBody;
     }
     
 }
