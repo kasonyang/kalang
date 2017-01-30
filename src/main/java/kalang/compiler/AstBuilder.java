@@ -712,10 +712,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         VarDeclStmt vds = new VarDeclStmt(vo);
         stmts.add(vds);
         VarExpr ve = new VarExpr(vo);
-                IfStmt is = new IfStmt(conditionExpr
-                ,wrapBlock(new ExprStmt(new AssignExpr(ve, trueExpr)))
-                ,wrapBlock(new ExprStmt(new AssignExpr(ve,falseExpr)))
-        );
+        IfStmt is = new IfStmt(conditionExpr);
+        is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(ve, trueExpr)));
+        is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve,falseExpr)));
         stmts.add(is);
         MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
         mapAst(ve, ctx);
@@ -739,7 +738,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             cond = be;
         }
         AssignExpr as = new AssignExpr(to, from);
-        IfStmt is = new IfStmt(cond,wrapBlock(new ExprStmt(as)),null);
+        IfStmt is = new IfStmt(cond);
+        is.getTrueBody().statements.add(new ExprStmt(as));
         mapAst(is,ctx);
         return is;
     }
