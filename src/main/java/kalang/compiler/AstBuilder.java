@@ -126,6 +126,7 @@ import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
 import kalang.util.ClassTypeUtil;
+import kalang.util.InvalidModifierException;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
 import kalang.util.NameUtil;
@@ -1637,39 +1638,29 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         //do nothing
         return null;
     }
+    
+    protected String parseTreeToText(ParseTree ctx){
+        if(ctx instanceof TerminalNode) return ctx.getText();
+        StringBuilder sb = new StringBuilder();
+        int childCount = ctx.getChildCount();
+        for(int i=0;i<childCount;i++){
+            if(i>0) sb.append(" ");
+            sb.append(parseTreeToText(ctx.getChild(i)));
+        }
+        return sb.toString();
+    }
 
     protected int parseModifier(VarModifierContext modifier) {
-        if (modifier == null) {
-            return Modifier.PUBLIC;
+        int defaultModifier = Modifier.PUBLIC;
+        if (modifier == null) return defaultModifier;
+        String modifierText = parseTreeToText(modifier);
+        if(modifierText.isEmpty()) return defaultModifier;
+        try {
+            return ModifierUtil.valueOf(modifierText);
+        } catch (InvalidModifierException ex) {
+            this.handleSyntaxError(ex.getMessage(), modifier);
+            return defaultModifier;
         }
-        int m = 0;
-        int access = 0;
-        for (ParseTree c : modifier.children) {
-            String s = c.getText();
-            switch (s) {
-                case "public":
-                    access = Modifier.PUBLIC;
-                    break;
-                case "protected":
-                    access = Modifier.PROTECTED;
-                    break;
-                case "private":
-                    access = Modifier.PRIVATE;
-                    break;
-                case "static":
-                    m += Modifier.STATIC;
-                    break;
-                case "final":
-                    m += Modifier.FINAL;
-                    break;
-                default:
-                    break;
-            }
-        }
-        if (access == 0) {
-            access = Modifier.PUBLIC;
-        }
-        return m + access;
     }
 
     @Override
