@@ -990,7 +990,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if (ctx.stat() != null) {
             loopBody = requireBlock(ctx.stat());
         }
-        LoopStmt ws = new LoopStmt(loopBody,preConditionExpr,null);
+        LoopStmt ws = new LoopStmt(preConditionExpr,null, loopBody);
         mapAst(ws,ctx);
         return ws;
     }
@@ -1002,7 +1002,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             loopBody = requireBlock(ctx.blockStmt());
         }
         ExprNode postConditionExpr = visitExpression(ctx.expression());
-        LoopStmt ls = new LoopStmt(loopBody,null,postConditionExpr);
+        LoopStmt ls = new LoopStmt(null,postConditionExpr, loopBody);
         mapAst(ls,ctx);
         return ls;
     }
@@ -1030,7 +1030,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             bs.statements.addAll(visitExpressions(ctx.updateExpressions));
         }
         popBlock();
-        LoopStmt ls = new LoopStmt(bs, preConditionExpr, null);
+        LoopStmt ls = new LoopStmt(preConditionExpr, null, bs);
         mapAst(ls,ctx);
         forStmt.statements.add(ls);
         popBlock();
@@ -1447,7 +1447,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             loopBody.statements.add(new ExprStmt(new AssignExpr(new ElementExpr(varRetExpr,varCounterExpr),invokeExpr)));
             loopBody.statements.add(new ExprStmt(new AssignExpr(varCounterExpr,new MathExpr(varCounterExpr,new ConstExpr(1),MathExpr.OP_ADD))));
             this.popBlock();
-            LoopStmt loopStmt = new LoopStmt(loopBody,conditionExpr,null);
+            LoopStmt loopStmt = new LoopStmt(conditionExpr,null, loopBody);
             stats.add(loopStmt);
             return new MultiStmtExpr(stats,varRetExpr);
         }else{
@@ -2213,7 +2213,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     )
             ));
             popBlock();
-            loopStmt = new LoopStmt(loopBody, cnd, null);
+            loopStmt = new LoopStmt(cnd, null, loopBody);
         }else{
             ObjectType iterType = Types.getIterableClassType();
             if(iterType.isAssignableFrom(exprType)){
@@ -2261,7 +2261,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                             )
                     ));
                 }
-                loopStmt = new LoopStmt(loopBody, cnd, null);
+                loopStmt = new LoopStmt(cnd, null, loopBody);
                 popBlock();                
             }else{
                 this.handleSyntaxError("require array type or iterable type", ctx.expression());

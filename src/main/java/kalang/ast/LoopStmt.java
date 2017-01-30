@@ -17,9 +17,16 @@ public class LoopStmt extends Statement{
     
     @Nullable
     private final ExprNode postConditionExpr;
+
+    public LoopStmt(ExprNode preConditionExpr, ExprNode postConditionExpr) {
+        this(preConditionExpr, postConditionExpr, null);
+    }
     
-    
-    public LoopStmt(@Nullable BlockStmt loopBody,@Nullable ExprNode preConditionExpr,@Nullable ExprNode postConditionExpr){
+    public LoopStmt(
+            @Nullable ExprNode preConditionExpr, 
+            @Nullable ExprNode postConditionExpr, 
+            @Nullable BlockStmt loopBody
+    ){
         this.loopBody = loopBody==null ? new BlockStmt() : loopBody;
         this.preConditionExpr = preConditionExpr;
         this.postConditionExpr = postConditionExpr;
