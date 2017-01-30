@@ -27,7 +27,7 @@ public class MethodNode extends AstNode implements Annotationable{
         this.modifier = modifier;
         this.type = type;
         this.name = name;
-        this.body = Modifier.isAbstract(modifier) ? null : new BlockStmt(null);
+        this.body = Modifier.isAbstract(modifier) ? null : new BlockStmt();
     }
     
     public ParameterNode createParameter(Type type,String name){

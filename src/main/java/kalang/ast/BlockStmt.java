@@ -10,14 +10,10 @@ public class BlockStmt extends Statement{
     public final List<Statement> statements = new LinkedList<>();
     protected final List<LocalVarNode> vars = new LinkedList();
     
-    protected BlockStmt parentBlock = null;
-    
-    public BlockStmt(@Nullable BlockStmt parent){
-        parentBlock = parent;
+    public BlockStmt(){
     }
     
-    public BlockStmt(@Nullable BlockStmt parent,Statement... stmts){
-        this(parent);
+    public BlockStmt(Statement... stmts){
         statements.addAll(Arrays.asList(stmts));
     }    
     
@@ -26,10 +22,6 @@ public class BlockStmt extends Statement{
         List<AstNode> ls = new LinkedList();
         addChild(ls,statements);
         return ls;
-    }
-
-    public BlockStmt getParentBlock() {
-        return parentBlock;
     }
     
 }

@@ -573,7 +573,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     BlockStmt newBlock(){
-        BlockStmt bs = new BlockStmt(null);
+        BlockStmt bs = new BlockStmt();
         this.newFrame();
         return bs;
     }
