@@ -532,12 +532,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         continueLabels.push(startLabel);
         breakLabels.push(stopLabel);
         md.visitLabel(startLabel);
-        if(node.preConditionExpr!=null){
-            ifExpr(false,node.preConditionExpr,stopLabel);
+        if(node.getPreConditionExpr()!=null){
+            ifExpr(false, node.getPreConditionExpr(),stopLabel);
         }
         visit(node.getLoopBody());
-        if(node.postConditionExpr!=null){
-            ifExpr(false,node.postConditionExpr,stopLabel);
+        if(node.getPostConditionExpr()!=null){
+            ifExpr(false, node.getPostConditionExpr(),stopLabel);
         }
         md.visitJumpInsn(GOTO, startLabel);
         md.visitLabel(stopLabel);

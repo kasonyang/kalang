@@ -13,10 +13,10 @@ public class LoopStmt extends Statement{
     private BlockStmt loopBody;
     
     @Nullable
-    public ExprNode preConditionExpr;
+    private final ExprNode preConditionExpr;
     
     @Nullable
-    public ExprNode postConditionExpr;
+    private final ExprNode postConditionExpr;
     
     
     public LoopStmt(@Nullable BlockStmt loopBody,@Nullable ExprNode preConditionExpr,@Nullable ExprNode postConditionExpr){
@@ -38,6 +38,16 @@ public class LoopStmt extends Statement{
     @Nonnull
     public BlockStmt getLoopBody() {
         return loopBody;
+    }
+
+    @Nullable
+    public ExprNode getPreConditionExpr() {
+        return preConditionExpr;
+    }
+
+    @Nullable
+    public ExprNode getPostConditionExpr() {
+        return postConditionExpr;
     }
     
 }

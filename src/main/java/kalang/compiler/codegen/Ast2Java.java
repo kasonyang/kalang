@@ -315,8 +315,8 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
 
     @Override
     public String visitLoopStmt(LoopStmt node) {
-        ExprNode pre = node.preConditionExpr;
-        ExprNode post = node.postConditionExpr;
+        ExprNode pre = node.getPreConditionExpr();
+        ExprNode post = node.getPostConditionExpr();
         if (pre != null) {
             c("for(");
             trim = true;
