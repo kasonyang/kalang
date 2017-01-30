@@ -47,13 +47,13 @@ public class CompilationUnit {
     
     protected void doCompilePhase(int phase){
         if(phase==PHASE_INITIALIZE){
-            parseInit(context.getCompileErrorHandler());
+            parseInit(context.getDiagnosisHandler());
         }else if(phase==PHASE_PARSING){
-            parseMeta(context.getCompileErrorHandler());
+            parseMeta(context.getDiagnosisHandler());
         }else if(phase == PHASE_BUILDAST){
-            parseBody(context.getCompileErrorHandler());
+            parseBody(context.getDiagnosisHandler());
         }else if(phase==PHASE_SEMANTIC){
-            semanticAnalysis(context.getCompileErrorHandler());
+            semanticAnalysis(context.getDiagnosisHandler());
         }else if(phase == PHASE_CLASSGEN){
             CodeGenerator codeGenerator = context.createCodeGenerator(this);
             if(codeGenerator==null){
@@ -70,24 +70,24 @@ public class CompilationUnit {
         }
     }
     
-    protected void parseInit(CompileErrorHandler semanticErrorHandler){
+    protected void parseInit(DiagnosisHandler semanticErrorHandler){
         parse(semanticErrorHandler,AstBuilder.PARSING_PHASE_INIT);
     }
     
-    protected void parseMeta(CompileErrorHandler semanticErrorHandler){
+    protected void parseMeta(DiagnosisHandler semanticErrorHandler){
         parse(semanticErrorHandler, AstBuilder.PARSING_PHASE_META);
     }
     
-    public void parseBody(CompileErrorHandler semanticErrorHandler){
+    public void parseBody(DiagnosisHandler semanticErrorHandler){
         parse(semanticErrorHandler, AstBuilder.PARSING_PHASE_ALL);
     }
 
-    protected void parse(CompileErrorHandler semanticErrorHandler, int targetParsingPhase) {
-        astBuilder.setErrorHandler(semanticErrorHandler);
+    protected void parse(DiagnosisHandler semanticErrorHandler, int targetParsingPhase) {
+        astBuilder.setDiagnosisHandler(semanticErrorHandler);
         astBuilder.compile(targetParsingPhase,context.getAstLoader());
     }
 
-    protected void semanticAnalysis(CompileErrorHandler handler) {
+    protected void semanticAnalysis(DiagnosisHandler handler) {
         semanticAnalyzer.setAstSemanticErrorHandler(handler);
         semanticAnalyzer.check(this.getAst());
     }
@@ -126,6 +126,10 @@ public class CompilationUnit {
 
     public KalangSource getSource() {
         return source;
+    }
+
+    public CompileContext getCompileContext() {
+        return context;
     }
 
 }

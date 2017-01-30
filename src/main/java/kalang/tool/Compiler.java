@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.KalangClassLoader;
 import kalang.compiler.Diagnosis;
-import kalang.compiler.StandardCompileHandler;
+import kalang.compiler.StandardDiagnosisHandler;
 import kalang.util.ClassNameUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;

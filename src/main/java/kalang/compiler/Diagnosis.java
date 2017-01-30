@@ -4,6 +4,8 @@ package kalang.compiler;
  * @author Kason Yang
  */
 public class Diagnosis {
+
+    private final CompileContext context;
     
     public enum Kind{
         FATAL(true),ERROR(true),WARNING(false),NOTE(false)
@@ -25,7 +27,8 @@ public class Diagnosis {
     
     private KalangSource source;
 
-    public Diagnosis(Kind kind, OffsetRange offset, String description, KalangSource kalangSource) {
+    public Diagnosis(CompileContext context,Kind kind, OffsetRange offset, String description, KalangSource kalangSource) {
+        this.context = context;
         this.kind = kind;
         this.offset = offset;
         this.description = description;
@@ -46,6 +49,10 @@ public class Diagnosis {
 
     public KalangSource getSource() {
         return source;
+    }
+
+    public CompileContext getContext() {
+        return context;
     }
 
     @Override

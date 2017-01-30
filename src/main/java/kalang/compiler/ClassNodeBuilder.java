@@ -47,8 +47,11 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
     private boolean isScript = false;
 
     AstBuilder astBuilder;
+    private final CompilationUnit compilationUnit;
+    private DiagnosisReporter diagnosisReporter;
 
-    public ClassNodeBuilder(AstBuilder astBuilder) {
+    public ClassNodeBuilder(CompilationUnit compilationUnit, AstBuilder astBuilder) {
+        this.compilationUnit = compilationUnit;
         this.astBuilder = astBuilder;
     }
     
@@ -90,7 +93,7 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
         String classDefName;
         if (oldClass != null) {
             if (nameIdentifier == null) {
-                astBuilder.handleSyntaxError("Identifier excepted", ctx);
+                diagnosisReporter.report(Diagnosis.Kind.ERROR,"Identifier excepted", ctx);
                 return null;
             }
             classDefName = oldClass.name + "$" + nameIdentifier.getText();
@@ -135,6 +138,12 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
 
     public boolean isScript() {
         return isScript;
+    }
+    
+    public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler){
+        this.diagnosisReporter = new DiagnosisReporter(
+                this.compilationUnit.getCompileContext()
+                , diagnosisHandler, this.compilationUnit.getSource());
     }
     
 }

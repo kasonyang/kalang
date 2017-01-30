@@ -55,8 +55,12 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     
     private MethodNode method;
     private boolean inScriptMode;
+    private final CompilationUnit compilationUnit;
+    private DiagnosisReporter diagnosisReporter;
+    
 
-    public ClassNodeMetaBuilder(AstBuilder astBuilder, ClassNodeBuilder classNodeBuilder) {
+    public ClassNodeMetaBuilder(CompilationUnit compilationUnit, AstBuilder astBuilder, ClassNodeBuilder classNodeBuilder) {
+        this.compilationUnit = compilationUnit;
         this.astBuilder = astBuilder;
         this.classNodeBuilder = classNodeBuilder;
     }
@@ -117,7 +121,9 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         if (!ModifierUtil.isInterface(thisClazz.modifier) 
                 && !AstUtil.containsConstructor(thisClazz) 
                 && !AstUtil.createEmptyConstructor(thisClazz)) {
-            astBuilder.handleSyntaxError("failed to create constructor with no parameters", ctx);
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR
+                    , "failed to create constructor with no parameters", ctx
+            );
         }
         MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
         for (int i = 0; i < methods.length; i++) {
@@ -206,7 +212,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         });
         if (existed) {
             //TODO should remove the duplicated method
-            astBuilder.handleSyntaxError("declare method duplicately:"+mStr, ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"declare method duplicately:"+mStr, ctx);
             return null;
         }
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();
@@ -214,9 +220,9 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             if(ModifierUtil.isInterface(thisClazz.modifier)){
                 modifier |= Modifier.ABSTRACT;
             }else if(!Modifier.isAbstract(modifier)){
-                astBuilder.handleSyntaxError("method body required", ctx);
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, "method body required", ctx);
             }else if(!Modifier.isAbstract(thisClazz.modifier)){
-                astBuilder.handleSyntaxError("declare abstract method in non-abstract class", ctx);
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, "declare abstract method in non-abstract class", ctx);
             }
         }
         method = thisClazz.createMethodNode(type,name,modifier);
@@ -233,10 +239,10 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.getInterfaces(), mStr, thisClazz, true,true);
         }
         if(isOverriding && overriddenMd==null){            
-            astBuilder.handleSyntaxError("method does not override any method", ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"method does not override any method", ctx);
         }
         if(!isOverriding && overriddenMd!=null){
-            astBuilder.handleSyntaxError("method override a method but not declare", ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"method override a method but not declare", ctx);
         }
         this.methodContexts.put(method, ctx);
         KalangParser.BlockStmtContext bstm = ctx.blockStmt();
@@ -337,5 +343,12 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         return this.methodContexts.get(mn);
     }
     
+    public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler) {
+        this.diagnosisReporter = new DiagnosisReporter(
+                this.compilationUnit.getCompileContext(),
+                diagnosisHandler, this.compilationUnit.getSource()
+        );
+    }
+
 
 }

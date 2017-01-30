@@ -10,7 +10,7 @@ import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import static kalang.compiler.CompilePhase.*;
 import kalang.util.AntlrErrorString;
-import kalang.util.DiagnosisUtil;
+import kalang.util.OffsetRangeHelper;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.Parser;
@@ -20,7 +20,7 @@ import org.antlr.v4.runtime.RecognitionException;
  * 
  * @author Kason Yang
  */
-public class KalangCompiler extends AstLoader implements CompileContext,CompileErrorHandler{
+public class KalangCompiler extends AstLoader implements CompileContext,DiagnosisHandler{
         
     private int compileTargetPhase = PHASE_ALL;
 
@@ -64,11 +64,6 @@ public class KalangCompiler extends AstLoader implements CompileContext,CompileE
         for (CompilationUnit cunit : compilationUnits.values()) {
             cunit.semanticAnalysis(this);
         }
-    }
-
-    //TODO remove it
-    public void reportError(CompileError error) {
-        this.handleCompileError(error);
     }
     
     public void setCompileTargetPhase(int targetPhase){
@@ -175,8 +170,14 @@ public class KalangCompiler extends AstLoader implements CompileContext,CompileE
             @Override
             public void reportError(Parser recognizer, RecognitionException e) {
                 String msg = AntlrErrorString.exceptionString(recognizer, e);
-                CompileError ce = new SyntaxError(msg, compilationUnit, null , e.getOffendingToken(),e.getOffendingToken());
-                KalangCompiler.this.handleCompileError(ce);
+                Diagnosis diagnosis = new Diagnosis(
+                        compilationUnit.getCompileContext()
+                        , Diagnosis.Kind.ERROR
+                        , OffsetRangeHelper.getOffsetRange(e.getOffendingToken())
+                        , msg
+                        , compilationUnit.getSource()
+                );
+                KalangCompiler.this.handleDiagnosis(diagnosis);
             }
             
         });
@@ -207,13 +208,6 @@ public class KalangCompiler extends AstLoader implements CompileContext,CompileE
     public SourceLoader getSourceLoader() {
         return compileContext.getSourceLoader();
     }
-
-    @Override
-    public final void handleCompileError(CompileError error) {
-        setCompileTargetPhase(this.compilingPhase);
-        Diagnosis dn = DiagnosisUtil.createFromCompileError(error);
-        reportDiagnosis(dn);
-    }
     
     protected void reportDiagnosis(Diagnosis diagnosis){
         PrintStream out = diagnosis.getKind().isError() ? System.err : System.out;
@@ -221,7 +215,13 @@ public class KalangCompiler extends AstLoader implements CompileContext,CompileE
     }
 
     @Override
-    public final CompileErrorHandler getCompileErrorHandler() {
+    public void handleDiagnosis(Diagnosis diagnosis) {
+        if(diagnosis.getKind().isError()) setCompileTargetPhase(this.compilingPhase);
+        reportDiagnosis(diagnosis);
+    }
+
+    @Override
+    public DiagnosisHandler getDiagnosisHandler() {
         return this;
     }
 

@@ -60,8 +60,10 @@ public class CompileContextProxy implements CompileContext{
     }
 
     @Override
-    public CompileErrorHandler getCompileErrorHandler() {
-        return config.getCompileErrorHandler();
+    public DiagnosisHandler getDiagnosisHandler() {
+        return config.getDiagnosisHandler();
     }
+
+
     
 }

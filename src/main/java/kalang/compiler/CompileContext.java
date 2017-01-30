@@ -29,6 +29,6 @@ public interface CompileContext {
 
     public SourceLoader getSourceLoader();
     
-    public CompileErrorHandler getCompileErrorHandler();
+    public DiagnosisHandler getDiagnosisHandler();
 
 }

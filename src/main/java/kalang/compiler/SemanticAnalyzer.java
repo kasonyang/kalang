@@ -68,27 +68,25 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     private SemanticErrorReporter err;
 
-    private CompileErrorHandler errHandler;
-
     private Stack<Map<Type,AstNode>> exceptionStack = new Stack();
     private CompilationUnit source;
     
     private VarTable<LocalVarNode,Void> assignedVars = new VarTable<>();
+    private DiagnosisReporter diagnosisReporter;
 
     public SemanticAnalyzer(CompilationUnit source,AstLoader astLoader) {
         this.astLoader = astLoader;
         this.source = source;
-        errHandler = (error) -> {
-                System.err.println(error.toString());
-        };
     }
     
     private Type getDefaultType(){
         return Types.getRootType();
     }
 
-    public void setAstSemanticErrorHandler(CompileErrorHandler handler) {
-        errHandler = handler;
+    public void setAstSemanticErrorHandler(DiagnosisHandler handler) {
+        this.diagnosisReporter = new DiagnosisReporter(
+                source.getCompileContext(),handler,source.getSource()
+        );
     }
 
     /**
@@ -153,7 +151,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         err = new SemanticErrorReporter(clz,source ,new SemanticErrorReporter.AstSemanticReporterCallback() {
             @Override
             public void handleAstSemanticError(SemanticError error) {
-                errHandler.handleCompileError(error);
+                SemanticAnalyzer.this.diagnosisReporter.report(Diagnosis.Kind.ERROR, error.getDescription(),error.getOffset());
             }
         });
         this.visit(clz);

@@ -149,6 +149,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     private ClassNodeBuilder classNodeBuilder;
     private ClassNodeMetaBuilder classNodeMetaBuilder;
+    
+    private DiagnosisReporter diagnosisReporter;
 
     @Override
     public Object visitEmptyStat(KalangParser.EmptyStatContext ctx) {
@@ -213,8 +215,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Nonnull
     private KalangParser parser;
-    
-    private CompileErrorHandler errorHandler = StandardCompileHandler.INSTANCE;
     
     private final CompilationUnit compilationUnit;
     
@@ -296,14 +296,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         
     }
     
-    public CompileErrorHandler getErrorHandler() {
-        return errorHandler;
-    }
-
-    public void setErrorHandler(CompileErrorHandler errorHandler) {
-        this.errorHandler = errorHandler;
-    }
-    
     public ParserRuleContext getParseTree(){
         return compilationContext;
     }
@@ -354,13 +346,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             for(ImportDeclContext ic:cunit.importDecl()){
                 this.visitImportDecl(ic);
             }
-            this.classNodeBuilder = new ClassNodeBuilder(this);
+            this.classNodeBuilder = new ClassNodeBuilder(this.compilationUnit,this);
             topClass = classNodeBuilder.build(cunit);
         }
         if(targetPhase>=PARSING_PHASE_META
                 && parsingPhase < PARSING_PHASE_META){
             parsingPhase = PARSING_PHASE_META;
-            this.classNodeMetaBuilder = new ClassNodeMetaBuilder(this, classNodeBuilder);
+            this.classNodeMetaBuilder = new ClassNodeMetaBuilder(this.compilationUnit, this, classNodeBuilder);
             classNodeMetaBuilder.build(topClass, classNodeBuilder.isScript());
         }
         if(targetPhase>=PARSING_PHASE_ALL
@@ -384,8 +376,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     && !m.getType().equals(Types.VOID_TYPE)
                 );
                 if (m.getBody() != null && needReturn && !returned) {
-                    handleSyntaxError(
-                            "Missing return statement in method:" + MethodUtil.toString(method)
+                    this.diagnosisReporter.report(
+                            Diagnosis.Kind.ERROR
+                            , "Missing return statement in method:" + MethodUtil.toString(method)
                             ,classNodeMetaBuilder.getMethodDeclContext(m)
                     );
                 }
@@ -397,7 +390,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     try {
                         bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
                     } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                        AstBuilder.this.handleSyntaxError("default constructor not found",classNodeMetaBuilder.getMethodDeclContext(m));
+                        diagnosisReporter.report(Diagnosis.Kind.ERROR
+                                ,"default constructor not found"
+                                ,classNodeMetaBuilder.getMethodDeclContext(m)
+                        );
                     }
                 }
                 //check super()
@@ -464,7 +460,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         String resolvedName = this.typeNameResolver.resolve(id, topClass, thisClazz);
         ClassNode ast = resolvedName==null ? null : astLoader.getAst(resolvedName);
         if(ast==null){
-            AstBuilder.this.handleSyntaxError("ast not found:" + id, token);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "ast not found:" + id, token);
         }
         return ast;
     }
@@ -502,7 +498,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             List<KalangParser.ParameterizedElementTypeContext> parameterTypes = ctx.parameterTypes;
             if(parameterTypes!=null && parameterTypes.size()>0){
                 if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
-                    this.handleSyntaxError("wrong number of type arguments",ctx);
+                    diagnosisReporter.report(
+                            Diagnosis.Kind.ERROR
+                            , "wrong number of type arguments"
+                            ,ctx
+                    );
                     return null;
                 }
                 for(int i=0;i<typeArguments.length;i++){
@@ -545,7 +545,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             return null;
         }
         if(tree instanceof StatContext && returned){
-            handleSyntaxError("unreachable statement", (ParserRuleContext) tree);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR
+                    ,"unreachable statement"
+                    , (StatContext) tree
+            );
         }
         return super.visit(tree);
     }
@@ -722,7 +725,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public AstNode visitPostIfStmt(KalangParser.PostIfStmtContext ctx) {
         ExprNode leftExpr = visitExpression(ctx.expression(0));
         if (!(leftExpr instanceof AssignExpr)) {
-            this.handleSyntaxError("AssignExpr required", ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "AssignExpr required", ctx);
         }
         AssignExpr assignExpr = (AssignExpr) leftExpr;
         AssignableExpr to = assignExpr.getTo();
@@ -924,7 +927,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         Type declType = type != null ? parseType(type) : inferedType;
         if (isDefindedId(name)) {
-            AstBuilder.this.handleSyntaxError("the name is definded:" + name, ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"the name is definded:" + name, ctx);
         }
         vds.name = name;
         vds.type = declType;
@@ -941,28 +944,30 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     public void methodIsAmbiguous(Token token , AmbiguousMethodException ex){
-        AstBuilder.this.handleSyntaxError(ex.getMessage(), token);
+        diagnosisReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), token);
     }
     
     public void methodNotFound(Token token , String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
-        AstBuilder.this.handleSyntaxError("method not found:" + MethodUtil.toString(className,methodName, types), token);
+        diagnosisReporter.report(Diagnosis.Kind.ERROR
+                , "method not found:" + MethodUtil.toString(className,methodName, types)
+                , token
+        );
     }
     
     //TODO add stop token
-    public void handleSyntaxError(String msg, Token token) {
+    private void handleSyntaxError(String msg, Token token) {
         //TODO what does EMPTY means?
         handleSyntaxError(msg, (ParserRuleContext.EMPTY), token, token);
     }
 
-    public void handleSyntaxError(String msg,ParserRuleContext tree) {
+    private void handleSyntaxError(String msg,ParserRuleContext tree) {
         handleSyntaxError(msg, tree, tree.start, tree.stop);
     }
     
     //TODO remove rule
-    public void handleSyntaxError(String desc,ParserRuleContext rule,Token start,Token stop){
-        SyntaxError syntaxError = new SyntaxError(desc, compilationUnit, rule, start,stop);
-        errorHandler.handleCompileError(syntaxError);
+    private void handleSyntaxError(String desc,ParserRuleContext rule,Token start,Token stop){
+        diagnosisReporter.report(Diagnosis.Kind.ERROR, desc,start,stop);
     }
 
     @Override
@@ -2337,6 +2342,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }else{
             return ae;
         }
+    }
+    
+    public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler){
+        this.diagnosisReporter = new DiagnosisReporter(
+                compilationUnit.getCompileContext(),
+                diagnosisHandler,
+                compilationUnit.getSource()
+        );
+    }
+
+    public DiagnosisReporter getDiagnosisReporter() {
+        return diagnosisReporter;
     }
 
 }

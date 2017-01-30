@@ -58,8 +58,9 @@ public class DefaultCompileContext implements CompileContext{
     }
 
     @Override
-    public CompileErrorHandler getCompileErrorHandler() {
-        return StandardCompileHandler.INSTANCE;
+    public DiagnosisHandler getDiagnosisHandler() {
+        return StandardDiagnosisHandler.INSTANCE;
     }
+
 
 }

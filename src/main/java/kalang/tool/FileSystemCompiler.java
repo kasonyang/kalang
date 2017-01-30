@@ -2,29 +2,22 @@ package kalang.tool;
 
 import kalang.util.ClassNameUtil;
 import java.io.*;
-import java.nio.*;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import kalang.ast.ClassNode;
-import kalang.compiler.codegen.Ast2Class;
-import kalang.compiler.codegen.Ast2Java;
 import kalang.compiler.codegen.Ast2JavaStub;
 import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.CompileContextProxy;
-import kalang.compiler.CompileError;
-import kalang.compiler.CompileErrorHandler;
 import kalang.compiler.CompilePhase;
-import kalang.compiler.DefaultCompileContext;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
 import kalang.compiler.SourceLoader;
 import org.apache.commons.io.FileUtils;
-import kalang.compiler.CompileContext;
 
 /**
  * The FileSystemCompiler compile sources from file system.

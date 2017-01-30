@@ -2,8 +2,6 @@ package kalang.test;
 
 import java.util.Objects;
 import junit.framework.Assert;
-import kalang.compiler.CompileError;
-import kalang.compiler.CompileErrorHandler;
 import kalang.compiler.Diagnosis;
 import kalang.tool.JointFileSystemCompiler;
 
