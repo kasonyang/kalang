@@ -197,6 +197,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private VarTable<VarObject,Integer> nullState = new VarTable();
     
     protected BlockStmt currentBlock = null;
+    
+    private VarTable<String,LocalVarNode> varTables = new VarTable();
     //private final HashMap<MethodNode,BlockStmtContext> methodBodys = new HashMap<>();
 
     @Nonnull
@@ -569,15 +571,25 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return bs;
     }
     
+    private void newFrame(){
+        this.varTables = this.varTables.newStack();
+    }
+    
+    private void popFrame(){
+        this.varTables = this.varTables.popStack();
+    }
+    
     BlockStmt newBlock(){
         BlockStmt bs = new BlockStmt(currentBlock);
         currentBlock = bs;
+        this.newFrame();
         return bs;
     }
     
     BlockStmt popBlock(){
         BlockStmt b = currentBlock;
         currentBlock = currentBlock.getParentBlock();
+        this.popFrame();
         return b;
     }
 
@@ -1561,18 +1573,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Nullable
     private LocalVarNode getNamedLocalVar(String name){
-        BlockStmt curBlock = this.currentBlock;
-        while(curBlock!=null){
-            LocalVarNode[] declaredVars = curBlock.getScopeVars();
-            for(LocalVarNode v:declaredVars){
-                String n = v.getName();
-                if(n!=null && n.equals(name)){
-                    return v;
-                }
-            }
-            curBlock = curBlock.getParentBlock();
-        }
-        return null;
+        return this.varTables.get(name);
     }
 
     @Nullable
@@ -1803,6 +1804,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
+                this.newFrame();
                 this.returned = false;
                 String vName = ctx.catchVarNames.get(i).getText();
                 String vType = ctx.catchTypes.get(i).getText();
@@ -1812,6 +1814,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 CatchBlock catchStmt = new CatchBlock(vo,catchExecStmt); 
                 tryCatchBlocks.add(catchStmt);
                 this.returned = this.returned && tryReturned;
+                this.popFrame();
             }
         }
         BlockStmt tryFinallyStmt = null;
@@ -1879,6 +1882,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     public void visitBlockStmt(StatContext[] stats,BlockStmt blockStmt){
+        this.newFrame();
         BlockStmt oBlock = this.currentBlock;
         this.currentBlock = blockStmt;
         if (stats == null) {
@@ -1888,6 +1892,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             blockStmt.statements.add(visitStat(s));
         }
         this.currentBlock = oBlock;
+        this.popFrame();
     }
 
     @Override
@@ -2163,7 +2168,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             handleSyntaxError("variable is defined", ctx);
             return null;
         }
-        curBlock.declareLocalVar(localVarNode);
+        if(name!=null){
+            this.varTables.put(name,localVarNode);
+        }
         return localVarNode;
     }
 
