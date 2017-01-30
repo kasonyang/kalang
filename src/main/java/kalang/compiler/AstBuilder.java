@@ -168,12 +168,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
    
     private int parsingPhase=0;
     //static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
-
-    //short name to full name
-    @Nonnull
-    private final Map<String, String> fullNames = new HashMap<>();
-    @Nonnull
-    private final List<String> importPaths = new LinkedList<>();
     
     protected ClassNode thisClazz;
     
@@ -202,6 +196,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Nonnull
     private AstLoader astLoader;
+    
+    private final TypeNameResolver typeNameResolver = new TypeNameResolver();
 
     private ParserRuleContext compilationContext;
 
@@ -349,6 +345,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }else{
             this.astLoader = astLoader;
         }
+        this.typeNameResolver.setAstLoader(astLoader);
         if(targetPhase>=PARSING_PHASE_INIT && parsingPhase < PARSING_PHASE_INIT){
             parsingPhase = PARSING_PHASE_INIT;
             CompilationUnitContext cunit = parser.compilationUnit();
@@ -463,20 +460,19 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
      */
     @Nullable
     private ClassNode requireAst(String id,Token token) {
-        id = expandClassName(id);
-        try {
-            return astLoader.loadAst(id);
-        } catch (AstNotFoundException ex) {
+        String resolvedName = this.typeNameResolver.resolve(id, topClass, thisClazz);
+        ClassNode ast = resolvedName==null ? null : astLoader.getAst(resolvedName);
+        if(ast==null){
             AstBuilder.this.handleSyntaxError("ast not found:" + id, token);
-            return null;
         }
+        return ast;
     }
     
     @Nullable
     private ClassNode getAst(String id){
-        if(id==null || id.length()==0) return null;
-        id =expandClassName(id);
-        return astLoader.getAst(id);
+        String resolvedName = this.typeNameResolver.resolve(id, topClass, thisClazz);
+        ClassNode ast = resolvedName==null ? null : astLoader.getAst(resolvedName);
+        return ast;
     }
     
     @Nullable
@@ -554,7 +550,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
 
     public void importPackage(@Nonnull String packageName) {
-        this.importPaths.add(packageName);
+        this.typeNameResolver.importPackage(packageName);
     }
     
     BlockStmt wrapBlock(Statement... statms){
@@ -1477,56 +1473,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         mapAst(ee, ctx);
         return ee;
     }
-    
-    private String fixInnerClassName(String className){
-        String name = "";
-        for(String n:className.split("\\.")){
-            name += n;
-            if(astLoader.getAst(name)!=null){
-                name += "$";
-            }else{
-                name += ".";
-            }
-        }
-        return name.substring(0,name.length()-1);
-    }
-    
-    /**
-     * expand the class name if could
-     * @param id
-     * @return 
-     */
-    private String expandClassName(String id){
-        if (fullNames.containsKey(id)) {
-            return this.fixInnerClassName(fullNames.get(id));
-        } else {
-            String[] innerClassesNames = AstUtil.listInnerClassesNames(topClass, true);
-            List<String> candidates = new ArrayList(innerClassesNames.length+1);
-            candidates.add(topClass.name);
-            candidates.addAll(Arrays.asList(innerClassesNames));
-            for(String c:candidates){
-                if(id.equals(NameUtil.getClassNameWithoutPackage(c))) return c;
-                if((thisClazz.name + "$" + id).equals(c)) return c;
-            }
-            List<String> paths = new ArrayList<>(importPaths.size() + 1);
-            paths.add(classPath);
-            paths.addAll(importPaths);
-            for (String p : paths) {
-                String clsName;
-                if(p!=null && p.length()>0){
-                    clsName = p + "." + id;
-                }else{
-                    clsName = id;
-                }
-                ClassNode cls = astLoader.getAst(this.fixInnerClassName(clsName));
-                if (cls != null) {
-                    return clsName;
-                }
-            }
-        }
-        return id;
-    }
-    
+     
     private boolean isDefindedId(String id){
         if(isClassId(id)) return true;
         if(getNodeById(id,null)!=null) return true;
@@ -1534,18 +1481,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     private boolean isClassId(String name){
-        String id = expandClassName(name);
-        ClassNode targetClass = astLoader.getAst(id);
-        return (targetClass!=null);
-    }
-    
-    private AstNode requireNameDefined(String name,Token token){
-        AstNode n = getNodeById(name, token);
-        if(n==null){
-            AstBuilder.this.handleSyntaxError(name + " is undefined!", token);
-            return null;
-        }
-        return n;
+        return this.typeNameResolver.resolve(name, topClass, thisClazz) != null;
     }
     
     @Nullable
@@ -1685,13 +1621,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
         }
         if (name.equals("*")) {
-            this.importPaths.add(prefix.substring(0, prefix.length() - 1));
+            this.typeNameResolver.importPackage(prefix.substring(0, prefix.length() - 1));
         } else {
             String key = name;
             if (ctx.alias != null) {
                 key = ctx.alias.getText();
             }
-            this.fullNames.put(key, prefix + name);
+            this.typeNameResolver.importClass(prefix + name,key);
         }        
         return null;
     }
