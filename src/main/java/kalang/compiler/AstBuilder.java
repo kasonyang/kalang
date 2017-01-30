@@ -151,8 +151,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Override
     public Object visitEmptyStat(KalangParser.EmptyStatContext ctx) {
-        this.newBlock();
-        return this.popBlock();
+        BlockStmt b = this.newBlock();
+        this.popBlock();
+        return b;
     }
     
     static class VarInfo{
@@ -195,8 +196,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             NULLSTATE_NULLABLE = 3;
     
     private VarTable<VarObject,Integer> nullState = new VarTable();
-    
-    protected BlockStmt currentBlock = null;
     
     private VarTable<String,LocalVarNode> varTables = new VarTable();
     //private final HashMap<MethodNode,BlockStmtContext> methodBodys = new HashMap<>();
@@ -380,14 +379,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             StatContext[] stats = classNodeMetaBuilder.getStatContexts(m);
             if(stats!=null){
                 method = m;
-                if(this.currentBlock != null){
-                    throw Exceptions.unexceptedValue(this.currentBlock);
-                }
                 returned = false;
                 visitBlockStmt(stats,mbody);
-                if(this.currentBlock != null){
-                    throw Exceptions.unexceptedValue(this.currentBlock);
-                }                
                 boolean needReturn = (
                     m.getType() != null
                     && !m.getType().equals(Types.VOID_TYPE)
@@ -580,17 +573,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     BlockStmt newBlock(){
-        BlockStmt bs = new BlockStmt(currentBlock);
-        currentBlock = bs;
+        BlockStmt bs = new BlockStmt(null);
         this.newFrame();
         return bs;
     }
     
-    BlockStmt popBlock(){
-        BlockStmt b = currentBlock;
-        currentBlock = currentBlock.getParentBlock();
+    void popBlock(){
         this.popFrame();
-        return b;
     }
 
     @Nonnull
@@ -1883,15 +1872,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     public void visitBlockStmt(StatContext[] stats,BlockStmt blockStmt){
         this.newFrame();
-        BlockStmt oBlock = this.currentBlock;
-        this.currentBlock = blockStmt;
         if (stats == null) {
             return;
         }
         for (StatContext s : stats) {
             blockStmt.statements.add(visitStat(s));
         }
-        this.currentBlock = oBlock;
         this.popFrame();
     }
 
@@ -2160,8 +2146,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Nullable
     private LocalVarNode declareLocalVar(String name,Type type,ParserRuleContext ctx){
         LocalVarNode localVarNode = new LocalVarNode(type,name);
-        BlockStmt curBlock = this.currentBlock;
-        if(curBlock==null) throw Exceptions.unexceptedValue(curBlock);
         ParameterNode param = this.getNamedParameter(name);
         LocalVarNode var = this.getNamedLocalVar(name);
         if(param!=null || var!=null){
