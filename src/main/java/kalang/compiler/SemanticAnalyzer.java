@@ -58,21 +58,15 @@ import kalang.util.MethodUtil;
  * @author Kason Yang
  */
 public class SemanticAnalyzer extends AstVisitor<Type> {
-    
-    private HashMap<String, VarObject> fields;
 
     private AstLoader astLoader;
-
+    
     private ClassNode clazz;
-
-   private  MethodNode method;
-
+    
     private SemanticErrorReporter err;
 
-    private Stack<Map<Type,AstNode>> exceptionStack = new Stack();
     private CompilationUnit source;
     
-    private VarTable<LocalVarNode,Void> assignedVars = new VarTable<>();
     private DiagnosisReporter diagnosisReporter;
 
     public SemanticAnalyzer(CompilationUnit source,AstLoader astLoader) {
@@ -80,10 +74,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         this.source = source;
     }
     
-    private Type getDefaultType(){
-        return Types.getRootType();
-    }
-
     public void setAstSemanticErrorHandler(DiagnosisHandler handler) {
         this.diagnosisReporter = new DiagnosisReporter(
                 source.getCompileContext(),handler,source.getSource()
@@ -107,16 +97,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             return null;
         }
         return expr;
-    }
-
-    @Nullable
-    public ClassNode loadAst(String name, AstNode node) {
-        ClassNode ast = this.astLoader.getAst(name);
-        if (ast == null) {
-            err.classNotFound(node, name);
-            return null;
-        }
-        return ast;
     }
     
     @Nullable
@@ -224,19 +204,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
     }
 
-    private void caughException(Type type) {
-        Map<Type, AstNode> exceptions = this.exceptionStack.peek();
-        Type[] exTypes = exceptions.keySet().toArray(new Type[0]);
-        for (Type e : exTypes) {
-                if (
-                        e.equals(type)
-                        || ((ObjectType)e).isSubTypeOf(type)
-                        ) {
-                    exceptions.remove(e);
-                }
-        }
-    }
-
     public boolean validateReturnStmt(MethodNode method,ReturnStmt node) {
         Type retType = method.getType();
         if (node.expr == null) {
@@ -335,23 +302,4 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return true;
     }
     
-    protected void enterNewFrame(){
-        assignedVars = new VarTable<>(assignedVars);
-    }
-    
-    protected void exitFrame(){
-        assignedVars = assignedVars.getParent();
-    }
-    
-    protected  void addIntersectedAssignedVar(VarTable<LocalVarNode,Void>... assignedVarsList){
-        Set<LocalVarNode>[] assigned = new Set[assignedVarsList.length];
-        for(int i=0;i<assigned.length;i++){
-            assigned[i] = assignedVarsList[i].keySet();
-        }
-        Set<LocalVarNode> sets = CollectionsUtil.getIntersection(assigned);
-        for(LocalVarNode s:sets){
-            assignedVars.put(s, null);
-        }
-    }
-
 }
