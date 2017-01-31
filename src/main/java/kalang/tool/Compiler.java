@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.KalangClassLoader;
 import kalang.compiler.Diagnosis;
+import kalang.compiler.DiagnosisHandler;
 import kalang.compiler.StandardDiagnosisHandler;
 import kalang.util.ClassNameUtil;
 import org.apache.commons.cli.CommandLine;
@@ -64,15 +65,15 @@ public class Compiler {
         }else if(cli.hasOption("run")){
             return run(cli);
         }else{
-            JointFileSystemCompiler fsc = new JointFileSystemCompiler(){
+            JointFileSystemCompiler fsc = new JointFileSystemCompiler();
+            DiagnosisHandler oldHandler = fsc.getDiagnosisHandler();
+            fsc.setDiagnosisHandler(new DiagnosisHandler() {
                 @Override
-                protected void reportDiagnosis(Diagnosis dn) {
-                    if(dn.getKind().isError()){
-                        Compiler.this.hasError = true;
-                    }
-                    super.reportDiagnosis(dn);
+                public void handleDiagnosis(Diagnosis diagnosis) {
+                    oldHandler.handleDiagnosis(diagnosis);
+                    if(diagnosis.getKind().isError()) Compiler.this.hasError = true;
                 }
-            };
+            });
             File[] cps = parseClassPath(cli);
             if(cps!=null){
                 for (File cp : cps) {

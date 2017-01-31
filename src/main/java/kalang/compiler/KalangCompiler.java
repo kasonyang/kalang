@@ -23,7 +23,7 @@ import org.antlr.v4.runtime.RecognitionException;
  * 
  * @author Kason Yang
  */
-public class KalangCompiler extends AstLoader implements CompileContext,DiagnosisHandler{
+public class KalangCompiler extends AstLoader implements CompileContext{
         
     private int compileTargetPhase = PHASE_ALL;
 
@@ -32,9 +32,9 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
     @Nonnull
     private final HashMap<String, KalangSource> sources = new HashMap();
     
-    //protected CompileContext compileContext = new DefaultCompileContext();
-    
     private int compilingPhase;
+    
+    protected DiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
     
     protected AstLoader astLoader;
 
@@ -65,7 +65,7 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
 
     protected void semanticAnalysis() {
         for (CompilationUnit cunit : compilationUnits.values()) {
-            cunit.semanticAnalysis(this);
+            cunit.semanticAnalysis(this.diagnosisHandler);
         }
     }
     
@@ -180,7 +180,7 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
                         , msg
                         , compilationUnit.getSource()
                 );
-                KalangCompiler.this.handleDiagnosis(diagnosis);
+                diagnosisHandler.handleDiagnosis(diagnosis);
             }
             
         });
@@ -216,21 +216,14 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
             }
         };
     }
-    
-    protected void reportDiagnosis(Diagnosis diagnosis){
-        PrintStream out = diagnosis.getKind().isError() ? System.err : System.out;
-        out.println(diagnosis);
-    }
-
-    @Override
-    public void handleDiagnosis(Diagnosis diagnosis) {
-        if(diagnosis.getKind().isError()) setCompileTargetPhase(this.compilingPhase);
-        reportDiagnosis(diagnosis);
-    }
 
     @Override
     public DiagnosisHandler getDiagnosisHandler() {
-        return this;
+        return this.diagnosisHandler;
+    }
+
+    public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler) {
+        this.diagnosisHandler = diagnosisHandler;
     }
 
     @Override
