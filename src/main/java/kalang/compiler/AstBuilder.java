@@ -151,6 +151,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private ClassNodeMetaBuilder classNodeMetaBuilder;
     
     private DiagnosisReporter diagnosisReporter;
+    
+    private SemanticAnalyzer semanticAnalyzer;
 
     @Override
     public Object visitEmptyStat(KalangParser.EmptyStatContext ctx) {
@@ -339,6 +341,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             this.astLoader = astLoader;
         }
         this.typeNameResolver.setAstLoader(astLoader);
+        this.semanticAnalyzer = new SemanticAnalyzer(compilationUnit, astLoader);
         if(targetPhase>=PARSING_PHASE_INIT && parsingPhase < PARSING_PHASE_INIT){
             parsingPhase = PARSING_PHASE_INIT;
             CompilationUnitContext cunit = parser.compilationUnit();
@@ -1099,6 +1102,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     private BinaryExpr createBinaryExpr(ExprNode expr1,ExprNode expr2,String op){
+        BinaryExpr binExpr;
         switch(op){
             case "==":
             case "!=":
@@ -1106,13 +1110,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             case ">=":
             case "<":
             case "<=":
-                return new CompareExpr(expr1, expr2, op);
+                binExpr = new CompareExpr(expr1, expr2, op);
+                break;
             case "&&":
             case "||":
-                return new LogicExpr(expr1, expr2, op);
+                binExpr = new LogicExpr(expr1, expr2, op);
+                break;
             default:
-                return new MathExpr(expr1, expr2, op);
+                binExpr = new MathExpr(expr1, expr2, op);
+                break;
         }
+        semanticAnalyzer.validateBinaryExpr(binExpr);
+        return binExpr;
     }
     
     protected ExprNode createFieldExpr(GetFieldExprContext to,@Nullable ExpressionContext fromCtx){
@@ -1466,6 +1475,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public UnaryExpr visitUnaryExpr(UnaryExprContext ctx) {
         String op = ctx.getChild(0).getText();   
         UnaryExpr ue = new UnaryExpr( visitExpression( ctx.expression() ) , op );
+        if(!semanticAnalyzer.validateUnaryExpr(ue)) return null;
         mapAst(ue, ctx);
         return ue;
     }
@@ -1476,6 +1486,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 visitExpression(ctx.expression(0))
                 ,visitExpression(ctx.expression(1))
         );
+        if(!semanticAnalyzer.validateElementExpr(ee)) return null;
         mapAst(ee, ctx);
         return ee;
     }
@@ -1994,6 +2005,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
 
     @Override
+    @Nullable
     public AnnotationNode visitAnnotation(KalangParser.AnnotationContext ctx) {
         ClassNode anType = requireAst(ctx.annotationType);
         if(anType==null) return null;
@@ -2012,6 +2024,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             ConstExpr defaultValue = visitLiteral(dv);
             anNode.values.put("value", defaultValue);
         }
+        if(!semanticAnalyzer.validateAnnotation(anNode)) return null;
         //TODO validate annotation's values
         return anNode;
     }

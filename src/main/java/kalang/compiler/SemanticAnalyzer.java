@@ -47,6 +47,7 @@ import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.core.VarTable;
+import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
 import kalang.util.CollectionsUtil;
 import kalang.util.MethodUtil;
@@ -153,9 +154,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     @Override
     public Type visit(AstNode node) {
         if(node==null) return null;
-        if(node instanceof Annotationable){
-            validateAnnotation(((Annotationable)node).getAnnotations());
-        }
         if(node instanceof VarExpr){
             if(!assignedVars.exist(((VarExpr)node).getVar(), true)){
                 err.fail(node.toString() + " is uninitialized!", 0, node);
@@ -212,10 +210,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return Types.getPrimitiveType(ret);
     }
 
-    @Override
-    public Type visitBinaryExpr(BinaryExpr node) {
-        Type t1 = visit(node.getExpr1());
-        Type t2 = visit(node.getExpr2());
+    public boolean validateBinaryExpr(BinaryExpr node) {
+        Type t1 = node.getExpr1().getType();
+        Type t2 = node.getExpr2().getType();
         String op = node.getOperation();
         Type t;
         switch (op) {
@@ -224,7 +221,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if (Types.isNumber(t1)) {
                     if (!Types.isNumber(t2)) {
                         err.failedToCast(node, t2.getName(), Types.getIntClassType().getName());
-                        return getDefaultType();
+                        return false;
                     }
                 } else {
                     //TODO pass anything.may be Object needed?
@@ -235,31 +232,30 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 if(isNumber(t1) && isNumber(t2)){
                     t = getMathType(t1, t2, op);
                 }else{
-                    node.setExpr1(checkAssign(node.getExpr1(), t1, Types.getStringClassType(), node));
-                    node.setExpr2(checkAssign(node.getExpr2(), t2, Types.getStringClassType(), node));
-                    t =Types.getStringClassType();
+                    err.fail("number type required", 0, node);
+                    return false;
                 }
                 break;
             case "-":
             case "*":
             case "/":
             case "%":
-                if(!requireNumber(node, t1)) return getDefaultType();
-                if(!requireNumber(node, t2)) return getDefaultType();
+                if(!requireNumber(node, t1)) return false;
+                if(!requireNumber(node, t2)) return false;
                 t = (getMathType(t1, t2, op));
                 break;
             case ">=":
             case "<=":
             case ">":
             case "<":
-                if(!requireNumber(node, t1)) return getDefaultType();
-                if(!requireNumber(node, t2)) return getDefaultType();
+                if(!requireNumber(node, t1)) return false;
+                if(!requireNumber(node, t2)) return false;
                 t = Types.BOOLEAN_TYPE;
                 break;
             case "&&":
             case "||":
-                if(!requireBoolean(node, t1)) return getDefaultType();
-                if(!requireBoolean(node, t2)) return getDefaultType();
+                if(!requireBoolean(node, t1)) return false;
+                if(!requireBoolean(node, t2)) return false;
                 t = Types.BOOLEAN_TYPE;
                 break;
             case "&":
@@ -267,22 +263,19 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             case "^":
             case BinaryExpr.OP_SHIFT_LEFT:
             case BinaryExpr.OP_SHIFT_RIGHT:
-                if(!requireNumber(node, t1)) return getDefaultType();
-                if(!requireNumber(node, t2)) return getDefaultType();
+                if(!requireNumber(node, t1)) return false;
+                if(!requireNumber(node, t2)) return false;
                 t = getPrimitiveType(Types.getHigherType(t1, t2));
                 break;
             default:
                 err.fail("unsupport operation:" + op, SemanticErrorReporter.UNSUPPORTED, node);
-                return getDefaultType();
+                return false;
         }
-        return t;
+        return true;
     }
 
-    @Override
-    public Type visitElementExpr(ElementExpr node) {
-        super.visitElementExpr(node);
-        requireArray(node, node.getArrayExpr().getType());
-        return null;
+    public boolean validateElementExpr(ElementExpr node) {
+        return requireArray(node, node.getArrayExpr().getType());
     }
 
     @Override
@@ -295,21 +288,19 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return node.getType();
     }
 
-    @Override
-    public Type visitUnaryExpr(UnaryExpr node) {
-        super.visitUnaryExpr(node);
+    public boolean validateUnaryExpr(UnaryExpr node) {
         String op = node.getOperation();
         Type et = node.getExpr().getType();
         switch(op){
             case UnaryExpr.OPERATION_LOGIC_NOT:
-                requireBoolean(node, et);
-                break;
+                return requireBoolean(node, et);
             case UnaryExpr.OPERATION_NEG:
             case UnaryExpr.OPERATION_POS:
             case UnaryExpr.OPERATION_NOT:
-                requireNumber(node, et);
+                return requireNumber(node, et);
+            default:
+                throw Exceptions.unexceptedValue(op);
         }
-        return et;
     }
 
     private void caughException(Type type) {
@@ -515,7 +506,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         for(AnnotationNode an:annotation) validateAnnotation(an);
     }
     
-    protected void validateAnnotation(AnnotationNode annotation){
+    protected boolean validateAnnotation(AnnotationNode annotation){
         MethodNode[] mds = annotation.getAnnotationType().getDeclaredMethodNodes();
         Set<String> attrKeys = annotation.values.keySet();
         List<String> missingValues = new LinkedList<>();
@@ -527,7 +518,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
         if(missingValues.size()>0){
             err.fail("Missing attribute for annotation:" + missingValues.toString(), -1, clazz);
+            return false;
         }
+        return true;
     }
     
     protected void enterNewFrame(){
