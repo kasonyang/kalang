@@ -62,8 +62,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     private AstLoader astLoader;
     
     private ClassNode clazz;
-    
-    private SemanticErrorReporter err;
 
     private CompilationUnit source;
     
@@ -93,7 +91,8 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     private ExprNode checkAssign(ExprNode expr, Type from, Type to, AstNode node) {
         expr = BoxUtil.assign(expr, from, to);
         if (expr == null) {
-            err.failedToCast(node, from.getName(), to.getName());
+            diagnosisReporter.report(Diagnosis.Kind.ERROR
+                    ,from.getName() + " can not be converted to " + to.getName(),node.offset);
             return null;
         }
         return expr;
@@ -122,67 +121,42 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
 
     public boolean validateBinaryExpr(BinaryExpr node) {
-        Type t1 = node.getExpr1().getType();
-        Type t2 = node.getExpr2().getType();
+        ExprNode expr1 = node.getExpr1();
+        ExprNode expr2 = node.getExpr2();
+        Type t1 = expr1.getType();
+        Type t2 = expr2.getType();
         String op = node.getOperation();
-        Type t;
         switch (op) {
             case "==":
             case "!=":
                 if (Types.isNumber(t1)) {
-                    if (!Types.isNumber(t2)) {
-                        err.failedToCast(node, t2.getName(), Types.getIntClassType().getName());
-                        return false;
-                    }
+                    return this.requireNumber(expr2,t2);
                 } else {
+                    return true;
                     //TODO pass anything.may be Object needed?
                 }
-                t = Types.BOOLEAN_TYPE;
-                break;
             case "+":
-                if(isNumber(t1) && isNumber(t2)){
-                    t = getMathType(t1, t2, op);
-                }else{
-                    err.fail("number type required", 0, node);
-                    return false;
-                }
-                break;
             case "-":
             case "*":
             case "/":
             case "%":
-                if(!requireNumber(node, t1)) return false;
-                if(!requireNumber(node, t2)) return false;
-                t = (getMathType(t1, t2, op));
-                break;
             case ">=":
             case "<=":
             case ">":
             case "<":
-                if(!requireNumber(node, t1)) return false;
-                if(!requireNumber(node, t2)) return false;
-                t = Types.BOOLEAN_TYPE;
-                break;
-            case "&&":
-            case "||":
-                if(!requireBoolean(node, t1)) return false;
-                if(!requireBoolean(node, t2)) return false;
-                t = Types.BOOLEAN_TYPE;
-                break;
             case "&":
             case "|":
             case "^":
             case BinaryExpr.OP_SHIFT_LEFT:
             case BinaryExpr.OP_SHIFT_RIGHT:
-                if(!requireNumber(node, t1)) return false;
-                if(!requireNumber(node, t2)) return false;
-                t = getPrimitiveType(Types.getHigherType(t1, t2));
-                break;
+                return this.requireNumber(expr1, t1) && this.requireNumber(expr2, t2);
+            case "&&":
+            case "||":
+                return requireBoolean(expr1, t1) && requireBoolean(expr2, t2);
             default:
-                err.fail("unsupport operation:" + op, SemanticErrorReporter.UNSUPPORTED, node);
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, "unsupport operation:" + op, node.offset);
                 return false;
         }
-        return true;
     }
 
     public boolean validateElementExpr(ElementExpr node) {
@@ -208,7 +182,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         Type retType = method.getType();
         if (node.expr == null) {
             if(!retType.equals(Types.VOID_TYPE)){
-                err.fail("expression expected", 0, node);
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, "missing return value",node.offset);
                 return false;
             }
             return true;
@@ -222,20 +196,19 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     boolean requireNumber(AstNode node, Type t) {
         if (!isNumber(t)) {
-            err.failedToCast(node, t.getName(),Types.getIntClassType().getName() );
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "number type required",node.offset);
             return false;
         }
         return true;
     }
 
     boolean requireBoolean(ExprNode node) {
-        visit(node);
         return requireBoolean(node, node.getType());
     }
 
     boolean requireBoolean(AstNode node, Type t) {
         if (!Types.isBoolean(t)) {
-            err.failedToCast(node, t.getName(), Types.getBooleanClassType().getName());
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "boolean type required.",node.offset);
             return false;
         }
         return true;
@@ -247,7 +220,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     boolean requireArray(AstNode node, Type t) {
         if (!isArray(t)) {
-            err.failedToCast(node, t.getName(), "array");
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "array type required.");
             return false;
         }
         return true;
@@ -260,7 +233,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     boolean requireStatic(Integer modifier, AstNode node) {
         boolean isStatic = isStatic(modifier);
         if (!isStatic) {
-            err.fail("couldn't refer non-static member in static context", SemanticErrorReporter.UNSUPPORTED, node);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "couldn't refer non-static member in static context",  node.offset);
             return false;
         }
         return true;
@@ -271,7 +244,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 || type == Types.VOID_TYPE
                 || type == Types.getVoidClassType()
                 ){
-            err.unsupported("use void type as value", node);
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "use void type as value", node.offset);
             return false;
         }
         return true;
@@ -296,7 +269,9 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             }
         }
         if(missingValues.size()>0){
-            err.fail("Missing attribute for annotation:" + missingValues.toString(), -1, clazz);
+            //TODO add offset on annotationNode
+            diagnosisReporter.report(Diagnosis.Kind.ERROR
+                    ,"Missing attribute for annotation:" + missingValues.toString(),OffsetRange.NONE);
             return false;
         }
         return true;

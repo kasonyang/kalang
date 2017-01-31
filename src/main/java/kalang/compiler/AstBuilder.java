@@ -3,7 +3,6 @@ package kalang.compiler;
 import kalang.MethodNotFoundException;
 import kalang.FieldNotFoundException;
 import kalang.AmbiguousMethodException;
-import kalang.AstNotFoundException;
 import javax.annotation.Nonnull;
 import kalang.ast.ClassNode;
 import kalang.ast.ElementExpr;
@@ -31,19 +30,15 @@ import kalang.ast.BreakStmt;
 import kalang.ast.UnaryExpr;
 import kalang.ast.NewArrayExpr;
 import kalang.ast.IfStmt;
-import kalang.ast.FieldExpr;
 import kalang.ast.ReturnStmt;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
@@ -115,17 +110,14 @@ import kalang.ast.VarDeclStmt;
 import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.GenericType;
-import kalang.core.MethodDescriptor;
 import kalang.core.NullableKind;
 import kalang.core.ClassType;
-import kalang.core.ModifierConstant;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
-import kalang.util.ClassTypeUtil;
 import kalang.util.InvalidModifierException;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
@@ -385,8 +377,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                             ,classNodeMetaBuilder.getMethodDeclContext(m)
                     );
                 }
-                new InitializationAnalyzer(compilationUnit, astLoader).check(clazz, m);
-                new ExceptionCatchAnalyzer(compilationUnit, astLoader).check(clazz, m);
+                DiagnosisHandler diagnosisHandler = this.diagnosisReporter.getDisgnosisHandler();
+                new InitializationAnalyzer(compilationUnit, astLoader).check(clazz, m,diagnosisHandler);
+                new ExceptionCatchAnalyzer(compilationUnit, astLoader).check(clazz, m,diagnosisHandler);
             }
             if(AstUtil.isConstructor(m)){   
                 @SuppressWarnings("null")

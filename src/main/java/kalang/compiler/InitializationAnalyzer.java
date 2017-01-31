@@ -33,8 +33,6 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
 
     private MethodNode method;
 
-    private SemanticErrorReporter err;
-
     private CompilationUnit source;
 
     private VarTable<LocalVarNode, Void> assignedVars = new VarTable<>();
@@ -52,18 +50,8 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         );
     }
 
-    @Nullable
-    public ClassNode loadAst(String name, AstNode node) {
-        ClassNode ast = this.astLoader.getAst(name);
-        if (ast == null) {
-            err.classNotFound(node, name);
-            return null;
-        }
-        return ast;
-    }
-
-    public void check(ClassNode clz,MethodNode method) {
-        err = new SemanticErrorReporter(clz, source, source.getCompileContext().getDiagnosisHandler());
+    public void check(ClassNode clz,MethodNode method, DiagnosisHandler disgnosisHandler) {
+        this.diagnosisReporter = new DiagnosisReporter(source.getCompileContext(), disgnosisHandler, source.getSource());
         this.visit(method);
     }
 
@@ -74,7 +62,8 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         }
         if (node instanceof VarExpr) {
             if (!assignedVars.exist(((VarExpr) node).getVar(), true)) {
-                err.fail(node.toString() + " is uninitialized!", 0, node);
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR
+                        , ((VarExpr) node).getVar().getName() + " is uninitialized!", ((VarExpr) node).offset);
             }
         }
         return super.visit(node);
