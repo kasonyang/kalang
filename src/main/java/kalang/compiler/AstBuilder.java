@@ -642,38 +642,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return mse;
     }
 
-//    @Override
-//    public MultiStmtExpr visitListExpr(KalangParser.ListExprContext ctx) {
-//        List<Statement> stmts = new LinkedList<>();
-//        Type valueType = ctx.Identifier()!=null
-//                ?requireClassType(ctx.Identifier().getSymbol())
-//                :Types.getRootType();
-//        if(valueType==null) return null;
-//        LocalVarNode vo = declareTempLocalVar(Types.getClassType(Types.getListImplClassType().getClassNode(),new Type[]{valueType}));
-//        VarDeclStmt vds = new VarDeclStmt(vo);
-//        NewObjectExpr newExpr;
-//        try {
-//            newExpr = new NewObjectExpr(Types.getListImplClassType());
-//        } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-//            throw Exceptions.unexceptedException(ex);
-//        }
-//        stmts.add(vds);
-//        VarExpr ve = new VarExpr(vo);
-//        stmts.add(new ExprStmt(new AssignExpr(ve, newExpr)));
-//        for (ExpressionContext e : ctx.expression()) {
-//            InvocationExpr iv;
-//            try {
-//                iv = ObjectInvokeExpr.create(ve,"add",new ExprNode[]{visitExpression(e)});
-//            } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-//                throw Exceptions.unexceptedException(ex);
-//            }
-//            stmts.add(new ExprStmt(iv));
-//        }
-//        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
-//        mapAst(mse,ctx);
-//        return mse;
-//    }
-
     @Override
     public ExprNode visitNewArrayExpr(KalangParser.NewArrayExprContext ctx) {
         Type type = parseType(ctx.type());
