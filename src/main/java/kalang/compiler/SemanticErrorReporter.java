@@ -13,15 +13,25 @@ import kalang.util.AstUtil;
 import java.util.List;
 
 import java.util.Map;
-import static kalang.compiler.SemanticError.*;
 import kalang.core.MethodDescriptor;
 import kalang.core.Type;
 import kalang.util.MethodUtil;
+
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
-public class SemanticErrorReporter{
+public class SemanticErrorReporter {
+    
+            public static final int UNRESOLVED_NAME = 1,
+            CLASS_NOT_FOUND = 2,
+            METHOD_NOT_FOUND = 3,
+            UNABLE_TO_CAST = 4,
+            METHOD_NOT_IMPLEMENTED = 5,
+            UNSUPPORTED = 6,
+            FIELD_NOT_FOUND = 7,
+            LACKS_OF_STATEMENT = 8,
+            UNCAUGHT_EXCEPTION = 9;
 
     private CompilationUnit source;
 
@@ -29,16 +39,12 @@ public class SemanticErrorReporter{
         fail("Uncaught exception:" + exType, UNCAUGHT_EXCEPTION, expr);
     }
 
-    public static interface AstSemanticReporterCallback{
-        void handleAstSemanticError(SemanticError error);
-    }
-    
-    AstSemanticReporterCallback handler;
+    private DiagnosisHandler diagnosisHandler;
 
-    ClassNode clazz;
+    private ClassNode clazz;
 
-    public SemanticErrorReporter(ClassNode clazz, CompilationUnit source,AstSemanticReporterCallback handler) {
-        this.handler = handler;
+    public SemanticErrorReporter(ClassNode clazz, CompilationUnit source, DiagnosisHandler handler) {
+        this.diagnosisHandler = handler;
         this.clazz = clazz;
         this.source = source;
     }
@@ -48,8 +54,8 @@ public class SemanticErrorReporter{
     }
 
     public void fail(String msg, int errorCode, AstNode node) {
-        SemanticError ase = new SemanticError(msg, source ,errorCode,node,clazz);
-        handler.handleAstSemanticError(ase);
+        Diagnosis dn = new Diagnosis(this.source.getCompileContext(), Diagnosis.Kind.ERROR, node.offset, msg, source.getSource());
+        diagnosisHandler.handleDiagnosis(dn);
     }
 
     public void classNotFound(AstNode node, String className) {
@@ -57,7 +63,7 @@ public class SemanticErrorReporter{
     }
 
     public void methodNotFound(AstNode node, String className, String name, Type[] types) {
-        String method = MethodUtil.toString(className,name, types);
+        String method = MethodUtil.toString(className, name, types);
         fail("Method Missing:" + method, METHOD_NOT_FOUND, node);
     }
 
@@ -71,11 +77,11 @@ public class SemanticErrorReporter{
 
     public void notImplementedMethods(AstNode node, Type theInterface, List<MethodDescriptor> method) {
         List<String> list = new LinkedList();
-        for(MethodDescriptor m:method){
+        for (MethodDescriptor m : method) {
             list.add(m.toString());
         }
         String methodStr = String.join("\n", list);
         String msg = String.format("methods require implemented:\n%s", methodStr);
-        fail(msg , METHOD_NOT_IMPLEMENTED, node);
+        fail(msg, METHOD_NOT_IMPLEMENTED, node);
     }
 }

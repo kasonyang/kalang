@@ -54,10 +54,10 @@ import kalang.util.MethodUtil;
 /**
  *  The semantic analyzer class infers and checks the componentType of expressions. It may transform the abstract syntax tree.
  * 
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class SemanticAnalyzer extends AstVisitor<Type> {
-   
+    
     private HashMap<String, VarObject> fields;
 
     private AstLoader astLoader;
@@ -148,12 +148,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     
 
     public void check(ClassNode clz) {
-        err = new SemanticErrorReporter(clz,source ,new SemanticErrorReporter.AstSemanticReporterCallback() {
-            @Override
-            public void handleAstSemanticError(SemanticError error) {
-                SemanticAnalyzer.this.diagnosisReporter.report(Diagnosis.Kind.ERROR, error.getDescription(),error.getOffset());
-            }
-        });
+        err = new SemanticErrorReporter(clz,source ,source.getCompileContext().getDiagnosisHandler());
         this.visit(clz);
     }
 
@@ -290,7 +285,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                 t = getPrimitiveType(Types.getHigherType(t1, t2));
                 break;
             default:
-                err.fail("unsupport operation:" + op, SemanticError.UNSUPPORTED, node);
+                err.fail("unsupport operation:" + op, SemanticErrorReporter.UNSUPPORTED, node);
                 return getDefaultType();
         }
         return t;
@@ -497,7 +492,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     boolean requireStatic(Integer modifier, AstNode node) {
         boolean isStatic = isStatic(modifier);
         if (!isStatic) {
-            err.fail("couldn't refer non-static member in static context", SemanticError.UNSUPPORTED, node);
+            err.fail("couldn't refer non-static member in static context", SemanticErrorReporter.UNSUPPORTED, node);
             return false;
         }
         return true;
