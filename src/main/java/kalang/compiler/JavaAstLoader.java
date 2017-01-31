@@ -49,6 +49,8 @@ public class JavaAstLoader extends AstLoader {
     
     private Map<String,ClassNode> loadedClasses  =new HashMap<>();
     
+    private final AstLoader parentAstLoader;
+    
     private static String getMethodDeclarationKey(Executable m){
         Class<?>[] pts = m.getParameterTypes();
         String[] types = new String[pts.length];
@@ -151,12 +153,13 @@ public class JavaAstLoader extends AstLoader {
         return cn;
     }
 
-    public JavaAstLoader(@Nonnull ClassLoader javaClassLoader) {
+    public JavaAstLoader(@Nullable AstLoader parentAstLoader,@Nonnull ClassLoader javaClassLoader) {
         this.javaClassLoader = javaClassLoader;
+        this.parentAstLoader = parentAstLoader;
     }
 
     public JavaAstLoader() {
-        javaClassLoader = this.getClass().getClassLoader();
+        this(null,JavaAstLoader.class.getClassLoader());
     }
     
     

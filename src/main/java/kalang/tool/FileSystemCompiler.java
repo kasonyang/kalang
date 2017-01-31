@@ -53,26 +53,23 @@ public class FileSystemCompiler extends KalangCompiler{
 
     public FileSystemCompiler() {
         super();
-        super.compileContext =  new CompileContextProxy(super.compileContext){
-            
+    }
+    
+    @Override
+    public AstLoader getAstLoader() {
+        return new JavaAstLoader(super.getAstLoader(),getClassLoader());
+    }
+
+    @Override
+    public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
+        return new CodeGenerator() {
             @Override
-            public AstLoader getAstLoader() {
-                JavaAstLoader astLoader = new JavaAstLoader(getClassLoader());
-                return astLoader;
+            public void generate(ClassNode classNode) {
+                if (codeGenerator != null) {
+                    codeGenerator.generate(classNode);
+                }
             }
 
-            @Override
-            public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-                return new CodeGenerator(){
-                    @Override
-                    public void generate(ClassNode classNode) {
-                        if(codeGenerator!=null){
-                            codeGenerator.generate(classNode);
-                        }
-                    }
-                    
-                };
-            }
         };
     }
 

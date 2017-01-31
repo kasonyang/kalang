@@ -30,5 +30,9 @@ public interface CompileContext {
     public SourceLoader getSourceLoader();
     
     public DiagnosisHandler getDiagnosisHandler();
+    
+    void stopCompile(int stopPhase);
+    
+    int getCompilingPhase();
 
 }

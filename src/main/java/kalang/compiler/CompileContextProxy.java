@@ -9,7 +9,7 @@ import kalang.antlr.KalangParser;
 import org.antlr.v4.runtime.CommonTokenStream;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang
  */
 public class CompileContextProxy implements CompileContext{
     
@@ -62,6 +62,16 @@ public class CompileContextProxy implements CompileContext{
     @Override
     public DiagnosisHandler getDiagnosisHandler() {
         return config.getDiagnosisHandler();
+    }
+
+    @Override
+    public void stopCompile(int stopPhase) {
+        config.stopCompile(stopPhase);
+    }
+
+    @Override
+    public int getCompilingPhase() {
+        return config.getCompilingPhase();
     }
 
 

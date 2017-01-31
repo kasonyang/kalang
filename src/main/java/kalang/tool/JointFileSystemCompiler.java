@@ -94,7 +94,7 @@ public class JointFileSystemCompiler extends FileSystemCompiler{
                     return createMockClass(className);
                 }
                 if(javaCompiler==null) throw ex;
-                JavaAstLoader javaAstLoader = new JavaAstLoader(javaCompiler);
+                JavaAstLoader javaAstLoader = new JavaAstLoader(null,javaCompiler);
                 //TODO the class would not write to disk
                 return javaAstLoader.loadAst(className);
             } catch (IOException ioEx) {

@@ -9,8 +9,11 @@ import javax.annotation.Nullable;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import static kalang.compiler.CompilePhase.*;
+import kalang.compiler.codegen.Ast2Java;
 import kalang.util.AntlrErrorString;
+import kalang.util.LexerFactory;
 import kalang.util.OffsetRangeHelper;
+import kalang.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.Parser;
@@ -29,7 +32,7 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
     @Nonnull
     private final HashMap<String, KalangSource> sources = new HashMap();
     
-    protected CompileContext compileContext = new DefaultCompileContext();
+    //protected CompileContext compileContext = new DefaultCompileContext();
     
     private int compilingPhase;
     
@@ -120,7 +123,7 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
                 return createCompilationUnit(source).getAst();
             }
         }
-        return compileContext.getAstLoader().findAst(className);
+        return AstLoader.BASE_AST_LOADER.findAst(className);
     }
 
     @Nonnull
@@ -155,12 +158,12 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
 
     @Override
     public KalangLexer createLexer(CompilationUnit compilationUnit, String source) {
-        return compileContext.createLexer(compilationUnit, source);
+        return LexerFactory.createLexer(source);
     }
 
     @Override
     public CommonTokenStream createTokenStream(CompilationUnit compilationUnit, KalangLexer lexer) {
-        return compileContext.createTokenStream(compilationUnit, lexer);
+        return TokenStreamFactory.createTokenStream(lexer);
     }
 
     @Override
@@ -186,27 +189,32 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
 
     @Override
     public AstBuilder createAstBuilder(CompilationUnit compilationUnit, KalangParser parser) {
-        return compileContext.createAstBuilder(compilationUnit, parser);
+        return new AstBuilder(compilationUnit, parser);
     }
 
     @Override
     public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-        return compileContext.createCodeGenerator(compilationUnit);
+        return new Ast2Java();
     }
 
     @Override
     public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return compileContext.createSemanticAnalyzer(compilationUnit, astLoader);
+        return new SemanticAnalyzer(compilationUnit, astLoader);
     }
 
     @Override
-    public final AstLoader getAstLoader() {
+    public AstLoader getAstLoader() {
         return this;
     }
 
     @Override
     public SourceLoader getSourceLoader() {
-        return compileContext.getSourceLoader();
+        return new SourceLoader() {
+            @Override
+            public KalangSource loadSource(String className) {
+                return null;
+            }
+        };
     }
     
     protected void reportDiagnosis(Diagnosis diagnosis){
@@ -223,6 +231,16 @@ public class KalangCompiler extends AstLoader implements CompileContext,Diagnosi
     @Override
     public DiagnosisHandler getDiagnosisHandler() {
         return this;
+    }
+
+    @Override
+    public void stopCompile(int stopPhase) {
+        setCompileTargetPhase(stopPhase);
+    }
+
+    @Override
+    public int getCompilingPhase() {
+        return this.compilingPhase;
     }
 
 }
