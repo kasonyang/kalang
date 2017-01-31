@@ -44,12 +44,6 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         this.source = source;
     }
 
-    public void setAstSemanticErrorHandler(DiagnosisHandler handler) {
-        this.diagnosisReporter = new DiagnosisReporter(
-                source.getCompileContext(), handler, source.getSource()
-        );
-    }
-
     public void check(ClassNode clz,MethodNode method, DiagnosisHandler disgnosisHandler) {
         this.diagnosisReporter = new DiagnosisReporter(source.getCompileContext(), disgnosisHandler, source.getSource());
         this.visit(method);

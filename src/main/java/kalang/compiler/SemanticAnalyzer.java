@@ -2,55 +2,27 @@ package kalang.compiler;
 
 import kalang.util.MathType;
 import kalang.util.AstUtil;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
-
-import kalang.ast.AssignExpr;
 import kalang.ast.AstNode;
 import kalang.ast.AstVisitor;
 import kalang.ast.BinaryExpr;
-import kalang.ast.CastExpr;
-import kalang.ast.CatchBlock;
 import kalang.ast.ClassNode;
 import kalang.ast.ElementExpr;
 import kalang.ast.ExprNode;
-import kalang.ast.IfStmt;
-import kalang.ast.InvocationExpr;
-import kalang.ast.LoopStmt;
 import kalang.ast.MethodNode;
 import kalang.ast.ReturnStmt;
-import kalang.ast.Statement;
-import kalang.ast.TryStmt;
 import kalang.ast.UnaryExpr;
-import kalang.ast.VarExpr;
-import kalang.ast.VarObject;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import kalang.ast.AnnotationNode;
-import kalang.ast.Annotationable;
-import kalang.ast.AssignableExpr;
-import kalang.ast.ClassReference;
-import kalang.ast.ErrorousExpr;
-import kalang.ast.LocalVarNode;
-import kalang.ast.ThrowStmt;
-import kalang.ast.UnknownFieldExpr;
-import kalang.ast.UnknownInvocationExpr;
 import kalang.core.ArrayType;
 import kalang.core.ObjectType;
-import kalang.core.ExecutableDescriptor;
-import kalang.core.MethodDescriptor;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
-import kalang.core.VarTable;
 import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
-import kalang.util.CollectionsUtil;
-import kalang.util.MethodUtil;
 
 /**
  *  The semantic analyzer class infers and checks the componentType of expressions. It may transform the abstract syntax tree.
@@ -72,12 +44,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         this.source = source;
     }
     
-    public void setAstSemanticErrorHandler(DiagnosisHandler handler) {
-        this.diagnosisReporter = new DiagnosisReporter(
-                source.getCompileContext(),handler,source.getSource()
-        );
-    }
-
     /**
      * checks whether an expression as assignable to another expression , and transform the expression if needed.
      * 
