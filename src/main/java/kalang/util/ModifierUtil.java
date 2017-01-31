@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang
  */
 public class ModifierUtil {
 
@@ -47,7 +47,7 @@ public class ModifierUtil {
      * @return
      * @throws InvalidModifierException
      */
-    public static int valueOf(String modifierString) throws InvalidModifierException {
+    public static int parse(String modifierString,int defaultAccess) throws InvalidModifierException {
         if (modifierString.isEmpty()) {
             throw new InvalidModifierException("modifier could not be empty");
         }
@@ -55,8 +55,16 @@ public class ModifierUtil {
         for (String s : modifierString.split(" ")) {
             m = addModifier(m, parseSingleModfier(s));
         }
+        boolean isPublic = Modifier.isPublic(m);
+        boolean isPrivate = Modifier.isPrivate(m);
+        boolean isProtected = Modifier.isProtected(m);
+        if(!isPrivate && !isProtected && !isPublic)  m|=defaultAccess;
         return m;
     }
+    
+        public static int parse(String modifierString) throws InvalidModifierException {
+            return parse(modifierString,Modifier.PUBLIC);
+        }
 
     private static int parseSingleModfier(String s) throws InvalidModifierException {
         switch (s) {

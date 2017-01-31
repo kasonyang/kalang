@@ -1661,7 +1661,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         String modifierText = parseTreeToText(modifier);
         if(modifierText.isEmpty()) return defaultModifier;
         try {
-            return ModifierUtil.valueOf(modifierText);
+            return ModifierUtil.parse(modifierText);
         } catch (InvalidModifierException ex) {
             this.handleSyntaxError(ex.getMessage(), modifier);
             return defaultModifier;
