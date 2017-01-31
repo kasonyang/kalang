@@ -402,18 +402,20 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return null;
     }
 
-    @Override
-    public Type visitReturnStmt(ReturnStmt node) {
+    public boolean validateReturnStmt(MethodNode method,ReturnStmt node) {
         Type retType = method.getType();
         if (node.expr == null) {
             if(!retType.equals(Types.VOID_TYPE)){
                 err.fail("expression expected", 0, node);
+                return false;
             }
+            return true;
         }else{
-            Type exType = visit(node.expr);
+            Type exType = node.expr.getType();
             node.expr = this.checkAssign(node.expr, exType, retType, node);
+            if(node.expr==null) return false;
+            return true;
         }
-        return null;
     }
 
     boolean requireNumber(AstNode node, Type t) {
