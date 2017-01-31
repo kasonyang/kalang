@@ -203,10 +203,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Nonnull
     private final String className;
-    
-    @Nonnull
-    private String classPath;
-    
+        
     @Nonnull
     private KalangParser parser;
     
@@ -413,14 +410,17 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public AstBuilder(@Nonnull CompilationUnit compilationUnit, @Nonnull KalangParser parser) {
         this.compilationUnit = compilationUnit;
         this.className = compilationUnit.getSource().getClassName();
-        this.classPath = "";
         this.parser = parser;
         tokenStream = parser.getTokenStream();
-        if (className.contains(".")) {
-            classPath = className.substring(0, className.lastIndexOf('.'));
-        }
     }
     
+    @Nonnull
+    private String getPackageName(){
+        if (className.contains(".")) {
+            return className.substring(0, className.lastIndexOf('.'));
+        }
+        return "";
+    }    
         
     @Override
     public String toString(){
@@ -1634,8 +1634,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         String prefix = "";
         if("\\".equals(delim)){
             boolean relative = ctx.root == null || ctx.root.getText().length() == 0;
-            if (relative && this.classPath.length() > 0) {
-                prefix = this.classPath + ".";
+            String packageName = this.getPackageName();
+            if (relative && packageName.length() > 0) {
+                prefix = packageName + ".";
             }
         }
         if (ctx.path != null) {
