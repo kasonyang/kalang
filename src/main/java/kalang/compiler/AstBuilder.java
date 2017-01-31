@@ -1891,7 +1891,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private ExprNode requireCastable(ExprNode expr1, Type fromType, Type toType,Token token) {
         ExprNode expr = BoxUtil.assign(expr1,fromType,toType);
         if(expr==null){
-            AstBuilder.this.handleSyntaxError("unable to cast " + fromType + " to " + toType, token);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR
+                    , "unable to cast " + fromType + " to " + toType, token);
         }
         return expr;
     }
