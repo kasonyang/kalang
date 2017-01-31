@@ -145,8 +145,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return null;
     }
     
-    
-
     public void check(ClassNode clz) {
         err = new SemanticErrorReporter(clz,source ,source.getCompileContext().getDiagnosisHandler());
         this.visit(clz);
@@ -169,17 +167,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }else if(node instanceof ExprNode){
             return ((ExprNode)node).getType();
         }
-        return null;
-    }
-
-    @Override
-    public Type visitCastExpr(CastExpr node) {
-        Type et = visit(node.getExpr());
-//        if(!node.getToType().isSubTypeOf(et)
-//                && !node.getToType().equals(et)
-//                ){
-//            err.failedToCast(node, et.getName(), node.getToType().getName());
-//        }
         return null;
     }
 
@@ -298,24 +285,10 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return null;
     }
 
-//    @Override
-//    public Type visitFieldExpr(FieldExpr node) {
-//        super.visitFieldExpr(node);
-//        if (isStatic(method.modifier)) {
-//            FieldNode field = node.getField();
-//            requireStatic(field.modifier, node);
-//        }
-//        return null;
-//    }
-
     @Override
     public Type visitInvocationExpr(InvocationExpr node) {
         super.visitInvocationExpr(node);
        ExecutableDescriptor invokeMethod = node.getMethod();
-//        boolean inStaticMethod = Modifier.isStatic(node.getMethod().modifier) && Modifier.isStatic(this.method.modifier);
-//        if (inStaticMethod) {
-//            if(!requireStatic(invokeMethod.modifier, node)) return getDefaultType();
-//        }
         for(Type et:invokeMethod.getExceptionTypes()){
             this.exceptionStack.peek().put(et,node);
         }
@@ -511,16 +484,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     private boolean isNumber(Type t1) {
         return Types.isNumber(t1);
-    }
-
-    public AstLoader getAstLoader() {
-        return astLoader;
-    }
-
-    @Override
-    public Type visitThrowStmt(ThrowStmt node) {
-        Type ret = super.visitThrowStmt(node);
-        return ret;
     }
 
     @Override
