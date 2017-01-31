@@ -109,6 +109,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private Map<VarObject,Integer> varIds = new HashMap<>();
     
+    private Stack<Integer> varStartIndexOfFrame = new Stack();
+    
+    private Map<VarObject,Label> varStartLabels = new HashMap();
+    
+    private VarTable<Integer,LocalVarNode> varTables = new VarTable();
+    
     private int varIdCounter = 0;
     
     private Stack<Label> breakLabels = new Stack<>();
@@ -116,8 +122,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private Label methodStartLabel ;
     private Label methodEndLabel;
-    
-    List<LocalVariableInfo> localVarInfos;
     
     private final static int 
             T_I = 0,
@@ -336,11 +340,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         annotation(md, node.getAnnotations());
         this.methodStartLabel = new Label();
         this.methodEndLabel = new Label();
-        localVarInfos = new LinkedList();
         if(AstUtil.isStatic(node.getModifier())){
             varIdCounter = 0;
         }else{
-            localVarInfos.add(new LocalVariableInfo("this", this.getClassDescriptor(this.clazz.name) , null, methodStartLabel, methodEndLabel, 0));
             varIdCounter = 1;
         }
         BlockStmt body = node.getBody();
@@ -359,12 +361,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 md.visitInsn(RETURN);
             }
             md.visitLabel(methodEndLabel);
-            for(ParameterNode p:node.getParameters()){
-                this.saveVarInfomation(p, methodStartLabel, methodEndLabel);
-            }
-            for(LocalVariableInfo li:localVarInfos){
-                md.visitLocalVariable(li.getName(), li.getDescriptor(), li.getSignature(), li.getStartLabel(), li.getEndLabel(), li.getIndex());
-            }
             try{
                 md.visitMaxs(0, 0);
             }catch(Exception ex){
@@ -376,36 +372,56 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
     
+    private void newFrame(){
+        this.varStartIndexOfFrame.push(this.varIdCounter);
+        this.varTables = this.varTables.newStack();
+    }
+    
+    private void popFrame(){
+        for(LocalVarNode v:this.varTables.values()){
+            this.destroyLocalVarNode(v);
+        }
+        int startVarIdx = this.varStartIndexOfFrame.pop();
+        this.varIdCounter = startVarIdx;
+        this.varTables = this.varTables.popStack();
+    }
+    
     private void declareNewVar(VarObject vo){
         int vid = varIdCounter;
         int vSize = asmType(vo.getType()).getSize();
+        if(vSize==0){
+            throw Exceptions.unexceptedException("");
+        }
         varIdCounter+= vSize;
-        varIds.put(vo, vid);            
+        varIds.put(vo, vid);          
+        Label startLabel = new Label();
+        md.visitLabel(startLabel);
+        this.varStartLabels.put(vo,startLabel);
+        if(vo instanceof LocalVarNode){
+            this.varTables.put(vid, (LocalVarNode) vo);
+        }
     }
     
-    private void saveVarInfomation(VarObject vo,Label startLabel,Label endLabel){
-            int vid = this.getVarId(vo);
-            if(vo.getName()!=null){
-                this.localVarInfos.add(new LocalVariableInfo(vo.getName(), getTypeDescriptor(vo.getType()), null, startLabel, endLabel, vid));
-            }
+    private void destroyLocalVarNode(LocalVarNode var){
+        Integer vid = this.varIds.get(var);
+        //TODO why vid==null
+//        if(vid==null){
+//            throw Exceptions.unexceptedValue(vid);
+//        }
+        Label endLabel = new Label();
+        md.visitLabel(endLabel);
+        this.varIds.remove(var);
+        String name = var.getName();
+        if(vid!=null && name!=null && !name.isEmpty()){
+            md.visitLocalVariable(name, getTypeDescriptor(var.getType()),null ,varStartLabels.get(var), endLabel, vid);
+        }
     }
 
     @Override
     public Object visitBlockStmt(BlockStmt node) {
-        LocalVarNode[] vars = node.getScopeVars();
-        int varCounter = this.varIdCounter;
-        Label startLabel = new Label();
-        Label endLabel = new Label();
-        md.visitLabel(startLabel);
-        for(LocalVarNode v:vars){
-            this.declareNewVar(v);
-        }
+        this.newFrame();
         visitChildren(node);
-        md.visitLabel(endLabel);
-        for(int i=0;i<vars.length;i++){
-            this.saveVarInfomation(vars[i], startLabel, endLabel);
-        }
-        this.varIdCounter = varCounter;
+        this.popFrame();
         return null;
     }
 
@@ -516,12 +532,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         continueLabels.push(startLabel);
         breakLabels.push(stopLabel);
         md.visitLabel(startLabel);
-        if(node.preConditionExpr!=null){
-            ifExpr(false,node.preConditionExpr,stopLabel);
+        if(node.getPreConditionExpr()!=null){
+            ifExpr(false, node.getPreConditionExpr(),stopLabel);
         }
-        visit(node.loopBody);
-        if(node.postConditionExpr!=null){
-            ifExpr(false,node.postConditionExpr,stopLabel);
+        visit(node.getLoopBody());
+        if(node.getPostConditionExpr()!=null){
+            ifExpr(false, node.getPostConditionExpr(),stopLabel);
         }
         md.visitJumpInsn(GOTO, startLabel);
         md.visitLabel(stopLabel);
@@ -553,20 +569,24 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitLabel(endLabel);
         if(node.getCatchStmts()!=null){
             for(CatchBlock s:node.getCatchStmts()){
+                this.newFrame();
                 Label handler = new Label();
                 md.visitLabel(handler);
                 visit(s);
                 md.visitJumpInsn(GOTO, stopLabel);
                 String type = asmType(s.catchVar.getType()).getInternalName();
                 md.visitTryCatchBlock(startLabel, endLabel, handler,type);
+                this.popFrame();
             }
         }
         if(node.getFinallyStmt()!=null){
+            this.newFrame();
             Label handler = new Label();
             md.visitLabel(handler);
             visit(node.getFinallyStmt());
             md.visitJumpInsn(GOTO, stopLabel);
             md.visitTryCatchBlock(startLabel, endLabel, handler, null);
+            this.popFrame();
         }
         md.visitLabel(stopLabel);
         return null;
@@ -1060,6 +1080,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitLocalVarNode(LocalVarNode localVarNode) {
+        this.declareNewVar(localVarNode);
         return null;
     }
 

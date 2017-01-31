@@ -29,6 +29,10 @@ public interface CompileContext {
 
     public SourceLoader getSourceLoader();
     
-    public CompileErrorHandler getCompileErrorHandler();
+    public DiagnosisHandler getDiagnosisHandler();
+    
+    void stopCompile(int stopPhase);
+    
+    int getCompilingPhase();
 
 }

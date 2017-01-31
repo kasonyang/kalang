@@ -2,12 +2,9 @@ package kalang.test;
 
 import java.io.File;
 import java.io.IOException;
-import kalang.compiler.CompileError;
 import kalang.tool.ClassWriter;
-import kalang.tool.FileSystemCompiler;
 import kalang.tool.FileSystemOutputManager;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *

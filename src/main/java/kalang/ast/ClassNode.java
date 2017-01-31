@@ -36,9 +36,13 @@ public class ClassNode extends AstNode implements Annotationable{
     
     @Nullable
     public ClassNode enclosingClass;
+
+    public ClassNode() {
+    }
     
-    public ClassNode(){
-    
+    public ClassNode(String name,int modifier){
+        this.modifier  =modifier;
+        this.name = name;
     }
     
     public void declareGenericType(GenericType type){

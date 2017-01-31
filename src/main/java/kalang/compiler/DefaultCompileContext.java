@@ -58,8 +58,19 @@ public class DefaultCompileContext implements CompileContext{
     }
 
     @Override
-    public CompileErrorHandler getCompileErrorHandler() {
-        return StandardCompileHandler.INSTANCE;
+    public DiagnosisHandler getDiagnosisHandler() {
+        return StandardDiagnosisHandler.INSTANCE;
     }
+
+    @Override
+    public void stopCompile(int stopPhase) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int getCompilingPhase() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 
 }

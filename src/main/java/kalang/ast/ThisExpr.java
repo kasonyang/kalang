@@ -8,6 +8,10 @@ public class ThisExpr extends ExprNode{
     public ThisExpr(ObjectType classType){
             this.classType = classType;
     }
+    
+    public ThisExpr(ClassNode classNode){
+        this(Types.getClassType(classNode));
+    }
 
     @Override
     public Type getType() {

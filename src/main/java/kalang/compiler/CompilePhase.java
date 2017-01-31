@@ -10,10 +10,10 @@ import java.util.*;
  */
 public class CompilePhase {
         public final static int 
-            PHASE_INITIALIZE = 0,
-            PHASE_PARSING = 1,
-            PHASE_BUILDAST = 2,
-            PHASE_SEMANTIC = 3,
-            PHASE_CLASSGEN = 4,
-            PHASE_ALL = 5;
+            PHASE_INITIALIZE = 1,
+            PHASE_PARSING = 2,
+            PHASE_BUILDAST = 3,
+            PHASE_SEMANTIC = 4,
+            PHASE_CLASSGEN = 5,
+            PHASE_ALL = 6;
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import junit.framework.Assert;
 import kalang.compiler.Diagnosis;
+import kalang.compiler.DiagnosisHandler;
 import kalang.compiler.codegen.Ast2Class;
 import kalang.tool.MemoryOutputManager;
 import org.junit.Test;
@@ -17,15 +18,18 @@ public class DebugTest extends JointCompilerTestCase {
     boolean hasError = false;
     
     public DebugTest() {
+        super();
+        final DiagnosisHandler oldHandler = super.diagnosisHandler;
+        this.setDiagnosisHandler(new DiagnosisHandler() {
+            @Override
+            public void handleDiagnosis(Diagnosis diagnosis) {
+                oldHandler.handleDiagnosis(diagnosis);
+                if(diagnosis.getKind().isError()){
+                    DebugTest.this.hasError = true;
+                }
+            }
+        });
     }
-
-    @Override
-    protected void reportDiagnosis(Diagnosis diagnosis) {
-        System.err.print(diagnosis);
-        this.hasError = true;
-    }
-    
-    
     
     @Test
     public void test() throws IOException{

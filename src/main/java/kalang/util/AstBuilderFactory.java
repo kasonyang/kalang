@@ -8,6 +8,7 @@ import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import kalang.compiler.AstBuilder;
 import kalang.compiler.CompilationUnit;
+import kalang.compiler.Diagnosis;
 import kalang.compiler.KalangSource;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -46,12 +47,15 @@ public class AstBuilderFactory {
             @Override
             public void reportError(Parser recognizer, RecognitionException e) {
                 String msg = AntlrErrorString.exceptionString(recognizer, e);
+                Token end = e.getOffendingToken();
+                Token start;
                 RuleContext ctx = e.getCtx();
                 if(ctx instanceof ParserRuleContext){
-                    sp.handleSyntaxError(msg, (ParserRuleContext) e.getCtx(), e.getOffendingToken(),e.getOffendingToken());
+                    start = ((ParserRuleContext) ctx).getStart();
                 }else{
-                    sp.handleSyntaxError(msg, RuleContext.EMPTY, e.getOffendingToken(),e.getOffendingToken());
+                    start = end;
                 }
+                sp.getDiagnosisReporter().report(Diagnosis.Kind.ERROR, msg,start,end);
             }
         });
         return sp;
