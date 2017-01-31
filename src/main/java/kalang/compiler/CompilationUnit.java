@@ -53,7 +53,8 @@ public class CompilationUnit {
         }else if(phase == PHASE_BUILDAST){
             parseBody(context.getDiagnosisHandler());
         }else if(phase==PHASE_SEMANTIC){
-            semanticAnalysis(context.getDiagnosisHandler());
+            //TODO remove PHASE_SEMANTIC
+            //semanticAnalysis(context.getDiagnosisHandler());
         }else if(phase == PHASE_CLASSGEN){
             CodeGenerator codeGenerator = context.createCodeGenerator(this);
             if(codeGenerator==null){
@@ -85,11 +86,6 @@ public class CompilationUnit {
     protected void parse(DiagnosisHandler semanticErrorHandler, int targetParsingPhase) {
         astBuilder.setDiagnosisHandler(semanticErrorHandler);
         astBuilder.compile(targetParsingPhase,context.getAstLoader());
-    }
-
-    protected void semanticAnalysis(DiagnosisHandler handler) {
-        semanticAnalyzer.setAstSemanticErrorHandler(handler);
-        semanticAnalyzer.check(this.getAst());
     }
 
     @Nonnull

@@ -118,75 +118,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
         return ast;
     }
-
-    @Override
-    public Type visitClassNode(ClassNode clz) {
-        HashMap<String, VarObject> oldFiels = this.fields;
-        this.fields = new HashMap();
-        //this.methodDeclared = new LinkedList();
-        for (VarObject f : clz.getFields()) {
-            this.fields.put(f.getName(), f);
-        }
-        ClassNode oldClazz = this.clazz;
-        this.clazz = clz;
-        super.visitClassNode(clz);
-        if (clazz.getInterfaces().length > 0) {
-            for (ObjectType itfNode : clazz.getInterfaces()) {
-                if (itfNode == null) {
-                    continue;
-                }
-                List<MethodDescriptor> unImps = AstUtil.getUnimplementedMethod(clazz, itfNode);
-                if (unImps.size() > 0) {
-                    err.notImplementedMethods(clazz, itfNode, unImps);
-                }
-            }
-        }
-        this.clazz = oldClazz;
-        this.fields = oldFiels;
-        return null;
-    }
-    
-    public void check(ClassNode clz) {
-        err = new SemanticErrorReporter(clz,source ,source.getCompileContext().getDiagnosisHandler());
-        this.visit(clz);
-    }
-
-    @Override
-    public Type visit(AstNode node) {
-        if(node==null) return null;
-        if(node instanceof VarExpr){
-            if(!assignedVars.exist(((VarExpr)node).getVar(), true)){
-                err.fail(node.toString() + " is uninitialized!", 0, node);
-            }
-        }
-        Object ret = super.visit(node);
-        if (ret instanceof Type) {
-            return  (Type) ret;
-        }else if(node instanceof ExprNode){
-            return ((ExprNode)node).getType();
-        }
-        return null;
-    }
-
-    @Override
-    public Type visitAssignExpr(AssignExpr node) {
-        AssignableExpr to = node.getTo();
-        ExprNode from = node.getFrom();
-        visit(from);
-        if(to instanceof VarExpr){
-            assignedVars.put(((VarExpr)to).getVar(), null);
-        }
-        Type ft = from.getType();
-        Type tt = to.getType();
-        if(!requireNoneVoid(ft, node)) return getDefaultType();
-        if(!requireNoneVoid(tt, node)) return getDefaultType();
-        if(!ft.equals(tt)){
-            from = checkAssign(from, ft, tt, node); 
-            if(from==null) return getDefaultType();            
-            node.setFrom(from);
-        }
-        return tt;
-    }
     
     @Nullable
     public static PrimitiveType getPrimitiveType(Type t){
@@ -278,16 +209,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         return requireArray(node, node.getArrayExpr().getType());
     }
 
-    @Override
-    public Type visitInvocationExpr(InvocationExpr node) {
-        super.visitInvocationExpr(node);
-       ExecutableDescriptor invokeMethod = node.getMethod();
-        for(Type et:invokeMethod.getExceptionTypes()){
-            this.exceptionStack.peek().put(et,node);
-        }
-        return node.getType();
-    }
-
     public boolean validateUnaryExpr(UnaryExpr node) {
         String op = node.getOperation();
         Type et = node.getExpr().getType();
@@ -314,92 +235,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
                     exceptions.remove(e);
                 }
         }
-    }
-
-    @Override
-    public Type visitTryStmt(TryStmt node) {
-        this.exceptionStack.add(new HashMap<>());
-        List<VarTable<LocalVarNode,Void>> assignedList =  new ArrayList(node.getCatchStmts().size()+1);
-        enterNewFrame();
-        assignedList.add(assignedVars);
-        visit(node.getExecStmt());
-        exitFrame();
-        for(CatchBlock cs:node.getCatchStmts()){
-            enterNewFrame();
-            assignedList.add(assignedVars);
-            visit(cs);
-            exitFrame();
-        }
-        addIntersectedAssignedVar(assignedList.toArray(new VarTable[assignedList.size()]));
-        Map<Type, AstNode> uncaught = this.exceptionStack.pop();
-        if (uncaught.size() > 0) {
-            this.exceptionStack.peek().putAll(uncaught);
-        }
-        Statement finallyStmt = node.getFinallyStmt();
-        if(finallyStmt!=null){
-            visit(finallyStmt);
-        }        
-        return null;
-    }
-
-    @Override
-    public Type visitCatchBlock(CatchBlock node) {
-        this.caughException(node.catchVar.getType());
-        return super.visitCatchBlock(node);
-    }
-
-    @Override
-    public Type visitIfStmt(IfStmt node) {
-        requireBoolean(node.getConditionExpr());
-        VarTable<LocalVarNode, Void> trueAssignedVars=null,falseAssignedVars =null;
-        if (node.getTrueBody() != null) {
-            enterNewFrame();
-            trueAssignedVars = assignedVars;
-            visit(node.getTrueBody());
-            exitFrame();
-        }
-        if (node.getFalseBody() != null) {
-            enterNewFrame();
-            falseAssignedVars = assignedVars;
-            visit(node.getFalseBody());
-            exitFrame();
-        }
-        if(trueAssignedVars!=null && falseAssignedVars!=null){
-            addIntersectedAssignedVar(trueAssignedVars,falseAssignedVars);
-        }
-        return null;
-    }
-
-    
-    @Override
-    public Type visitLoopStmt(LoopStmt node) {
-        if (node.getPreConditionExpr() != null) {
-            requireBoolean(node.getPreConditionExpr());
-        }
-        if (node.getLoopBody() != null) {
-            enterNewFrame();
-            visit(node.getLoopBody());
-            exitFrame();
-        }
-        if (node.getPostConditionExpr() != null) {
-            requireBoolean(node.getPostConditionExpr());
-        }
-        return null;
-    }
-
-    @Override
-    public Type visitMethodNode(MethodNode node) {
-        method = node;
-        this.exceptionStack.push(new HashMap<>());
-        super.visitMethodNode(node);
-        for (Type e : method.getExceptionTypes()) {
-            this.caughException(e);
-        }
-        Map<Type, AstNode> uncaught = this.exceptionStack.pop();
-        for(Type k:uncaught.keySet()){
-            err.uncaughtException(uncaught.get(k),k.getName());
-        }
-        return null;
     }
 
     public boolean validateReturnStmt(MethodNode method,ReturnStmt node) {

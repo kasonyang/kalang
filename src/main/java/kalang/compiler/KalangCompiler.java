@@ -62,12 +62,6 @@ public class KalangCompiler extends AstLoader implements CompileContext{
         sources.put(className, source);
         compilationUnits.put(className, createCompilationUnit(source));
     }
-
-    protected void semanticAnalysis() {
-        for (CompilationUnit cunit : compilationUnits.values()) {
-            cunit.semanticAnalysis(this.diagnosisHandler);
-        }
-    }
     
     public void setCompileTargetPhase(int targetPhase){
         compileTargetPhase = targetPhase;
