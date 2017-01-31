@@ -478,31 +478,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     private boolean isNumber(Type t1) {
         return Types.isNumber(t1);
     }
-
-    @Override
-    public Type visitUnknownInvocationExpr(UnknownInvocationExpr node) {
-        String type = "";
-        AstNode target = node.getTarget();
-        if(target instanceof ExprNode){
-            type =((ExprNode) target).getType().getName();
-        }else if(target instanceof ClassReference){
-            type = ((ClassReference)target).getReferencedClassNode().name;
-        }
-        err.methodNotFound(node,type,node.getMethodName(),AstUtil.getExprTypes(node.getArguments()));
-        return getDefaultType();
-    }
-
-    @Override
-    public Type visitUnknownFieldExpr(UnknownFieldExpr node) {
-        err.fieldNotFound(node, node.getFieldName());
-        return getDefaultType();
-    }
-
-    @Override
-    public Type visitErrorousExpr(ErrorousExpr node) {
-        err.fail("not an expression",0, node);
-        return null;
-    }
     
     protected void validateAnnotation(AnnotationNode[] annotation){
         for(AnnotationNode an:annotation) validateAnnotation(an);

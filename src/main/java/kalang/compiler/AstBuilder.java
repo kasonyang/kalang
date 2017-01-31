@@ -883,10 +883,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         Object node = visit(expression);
         if(node instanceof ExprNode){
             return (ExprNode) node;
-        }else if(node instanceof AstNode){
-            return new ErrorousExpr((AstNode)node);
         }else{
-            return new ErrorousExpr();
+            ExprNode expr;
+            if(node instanceof AstNode){
+                expr = new ErrorousExpr((AstNode)node);
+            }else{
+                expr = new ErrorousExpr();
+            }
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "not an expression",expression);
+            return expr;
         }
     }
 
@@ -1324,7 +1329,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     throw Exceptions.unexceptedException(fnfEx);
                 }
             }
-            if(expr==null) expr = new UnknownInvocationExpr(null, methodName, args);
+            if(expr==null){
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, "method not found:" + methodName,ctx);
+                expr = new UnknownInvocationExpr(null, methodName, args);
+            }
         } catch (AmbiguousMethodException ex) {
             methodIsAmbiguous(ctx.start, ex);
             return null;
@@ -1368,6 +1376,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 expr = invoke;
             }
         } catch (MethodNotFoundException ex) {
+            methodNotFound(ctx.start, className, methodName, args);
             expr= new UnknownInvocationExpr(target,methodName,args);
         } catch(AmbiguousMethodException ex){
             methodIsAmbiguous(ctx.start,ex);
@@ -1387,6 +1396,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         try {
             expr = StaticInvokeExpr.create(clazz, methodName, args);
         } catch (MethodNotFoundException ex) {
+            methodNotFound(ctx.start, className, methodName, args);
             expr = new UnknownInvocationExpr(clazz, methodName , args);
         } catch(AmbiguousMethodException ex){
             methodIsAmbiguous(ctx.start, ex);
@@ -1927,6 +1937,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             try {
                 ret = ObjectFieldExpr.create(expr, fieldName,thisClazz);
             } catch (FieldNotFoundException ex) {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,rule);
                 ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
             }
         }
