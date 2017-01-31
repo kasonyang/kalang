@@ -385,8 +385,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                             ,classNodeMetaBuilder.getMethodDeclContext(m)
                     );
                 }
-                InitializationAnalyzer initializationAnalyzer = new InitializationAnalyzer(compilationUnit, astLoader);
-                initializationAnalyzer.check(clazz, m);
+                new InitializationAnalyzer(compilationUnit, astLoader).check(clazz, m);
+                new ExceptionCatchAnalyzer(compilationUnit, astLoader).check(clazz, m);
             }
             if(AstUtil.isConstructor(m)){   
                 @SuppressWarnings("null")
