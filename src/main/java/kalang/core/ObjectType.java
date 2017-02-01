@@ -133,12 +133,17 @@ public abstract class ObjectType extends Type{
     
     public FieldDescriptor[] getFieldDescriptors(ClassNode caller){
         FieldNode[] fields = clazz.getFields();
-        FieldDescriptor[] ret = new FieldDescriptor[fields.length];
+        List<FieldDescriptor> ret = new LinkedList();
         for(int i=0;i<fields.length;i++){
             FieldNode f = fields[i];
-            ret[i] = new StandardFieldDescriptor(f,parseType(f.getType()));
+            ret.add(new StandardFieldDescriptor(f,parseType(f.getType())));
         }
-        return ret;
+        ObjectType superType = clazz.superType;
+        if(superType!=null){
+            FieldDescriptor[] superFields = superType.getFieldDescriptors(caller);
+            ret.addAll(Arrays.asList(superFields));
+        }
+        return ret.toArray(new FieldDescriptor[ret.size()]);
     }
 
     @Nullable
