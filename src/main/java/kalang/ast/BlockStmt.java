@@ -13,7 +13,7 @@ public class BlockStmt extends Statement{
     public BlockStmt(){
     }
     
-    public BlockStmt(Statement... stmts){
+    public BlockStmt(Statement[] stmts){
         statements.addAll(Arrays.asList(stmts));
     }    
     
