@@ -23,7 +23,12 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     private boolean isInterface = false;
     
     private static String getJavaTypeName(String typeName){
-        return typeName.replace('$', '.');
+        String type = typeName.replace('$', '.');
+        if(type.endsWith("?")){
+            return type.substring(0,type.length()-1);
+        }else{
+            return type;
+        }
     }
 
     @Override
