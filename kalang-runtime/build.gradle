@@ -1,22 +1,27 @@
 apply plugin:'java'
-apply plugin:'eclipse'
 apply plugin: 'maven-publish'
-//apply plugin:'application'
-//mainClassName='Application'
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 dependencies {
-    compile fileTree('libs')
-    testCompile 'junit:junit:4.12'
+  testCompile 'junit:junit:4.12'
+}
+
+
+task sourceJar(type: Jar) {
+  from sourceSets.main.allJava
 }
 publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId 'com.kasonyang'
-            artifactId 'kalang-runtime'
-            version '0.1.5'
-            from components.java
-        }
+  publications {
+    maven(MavenPublication) {
+      groupId 'site.kason.kalang'
+      artifactId 'kalang-runtime'
+      version "${project.version}"
+      
+      from components.java
+      artifact sourceJar {
+        classifier "sources"
+      }
     }
+  }
 }
