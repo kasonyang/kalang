@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class MethodAmbiguousException extends Exception{
     
