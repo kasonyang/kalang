@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class CompilantUnitTest {
     

@@ -8,7 +8,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class ExamplesTest extends JointCompilerTestCase{
     

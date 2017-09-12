@@ -8,7 +8,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public class MemoryCompilerTest {
     

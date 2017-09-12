@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public class StringLiteralUtilTest {
     
