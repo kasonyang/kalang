@@ -13,7 +13,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class OffsetRangeHelper {
 

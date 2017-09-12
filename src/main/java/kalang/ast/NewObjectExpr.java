@@ -11,7 +11,7 @@ import kalang.core.Type;
 import kalang.util.AstUtil;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class NewObjectExpr extends ExprNode{
 

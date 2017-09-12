@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import kalang.core.Type;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class LocalVarNode extends VarObject{
     

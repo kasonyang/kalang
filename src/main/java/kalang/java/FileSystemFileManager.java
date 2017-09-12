@@ -23,7 +23,7 @@ import org.apache.commons.io.FileUtils;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public class FileSystemFileManager implements JavaFileManager{
     

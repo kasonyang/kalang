@@ -3,7 +3,7 @@ import java.util.*;
 import kalang.core.*;
 /**
  * The base class of any statement node
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public abstract class Statement extends AstNode{
 

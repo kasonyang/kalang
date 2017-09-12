@@ -35,12 +35,15 @@ public abstract class InvocationExpr extends ExprNode {
     
     private ExecutableDescriptor method;
 
-     /**
-     *  select the method for invocation expression,and apply ast transform if needed
-     * @param specialClass
-     * @param invocationExpr
-     * @param types
+    /**
+     * select the method for invocation expression,and apply ast transform if needed
+     * @param clazz
+     * @param methodName
+     * @param args
+     * @param candidates
      * @return the selected method,or null
+     * @throws MethodNotFoundException
+     * @throws AmbiguousMethodException 
      */
     public static MethodSelection applyMethod(ObjectType clazz,String methodName, @Nullable ExprNode[] args,ExecutableDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
         if(args == null) args = new ExprNode[0];

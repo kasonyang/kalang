@@ -34,7 +34,7 @@ import kalang.core.Types;
 /**
  * Helper for data conversion between primitive type and object type
  * 
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class BoxUtil {
 

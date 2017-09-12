@@ -15,7 +15,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 /**
  *  The class load source from file system.
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class FileSystemSourceLoader implements SourceLoader {
 

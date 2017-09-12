@@ -8,7 +8,7 @@ import kalang.compiler.KalangSource;
 import org.apache.commons.io.FileUtils;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class KalangSourceUtil {
     public static KalangSource create(File dir,File sourceFile) throws IOException{

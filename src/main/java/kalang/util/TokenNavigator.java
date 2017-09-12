@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.Token;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class TokenNavigator {
     

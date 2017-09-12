@@ -20,7 +20,7 @@ import org.apache.commons.cli.ParseException;
 
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class Compiler {
 

@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 /**
  * The class holds the declared local variables.
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  * @param <T> key type
  * @param <V> value type
  */

@@ -9,7 +9,7 @@ import kalang.antlr.KalangParser;
 import org.antlr.v4.runtime.CommonTokenStream;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public interface CompileContext {
     

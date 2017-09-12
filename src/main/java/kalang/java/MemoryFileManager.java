@@ -16,7 +16,7 @@ import javax.tools.StandardJavaFileManager;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public class MemoryFileManager implements JavaFileManager{
     

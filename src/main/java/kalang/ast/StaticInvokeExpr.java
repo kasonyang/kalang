@@ -14,7 +14,7 @@ import kalang.core.Types;
 import kalang.util.AstUtil;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class StaticInvokeExpr extends InvocationExpr{
 

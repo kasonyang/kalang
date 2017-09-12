@@ -7,7 +7,7 @@ import java.util.*;
 
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class OffsetRange {
     

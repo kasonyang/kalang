@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public class MemoryOutputManager implements OutputManager{
     

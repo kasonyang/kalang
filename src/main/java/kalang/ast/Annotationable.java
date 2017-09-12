@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public interface Annotationable {
     

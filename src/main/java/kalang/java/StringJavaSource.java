@@ -10,7 +10,7 @@ import org.apache.commons.io.FileUtils;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public class StringJavaSource extends MemoryJavaSource {
 

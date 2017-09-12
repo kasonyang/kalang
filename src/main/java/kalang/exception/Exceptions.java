@@ -5,7 +5,7 @@ import kalang.core.FieldDescriptor;
 
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public class Exceptions {
     

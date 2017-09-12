@@ -96,7 +96,7 @@ import static org.objectweb.asm.Opcodes.*;
 /**
  *The class generate the java class binary data for ast
  * 
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerator{
 

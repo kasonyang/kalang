@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.io.FilenameUtils;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class ClassNameUtil {
     

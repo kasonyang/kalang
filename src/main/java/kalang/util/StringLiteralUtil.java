@@ -1,7 +1,7 @@
 package kalang.util;
 /**
  *
- * @author Kason Yang <im@kasonyang.com>
+ * @author Kason Yang 
  */
 public class StringLiteralUtil {
     

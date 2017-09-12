@@ -7,7 +7,7 @@ import java.util.*;
 import kalang.ast.ClassNode;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public interface CodeGenerator {
     

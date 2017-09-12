@@ -11,7 +11,7 @@ import java.net.*;
 import java.util.*;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class TypeCastException extends RuntimeException{
 

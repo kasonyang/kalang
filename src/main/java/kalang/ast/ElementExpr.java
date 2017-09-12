@@ -4,7 +4,7 @@ import kalang.core.*;
 /**
  * The ElementExpr presents a element of a array,for example <code>args[i]</code>
  * 
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class ElementExpr extends AssignableExpr{
     

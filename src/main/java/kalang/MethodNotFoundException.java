@@ -7,7 +7,7 @@ import java.util.*;
 import kalang.core.ObjectType;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class MethodNotFoundException extends Exception{
 

@@ -22,7 +22,7 @@ import org.apache.commons.io.FileUtils;
 /**
  * The class output the ast as java source
  *  This class is outdated
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 @Deprecated
 public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerator{

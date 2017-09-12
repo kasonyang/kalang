@@ -2,7 +2,7 @@
 package kalang.core;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class PrimitiveType extends Type{
     

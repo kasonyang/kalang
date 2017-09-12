@@ -9,7 +9,7 @@ import kalang.core.Type;
 import kalang.core.Types;
 /**
  *
- * @author Kason Yang <i@kasonyang.com>
+ * @author Kason Yang 
  */
 public class UnknownInvocationExpr extends ExprNode{
     
