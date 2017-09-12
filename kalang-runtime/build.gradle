@@ -1,5 +1,4 @@
 apply plugin:'java'
-apply plugin: 'maven-publish'
 repositories {
   mavenCentral()
 }
@@ -8,19 +7,66 @@ dependencies {
 }
 
 
-task sourceJar(type: Jar) {
-  from sourceSets.main.allJava
+//##maven
+apply plugin: 'maven'
+apply plugin: 'signing'
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
-publishing {
-  publications {
-    maven(MavenPublication) {
-      groupId 'site.kason.kalang'
-      artifactId 'kalang-runtime'
-      version "${project.version}"
-      
-      from components.java
-      artifact sourceJar {
-        classifier "sources"
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+artifacts {
+    archives sourcesJar,javadocJar
+}
+signing {
+    sign configurations.archives
+}
+group = "site.kason.kalang"
+archivesBaseName = "kalang-runtime"
+//version = "${project.version}"
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'Kalang Runtime'
+        packaging 'jar'
+        // optionally artifactId can be defined here 
+        description 'Kalang runtime.'
+        url 'https://github.com/kasonyang/kalang'
+
+        scm {
+          connection 'scm:git:https://github.com/kasonyang/kalang.git'
+          developerConnection 'scm:git:https://github.com/kasonyang/kalang.git'
+          url 'https://github.com/kasonyang/kalang.git'
+        }
+
+        licenses {
+          license {
+            name 'MIT License'
+            url 'http://www.opensource.org/licenses/mit-license.php'
+          }
+        }
+
+        developers {
+          developer {
+            id 'kasonyang'
+            name 'Kason Yang'
+            email 'me@kason.site'
+          }
+        }
       }
     }
   }

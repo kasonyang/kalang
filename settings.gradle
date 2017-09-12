@@ -1,2 +1,2 @@
-rootProject.name = 'kalang'
+rootProject.name = 'kalang-compiler'
 include 'kalang-runtime'
