@@ -1,0 +1,68 @@
+apply plugin: 'maven'
+apply plugin: 'signing'
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+artifacts {
+    archives sourcesJar,javadocJar
+}
+if(project.hasProperty('signing.keyId')){
+  signing {
+    sign configurations.archives
+  }
+}
+
+group = "site.kason.kalang"
+archivesBaseName = project.name
+//version = "${project.version}"
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: System.getProperty('ossrhUsername'), password: System.getProperty('ossrhPassword'))
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: System.getProperty('ossrhUsername'), password: System.getProperty('ossrhPassword'))
+      }
+
+      pom.project {
+        name project.name
+        packaging 'jar'
+        // optionally artifactId can be defined here 
+        description project.description
+        url 'https://github.com/kasonyang/kasonyang.github.io'
+
+        scm {
+          connection 'scm:git:https://github.com/kasonyang/kasonyang.github.io.git'
+          developerConnection 'scm:git:https://github.com/kasonyang/kasonyang.github.io.git'
+          url 'https://github.com/kasonyang/kasonyang.github.io.git'
+        }
+
+        licenses {
+          license {
+            //TODO fix license
+            name 'MIT License'
+            url 'http://www.opensource.org/licenses/mit-license.php'
+          }
+        }
+
+        developers {
+          developer {
+            id 'kasonyang'
+            name 'Kason Yang'
+            email 'me@kason.site'
+          }
+        }
+      }
+    }
+  }
+}
+
