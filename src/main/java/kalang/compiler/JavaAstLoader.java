@@ -149,7 +149,7 @@ public class JavaAstLoader extends AstLoader {
         methodNode.addExceptionType(getType(e, genericTypes, e, NullableKind.NONNULL));
       }
     }
-    for (Field f : clz.getFields()) {
+    for (Field f : clz.getDeclaredFields()) {
       NullableKind nullable = getNullable(f.getAnnotations());
       FieldNode fn = cn.createField(getType(f.getGenericType(), genericTypes, f.getType(), nullable), f.getName(), f.getModifiers());
     }
