@@ -16,6 +16,7 @@ import kalang.ast.UnaryExpr;
 import java.util.Set;
 import javax.annotation.Nullable;
 import kalang.ast.AnnotationNode;
+import kalang.ast.AssignableExpr;
 import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.PrimitiveType;
@@ -142,6 +143,16 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             default:
                 throw Exceptions.unexceptedValue(op);
         }
+    }
+    
+    public boolean validateAssign(AssignableExpr to,ExprNode from, OffsetRange offset){
+      Type toType = to.getType();
+      Type fromType = from.getType();
+      if(!toType.isAssignableFrom(fromType)){
+        diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("incompatible types: %s cannot be converted to %s",fromType,toType),offset);
+        return false;
+      }
+      return true;
     }
 
     public boolean validateReturnStmt(MethodNode method,ReturnStmt node) {

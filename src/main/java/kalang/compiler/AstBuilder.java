@@ -1093,7 +1093,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return binExpr;
     }
     
-    protected ExprNode createFieldExpr(GetFieldExprContext to,@Nullable ExpressionContext fromCtx){
+    protected ExprNode createFieldExpr(GetFieldExprContext to,@Nullable ExpressionContext fromCtx,OffsetRange offsetRange){
         //TODO support iterating syntax
         String refKey = to.refKey.getText();
         ExpressionContext exp = to.expression();
@@ -1119,7 +1119,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     AstBuilder.this.handleSyntaxError("unsupported", to);
                     return null;
                 }
-                return new AssignExpr(toExpr,visitExpression(fromCtx));
+                ExprNode fromExpr = visitExpression(fromCtx);
+                if(!this.semanticAnalyzer.validateAssign(toExpr, fromExpr,offsetRange)){
+                  return null;
+                }
+                return new AssignExpr(toExpr,fromExpr);
             }
         }else if(refKey.equals("->")){
             ExprNode[] params;
@@ -1151,7 +1155,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         ExpressionContext toCtx = ctx.expression(0);
         ExpressionContext fromCtx = ctx.expression(1);
         if(toCtx instanceof GetFieldExprContext){
-            expr = createFieldExpr((GetFieldExprContext)toCtx,fromCtx);
+            expr = createFieldExpr((GetFieldExprContext)toCtx,fromCtx,OffsetRangeHelper.getOffsetRange(ctx));
         }else{
             ExprNode to = visitExpression(toCtx);
             ExprNode from = visitExpression(fromCtx);
@@ -1162,6 +1166,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             AssignableExpr toExpr;
             if(to instanceof AssignableExpr){
                 toExpr = (AssignableExpr) to;
+                if(!this.semanticAnalyzer.validateAssign(toExpr, from, OffsetRangeHelper.getOffsetRange(ctx))){
+                  return null;
+                }
                 AssignExpr aexpr = new AssignExpr(toExpr,from);
                 mapAst(aexpr, ctx);
                 //TODO remove override information before assign
@@ -1442,7 +1449,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Override
     public ExprNode visitGetFieldExpr(GetFieldExprContext ctx) {
-        return createFieldExpr(ctx, null);
+        return createFieldExpr(ctx, null,OffsetRangeHelper.getOffsetRange(ctx));
     }
 
     @Override
