@@ -25,3 +25,11 @@ dependencies{
 
 
 apply from:'gradle/maven-publish.gradle'
+
+apply plugin: 'jacoco'
+jacocoTestReport {
+  reports {
+    xml.enabled true
+    html.enabled true
+  }
+}
