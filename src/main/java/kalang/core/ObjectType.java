@@ -136,7 +136,14 @@ public abstract class ObjectType extends Type{
         List<FieldDescriptor> ret = new LinkedList();
         for(int i=0;i<fields.length;i++){
             FieldNode f = fields[i];
-            ret.add(new StandardFieldDescriptor(f,parseType(f.getType())));
+            int fm = f.modifier;
+            boolean accessible = Modifier.isPublic(fm)
+                    || clazz.equals(caller)
+                    || (Modifier.isProtected(fm) && Types.getClassType(caller).isSubTypeOf(this));
+            if(accessible){
+              ret.add(new StandardFieldDescriptor(f,parseType(f.getType())));
+            }
+            
         }
         ObjectType superType = clazz.superType;
         if(superType!=null){
