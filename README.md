@@ -1,3 +1,7 @@
+[![Maven Central](https://img.shields.io/maven-central/v/site.kason.kalang/kalang-compiler.svg)]() 
+[![Build Status](https://travis-ci.org/kasonyang/kalang.svg)](https://travis-ci.org/kasonyang/kalang)
+[![Codecov](https://img.shields.io/codecov/c/github/kasonyang/kalang.svg)](https://codecov.io/gh/kasonyang/kalang)
+
 # What is kalang?
 
 Kalang is a static type-safe and null-safe language base on jvm with flexible syntax.
