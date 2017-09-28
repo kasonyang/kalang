@@ -19,7 +19,7 @@ requirements:
 
 clone the source,and run
 
-    >gradle installDist
+    >gradlew installDist
 
 add the path`build/install/kalang/bin` to your `PATH` environment variable
 
