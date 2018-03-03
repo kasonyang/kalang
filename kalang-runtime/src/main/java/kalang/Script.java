@@ -6,6 +6,13 @@ package kalang;
  */
 public abstract class Script {
 
-    public abstract void run();
+    public final static int SUCCESS = 0;
+
+    protected abstract void execute();
+
+    public int run() {
+        execute();
+        return SUCCESS;
+    }
 
 }

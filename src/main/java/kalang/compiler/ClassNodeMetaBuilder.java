@@ -324,7 +324,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
                 visit(m);
             }
         }
-        MethodNode mm = thisClazz.createMethodNode(Types.VOID_TYPE,"run",Modifier.PUBLIC);
+        MethodNode mm = thisClazz.createMethodNode(Types.VOID_TYPE,"execute",Modifier.PUBLIC);
         mm.addExceptionType(Types.getExceptionClassType());
         method = mm;
         List<KalangParser.StatContext> stats = ctx.stat();

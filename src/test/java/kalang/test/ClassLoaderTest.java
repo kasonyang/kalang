@@ -40,7 +40,7 @@ public class ClassLoaderTest {
         for(int i=0;i<mds.length;i++){
             Method m = mds[i];
             String methodName = m.getName();
-            if((inst instanceof Script) && "run".equals(methodName)){
+            if((inst instanceof Script) && "execute".equals(methodName)){
                 continue;
             }
             Object ret;
