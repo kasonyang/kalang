@@ -11,6 +11,7 @@ import kalang.compiler.codegen.Ast2Class;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.Configuration;
+import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
 import kalang.compiler.KalangSource;
 import kalang.compiler.SourceLoader;
@@ -40,7 +41,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
         this.parentClassLoader = parentClassLoader;
         sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});
         CodeGenerator cg = this;
-        compiler = new KalangCompiler(){
+        compiler = new KalangCompiler(new JavaAstLoader(null, parentClassLoader)){
             @Override
             public SourceLoader getSourceLoader() {
                 return sourceLoader;
