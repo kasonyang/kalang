@@ -119,7 +119,7 @@ public class KalangCompiler extends AstLoader implements CompileContext{
                 return createCompilationUnit(source).getAst();
             }
         }
-        return AstLoader.BASE_AST_LOADER.findAst(className);
+        return astLoader.findAst(className);
     }
 
     @Nonnull

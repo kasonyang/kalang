@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import kalang.AstNotFoundException;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.MethodDeclContext;
 import kalang.antlr.KalangParserBaseVisitor;
@@ -348,8 +349,15 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     }
     
     private ObjectType getScriptType(){
-        Configuration conf = this.compilationUnit.getCompileContext().getConfiguration();
-        return Types.requireClassType(conf.getScriptBaseClass());
+        CompileContext context = this.compilationUnit.getCompileContext();
+        Configuration conf = context.getConfiguration();
+        AstLoader astLoader = context.getAstLoader();
+        String baseClass = conf.getScriptBaseClass();
+        try {
+            return Types.getClassType(astLoader.loadAst(baseClass));
+        } catch (AstNotFoundException ex) {
+            throw Exceptions.missingRuntimeClass(baseClass);
+        }
     }
 
 }

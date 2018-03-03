@@ -29,7 +29,7 @@ public class KalangShell {
     }
 
     public Class parse(String className, String code, String fileName) {
-        KalangClassLoader classLoader = new KalangClassLoader(new File[0],this.configuration,null);
+        KalangClassLoader classLoader = this.createClassLoader();
         return classLoader.parseSource(className, code, fileName);
     }
 
