@@ -9,6 +9,7 @@ import kalang.ast.ClassNode;
 import kalang.compiler.codegen.Ast2Class;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
+import kalang.compiler.Configuration;
 import kalang.compiler.KalangCompiler;
 import kalang.compiler.KalangSource;
 import kalang.compiler.SourceLoader;
@@ -26,13 +27,23 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
     
     private final HashMap<String,Class> loadedClasses = new HashMap<>();
     private final FileSystemSourceLoader sourceLoader;
+    private Configuration configuration;
     
     public KalangClassLoader() {
         this(new File[0]);
     }
+    
+    public KalangClassLoader(Configuration config) {
+        this(new File[0],config);
+    }
+    
+    public KalangClassLoader(File[] sourceDir){
+        this(sourceDir,new Configuration());
+    }
 
-    public KalangClassLoader(File[] sourceDir) {
+    public KalangClassLoader(File[] sourceDir,Configuration config) {
         super(new URL[0]);
+        this.configuration = config;
         sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});
         CodeGenerator cg = this;
         compiler = new KalangCompiler(){
@@ -47,6 +58,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
             }
             
         };
+        compiler.setConfiguration(this.configuration);
     }
     
     @Override
