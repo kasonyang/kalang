@@ -18,7 +18,7 @@ public class KalangShellTest {
     public void test(){
         KalangShell shell = new KalangShell();
         Script script = shell.parseScript("Test", "println(\"test\");", "Test.kl");
-        script.run();
+        assertEquals(Script.SUCCESS, script.run());
     }
     
 }
