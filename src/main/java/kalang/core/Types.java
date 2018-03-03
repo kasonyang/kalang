@@ -57,6 +57,8 @@ public class Types {
 
     public static final String ROOT_CLASS_NAME = "java.lang.Object";
     
+    public static final String SCRIPT_CLASS_NAME = "kalang.Script";
+    
     public static final String MAP_IMPL_CLASS_NAME = "java.util.HashMap";
     
     public static final String LIST_IMPL_CLASS_NAME = "java.util.LinkedList";
@@ -316,6 +318,10 @@ public class Types {
      */
     public static ObjectType getRootType() {
         return requireClassType(ROOT_CLASS_NAME);
+    }
+    
+    public static ObjectType getScriptType(){
+        return requireClassType(SCRIPT_CLASS_NAME);
     }
 
     /**

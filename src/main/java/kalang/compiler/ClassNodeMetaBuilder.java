@@ -54,6 +54,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     private Map<MethodNode,MethodDeclContext> methodContexts = new HashMap();
     
     private MethodNode method;
+    //TODO remove variable inScriptMode
     private boolean inScriptMode;
     private final CompilationUnit compilationUnit;
     private DiagnosisReporter diagnosisReporter;
@@ -187,9 +188,6 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         }
         List<KalangParser.TypeContext> paramTypesCtx = ctx.paramTypes;
         int modifier = astBuilder.parseModifier(ctx.varModifier());
-        if(inScriptMode){
-            modifier |= Modifier.STATIC;
-        }
         Type[] paramTypes;
         String[] paramNames;
         if (paramTypesCtx != null) {
@@ -319,16 +317,15 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
         //FIXME fix filename
         //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
-        thisClazz.superType = Types.getRootType();
+        thisClazz.superType = Types.getScriptType();
         List<MethodDeclContext> mds = ctx.methodDecl();
         if(mds!=null){
             for(MethodDeclContext m:mds){
                 visit(m);
             }
         }
-        MethodNode mm = thisClazz.createMethodNode(Types.VOID_TYPE,"main",Modifier.PUBLIC  + Modifier.STATIC);
+        MethodNode mm = thisClazz.createMethodNode(Types.VOID_TYPE,"run",Modifier.PUBLIC);
         mm.addExceptionType(Types.getExceptionClassType());
-        mm.createParameter(Types.getArrayType(Types.getStringClassType()), "args");
         method = mm;
         List<KalangParser.StatContext> stats = ctx.stat();
         if(stats!=null){
