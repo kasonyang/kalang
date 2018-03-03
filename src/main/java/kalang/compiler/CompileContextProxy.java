@@ -74,6 +74,10 @@ public class CompileContextProxy implements CompileContext{
         return config.getCompilingPhase();
     }
 
+    @Override
+    public Configuration getConfiguration() {
+        return config.getConfiguration();
+    }
 
     
 }

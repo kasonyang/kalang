@@ -317,7 +317,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
         //FIXME fix filename
         //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
-        thisClazz.superType = Types.getScriptType();
+        thisClazz.superType = this.getScriptType();
         List<MethodDeclContext> mds = ctx.methodDecl();
         if(mds!=null){
             for(MethodDeclContext m:mds){
@@ -346,6 +346,10 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
                 diagnosisHandler, this.compilationUnit.getSource()
         );
     }
-
+    
+    private ObjectType getScriptType(){
+        Configuration conf = this.compilationUnit.getCompileContext().getConfiguration();
+        return Types.requireClassType(conf.getScriptBaseClass());
+    }
 
 }

@@ -72,5 +72,10 @@ public class DefaultCompileContext implements CompileContext{
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public Configuration getConfiguration() {
+        return new Configuration();
+    }
+
 
 }
