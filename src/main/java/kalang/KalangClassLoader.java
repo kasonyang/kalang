@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import kalang.ast.ClassNode;
 import kalang.compiler.codegen.Ast2Class;
 import kalang.compiler.CodeGenerator;
@@ -15,7 +16,6 @@ import kalang.compiler.KalangSource;
 import kalang.compiler.SourceLoader;
 import kalang.tool.FileSystemSourceLoader;
 import kalang.tool.MemoryOutputManager;
-import kalang.tool.OutputManager;
 import org.apache.commons.io.FileUtils;
 /**
  *
@@ -28,22 +28,16 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
     private final HashMap<String,Class> loadedClasses = new HashMap<>();
     private final FileSystemSourceLoader sourceLoader;
     private Configuration configuration;
-    
+    private ClassLoader parentClassLoader = KalangClassLoader.class.getClassLoader();
+
     public KalangClassLoader() {
-        this(new File[0]);
-    }
-    
-    public KalangClassLoader(Configuration config) {
-        this(new File[0],config);
-    }
-    
-    public KalangClassLoader(File[] sourceDir){
-        this(sourceDir,new Configuration());
+        this(new File[0],null,null);
     }
 
-    public KalangClassLoader(File[] sourceDir,Configuration config) {
-        super(new URL[0]);
-        this.configuration = config;
+    public KalangClassLoader(File[] sourceDir,@Nullable Configuration config,@Nullable ClassLoader parentClassLoader) {
+        super(new URL[0],parentClassLoader==null ? KalangClassLoader.class.getClassLoader() : parentClassLoader);
+        this.configuration = config == null ? new Configuration() : config;
+        this.parentClassLoader = parentClassLoader;
         sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});
         CodeGenerator cg = this;
         compiler = new KalangCompiler(){

@@ -20,7 +20,7 @@ public class ClassLoaderTest {
     
     @Test
     public void testFiles() throws IOException{
-        KalangClassLoader clsLoader = new KalangClassLoader();
+        KalangClassLoader clsLoader = new KalangClassLoader(new File[0],null,null);
         Class clazz = clsLoader.parseFile("test.HelloKalang", new File("TestScript/source/test/HelloKalang.kl"));
         assertNotNull(clazz);
     }

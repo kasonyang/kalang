@@ -5,9 +5,14 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.KalangClassLoader;
+import kalang.Script;
+import kalang.compiler.Configuration;
 import kalang.compiler.Diagnosis;
 import kalang.compiler.DiagnosisHandler;
 import kalang.compiler.StandardDiagnosisHandler;
@@ -39,6 +44,7 @@ public class Compiler {
         OPTIONS.addOption("f",true,"output format");
         OPTIONS.addOption("run", true, "run the class with special name");
         OPTIONS.addOption("gui",false,"start a buildin gui");
+        OPTIONS.addOption(null,"script-base",true,"script base class");
         //OPTIONS.addOption("t",true,"set the output type,should be one of class,java");
     }
 
@@ -60,7 +66,12 @@ public class Compiler {
             return false;
         }
         if(cli.hasOption("gui")){
-            kalang.gui.Editor.main(args);
+            String baseScriptClass = cli.getOptionValue("script-base", "");
+            Configuration config = new Configuration();
+            if(!baseScriptClass.isEmpty()){
+                config.setScriptBaseClass(baseScriptClass);
+            }
+            kalang.gui.Editor.main(config,createClassLoader(cli));
             return true;
         }else if(cli.hasOption("run")){
             return run(cli);
@@ -137,7 +148,7 @@ public class Compiler {
     
     public boolean run(CommandLine cli){
         String clsName = cli.getOptionValue("run");
-        KalangClassLoader kcl = new KalangClassLoader();
+        KalangClassLoader kcl = new KalangClassLoader(new File[0],null,null);
         kcl.addClassPath(new File("."));
         File[] cps = parseClassPath(cli);
         if(cps!=null){
@@ -173,6 +184,19 @@ public class Compiler {
             ex.printStackTrace();
             return false;
         }
+    }
+    
+    private ClassLoader createClassLoader(CommandLine cli){
+        File[] cps = parseClassPath(cli);
+        URL[] urls = new URL[cps.length];
+        for(int i=0;i<cps.length;i++){
+            try {
+                urls[i] = cps[i].toURI().toURL();
+            } catch (MalformedURLException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return new URLClassLoader(urls);
     }
 
 }
