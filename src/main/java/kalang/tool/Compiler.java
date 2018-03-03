@@ -8,6 +8,9 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.KalangClassLoader;
@@ -22,6 +25,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -45,6 +49,8 @@ public class Compiler {
         OPTIONS.addOption("run", true, "run the class with special name");
         OPTIONS.addOption("gui",false,"start a buildin gui");
         OPTIONS.addOption(null,"script-base",true,"script base class");
+        OPTIONS.addOption("l","lib-path",true,"library path");
+        OPTIONS.addOption("v","verbose",false,"show verbose information");
         //OPTIONS.addOption("t",true,"set the output type,should be one of class,java");
     }
 
@@ -65,13 +71,14 @@ public class Compiler {
             printUsage();
             return false;
         }
+        boolean verbose = cli.hasOption("verbose");
         if(cli.hasOption("gui")){
             String baseScriptClass = cli.getOptionValue("script-base", "");
             Configuration config = new Configuration();
             if(!baseScriptClass.isEmpty()){
                 config.setScriptBaseClass(baseScriptClass);
             }
-            kalang.gui.Editor.main(config,createClassLoader(cli));
+            kalang.gui.Editor.main(config,createClassLoader(cli,verbose));
             return true;
         }else if(cli.hasOption("run")){
             return run(cli);
@@ -186,17 +193,36 @@ public class Compiler {
         }
     }
     
-    private ClassLoader createClassLoader(CommandLine cli){
-        File[] cps = parseClassPath(cli);
-        URL[] urls = new URL[cps.length];
-        for(int i=0;i<cps.length;i++){
-            try {
-                urls[i] = cps[i].toURI().toURL();
-            } catch (MalformedURLException ex) {
-                throw new RuntimeException(ex);
+    private ClassLoader createClassLoader(CommandLine cli,boolean verbose) {
+        List<URL> urls = new LinkedList();
+        String[] libPaths = cli.getOptionValue("lib-path", "").split(";");
+        for (String l : libPaths) {
+            if(l.isEmpty()) continue;
+            File ld = new File(l);
+            if(!ld.isDirectory()) continue;
+            Collection<File> jars = FileUtils.listFiles(ld, new String[]{"jar"}, false);
+            for(File j:jars){
+                try{
+                    urls.add(j.toURI().toURL());
+                } catch (MalformedURLException ex) {
+                    ex.printStackTrace(System.err);
+                }
             }
         }
-        return new URLClassLoader(urls);
+        File[] cps = parseClassPath(cli);
+        for (int i = 0; i < cps.length; i++) {
+            try {
+                urls.add(cps[i].toURI().toURL());
+            } catch (MalformedURLException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+        if(verbose){
+            for(URL u:urls){
+                System.out.println("Add class path:" + u);
+            }
+        }
+        return new URLClassLoader(urls.toArray(new URL[urls.size()]));
     }
 
 }
