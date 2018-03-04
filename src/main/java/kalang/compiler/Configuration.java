@@ -1,6 +1,6 @@
 package kalang.compiler;
 
-import kalang.Script;
+import kalang.lang.Script;
 
 /**
  *

@@ -195,8 +195,8 @@ public class Editor extends javax.swing.JFrame {
             if(clazz!=null){
                 //TODO it seems that the compilation will not stop when encountering an error
                 //System.out.println("compile " + className + " successfully.");
-                if(kalang.Script.class.isAssignableFrom(clazz)){
-                    kalang.Script inst = (kalang.Script) clazz.newInstance();
+                if(kalang.lang.Script.class.isAssignableFrom(clazz)){
+                    kalang.lang.Script inst = (kalang.lang.Script) clazz.newInstance();
                     inst.run();
                 }else{
                     ClassExecutor.executeMain(clazz, new String[0]);

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kalang.KalangClassLoader;
-import kalang.Script;
+import kalang.lang.Script;
 import kalang.compiler.Configuration;
 import kalang.compiler.Diagnosis;
 import kalang.compiler.DiagnosisHandler;

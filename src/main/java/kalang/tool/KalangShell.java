@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import kalang.KalangClassLoader;
-import kalang.Script;
+import kalang.lang.Script;
 import kalang.compiler.Configuration;
 import kalang.exception.Exceptions;
 import org.apache.commons.io.FileUtils;

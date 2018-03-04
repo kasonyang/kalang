@@ -1,4 +1,4 @@
-package kalang;
+package kalang.lang;
 
 /**
  *

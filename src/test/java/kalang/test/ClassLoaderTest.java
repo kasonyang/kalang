@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import kalang.KalangClassLoader;
-import kalang.Script;
+import kalang.lang.Script;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

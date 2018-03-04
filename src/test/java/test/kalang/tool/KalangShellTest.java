@@ -1,6 +1,6 @@
 package test.kalang.tool;
 
-import kalang.Script;
+import kalang.lang.Script;
 import kalang.tool.KalangShell;
 import org.junit.Test;
 import static org.junit.Assert.*;
