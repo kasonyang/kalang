@@ -11,9 +11,12 @@ import kalang.compiler.codegen.Ast2Class;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.Configuration;
+import kalang.compiler.Diagnosis;
+import kalang.compiler.DiagnosisHandler;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
 import kalang.compiler.KalangSource;
+import kalang.compiler.OffsetRange;
 import kalang.compiler.SourceLoader;
 import kalang.tool.FileSystemSourceLoader;
 import kalang.tool.MemoryOutputManager;
@@ -22,7 +25,7 @@ import org.apache.commons.io.FileUtils;
  *
  * @author Kason Yang
  */
-public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
+public class KalangClassLoader extends URLClassLoader implements CodeGenerator,DiagnosisHandler{
 
     private final KalangCompiler compiler;
     
@@ -54,6 +57,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
             
         };
         compiler.setConfiguration(this.configuration);
+        compiler.setDiagnosisHandler(this);
     }
     
     @Override
@@ -103,6 +107,18 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
     public Class parseFile(String className,File file) throws IOException{
         String code = FileUtils.readFileToString(file);
         return parseSource(className, code, file.getName());
+    }
+
+    @Override
+    public void handleDiagnosis(Diagnosis diagnosis) {
+        if(diagnosis.getKind().isError()){
+            KalangSource source = diagnosis.getSource();
+            OffsetRange offset = diagnosis.getOffset();
+            throw new CompileException(String.format("%s:%s\n%s"
+                    , source.getFileName(),offset.startLine
+                    , diagnosis.getDescription())
+            );
+        }
     }
     
 }
