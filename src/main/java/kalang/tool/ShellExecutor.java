@@ -23,7 +23,7 @@ import org.apache.commons.io.FileUtils;
  *
  * @author Kason Yang 
  */
-public class Compiler {
+public class ShellExecutor {
     
     public final static String 
             CMD_RUN = "run",
@@ -37,7 +37,7 @@ public class Compiler {
         formatter.printHelp(syntax, options);
     }
 
-    public void compile(String cmd, String[] args,String syntax,Options options) {
+    public void execute(String cmd, String[] args,String syntax,Options options) {
         options.addOption("h","help",false,"show this help message");
         options.addOption("v","verbose",false,"show verbose information");
         options.addOption(null,"script-base",true,"specify default script base class");
@@ -77,7 +77,7 @@ public class Compiler {
                 @Override
                 public void handleDiagnosis(Diagnosis diagnosis) {
                     oldHandler.handleDiagnosis(diagnosis);
-                    if(diagnosis.getKind().isError()) Compiler.this.hasError = true;
+                    if(diagnosis.getKind().isError()) ShellExecutor.this.hasError = true;
                 }
             });
             File[] cps = parseClassPath(cli);

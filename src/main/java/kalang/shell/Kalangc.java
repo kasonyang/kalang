@@ -1,6 +1,6 @@
 package kalang.shell;
 
-import kalang.tool.Compiler;
+import kalang.tool.ShellExecutor;
 import org.apache.commons.cli.Options;
 
 /**
@@ -13,8 +13,8 @@ public class Kalangc {
         Options ops = new Options();
         ops.addOption("o", true, "output directory");
         ops.addOption("f",true,"output format");
-        Compiler shell = new Compiler();
-        shell.compile(Compiler.CMD_COMPILE, args, "kalangc", ops);
+        ShellExecutor executor = new ShellExecutor();
+        executor.execute(ShellExecutor.CMD_COMPILE, args, "kalangc", ops);
     }
 
 }

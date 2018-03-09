@@ -1,6 +1,6 @@
 package kalang.shell;
 
-import kalang.tool.Compiler;
+import kalang.tool.ShellExecutor;
 import org.apache.commons.cli.Options;
 
 /**
@@ -13,8 +13,8 @@ public class Kalangsh {
 
     public static void main(String[] args) {
         Options options = new Options();
-        Compiler compiler = new Compiler();
-        compiler.compile(Compiler.CMD_RUN, args, SYNTAX, options);
+        ShellExecutor executor = new ShellExecutor();
+        executor.execute(ShellExecutor.CMD_RUN, args, SYNTAX, options);
     }
 
 }

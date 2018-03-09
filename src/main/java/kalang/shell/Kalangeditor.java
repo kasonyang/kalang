@@ -1,5 +1,6 @@
 package kalang.shell;
 
+import kalang.tool.ShellExecutor;
 import org.apache.commons.cli.Options;
 
 /**
@@ -12,8 +13,8 @@ public class Kalangeditor {
 
     public static void main(String[] args) {
         Options options = new Options();
-        kalang.tool.Compiler compiler = new kalang.tool.Compiler();
-        compiler.compile(kalang.tool.Compiler.CMD_GUI, args, SYNTAX, options);
+        ShellExecutor executor = new ShellExecutor();
+        executor.execute(kalang.tool.ShellExecutor.CMD_GUI, args, SYNTAX, options);
     }
 
 }
