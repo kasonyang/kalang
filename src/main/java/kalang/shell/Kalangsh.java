@@ -14,6 +14,7 @@ public class Kalangsh {
     public static void main(String[] args) {
         Options options = new Options();
         ShellExecutor executor = new ShellExecutor();
+        options.addOption("c","code",true,"run code from code option");
         executor.execute(ShellExecutor.CMD_RUN, args, SYNTAX, options);
     }
 

@@ -156,13 +156,18 @@ public class ShellExecutor {
     
     public boolean run(CommandLine cli,Configuration config,ClassLoader classLoader){
         String[] args = cli.getArgs();
-        if(args.length==0){
-            return false;
-        }
-        File file = new File(args[0]);
         KalangShell sh = new KalangShell(config, classLoader);
         try {
-            Script script = sh.parseScript(file);
+            Script script;
+            if(cli.hasOption("c")){
+                script = sh.parseScript("Temp", cli.getOptionValue("c"), "Tmp.kl");
+            }else{
+                File file = new File(args[0]);
+                if(args.length==0){
+                    return false;
+                }
+                script = sh.parseScript(file);
+            }
             script.run();
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
