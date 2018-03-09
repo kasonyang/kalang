@@ -1,6 +1,7 @@
 apply plugin:'java'
 apply plugin:'application'
-mainClassName = "kalang.tool.Compiler"
+mainClassName = "kalang.shell.Kalangc"
+startScripts.applicationName = "kalangc"
 //mainClassName = "kalang.Compiler"
 
 repositories{
@@ -33,3 +34,24 @@ jacocoTestReport {
     html.enabled true
   }
 }
+
+
+
+task startScriptsForShell(type: CreateStartScripts) {
+  outputDir = file('build/scripts')
+  mainClassName = 'kalang.shell.Kalangsh'
+  applicationName = "kalangsh"
+  classpath = startScripts.classpath
+}
+
+startScripts.dependsOn startScriptsForShell
+
+
+task startScriptsForEditor(type: CreateStartScripts) {
+  outputDir = file('build/scripts')
+  mainClassName = 'kalang.shell.Kalangeditor'
+  applicationName = "kalangeditor"
+  classpath = startScripts.classpath
+}
+
+startScripts.dependsOn startScriptsForEditor

@@ -2,24 +2,16 @@ package kalang.tool;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import kalang.KalangClassLoader;
 import kalang.lang.Script;
 import kalang.compiler.Configuration;
 import kalang.compiler.Diagnosis;
 import kalang.compiler.DiagnosisHandler;
-import kalang.compiler.StandardDiagnosisHandler;
-import kalang.util.ClassNameUtil;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -32,57 +24,53 @@ import org.apache.commons.io.FileUtils;
  * @author Kason Yang 
  */
 public class Compiler {
-
-    private final static String APP_NAME = "kalang";
-
-    private final static Options OPTIONS;
     
+    public final static String 
+            CMD_RUN = "run",
+            CMD_GUI = "gui",
+            CMD_COMPILE = "compile";
+
     private boolean hasError = false;
 
-    static {
-        OPTIONS = new Options();
-        OPTIONS.addOption("h", false, "show this help message");
-        OPTIONS.addOption("cp", true, "compile classpath");
-        OPTIONS.addOption("s", true, "source directory");
-        OPTIONS.addOption("o", true, "output directory");
-        OPTIONS.addOption("f",true,"output format");
-        OPTIONS.addOption("run", true, "run the class with special name");
-        OPTIONS.addOption("gui",false,"start a buildin gui");
-        OPTIONS.addOption(null,"script-base",true,"script base class");
-        OPTIONS.addOption("l","lib-path",true,"library path");
-        OPTIONS.addOption("v","verbose",false,"show verbose information");
-        //OPTIONS.addOption("t",true,"set the output type,should be one of class,java");
-    }
-
-    public static void printUsage() {
+    public static void printUsage(String syntax,Options options) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(APP_NAME, OPTIONS);
-    }
-    
-    public static void main(String[] args) throws ParseException, IOException {
-        Compiler cper = new Compiler();
-        cper.compile(args);
+        formatter.printHelp(syntax, options);
     }
 
-    public boolean compile(String[] args) throws ParseException, IOException {
+    public void compile(String cmd, String[] args,String syntax,Options options) {
+        options.addOption("h","help",false,"show this help message");
+        options.addOption("v","verbose",false,"show verbose information");
+        options.addOption(null,"script-base",true,"specify default script base class");
+        options.addOption("l","lib-path",true,"library path");
+        options.addOption("cp", true, "compile classpath");
+        options.addOption("s", true, "source directory");
+        
         DefaultParser parser = new DefaultParser();
-        CommandLine cli = parser.parse(OPTIONS, args);
-        if (args.length == 0 || cli.hasOption("h")) {
-            printUsage();
-            return false;
+        CommandLine cli;
+        try{
+            cli = parser.parse(options, args);
+        } catch (ParseException ex) {
+            ex.printStackTrace(System.err);
+            return;
         }
+        if (cli.hasOption("help")){
+            printUsage(syntax, options);
+            return;
+        }
+        
         boolean verbose = cli.hasOption("verbose");
-        if(cli.hasOption("gui")){
-            String baseScriptClass = cli.getOptionValue("script-base", "");
-            Configuration config = new Configuration();
-            if(!baseScriptClass.isEmpty()){
-                config.setScriptBaseClass(baseScriptClass);
-            }
-            kalang.gui.Editor.main(config,createClassLoader(cli,verbose));
-            return true;
-        }else if(cli.hasOption("run")){
-            return run(cli);
-        }else{
+        String baseScriptClass = cli.getOptionValue("script-base", "");
+        Configuration config = new Configuration();
+        if(!baseScriptClass.isEmpty()){
+            config.setScriptBaseClass(baseScriptClass);
+        }
+        ClassLoader classLoader = createClassLoader(cli,verbose);
+        if(CMD_GUI.equals(cmd)){
+            kalang.gui.Editor.main(config,classLoader);
+        }else if(CMD_RUN.equals(cmd)){
+            run(cli,config,classLoader);
+        }else if(CMD_COMPILE.equals(cmd)){
+            //TODO use classLoader and config
             JointFileSystemCompiler fsc = new JointFileSystemCompiler();
             DiagnosisHandler oldHandler = fsc.getDiagnosisHandler();
             fsc.setDiagnosisHandler(new DiagnosisHandler() {
@@ -101,7 +89,11 @@ public class Compiler {
             String outPath = ".";
             if (cli.hasOption("s")) {
                 String srcPath = cli.getOptionValue("s");
-                fsc.addKalangAndJavaSourceDir(new File(srcPath));
+                try {
+                    fsc.addKalangAndJavaSourceDir(new File(srcPath));
+                } catch (IOException ex) {
+                    //TODO show exception message
+                }
             }
             if (cli.hasOption("o")) {
                 outPath = cli.getOptionValue("o");
@@ -129,15 +121,24 @@ public class Compiler {
             for(String s:srcs){
                 File srcFile = new File(s);
                 if(srcFile.isDirectory()){
-                    fsc.addKalangAndJavaSourceDir(srcFile);
+                    try {
+                        fsc.addKalangAndJavaSourceDir(srcFile);
+                    } catch (IOException ex) {
+                        //TODO show exception message
+                    }
                 }else{
-                    //TODO here should be currenDir?
-                    fsc.addKalangOrJavaSource(currentDir , srcFile);
+                    try {
+                        //TODO here should be currenDir?
+                        fsc.addKalangOrJavaSource(currentDir , srcFile);
+                    } catch (IOException ex) {
+                        //TODO show exception message
+                    }
                 }
             }
             hasError = false;
             fsc.compile();
-            return !hasError;
+        }else{
+            throw new IllegalArgumentException("unknown command:" + cmd);
         }
     }
     
@@ -153,44 +154,20 @@ public class Compiler {
         return new File[0];
     }
     
-    public boolean run(CommandLine cli){
-        String clsName = cli.getOptionValue("run");
-        KalangClassLoader kcl = new KalangClassLoader(new File[0],null,null);
-        kcl.addClassPath(new File("."));
-        File[] cps = parseClassPath(cli);
-        if(cps!=null){
-            for(File c:cps){
-                kcl.addClassPath(c);
-            }
+    public boolean run(CommandLine cli,Configuration config,ClassLoader classLoader){
+        String[] args = cli.getArgs();
+        if(args.length==0){
+            return false;
         }
-        Class<?> clazz;
+        File file = new File(args[0]);
+        KalangShell sh = new KalangShell(config, classLoader);
         try {
-             clazz = kcl.loadClass(clsName);
-        } catch (ClassNotFoundException ex) {
-            System.err.println("Class not found!");
-            return false;
+            Script script = sh.parseScript(file);
+            script.run();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
         }
-        Method mm;
-        try {
-            mm = clazz.getMethod("main",Class.forName("[Ljava.lang.String;"));
-        } catch (NoSuchMethodException ex) {
-            System.err.println("main method not found!");
-            return false;
-        } catch (SecurityException | ClassNotFoundException ex) {
-            Logger.getLogger(Compiler.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-        if(!Modifier.isStatic(mm.getModifiers())){
-            System.out.println("main method is not static");
-            return false;
-        }
-        try {
-            mm.invoke(null,new Object[]{cli.getArgs()});
-            return true;
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            ex.printStackTrace();
-            return false;
-        }
+        return true;
     }
     
     private ClassLoader createClassLoader(CommandLine cli,boolean verbose) {
