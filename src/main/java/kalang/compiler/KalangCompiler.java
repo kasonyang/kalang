@@ -37,6 +37,8 @@ public class KalangCompiler extends AstLoader implements CompileContext{
     protected DiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
     
     protected AstLoader astLoader;
+    
+    protected Configuration configuration = new Configuration();
 
     public KalangCompiler() {
         this(new JavaAstLoader());
@@ -117,7 +119,7 @@ public class KalangCompiler extends AstLoader implements CompileContext{
                 return createCompilationUnit(source).getAst();
             }
         }
-        return AstLoader.BASE_AST_LOADER.findAst(className);
+        return astLoader.findAst(className);
     }
 
     @Nonnull
@@ -228,6 +230,15 @@ public class KalangCompiler extends AstLoader implements CompileContext{
     @Override
     public int getCompilingPhase() {
         return this.compilingPhase;
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
     }
 
 }

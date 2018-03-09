@@ -5,37 +5,46 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import kalang.ast.ClassNode;
 import kalang.compiler.codegen.Ast2Class;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
+import kalang.compiler.Configuration;
+import kalang.compiler.Diagnosis;
+import kalang.compiler.DiagnosisHandler;
+import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
 import kalang.compiler.KalangSource;
+import kalang.compiler.OffsetRange;
 import kalang.compiler.SourceLoader;
 import kalang.tool.FileSystemSourceLoader;
 import kalang.tool.MemoryOutputManager;
-import kalang.tool.OutputManager;
 import org.apache.commons.io.FileUtils;
 /**
  *
  * @author Kason Yang
  */
-public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
+public class KalangClassLoader extends URLClassLoader implements CodeGenerator,DiagnosisHandler{
 
     private final KalangCompiler compiler;
     
     private final HashMap<String,Class> loadedClasses = new HashMap<>();
     private final FileSystemSourceLoader sourceLoader;
-    
+    private Configuration configuration;
+    private ClassLoader parentClassLoader = KalangClassLoader.class.getClassLoader();
+
     public KalangClassLoader() {
-        this(new File[0]);
+        this(new File[0],null,null);
     }
 
-    public KalangClassLoader(File[] sourceDir) {
-        super(new URL[0]);
+    public KalangClassLoader(File[] sourceDir,@Nullable Configuration config,@Nullable ClassLoader parentClassLoader) {
+        super(new URL[0],parentClassLoader==null ? KalangClassLoader.class.getClassLoader() : parentClassLoader);
+        this.configuration = config == null ? new Configuration() : config;
+        this.parentClassLoader = parentClassLoader;
         sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});
         CodeGenerator cg = this;
-        compiler = new KalangCompiler(){
+        compiler = new KalangCompiler(new JavaAstLoader(null, parentClassLoader)){
             @Override
             public SourceLoader getSourceLoader() {
                 return sourceLoader;
@@ -47,6 +56,8 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
             }
             
         };
+        compiler.setConfiguration(this.configuration);
+        compiler.setDiagnosisHandler(this);
     }
     
     @Override
@@ -96,6 +107,18 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator{
     public Class parseFile(String className,File file) throws IOException{
         String code = FileUtils.readFileToString(file);
         return parseSource(className, code, file.getName());
+    }
+
+    @Override
+    public void handleDiagnosis(Diagnosis diagnosis) {
+        if(diagnosis.getKind().isError()){
+            KalangSource source = diagnosis.getSource();
+            OffsetRange offset = diagnosis.getOffset();
+            throw new CompileException(String.format("%s:%s\n%s"
+                    , source.getFileName(),offset.startLine
+                    , diagnosis.getDescription())
+            );
+        }
     }
     
 }

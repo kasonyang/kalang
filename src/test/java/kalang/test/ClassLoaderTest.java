@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import kalang.KalangClassLoader;
+import kalang.lang.Script;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -19,7 +20,7 @@ public class ClassLoaderTest {
     
     @Test
     public void testFiles() throws IOException{
-        KalangClassLoader clsLoader = new KalangClassLoader();
+        KalangClassLoader clsLoader = new KalangClassLoader(new File[0],null,null);
         Class clazz = clsLoader.parseFile("test.HelloKalang", new File("TestScript/source/test/HelloKalang.kl"));
         assertNotNull(clazz);
     }
@@ -38,6 +39,10 @@ public class ClassLoaderTest {
         Method[] mds = hwCls.getDeclaredMethods();
         for(int i=0;i<mds.length;i++){
             Method m = mds[i];
+            String methodName = m.getName();
+            if((inst instanceof Script) && "execute".equals(methodName)){
+                continue;
+            }
             Object ret;
             try{
                 if(m.getParameterCount()>0) continue;
@@ -51,7 +56,7 @@ public class ClassLoaderTest {
                 ex.printStackTrace();
                 continue;
             }
-            assertEquals("result of method["+m.getName() + "] should be 6",6, ret);
+            assertEquals("result of method[" + methodName + "] should be 6",6, ret);
         }
         //Method md = hwCls.getMethod("test", null);
         //Object ret = md.invoke(null, null);

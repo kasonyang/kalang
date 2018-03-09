@@ -34,5 +34,7 @@ public interface CompileContext {
     void stopCompile(int stopPhase);
     
     int getCompilingPhase();
+    
+    Configuration getConfiguration();
 
 }
