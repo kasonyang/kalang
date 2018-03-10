@@ -55,3 +55,8 @@ task startScriptsForEditor(type: CreateStartScripts) {
 }
 
 startScripts.dependsOn startScriptsForEditor
+
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
