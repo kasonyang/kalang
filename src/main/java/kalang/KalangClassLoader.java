@@ -39,7 +39,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
     }
 
     public KalangClassLoader(File[] sourceDir,@Nullable Configuration config,@Nullable ClassLoader parentClassLoader) {
-        super(new URL[0],parentClassLoader==null ? KalangClassLoader.class.getClassLoader() : parentClassLoader);
+        super(new URL[0],parentClassLoader==null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader);
         this.configuration = config == null ? new Configuration() : config;
         this.parentClassLoader = parentClassLoader;
         sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});

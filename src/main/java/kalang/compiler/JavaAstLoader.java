@@ -3,7 +3,6 @@ package kalang.compiler;
 import java.lang.annotation.Annotation;
 import kalang.AstNotFoundException;
 import kalang.ast.ClassNode;
-import kalang.ast.VarObject;
 import kalang.ast.MethodNode;
 
 import java.lang.reflect.Constructor;
@@ -11,7 +10,6 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
@@ -19,11 +17,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
-import kalang.ast.ParameterNode;
-import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.GenericType;
 import kalang.core.NullableKind;
@@ -32,7 +29,6 @@ import kalang.core.Type;
 import kalang.core.Types;
 import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
-import kalang.util.AstUtil;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
 
@@ -157,6 +153,7 @@ public class JavaAstLoader extends AstLoader {
   }
 
   public JavaAstLoader(@Nullable AstLoader parentAstLoader, @Nonnull ClassLoader javaClassLoader) {
+    Objects.requireNonNull(javaClassLoader);
     this.javaClassLoader = javaClassLoader;
     this.parentAstLoader = parentAstLoader;
   }
