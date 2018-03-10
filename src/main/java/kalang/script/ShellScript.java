@@ -39,6 +39,10 @@ public abstract class ShellScript extends Script {
     protected int randomInt() {
         return new Random().nextInt();
     }
+    
+    protected void deleteDirectory(File file) throws IOException {
+        FileUtils.deleteDirectory(file);
+    }
 
     protected int exec(String command, String... arguments) throws IOException {
         String[] list = new String[arguments.length + 1];
