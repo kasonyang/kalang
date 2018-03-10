@@ -2,6 +2,7 @@ package kalang.script;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 import kalang.lang.Script;
 import org.apache.commons.io.FileUtils;
 
@@ -27,6 +28,16 @@ public abstract class ShellScript extends Script {
 
     protected void writeText(File file, String data) throws IOException {
         writeText(file, data, DEFAULT_ENCODING);
+    }
+
+    protected int randomInt(int min, int max) {
+        //TODO here never return max
+        Random random = new Random();
+        return random.nextInt(max - min) + min;
+    }
+    
+    protected int randomInt() {
+        return new Random().nextInt();
     }
 
     protected int exec(String command, String... arguments) throws IOException {
