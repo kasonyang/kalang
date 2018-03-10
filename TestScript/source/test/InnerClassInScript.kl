@@ -1,5 +1,5 @@
 class Inner{
-    static class InnerInInner{
+    class InnerInInner{
         public String helloInnerInInner(){
             return "InnerInInner";
         }
@@ -9,7 +9,8 @@ class Inner{
     }
 }
 
-var ic = new Inner();
-ic.hello();
-var icInIc = new Inner::InnerInInner();
-icInIc.helloInnerInInner();
+//TODO test inner class
+//var ic = new Inner();
+//ic.hello();
+//var icInIc = new Inner::InnerInInner();
+//icInIc.helloInnerInInner();

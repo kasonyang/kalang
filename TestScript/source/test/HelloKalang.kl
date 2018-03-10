@@ -220,13 +220,14 @@ class<T>{
         byte b = 6;
         return b;
     }    
-    
-    int innerClassTest(){
-        return new InnerClass().test();
-    }
-    int innerFieldTest(){
-        return new InnerClass().getField();
-    }
+  
+//TODO enable inner class test  
+//    int innerClassTest(){
+//        return new InnerClass().test();
+//    }
+//    int innerFieldTest(){
+//        return new InnerClass().getField();
+//    }
     /*
     
     int dynamicField() throws Exception{
