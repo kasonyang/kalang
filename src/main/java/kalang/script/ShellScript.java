@@ -45,6 +45,10 @@ public abstract class ShellScript extends Script {
         FileUtils.deleteDirectory(new File(file));
     }
     
+    protected boolean exists(String file) {
+        return new File(file).exists();
+    }
+    
     protected String baseName(String filename) {
         return FilenameUtils.getBaseName(filename);
     }
