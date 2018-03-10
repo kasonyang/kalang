@@ -1,3 +1,4 @@
+#script kalang.script.ShellScript
 String hello(String name){
     var str = "hello" + name;
     return str;

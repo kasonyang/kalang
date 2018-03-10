@@ -24,6 +24,13 @@ public class KalangParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitCompileOption(KalangParser.CompileOptionContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitScriptDef(KalangParser.ScriptDefContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

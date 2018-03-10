@@ -1960,6 +1960,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
         throw Exceptions.unexceptedException("");
     }
+
+    @Override
+    public Object visitCompileOption(KalangParser.CompileOptionContext ctx) {
+        return null;//Do noting
+        //throw Exceptions.unexceptedException("");
+    }
     
     protected List<AnnotationNode> getAnnotations(@Nullable List<KalangParser.AnnotationContext> ctxs){
         List<AnnotationNode> list = new LinkedList<>();

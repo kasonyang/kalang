@@ -439,6 +439,7 @@ JavaLetterOrDigit
 
 AT : '@';
 ELLIPSIS : '...';
+COMPILE_OPTION_LINE : '#' ~[\r\n]+;
 
 //
 // Whitespace and comments

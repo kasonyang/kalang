@@ -18,6 +18,16 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitCompilationUnit(KalangParser.CompilationUnitContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#compileOption}.
+	 * @param ctx the parse tree
+	 */
+	void enterCompileOption(KalangParser.CompileOptionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#compileOption}.
+	 * @param ctx the parse tree
+	 */
+	void exitCompileOption(KalangParser.CompileOptionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#scriptDef}.
 	 * @param ctx the parse tree
 	 */

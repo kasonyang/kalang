@@ -60,6 +60,8 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     private final CompilationUnit compilationUnit;
     private DiagnosisReporter diagnosisReporter;
     
+    private String optionScriptBase = null;
+    
 
     public ClassNodeMetaBuilder(CompilationUnit compilationUnit, AstBuilder astBuilder, ClassNodeBuilder classNodeBuilder) {
         this.compilationUnit = compilationUnit;
@@ -76,6 +78,23 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             build(c,false);
         }
     }
+
+    @Override
+    public Object visitCompileOption(KalangParser.CompileOptionContext ctx) {
+        String optionLine = ctx.getText().substring(1);//remove # symbol
+        String[] optionParts = optionLine.split(" ",2);
+        String optionName = optionParts[0];
+        //TODO report option error
+        if ("script".equals(optionName)) {
+            String optionValue = optionParts.length > 1 ? optionParts[1].trim() : "";
+            if (!optionValue.isEmpty()) {
+                this.optionScriptBase = optionValue;
+            }
+        }
+        return null;
+    }
+    
+    
 
     @Override
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
@@ -352,7 +371,10 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         CompileContext context = this.compilationUnit.getCompileContext();
         Configuration conf = context.getConfiguration();
         AstLoader astLoader = context.getAstLoader();
-        String baseClass = conf.getScriptBaseClass();
+        String baseClass = optionScriptBase;
+        if(baseClass==null){
+            baseClass = conf.getScriptBaseClass();
+        }
         try {
             return Types.getClassType(astLoader.loadAst(baseClass));
         } catch (AstNotFoundException ex) {
