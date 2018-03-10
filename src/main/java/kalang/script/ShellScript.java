@@ -15,19 +15,19 @@ public abstract class ShellScript extends Script {
 
     public final static String DEFAULT_ENCODING = "utf8";
 
-    protected String readText(File file, String encoding) throws IOException {
-        return FileUtils.readFileToString(file, encoding);
+    protected String readText(String file, String encoding) throws IOException {
+        return FileUtils.readFileToString(new File(file), encoding);
     }
 
-    protected String readText(File file) throws IOException {
+    protected String readText(String file) throws IOException {
         return readText(file, DEFAULT_ENCODING);
     }
 
-    protected void writeText(File file, String data, String encoding) throws IOException {
-        FileUtils.writeStringToFile(file, data, encoding);
+    protected void writeText(String file, String data, String encoding) throws IOException {
+        FileUtils.writeStringToFile(new File(file), data, encoding);
     }
 
-    protected void writeText(File file, String data) throws IOException {
+    protected void writeText(String file, String data) throws IOException {
         writeText(file, data, DEFAULT_ENCODING);
     }
 
@@ -41,8 +41,8 @@ public abstract class ShellScript extends Script {
         return new Random().nextInt();
     }
     
-    protected void deleteDirectory(File file) throws IOException {
-        FileUtils.deleteDirectory(file);
+    protected void deleteDirectory(String file) throws IOException {
+        FileUtils.deleteDirectory(new File(file));
     }
     
     protected String baseName(String filename) {
