@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Random;
 import kalang.lang.Script;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -42,6 +43,14 @@ public abstract class ShellScript extends Script {
     
     protected void deleteDirectory(File file) throws IOException {
         FileUtils.deleteDirectory(file);
+    }
+    
+    protected String baseName(String filename) {
+        return FilenameUtils.getBaseName(filename);
+    }
+    
+    protected String extension(String filename){
+        return FilenameUtils.getExtension(filename);
     }
 
     protected int exec(String command, String... arguments) throws IOException {
