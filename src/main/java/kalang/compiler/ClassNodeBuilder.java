@@ -45,6 +45,8 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
     private boolean inScriptMode = false;
     
     private boolean isScript = false;
+    
+    private String optionScript = null;
 
     AstBuilder astBuilder;
     private final CompilationUnit compilationUnit;
@@ -59,6 +61,23 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
         this.visitCompilationUnit(ctx);
         return topClass;
     }
+
+    @Override
+    public Object visitCompileOption(KalangParser.CompileOptionContext ctx) {
+        String optionLine = ctx.getText().substring(1);//remove # symbol
+        String[] optionParts = optionLine.split(" ",2);
+        String optionName = optionParts[0];
+        //TODO report option error
+        if ("script".equals(optionName)) {
+            String optionValue = optionParts.length > 1 ? optionParts[1].trim() : "";
+            if (!optionValue.isEmpty()) {
+                this.optionScript = optionValue;
+            }
+        }
+        return super.visitCompileOption(ctx);
+    }
+    
+    
 
     @Override
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
@@ -144,6 +163,10 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
         this.diagnosisReporter = new DiagnosisReporter(
                 this.compilationUnit.getCompileContext()
                 , diagnosisHandler, this.compilationUnit.getSource());
+    }
+    
+    public String getOptionScript() {
+        return this.optionScript;
     }
     
 }
