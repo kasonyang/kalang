@@ -18,6 +18,8 @@ import org.apache.commons.cli.Options;
 public class Kalangc extends ShellBase {
 
     protected boolean hasError = false;
+    
+    public final static String APP_NAME = "kalangc";
 
     public final static String SYNTAX = "kalangc";
 
@@ -25,15 +27,8 @@ public class Kalangc extends ShellBase {
         new Kalangc().run(args);
     }
 
-    private void run(String[] args) {
-        Options ops = new Options();
-        ops.addOption("o", true, "output directory");
-        ops.addOption("f", true, "output format");
-        CommandLine cli = this.parseArgs(ops, args);
-        if (cli == null || cli.hasOption("help")) {
-            printUsage(SYNTAX, ops);
-            return;
-        }
+    @Override
+    protected void execute(CommandLine cli) {
         //TODO use classLoader and config
         JointFileSystemCompiler fsc = new JointFileSystemCompiler();
         DiagnosisHandler oldHandler = fsc.getDiagnosisHandler();
@@ -103,6 +98,17 @@ public class Kalangc extends ShellBase {
         }
         hasError = false;
         fsc.compile();
+    }
+
+    private Kalangc() {
+        super(APP_NAME,SYNTAX,createOptions());
+    }
+    
+    private static Options createOptions() {
+        Options ops = new Options();
+        ops.addOption("o", true, "output directory");
+        ops.addOption("f", true, "output format");
+        return ops;
     }
 
 }

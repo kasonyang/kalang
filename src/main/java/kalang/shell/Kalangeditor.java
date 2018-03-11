@@ -10,22 +10,24 @@ import org.apache.commons.cli.Options;
  */
 public class Kalangeditor extends ShellBase {
 
-    public static final String SYNTAX = "kalangeditor";
+    private static final String APP_NAME = "kalangeditor";
+
+    private static final String SYNTAX = "kalangeditor [options]";
 
     public static void main(String[] args) {
         new Kalangeditor().run(args);
     }
 
-    private void run(String[] args) {
-        Options options = new Options();
-        CommandLine cli = this.parseArgs(options, args);
-        if (cli == null || cli.hasOption("help")) {
-            printUsage(SYNTAX, options);
-        }
+    @Override
+    protected void execute(CommandLine cli) {
         Configuration config = this.createConfiguration(cli);
         ClassLoader classLoader = this.createClassLoader(cli);
         kalang.gui.Editor.main(config, classLoader);
 
+    }
+
+    private Kalangeditor() {
+        super(APP_NAME, SYNTAX, new Options());
     }
 
 }

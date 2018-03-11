@@ -14,25 +14,20 @@ import org.apache.commons.cli.Options;
  */
 public class Kalangsh extends ShellBase {
 
+    private final static String APP_NAME = "kalangsh";
+
     private final static String SYNTAX = "kalangsh [options] FILE [options]";
+
+    private Kalangsh() {
+        super(APP_NAME, SYNTAX, createOptions());
+    }
 
     public static void main(String[] args) {
         new Kalangsh().run(args);
     }
 
-    private void run(String[] args) {
-        Options options = new Options();
-        options.addOption("c", "code", true, "run code from code option");
-        options.addOption("","check",false,"don't run,just check");
-        CommandLine cli = parseArgs(options, args);
-        if (cli == null || cli.hasOption("help")) {
-            printUsage(SYNTAX, options);
-            return;
-        }
-        run(cli, options);
-    }
-
-    private void run(CommandLine cli, Options options) {
+    @Override
+    protected void execute(CommandLine cli) {
         Configuration config = this.createConfiguration(cli);
         ClassLoader classLoader = this.createClassLoader(cli);
 
@@ -46,7 +41,7 @@ public class Kalangsh extends ShellBase {
                 script = sh.parseScript("Temp", cli.getOptionValue("c"), "Tmp.kl");
             } else {
                 if (args.length == 0) {
-                    printUsage(SYNTAX, options);
+                    printUsage();
                 }
                 File file = new File(args[0]);
                 scriptArgs = new String[args.length - 1];
@@ -61,6 +56,13 @@ public class Kalangsh extends ShellBase {
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         }
+    }
+
+    private static Options createOptions() {
+        Options options = new Options();
+        options.addOption("c", "code", true, "run code from code option");
+        options.addOption("", "check", false, "don't run,just check");
+        return options;
     }
 
 }
