@@ -35,9 +35,9 @@ public abstract class ShellBase {
         options.addOption("h", "help", false, "show this help message");
         options.addOption("v", "verbose", false, "show verbose information");
         options.addOption(null, "script-base", true, "specify default script base class");
-        options.addOption("l", "lib-path", true, "library path");
-        options.addOption("cp", true, "compile classpath");
-        options.addOption("s", true, "source directory");
+        options.addOption("l", "libpath", true, "library path");
+        options.addOption(null,"classpath", true, "compile classpath");
+        options.addOption("s","sourcepath", true, "source directory");
         options.addOption("v","version",false,"show version information");
     }
     
@@ -93,7 +93,7 @@ public abstract class ShellBase {
     protected ClassLoader createClassLoader(CommandLine cli) {
         boolean verbose = cli.hasOption("verbose");
         List<URL> urls = new LinkedList();
-        String[] libPaths = cli.getOptionValue("lib-path", "").split(";");
+        String[] libPaths = cli.getOptionValue("libpath", "").split(";");
         for (String l : libPaths) {
             if (l.isEmpty()) {
                 continue;
@@ -128,8 +128,8 @@ public abstract class ShellBase {
     }
 
     protected File[] parseClassPath(CommandLine cli) {
-        if (cli.hasOption("cp")) {
-            String[] cps = cli.getOptionValue("cp").split(";");
+        if (cli.hasOption("classpath")) {
+            String[] cps = cli.getOptionValue("classpath").split(";");
             File[] file = new File[cps.length];
             for (int i = 0; i < cps.length; i++) {
                 file[i] = new File(cps[i]);

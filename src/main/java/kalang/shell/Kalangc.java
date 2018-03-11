@@ -48,20 +48,20 @@ public class Kalangc extends ShellBase {
             }
         }
         String outPath = ".";
-        if (cli.hasOption("s")) {
-            String srcPath = cli.getOptionValue("s");
+        if (cli.hasOption("sourcepath")) {
+            String srcPath = cli.getOptionValue("sourcepath");
             try {
                 fsc.addKalangAndJavaSourceDir(new File(srcPath));
             } catch (IOException ex) {
                 //TODO show exception message
             }
         }
-        if (cli.hasOption("o")) {
-            outPath = cli.getOptionValue("o");
+        if (cli.hasOption("output-dir")) {
+            outPath = cli.getOptionValue("output-dir");
         }
         String outputFormat = "class";
-        if (cli.hasOption("f")) {
-            outputFormat = cli.getOptionValue("f");
+        if (cli.hasOption("format")) {
+            outputFormat = cli.getOptionValue("format");
         }
         FileSystemOutputManager outputManager = new FileSystemOutputManager(new File(outPath), outputFormat);
         switch (outputFormat) {
@@ -106,8 +106,8 @@ public class Kalangc extends ShellBase {
     
     private static Options createOptions() {
         Options ops = new Options();
-        ops.addOption("o", true, "output directory");
-        ops.addOption("f", true, "output format");
+        ops.addOption("o","output-dir",true, "output directory");
+        ops.addOption("f","format",true, "output format");
         return ops;
     }
 

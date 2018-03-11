@@ -36,9 +36,9 @@ public class Kalangsh extends ShellBase {
         try {
             Script script;
             String[] scriptArgs;
-            if (cli.hasOption("c")) {
+            if (cli.hasOption("code")) {
                 scriptArgs = new String[0];
-                script = sh.parseScript("Temp", cli.getOptionValue("c"), "Tmp.kl");
+                script = sh.parseScript("Temp", cli.getOptionValue("code"), "Tmp.kl");
             } else {
                 if (args.length == 0) {
                     printUsage();
@@ -61,7 +61,7 @@ public class Kalangsh extends ShellBase {
     private static Options createOptions() {
         Options options = new Options();
         options.addOption("c", "code", true, "run code from code option");
-        options.addOption("", "check", false, "don't run,just check");
+        options.addOption(null, "check", false, "don't run,just check");
         return options;
     }
 
