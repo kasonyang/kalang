@@ -57,13 +57,8 @@ public abstract class ShellScript extends Script {
         return FilenameUtils.getExtension(filename);
     }
 
-    protected int exec(String command, String... arguments) throws IOException {
-        String[] list = new String[arguments.length + 1];
-        list[0] = command;
-        if (arguments.length > 0) {
-            System.arraycopy(arguments, 0, list, 1, arguments.length);
-        }
-        ProcessBuilder pb = new ProcessBuilder(list);
+    protected int exec(String[] arguments) throws IOException {
+        ProcessBuilder pb = new ProcessBuilder(arguments);
         pb.inheritIO();
         Process p = pb.start();
         try {
@@ -75,7 +70,8 @@ public abstract class ShellScript extends Script {
     }
 
     protected int exec(String command) throws IOException {
-        return exec(command, new String[0]);
+        String[] arguments = command.split(" ");//TODO fix quotes
+        return exec(arguments);
     }
 
 }
