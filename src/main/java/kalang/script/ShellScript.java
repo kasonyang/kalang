@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
 import kalang.lang.Script;
@@ -81,6 +83,10 @@ public abstract class ShellScript extends Script {
         Properties props = new Properties();
         props.load(new FileInputStream(file));
         return props;
+    }
+    
+    protected String now(){
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
 
 }
