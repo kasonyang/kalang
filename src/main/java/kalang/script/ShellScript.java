@@ -1,7 +1,10 @@
 package kalang.script;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Random;
 import kalang.lang.Script;
 import org.apache.commons.io.FileUtils;
@@ -72,6 +75,12 @@ public abstract class ShellScript extends Script {
     protected int exec(String command) throws IOException {
         String[] arguments = command.split(" ");//TODO fix quotes
         return exec(arguments);
+    }
+    
+    protected Properties loadProperties(String file) throws FileNotFoundException, IOException {
+        Properties props = new Properties();
+        props.load(new FileInputStream(file));
+        return props;
     }
 
 }
