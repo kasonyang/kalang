@@ -23,6 +23,7 @@ public class Kalangsh extends ShellBase {
     private void run(String[] args) {
         Options options = new Options();
         options.addOption("c", "code", true, "run code from code option");
+        options.addOption("","check",false,"don't run,just check");
         CommandLine cli = parseArgs(options, args);
         if (cli == null || cli.hasOption("help")) {
             printUsage(SYNTAX, options);
@@ -54,7 +55,9 @@ public class Kalangsh extends ShellBase {
                 }
                 script = sh.parseScript(file);
             }
-            script.run(scriptArgs);
+            if (!cli.hasOption("check")) {
+                script.run(scriptArgs);
+            }
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         }
