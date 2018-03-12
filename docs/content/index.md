@@ -17,41 +17,52 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 * flexible syntax
 * compatible with other jvm-based language like java,groovy and so on.
 
-# How to build and install
+# Installation
 
-requirements: 
+For Linux users:
 
-* jdk8
-* gradle
+    wget http://file.kason.site/kalang-compiler/kalang-compiler-1.1.0.tar
+    tar -xvf kalang-compiler-1.1.0.tar
+    ln -s kalang-compiler-1.1.0/bin/kalangc /usr/local/bin/kalangc
+    ln -s kalang-compiler-1.1.0/bin/kalangsh /usr/local/bin/kalangsh
+    ln -s kalang-compiler-1.1.0/bin/kalangeditor /usr/local/bin/kalangeditor
 
-clone the source,and run
+For Windows users:
 
-    >gradlew installDist
-
-add the path`build/install/kalang/bin` to your `PATH` environment variable
+1. Download latest binary distribution:[http://file.kason.site/kalang-compiler/kalang-compiler-1.1.0.zip](http://file.kason.site/kalang-compiler/kalang-compiler-1.1.0.zip)
+2. Unzip the downloaded zip file
+3. Add the absolute path of the `bin` directory to the `PATH` environment variable
 
 # Usage
 
-## run as an editor
+## launch kalang scripts
 
 ```
-> kalang -gui
+> kalangsh FILE
 ```
 
-![Kalang Editor](https://github.com/kasonyang/kalang/blob/master/snapshot/kalang-editor.png?raw=true)
-
-## run as a compiler
+## launch kalang compiler
 
 ```
-> kalang SOURCE_FILE 
+> kalangc FILE
 ```
 
 For example:`kalang Helloworld.kl` would compile `Helloworld.kl` in current directory.
 
-More usages please run
+## launch the built-in editor
 
 ```
-> kalang -h
+> kalangeditor
+```
+
+![Kalang Editor](https://github.com/kasonyang/kalang/blob/master/snapshot/kalang-editor.png?raw=true)
+
+## Get more usages
+
+```
+>kalangsh --help
+>kalangc --help
+>kalangeditor --help
 ```
 
 # HelloWorld Example
@@ -233,3 +244,15 @@ if(s instanceof String){
     s.chars();//the type of s is changed from Object to String automatically
 }
 ```
+
+
+## Build from source
+
+requirements: 
+
+* jdk8
+
+clone the source,and run
+
+    >./gradlew build
+
