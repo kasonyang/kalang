@@ -51,6 +51,10 @@ public abstract class ShellScript extends Script {
         FileUtils.deleteDirectory(new File(file));
     }
     
+    protected void deleteFile(String file) throws IOException{
+        FileUtils.forceDelete(new File(file));
+    }
+    
     protected boolean exists(String file) {
         return new File(file).exists();
     }
@@ -61,6 +65,33 @@ public abstract class ShellScript extends Script {
     
     protected String extension(String filename){
         return FilenameUtils.getExtension(filename);
+    }
+    
+    protected void copyFile(String src,String dest) throws IOException{
+        FileUtils.copyFile(new File(src), new File(dest));
+    }
+    
+    protected void copyDirectory(String src,String dest) throws IOException {
+        FileUtils.copyDirectory(new File(src), new File(dest));
+    }
+    
+    protected void moveFile(String src,String dest) throws IOException{
+        FileUtils.moveFile(new File(src), new File(dest));
+    }
+    
+    protected void moveDirectory(String src,String desc) throws IOException{
+        FileUtils.moveDirectory(new File(src), new File(desc));
+    }
+    
+    protected String path(String[] parts){
+        if (parts.length==0){
+            throw new IllegalArgumentException("empty array");
+        }
+        File file = new File(parts[0]);
+        for(int i=1;i<parts.length;i++) {
+            file = new File(file,parts[i]);
+        }
+        return file.getPath();
     }
     
     protected int exec(String[] arguments) throws IOException{
