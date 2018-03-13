@@ -325,6 +325,7 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
             p(";");
             c(visit(pre));
             p(";");
+            c(visit(node.getUpdateStmt()));
             c(")");
             visit(node.getLoopBody());
         } else {

@@ -12,6 +12,8 @@ public class LoopStmt extends Statement{
 
     private BlockStmt loopBody;
     
+    private BlockStmt updateStmt;
+    
     @Nullable
     private final ExprNode preConditionExpr;
     
@@ -19,25 +21,28 @@ public class LoopStmt extends Statement{
     private final ExprNode postConditionExpr;
 
     public LoopStmt(ExprNode preConditionExpr, ExprNode postConditionExpr) {
-        this(preConditionExpr, postConditionExpr, null);
+        this(preConditionExpr, postConditionExpr, null,null);
     }
     
     public LoopStmt(
             @Nullable ExprNode preConditionExpr, 
             @Nullable ExprNode postConditionExpr, 
-            @Nullable BlockStmt loopBody
+            @Nullable BlockStmt loopBody,
+            @Nullable BlockStmt updateStmt
     ){
         this.loopBody = loopBody==null ? new BlockStmt() : loopBody;
         this.preConditionExpr = preConditionExpr;
         this.postConditionExpr = postConditionExpr;
+        this.updateStmt = updateStmt == null ? new BlockStmt() : updateStmt;
     }
     
     @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
         //addChild(ls,initStmts);
-        addChild(ls,loopBody);
         addChild(ls,preConditionExpr);
+        addChild(ls,loopBody);
+        addChild(ls,updateStmt);
         addChild(ls,postConditionExpr);
         return ls;
     }
@@ -45,6 +50,11 @@ public class LoopStmt extends Statement{
     @Nonnull
     public BlockStmt getLoopBody() {
         return loopBody;
+    }
+
+    @Nonnull
+    public BlockStmt getUpdateStmt() {
+        return updateStmt;
     }
 
     @Nullable

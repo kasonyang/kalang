@@ -116,6 +116,9 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         enterNewFrame();
         visit(node.getLoopBody());
         exitFrame();
+        enterNewFrame();
+        visit(node.getUpdateStmt());
+        exitFrame();
         visit(node.getPostConditionExpr());
         return null;
     }

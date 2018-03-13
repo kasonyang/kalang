@@ -220,6 +220,13 @@ class<T>{
         byte b = 6;
         return b;
     }    
+
+    int continueTest(){
+        foreach([1,2] as it){
+            continue;
+        }
+        return 6;
+    }
   
 //TODO enable inner class test  
 //    int innerClassTest(){

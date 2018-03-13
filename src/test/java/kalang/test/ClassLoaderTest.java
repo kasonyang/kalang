@@ -25,7 +25,7 @@ public class ClassLoaderTest {
         assertNotNull(clazz);
     }
 
-    @Test
+    @Test(timeout = 20000)
     public void test() throws Exception{
         testClass("test.HelloKalang");
         testClass("test.HelloScript");
