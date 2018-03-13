@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
+import javax.annotation.Nullable;
 import kalang.lang.Script;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -61,10 +62,17 @@ public abstract class ShellScript extends Script {
     protected String extension(String filename){
         return FilenameUtils.getExtension(filename);
     }
+    
+    protected int exec(String[] arguments) throws IOException{
+        return exec(arguments,null);
+    }
 
-    protected int exec(String[] arguments) throws IOException {
+    protected int exec(String[] arguments,@Nullable String workingDirectory) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(arguments);
         pb.inheritIO();
+        if (workingDirectory!=null && !workingDirectory.isEmpty()) {
+            pb.directory(new File(workingDirectory));
+        }
         Process p = pb.start();
         try {
             p.waitFor();
