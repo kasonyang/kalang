@@ -1,9 +1,11 @@
 package kalang.script;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -111,6 +113,41 @@ public abstract class ShellScript extends Script {
 
         }
         return p.exitValue();
+    }
+    
+    protected String execOut(String[] arguments) throws InterruptedException, IOException {
+        return execOut(arguments, null, 0);
+    }
+
+    protected String execOut(String[] arguments, @Nullable String workingDirectory) throws InterruptedException, IOException {
+        return execOut(arguments, workingDirectory, 0);
+    }
+
+    protected String execOut(String[] arguments, @Nullable String workingDirectory, int expectingExitValue) throws InterruptedException, IOException {
+        if(arguments == null || arguments.length==0){
+            throw new IllegalArgumentException("empty array");
+        }
+        String command = arguments[0];
+        File dir = workingDirectory == null ? null : new File(workingDirectory);
+        Process p = Runtime.getRuntime().exec(arguments, null, dir);
+        try {
+            p.waitFor();
+        } catch (InterruptedException ex) {
+            throw ex;
+        }
+        int returnValue = p.exitValue();
+        if (returnValue != expectingExitValue) {
+            String err = String.format("%s exit with a unexpected value %d , expected %d", command, returnValue, expectingExitValue);
+            throw new IOException(err);
+        }
+        InputStream is = p.getInputStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int rlen;
+        while ((rlen = is.read(buffer)) > 0) {
+            bos.write(buffer, 0, rlen);
+        }
+        return bos.toString();//TODO using default encoding?
     }
 
     protected int exec(String command) throws IOException {
