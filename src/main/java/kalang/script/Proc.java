@@ -44,6 +44,10 @@ public class Proc {
     public boolean waitFor(long timeout, TimeUnit unit) throws InterruptedException {
         return process.waitFor(timeout, unit);
     }
+    
+    public boolean waitFor(long timeout) throws InterruptedException {
+        return waitFor(timeout, TimeUnit.MILLISECONDS);
+    }
 
     public int exitValue() {
         return process.exitValue();
