@@ -115,6 +115,14 @@ public abstract class ShellScript extends Script {
         return p.exitValue();
     }
     
+    protected Proc start(String[] command) throws IOException {
+        return start(command, null);
+    }
+    
+    protected Proc start(String[] command,@Nullable String workingDir) throws IOException {
+        return new Proc(command, workingDir);
+    }
+    
     protected String execOut(String[] arguments) throws InterruptedException, IOException {
         return execOut(arguments, null, 0);
     }
