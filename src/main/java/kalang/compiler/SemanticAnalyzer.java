@@ -38,11 +38,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     private CompilationUnit source;
     
-    private DiagnosisReporter diagnosisReporter;
+    private final DiagnosisReporter diagnosisReporter;
 
     public SemanticAnalyzer(CompilationUnit source,AstLoader astLoader) {
         this.astLoader = astLoader;
         this.source = source;
+        CompileContext ctx = source.getCompileContext();
+        this.diagnosisReporter = new DiagnosisReporter(ctx, ctx.getDiagnosisHandler(), source.getSource());
     }
     
     /**
