@@ -52,6 +52,10 @@ public class Proc {
     public int exitValue() {
         return process.exitValue();
     }
+    
+    public boolean exitsWith(int exitValue) {
+        return process.exitValue() == exitValue;
+    }
 
     public void destroy() {
         process.destroy();
