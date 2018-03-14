@@ -1253,7 +1253,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     opc =jumpOnTrue ? IF_ICMPLE : IF_ICMPGT;
                     break;
                 case "!=" : 
-                    opc = jumpOnTrue ? IF_ICMPNE : IF_ACMPEQ;
+                    opc = jumpOnTrue ? IF_ICMPNE : IF_ICMPEQ;
                     break;
                 default:
                     throw  new UnsupportedOperationException("Unsupported operation:" + op);
