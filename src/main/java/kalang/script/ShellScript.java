@@ -77,6 +77,10 @@ public abstract class ShellScript extends Script {
         FileUtils.copyDirectory(new File(src), new File(dest));
     }
     
+    protected void mkdirs(String directory) throws IOException{
+        FileUtils.forceMkdir(new File(directory));
+    }
+    
     protected void moveFile(String src,String dest) throws IOException{
         FileUtils.moveFile(new File(src), new File(dest));
     }
