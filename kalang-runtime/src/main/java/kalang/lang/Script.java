@@ -12,14 +12,18 @@ public abstract class Script {
 
     private String[] arguments = new String[0];
 
-    protected abstract void execute();
+    protected abstract void execute() throws Throwable;
 
-    public int run() {
-        execute();
+    public int run() throws Throwable {
+        try{
+            execute();
+        }catch(Throwable e) {
+            handleException(e);
+        }
         return SUCCESS;
     }
 
-    public int run(@Nullable String[] arguments) {
+    public int run(@Nullable String[] arguments) throws Throwable {
         if (arguments != null) {
             this.arguments = arguments;
         }
@@ -28,6 +32,10 @@ public abstract class Script {
     
     protected String[] arguments(){
         return this.arguments;
+    }
+    
+    protected void handleException(Throwable e) throws Throwable{
+        throw e;
     }
 
 }
