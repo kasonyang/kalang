@@ -70,3 +70,18 @@ processResources {
                 buildtime: new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format( new Date() )
     }
 }
+
+
+import java.text.SimpleDateFormat;
+def version = "UNKNOWN"
+new File(project.projectDir,"version.txt").withReader { reader ->
+    def versionExpr = reader.readLine();
+    if (versionExpr){
+        versionExpr = versionExpr.replace("{{DATE}}",new SimpleDateFormat("yyyyMMdd").format(new Date()));
+    }
+    version = versionExpr;
+}
+project.version = version;
+subprojects { p->
+    p.version = version;
+}
