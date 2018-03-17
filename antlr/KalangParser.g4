@@ -157,6 +157,7 @@ stat:
     |tryStat
     |throwStat
     |errorousStat
+    |assertStmt
 ;
 emptyStat:
     ';'
@@ -164,6 +165,11 @@ emptyStat:
 errorousStat:
     expression
 ;
+
+assertStmt:
+    ASSERT testCondition=expression ( ':' failMessage=expression )?
+;
+
 throwStat:
     'throw' expression ';'
 ;

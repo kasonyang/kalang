@@ -67,6 +67,8 @@ public class Types {
     public final static String CLASS_CLASS_NAME = "java.lang.Class";
     
     public final static String ITERABLE_CLASS_NAME = "java.lang.Iterable";
+    
+    public final static String ASSERTION_ERROR_CLASS_NAME = AssertionError.class.getName();
             
     static {
         primitive2class.put(INT_TYPE, INT_CLASS_NAME);
@@ -337,6 +339,10 @@ public class Types {
     
     public static ObjectType getIterableClassType(){
         return requireClassType(ITERABLE_CLASS_NAME);
+    }
+    
+    public static ObjectType requireAssertionErrorClassType() {
+        return requireClassType(ASSERTION_ERROR_CLASS_NAME);
     }
 
 }

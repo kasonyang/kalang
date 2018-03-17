@@ -103,4 +103,8 @@ class{
         return Base.class.getName();
     }
     
+    public void assertStmt(){
+        assert true ;
+        assert true : "fail" ;
+    }
 }

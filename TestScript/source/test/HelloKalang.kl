@@ -235,6 +235,15 @@ class<T>{
         }
         return 0;
     }
+    
+    int assertStmtTest(){
+        try{
+            assert false : 6;
+        } catch (AssertionError ex) {
+            return 6;
+        }
+        return 0;
+    }
   
 //TODO enable inner class test  
 //    int innerClassTest(){

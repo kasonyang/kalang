@@ -152,6 +152,40 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         this.popBlock();
         return b;
     }
+
+    @Override
+    public Object visitAssertStmt(KalangParser.AssertStmtContext ctx) {
+        ExprNode failExpr = visitExpression(ctx.testCondition);
+        if (failExpr == null) return null;
+        failExpr = BoxUtil.assign(failExpr, failExpr.getType(), Types.BOOLEAN_TYPE);
+        if (failExpr == null){
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "boolean type expected" , ctx.testCondition);
+            return null;
+        }
+        failExpr = new UnaryExpr(failExpr,UnaryExpr.OPERATION_LOGIC_NOT);
+        ExprNode failMsgExpr = null;
+        if ( ctx.failMessage!=null ){
+            failMsgExpr = visitExpression(ctx.failMessage);
+            if (failMsgExpr == null) return null;
+            if (Types.VOID_TYPE.equals(failMsgExpr.getType())){
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "non-void type expected",ctx.failMessage);
+                return null;
+            }
+        }
+        BlockStmt body = this.newBlock();
+        NewObjectExpr newErrorExpr;
+        try {
+            newErrorExpr = new NewObjectExpr(
+                Types.requireAssertionErrorClassType()
+                , failMsgExpr != null ? new ExprNode[]{failMsgExpr} : new ExprNode[0]
+            );
+        }catch(MethodNotFoundException|AmbiguousMethodException ex){
+            throw Exceptions.unexceptedException(ex);
+        }
+        body.statements.add(new ThrowStmt(newErrorExpr));
+        popBlock();
+        return new IfStmt(failExpr,body,null);
+    }
     
     static class VarInfo{
         public Type type;
