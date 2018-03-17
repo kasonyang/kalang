@@ -117,7 +117,7 @@ class<T>{
         int i = -7;
         return ~i;
     }
-    int tryStmt() throws Exception{
+    int tryStmt(){
         try{
             throw new Exception("6");
         }catch(Exception ex){
@@ -125,11 +125,11 @@ class<T>{
         }
     }
     
-    int dynamicInvoke() throws Exception{
+    int dynamicInvoke(){
         return ((Integer)this->not()).intValue();
     }
     
-    int property() throws Exception{
+    int property(){
         this->f = 6;
         return this->f;
     }
@@ -236,7 +236,7 @@ class<T>{
         return 0;
     }
     
-    int assertStmtTest() throws Exception{
+    int assertStmtTest(){
         try{
             assert false : 6;
         } catch (AssertionError ex) {
@@ -254,7 +254,7 @@ class<T>{
 //    }
     /*
     
-    int dynamicField() throws Exception{
+    int dynamicField(){
         this->f = 6;
         return (Integer)this->f;
     }

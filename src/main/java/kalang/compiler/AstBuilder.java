@@ -410,7 +410,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 }
                 DiagnosisHandler diagnosisHandler = this.diagnosisReporter.getDisgnosisHandler();
                 new InitializationAnalyzer(compilationUnit, astLoader).check(clazz, m,diagnosisHandler);
-                new ExceptionCatchAnalyzer(compilationUnit, astLoader).check(clazz, m,diagnosisHandler);
             }
             if(AstUtil.isConstructor(m)){   
                 @SuppressWarnings("null")
