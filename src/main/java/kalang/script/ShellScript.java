@@ -101,11 +101,32 @@ public abstract class ShellScript extends Script {
     }
     
     protected int exec(String[] arguments) throws IOException{
-        return exec(arguments,null);
+        return exec(arguments,null,null,null,null);
     }
 
-    protected int exec(String[] arguments,@Nullable String workingDirectory) throws IOException {
+    protected int exec(
+            String[] arguments
+            ,@Nullable String workingDirectory
+            ,@Nullable String input
+            ,@Nullable String output
+            ,@Nullable String errOutput
+    ) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(arguments);
+        if (input == null) {
+            pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        } else if (!input.isEmpty()) {
+            pb.redirectInput(new File(input));
+        }
+        if (output == null) {
+            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        } else if (!output.isEmpty()) {
+            pb.redirectError(new File(output));
+        }
+        if (errOutput == null) {
+            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        } else if (!errOutput.isEmpty()) {
+            pb.redirectError(new File(errOutput));
+        }
         pb.inheritIO();
         if (workingDirectory!=null && !workingDirectory.isEmpty()) {
             pb.directory(new File(workingDirectory));
