@@ -38,6 +38,14 @@ public abstract class ShellScript extends Script {
     protected void writeText(String file, String data) throws IOException {
         writeText(file, data, DEFAULT_ENCODING);
     }
+    
+    protected void appendText(String file, String data, String encoding) throws IOException {
+        FileUtils.writeStringToFile(new File(file), data, encoding, true);
+    }
+
+    protected void appendText(String file, String data) throws IOException {
+        appendText(file, data, DEFAULT_ENCODING);
+    }
 
     protected int randomInt(int min, int max) {
         //TODO here never return max
