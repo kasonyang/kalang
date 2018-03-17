@@ -53,7 +53,7 @@ public class Kalangsh extends ShellBase {
             if (!cli.hasOption("check")) {
                 script.run(scriptArgs);
             }
-        } catch (IOException ex) {
+        } catch (Throwable ex) {
             ex.printStackTrace(System.err);
         }
     }
