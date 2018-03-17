@@ -202,7 +202,7 @@ public class Editor extends javax.swing.JFrame {
                     ClassExecutor.executeMain(clazz, new String[0]);
                 }
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             //System.out.println("compile " + className + " unsuccessfully.");
             ex.printStackTrace(ps);
         }
