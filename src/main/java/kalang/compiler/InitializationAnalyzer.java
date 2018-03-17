@@ -148,4 +148,10 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         }
     }
 
+    @Override
+    public Object visitCatchBlock(CatchBlock node) {
+        assignedVars.put(node.catchVar, null);
+        return super.visitCatchBlock(node);
+    }
+
 }
