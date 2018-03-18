@@ -211,5 +211,9 @@ public abstract class ShellScript extends Script {
     protected String today() {
         return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
     }
+    
+    protected void exit(int status){
+        System.exit(status);
+    }
 
 }
