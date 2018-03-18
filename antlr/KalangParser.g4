@@ -202,7 +202,7 @@ varDeclStat:
 ;
 varDecl:
   (
-      ('var'|'val') name=Identifier ('as' type)? ('=' expression)?
+      (varToken='var'|valToken='val') name=Identifier ('as' type)? ('=' expression)?
   )|(
       varType=type name=Identifier ('=' expression)?
   )

@@ -280,7 +280,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     
     @Override
     public Void visitFieldDecl(KalangParser.FieldDeclContext ctx) {
-        int mdf = astBuilder.parseModifier(ctx.varModifier());
+        int fieldModifier = astBuilder.parseModifier(ctx.varModifier());
         for(KalangParser.VarDeclContext vd:ctx.varDecl()){
             ExprNode initExpr;
             if(vd.expression()!=null){
@@ -292,7 +292,8 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
                     ?Types.getRootType()
                     :initExpr.getType()
             );
-            FieldNode fieldNode = thisClazz.createField(varInfo.type, varInfo.name,mdf);
+            varInfo.modifier |= fieldModifier;
+            FieldNode fieldNode = thisClazz.createField(varInfo.type, varInfo.name,varInfo.modifier);
             //TODO simplify it
             if(initExpr!=null){
                 if(AstUtil.isStatic(fieldNode.modifier)){
