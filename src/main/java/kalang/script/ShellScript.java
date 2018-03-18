@@ -208,5 +208,9 @@ public abstract class ShellScript extends Script {
     protected String now(){
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
+    
+    protected String today() {
+        return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+    }
 
 }
