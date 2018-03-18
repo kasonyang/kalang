@@ -2,6 +2,7 @@ import java.text.SimpleDateFormat
 
 apply plugin:'java'
 apply plugin:'application'
+apply from:'gradle/version.gradle'
 mainClassName = "kalang.shell.Kalangc"
 startScripts.applicationName = "kalangc"
 //mainClassName = "kalang.Compiler"
@@ -71,17 +72,3 @@ processResources {
     }
 }
 
-
-import java.text.SimpleDateFormat;
-def version = "UNKNOWN"
-new File(project.projectDir,"version.txt").withReader { reader ->
-    def versionExpr = reader.readLine();
-    if (versionExpr){
-        versionExpr = versionExpr.replace("{{DATE}}",new SimpleDateFormat("yyyyMMdd").format(new Date()));
-    }
-    version = versionExpr;
-}
-project.version = version;
-subprojects { p->
-    p.version = version;
-}
