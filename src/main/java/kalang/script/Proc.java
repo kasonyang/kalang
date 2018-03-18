@@ -1,13 +1,11 @@
 package kalang.script;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /**
  *
@@ -64,11 +62,25 @@ public class Proc {
     public boolean isAlive() {
         return process.isAlive();
     }
+    
+    public Input input(){
+        return new Input(process.getOutputStream());
+    }
+    
+    public Output output(){
+        return new Output(process.getInputStream());
+    }
+    
+    public Output error(){
+        return new Output(process.getErrorStream());
+    }
 
+    @Deprecated
     public String out() throws IOException {
         return inputStreamToString(process.getInputStream(), Charset.defaultCharset().name());
     }
 
+    @Deprecated
     public String err() throws IOException {
         return inputStreamToString(process.getErrorStream(), Charset.defaultCharset().name());
     }
