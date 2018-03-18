@@ -1,5 +1,5 @@
 title=Kalang
-date=2017-10-11
+date=${buildtime}
 type=post
 tags=
 status=published
@@ -21,15 +21,15 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 
 For Linux users:
 
-    wget http://file.kason.site/kalang-compiler/kalang-compiler-1.1.0.tar
-    tar -xvf kalang-compiler-1.1.0.tar
-    ln -s kalang-compiler-1.1.0/bin/kalangc /usr/local/bin/kalangc
-    ln -s kalang-compiler-1.1.0/bin/kalangsh /usr/local/bin/kalangsh
-    ln -s kalang-compiler-1.1.0/bin/kalangeditor /usr/local/bin/kalangeditor
+    wget http://file.kason.site/kalang-compiler/kalang-compiler-${version}.tar
+    tar -xvf kalang-compiler-${version}.tar
+    ln -s kalang-compiler-${version}/bin/kalangc /usr/local/bin/kalangc
+    ln -s kalang-compiler-${version}/bin/kalangsh /usr/local/bin/kalangsh
+    ln -s kalang-compiler-${version}/bin/kalangeditor /usr/local/bin/kalangeditor
 
 For Windows users:
 
-1. Download latest binary distribution:[http://file.kason.site/kalang-compiler/kalang-compiler-1.1.0.zip](http://file.kason.site/kalang-compiler/kalang-compiler-1.1.0.zip)
+1. Download latest binary distribution:[http://file.kason.site/kalang-compiler/kalang-compiler-${version}.zip](http://file.kason.site/kalang-compiler/kalang-compiler-${version}.zip)
 2. Unzip the downloaded zip file
 3. Add the absolute path of the `bin` directory to the `PATH` environment variable
 
@@ -146,7 +146,7 @@ var d = String.format("%d",4);//type is String
 
 ```
 var name = "kalang";
-println( "hello,${name}!" );//output:hello,kalang!
+println( "hello,\${name}!" );//output:hello,kalang!
 ```
 
 ## Loop

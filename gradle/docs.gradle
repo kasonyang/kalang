@@ -1,0 +1,24 @@
+import java.text.SimpleDateFormat
+
+task processDocsSource(type:Copy) {
+    from("docs"){
+        exclude("**/*.mdt")
+    }
+    from("docs"){
+        include("**/*.mdt")
+        rename(/(.*?)\.mdt/, '$1.md') 
+        expand  version: project.version,
+                buildtime: new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+    }
+    into "${buildDir}/docs-jbake"
+}
+
+jbake{
+    version='2.5.1'
+}
+bake{
+    input = file("${buildDir}/docs-jbake")
+    output = file("${buildDir}/docs-html")
+}
+
+bake.dependsOn processDocsSource
