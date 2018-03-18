@@ -17,12 +17,8 @@ public class Proc {
 
     private final Process process;
 
-    public Proc(String[] command, @Nullable String workingDir) throws IOException {
-        ProcessBuilder pb = new ProcessBuilder(command);
-        if (workingDir != null) {
-            pb.directory(new File(workingDir));
-        }
-        process = pb.start();
+    public Proc(Process process) throws IOException {
+      this.process = process;
     }
 
     public OutputStream getOutputStream() {

@@ -108,13 +108,29 @@ public abstract class ShellScript extends Script {
         return file.getPath();
     }
     
-    protected int exec(String[] arguments) throws IOException{
+    protected int exec(String[] arguments) throws IOException, InterruptedException{
         return exec(arguments,null,null,null,null);
     }
 
     protected int exec(
             String[] arguments
             ,@Nullable String workingDirectory
+            ,@Nullable String input
+            ,@Nullable String output
+            ,@Nullable String errOutput
+    ) throws IOException, InterruptedException {
+      Proc p = start(arguments,workingDirectory,input,output,errOutput);
+      p.waitFor();
+      return p.exitValue();
+    }
+    
+    protected Proc start(String[] command) throws IOException {
+        return start(command, null,"","","");
+    }
+    
+    protected Proc start(
+            String[] arguments
+            ,@Nullable String workingDir
             ,@Nullable String input
             ,@Nullable String output
             ,@Nullable String errOutput
@@ -136,24 +152,10 @@ public abstract class ShellScript extends Script {
             pb.redirectError(new File(errOutput));
         }
         pb.inheritIO();
-        if (workingDirectory!=null && !workingDirectory.isEmpty()) {
-            pb.directory(new File(workingDirectory));
+        if (workingDir!=null && !workingDir.isEmpty()) {
+            pb.directory(new File(workingDir));
         }
-        Process p = pb.start();
-        try {
-            p.waitFor();
-        } catch (InterruptedException ex) {
-
-        }
-        return p.exitValue();
-    }
-    
-    protected Proc start(String[] command) throws IOException {
-        return start(command, null);
-    }
-    
-    protected Proc start(String[] command,@Nullable String workingDir) throws IOException {
-        return new Proc(command, workingDir);
+        return new Proc(pb.start());
     }
     
     protected String execOut(String[] arguments) throws InterruptedException, IOException {
@@ -191,7 +193,8 @@ public abstract class ShellScript extends Script {
         return bos.toString();//TODO using default encoding?
     }
 
-    protected int exec(String command) throws IOException {
+    @Deprecated
+    protected int exec(String command) throws IOException, InterruptedException {
         String[] arguments = command.split(" ");//TODO fix quotes
         return exec(arguments);
     }
