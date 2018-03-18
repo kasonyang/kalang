@@ -1,1 +1,1 @@
-dev{{DATE}}
+dev.{{DATE}}
