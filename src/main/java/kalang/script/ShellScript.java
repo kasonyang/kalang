@@ -144,14 +144,13 @@ public abstract class ShellScript extends Script {
         if (output == null) {
             pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         } else if (!output.isEmpty()) {
-            pb.redirectError(new File(output));
+            pb.redirectOutput(new File(output));
         }
         if (errOutput == null) {
-            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
         } else if (!errOutput.isEmpty()) {
             pb.redirectError(new File(errOutput));
         }
-        pb.inheritIO();
         if (workingDir!=null && !workingDir.isEmpty()) {
             pb.directory(new File(workingDir));
         }
