@@ -156,13 +156,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         if (to instanceof VarExpr) {
             LocalVarNode varObject = ((VarExpr) to).getVar();
             if (Modifier.isFinal(varObject.modifier)) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", varObject.getName()));
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", varObject.getName()),offset);
                 return false;
             }
         } else if (to instanceof FieldExpr){
             FieldDescriptor field = ((FieldExpr) to).getField();
             if (Modifier.isFinal(field.getModifier())) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", field.getName()));
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", field.getName()),offset);
                 return false;
             }
         }
