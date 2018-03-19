@@ -1,5 +1,6 @@
 package kalang.compiler;
 
+import java.lang.reflect.Modifier;
 import kalang.util.MathType;
 import kalang.util.AstUtil;
 import java.util.LinkedList;
@@ -17,7 +18,11 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import kalang.ast.AnnotationNode;
 import kalang.ast.AssignableExpr;
+import kalang.ast.FieldExpr;
+import kalang.ast.LocalVarNode;
+import kalang.ast.VarExpr;
 import kalang.core.ArrayType;
+import kalang.core.FieldDescriptor;
 import kalang.core.ObjectType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -148,13 +153,26 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     }
     
     public boolean validateAssign(AssignableExpr to,ExprNode from, OffsetRange offset){
-      Type toType = to.getType();
-      Type fromType = from.getType();
-      if(!toType.isAssignableFrom(fromType)){
-        diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("incompatible types: %s cannot be converted to %s",fromType,toType),offset);
-        return false;
-      }
-      return true;
+        if (to instanceof VarExpr) {
+            LocalVarNode varObject = ((VarExpr) to).getVar();
+            if (Modifier.isFinal(varObject.modifier)) {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", varObject.getName()));
+                return false;
+            }
+        } else if (to instanceof FieldExpr){
+            FieldDescriptor field = ((FieldExpr) to).getField();
+            if (Modifier.isFinal(field.getModifier())) {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", field.getName()));
+                return false;
+            }
+        }
+        Type toType = to.getType();
+        Type fromType = from.getType();
+        if(!toType.isAssignableFrom(fromType)){
+          diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("incompatible types: %s cannot be converted to %s",fromType,toType),offset);
+          return false;
+        }
+        return true;
     }
 
     public boolean validateReturnStmt(MethodNode method,ReturnStmt node) {

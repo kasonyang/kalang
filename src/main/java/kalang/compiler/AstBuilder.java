@@ -1204,16 +1204,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
             AssignableExpr toExpr;
             if(to instanceof AssignableExpr){
-                if (to instanceof VarExpr) {
-                    LocalVarNode varObject = ((VarExpr) to).getVar();
-                    if (Modifier.isFinal(varObject.modifier)) {
-                        this.handleSyntaxError(
-                                String.format("%s is readonly", varObject.getName())
-                                , compilationContext
-                        );
-                        return null;
-                    }
-                }
                 toExpr = (AssignableExpr) to;
                 if(!this.semanticAnalyzer.validateAssign(toExpr, from, OffsetRangeHelper.getOffsetRange(ctx))){
                   return null;
