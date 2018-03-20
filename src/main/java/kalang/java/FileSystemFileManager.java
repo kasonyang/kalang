@@ -1,24 +1,16 @@
 package kalang.java;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
-import kalang.tool.JointFileSystemCompiler;
 import org.apache.commons.io.FileUtils;
 
 /**
