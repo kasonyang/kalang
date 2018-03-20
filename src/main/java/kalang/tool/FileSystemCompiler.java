@@ -6,83 +6,76 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
-import kalang.ast.ClassNode;
-import kalang.compiler.codegen.Ast2JavaStub;
 import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
-import kalang.compiler.CompileContextProxy;
-import kalang.compiler.CompilePhase;
+import kalang.compiler.DiagnosisHandler;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
-import kalang.compiler.SourceLoader;
 import org.apache.commons.io.FileUtils;
 
 /**
  * The FileSystemCompiler compile sources from file system.
- * 
+ *
  * @author Kason Yang
  */
-public class FileSystemCompiler extends KalangCompiler{
+public class FileSystemCompiler {
 
-    private Map<String, File> sourceFiles = new HashMap<>();
+    private final Map<String, File> sourceFiles = new HashMap<>();
 
-    protected List<URL> classPaths = new LinkedList<>();
-    
-    @Nullable
-    protected MultiClassLoader classLoader;
-    
-    protected  final List<File> sourcePaths = new LinkedList<>();
-    
-    @Deprecated
-    public void addClassLoader(ClassLoader classLoader){
-        getClassLoader().addClassLoader(classLoader);
-    }
-    
-    public MultiClassLoader getClassLoader(){
-        //TODO bug?
-        if(classLoader == null){
-            URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[classPaths.size()]));
-            classLoader = new MultiClassLoader(pathClassLoader);
-        }
-        return classLoader;
-    }
-    
-    private CodeGenerator codeGenerator;
+    private final List<URL> classPaths = new LinkedList<>();
+
+    private final List<File> sourcePaths = new LinkedList<>();
+
+    private AstLoader parentAstLoader = AstLoader.BASE_AST_LOADER;
+
+    private String extension = "class";
+
+    private File outputDir;
+
+    private DiagnosisHandler diagnosisHandler;
 
     public FileSystemCompiler() {
         super();
     }
-    
-    @Override
-    public AstLoader getAstLoader() {
-        return new JavaAstLoader(super.getAstLoader(),getClassLoader());
-    }
 
-    @Override
-    public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-        return new CodeGenerator() {
+    public void compile() throws IOException {
+        if (outputDir == null) {
+            throw new IllegalStateException("output diretory is null");
+        }
+        URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[classPaths.size()]));
+        AstLoader astLoader = new JavaAstLoader(this.parentAstLoader, pathClassLoader);
+        KalangCompiler compiler = new KalangCompiler(astLoader) {
             @Override
-            public void generate(ClassNode classNode) {
-                if (codeGenerator != null) {
-                    codeGenerator.generate(classNode);
-                }
+            public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
+                FileSystemOutputManager om = new FileSystemOutputManager(outputDir, extension);
+                return new ClassWriter(om);
             }
 
         };
+        for (Map.Entry<String, File> e : sourceFiles.entrySet()) {
+            String className = e.getKey();
+            File file = e.getValue();
+            compiler.addSource(className, FileUtils.readFileToString(file), file.getName());
+        }
+        FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(sourcePaths.toArray(new File[sourcePaths.size()]), new String[]{"kl", "kalang"});
+        compiler.setSourceLoader(sourceLoader);
+        if (diagnosisHandler != null) {
+            compiler.setDiagnosisHandler(diagnosisHandler);
+        }
+        compiler.compile();
     }
 
     public void addSource(File srcDir, File file) throws IOException {
         String className = ClassNameUtil.getClassName(srcDir, file);
         sourceFiles.put(className, file);
-        super.addSource(className, FileUtils.readFileToString(file),file.getName());
+
     }
 
     public void addSourceDir(File sourceDir) throws IOException {
         Collection<File> files = FileUtils.listFiles(sourceDir, new String[]{"kl"}, true);
         for (File f : files) {
-            addSource(sourceDir , f);
+            addSource(sourceDir, f);
         }
     }
 
@@ -93,50 +86,25 @@ public class FileSystemCompiler extends KalangCompiler{
             Logger.getLogger(FileSystemCompiler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public void generateJavaStub(OutputManager om) {
-        //TODO here has a bug.It will ignore class reference in method body
-        super.compile(CompilePhase.PHASE_PARSING);
-        HashMap<String, CompilationUnit> sourceAsts = getCompilationUnits();
-        for(Map.Entry<String, CompilationUnit> a:sourceAsts.entrySet()){
-            Ast2JavaStub a2js = new Ast2JavaStub();
-            a2js.generate(a.getValue().getAst());
-            String stubCode = a2js.getJavaStubCode();
-            String className = (a.getValue().getAst().name);
-            if(om==null){
-                System.out.println(stubCode);
-            }else{                
-                try {
-                    OutputStream os = om.createOutputStream(className);
-                    //TODO should set encoding?
-                    os.write(stubCode.getBytes());
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-                
-        }
-    }   
 
-    @Override
-    public SourceLoader getSourceLoader() {
-        return new FileSystemSourceLoader(sourcePaths.toArray(new File[sourcePaths.size()]),new String[]{"kl","kalang"});
-    }
-    
-    public void addSourcePath(File path){
+    public void addSourcePath(File path) {
         sourcePaths.add(path);
     }
 
-    public CodeGenerator getCodeGenerator() {
-        return codeGenerator;
+    public File getOutputDir() {
+        return outputDir;
     }
 
-    public void setCodeGenerator(CodeGenerator codeGenerator) {
-        this.codeGenerator = codeGenerator;
+    public void setOutputDir(File outputDir) {
+        this.outputDir = outputDir;
     }
-    
-    protected void handleIOException(IOException ex){
-        ex.printStackTrace(System.err);
+
+    public DiagnosisHandler getDiagnosisHandler() {
+        return diagnosisHandler;
+    }
+
+    public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler) {
+        this.diagnosisHandler = diagnosisHandler;
     }
 
 }
