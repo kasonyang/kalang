@@ -9,7 +9,7 @@ import org.junit.Test;
  *
  * @author Kason Yang
  */
-public class DebugTest extends JointCompilerTestCase {
+public class DebugTest extends CompilerTestCase {
 
     DiagnosisHandler oldHandler;
 

@@ -13,9 +13,9 @@ import kalang.tool.FileSystemCompiler;
  *
  * @author Kason Yang
  */
-public class JointCompilerTestCase extends FileSystemCompiler {
+public class CompilerTestCase extends FileSystemCompiler {
 
-    public JointCompilerTestCase() {
+    public CompilerTestCase() {
         super();
     }
 

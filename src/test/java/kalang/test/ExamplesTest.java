@@ -9,7 +9,7 @@ import org.junit.Test;
  *
  * @author Kason Yang
  */
-public class ExamplesTest extends JointCompilerTestCase {
+public class ExamplesTest extends CompilerTestCase {
 
     public ExamplesTest() {
     }
