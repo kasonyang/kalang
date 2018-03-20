@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
+import kalang.compiler.Configuration;
 import kalang.compiler.DiagnosisHandler;
 import kalang.compiler.JavaAstLoader;
 import kalang.compiler.KalangCompiler;
@@ -35,6 +36,10 @@ public class FileSystemCompiler {
 
     private DiagnosisHandler diagnosisHandler;
 
+    private ClassLoader classLoader = FileSystemCompiler.class.getClassLoader();
+
+    private Configuration configuration = new Configuration();
+
     public FileSystemCompiler() {
         super();
     }
@@ -43,7 +48,7 @@ public class FileSystemCompiler {
         if (outputDir == null) {
             throw new IllegalStateException("output diretory is null");
         }
-        URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[classPaths.size()]));
+        URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[classPaths.size()]), this.classLoader);
         AstLoader astLoader = new JavaAstLoader(this.parentAstLoader, pathClassLoader);
         KalangCompiler compiler = new KalangCompiler(astLoader) {
             @Override
@@ -53,6 +58,7 @@ public class FileSystemCompiler {
             }
 
         };
+        compiler.setConfiguration(configuration);
         for (Map.Entry<String, File> e : sourceFiles.entrySet()) {
             String className = e.getKey();
             File file = e.getValue();
@@ -105,6 +111,22 @@ public class FileSystemCompiler {
 
     public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler) {
         this.diagnosisHandler = diagnosisHandler;
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
     }
 
 }
