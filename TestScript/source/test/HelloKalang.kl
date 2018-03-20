@@ -244,14 +244,13 @@ class<T>{
         }
         return 0;
     }
-  
-//TODO enable inner class test  
-//    int innerClassTest(){
-//        return new InnerClass().test();
-//    }
-//    int innerFieldTest(){
-//        return new InnerClass().getField();
-//    }
+
+    int innerClassTest(){
+        return new InnerClass().test();
+    }
+    int innerFieldTest(){
+        return new InnerClass().getField();
+    }
     /*
     
     int dynamicField(){
