@@ -1,28 +1,26 @@
 package kalang.compiler;
 
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 
 /**
  *
  * @author Kason Yang
  */
-public class StandardDiagnosisHandler implements DiagnosisHandler{
-    
+public class StandardDiagnosisHandler implements DiagnosisHandler {
+
     public static StandardDiagnosisHandler INSTANCE = new StandardDiagnosisHandler();
 
     private final PrintStream errOut;
-    
+
     private final PrintStream stdOut;
 
+    private boolean hasError = false;
+
     public StandardDiagnosisHandler() {
-        this(System.out,System.err);
+        this(System.out, System.err);
     }
 
-    public StandardDiagnosisHandler(PrintStream stdOut,PrintStream errOut) {
+    public StandardDiagnosisHandler(PrintStream stdOut, PrintStream errOut) {
         this.stdOut = stdOut;
         this.errOut = errOut;
     }
@@ -30,12 +28,17 @@ public class StandardDiagnosisHandler implements DiagnosisHandler{
     @Override
     public void handleDiagnosis(Diagnosis diagnosis) {
         boolean isError = diagnosis.getKind().isError();
-        if(isError){
+        if (isError) {
+            this.hasError = true;
             CompileContext ctx = diagnosis.getContext();
             ctx.stopCompile(ctx.getCompilingPhase());
         }
         PrintStream o = isError ? stdOut : errOut;
         o.println(diagnosis);
+    }
+
+    public boolean hasError() {
+        return hasError;
     }
 
 }
