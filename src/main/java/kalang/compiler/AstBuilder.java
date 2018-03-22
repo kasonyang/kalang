@@ -902,11 +902,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Override
     public AstNode visitReturnStat(ReturnStatContext ctx) {
         ReturnStmt rs = new ReturnStmt();
+        mapAst(rs,ctx);
         if (ctx.expression() != null) {
             rs.expr = visitExpression(ctx.expression());
         }
         if(!semanticAnalyzer.validateReturnStmt(method, rs)) return null;
-        mapAst(rs,ctx);
         this.returned = true;
         return rs;
     }
