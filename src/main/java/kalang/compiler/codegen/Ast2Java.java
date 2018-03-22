@@ -192,8 +192,8 @@ public class Ast2Java extends AbstractAstVisitor<String> implements CodeGenerato
         }
         String pkgStr = pkg.length()>0 ? "package " + pkg + ";" : "";
         String parentStr = "";
-        if (node.superType != null) {
-            parentStr = "extends " + node.superType.getName();
+        if (node.getSuperType() != null) {
+            parentStr = "extends " + node.getSuperType().getName();
         }
         String impStr = "";
         if (node.getInterfaces().length>0) {

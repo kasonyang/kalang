@@ -16,7 +16,7 @@ public class ClassNode extends AstNode implements Annotationable{
     public String fileName = null;
     
     @Nullable
-    public ObjectType superType;
+    private ObjectType superType;
     
     private final List<FieldNode> fields = new ArrayList<>();
     
@@ -94,6 +94,14 @@ public class ClassNode extends AstNode implements Annotationable{
     
     public ObjectType[] getInterfaces(){
         return this.interfaces.toArray(new ObjectType[interfaces.size()]);
+    }
+
+    public ObjectType getSuperType() {
+        return superType;
+    }
+
+    public void setSuperType(ObjectType superType) {
+        this.superType = superType;
     }
     
 }

@@ -20,10 +20,10 @@ public class SuperExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        if(classNode.superType==null){
+        if(classNode.getSuperType()==null){
             return null;
         }
-        return classNode.superType;
+        return classNode.getSuperType();
     }
 
     public ClassNode getClassNode() {

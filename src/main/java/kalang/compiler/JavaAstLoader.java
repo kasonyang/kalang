@@ -108,7 +108,7 @@ public class JavaAstLoader extends AstLoader {
     java.lang.reflect.Type superType = clz.getGenericSuperclass();
     Class superClazz = clz.getSuperclass();
     if (superType != null) {
-      cn.superType = (ObjectType) getType(superType, genericTypes, superClazz, NullableKind.NONNULL);
+      cn.setSuperType((ObjectType) getType(superType, genericTypes, superClazz, NullableKind.NONNULL));
     }
     java.lang.reflect.Type[] typeInterfaces = clz.getGenericInterfaces();
     Class[] clzInterfaces = clz.getInterfaces();

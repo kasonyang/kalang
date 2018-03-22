@@ -77,7 +77,7 @@ public class AstUtil {
     }
     
     public static boolean createEmptyConstructor(ClassNode clazzNode){
-        ObjectType supType = clazzNode.superType;
+        ObjectType supType = clazzNode.getSuperType();
         if(supType==null){
             throw new RuntimeException("super type is null:" + clazzNode.name);
         }
@@ -282,7 +282,7 @@ public class AstUtil {
     public static ClassNode createClassNodeWithInterfaces(String name,@Nullable ObjectType superType,@Nullable ObjectType... interfaces) {
         ClassNode cn = new ClassNode();
         cn.name = name;
-        cn.superType = superType==null ? Types.getRootType() : superType;
+        cn.setSuperType(superType==null ? Types.getRootType() : superType);
         if(interfaces!=null){
             for(ObjectType itf:interfaces) cn.addInterface(itf);
         }
@@ -292,7 +292,7 @@ public class AstUtil {
     public static ClassNode createArrayAst(String component) {
         ClassNode clazz = new ClassNode();
         clazz.name = component + "[]";
-        clazz.superType = Types.getRootType();
+        clazz.setSuperType(Types.getRootType());
         return clazz;
     }
     

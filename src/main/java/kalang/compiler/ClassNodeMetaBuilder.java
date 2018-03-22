@@ -101,7 +101,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             //TODO update syntax to support:interface extends T1,T2...
             thisClazz.addInterface(superType);
         } else {
-            thisClazz.superType = superType;
+            thisClazz.setSuperType(superType);
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
@@ -228,7 +228,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             method.createParameter(paramTypes[i], paramNames[i]);
         }
         for(AnnotationNode a:astBuilder.getAnnotations(ctx.annotation()))  method.addAnnotation(a);
-        ObjectType superType = thisClazz.superType;
+        ObjectType superType = thisClazz.getSuperType();
         if(superType==null){//the superType of interface may be null
             superType = Types.getRootType();
         }
@@ -318,7 +318,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
         //FIXME fix filename
         //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
-        thisClazz.superType = this.getScriptType();
+        thisClazz.setSuperType(this.getScriptType());
         List<MethodDeclContext> mds = ctx.methodDecl();
         if(mds!=null){
             for(MethodDeclContext m:mds){

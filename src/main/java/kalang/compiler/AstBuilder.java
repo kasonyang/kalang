@@ -1084,7 +1084,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }else if(methodName.equals("super")){
             methodName = "<init>";
             target = new SuperExpr(thisClazz);
-            clazz = thisClazz.superType;
+            clazz = thisClazz.getSuperType();
         }else{
             target = new ThisExpr(this.getThisType());
             clazz = this.getThisType();

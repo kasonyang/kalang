@@ -145,7 +145,7 @@ public abstract class ObjectType extends Type{
             }
             
         }
-        ObjectType superType = clazz.superType;
+        ObjectType superType = clazz.getSuperType();
         if(superType!=null){
             FieldDescriptor[] superFields = superType.getFieldDescriptors(caller);
             ret.addAll(Arrays.asList(superFields));
@@ -155,7 +155,7 @@ public abstract class ObjectType extends Type{
 
     @Nullable
     public ObjectType getSuperType() {
-        return clazz.superType;
+        return clazz.getSuperType();
     }
 
     public NullableKind getNullable() {
