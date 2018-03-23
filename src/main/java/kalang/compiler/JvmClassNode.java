@@ -34,7 +34,7 @@ import kalang.util.ModifierUtil;
  */
 public class JvmClassNode extends ClassNode {
 
-    private final AstLoader astLoader;
+    private final JavaAstLoader astLoader;
 
     private final Class clazz;
 
@@ -46,7 +46,7 @@ public class JvmClassNode extends ClassNode {
 
     private Map<TypeVariable, GenericType> genericTypeMap = null;
 
-    public JvmClassNode(Class clazz, AstLoader astLoader) {
+    public JvmClassNode(Class clazz, JavaAstLoader astLoader) {
         this.astLoader = astLoader;
         this.clazz = clazz;
         this.name = clazz.getName();
@@ -202,7 +202,7 @@ public class JvmClassNode extends ClassNode {
                 return Types.getArrayType(ct);
             } else {
                 try {
-                    return Types.getClassType(this.astLoader.findAst(type.getName()));
+                    return Types.getClassType(this.astLoader.findAst(type));
                 } catch (AstNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }

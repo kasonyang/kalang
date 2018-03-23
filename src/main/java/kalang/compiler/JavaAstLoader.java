@@ -47,6 +47,15 @@ public class JavaAstLoader extends AstLoader {
     public JavaAstLoader() {
         this(null, JavaAstLoader.class.getClassLoader());
     }
+    
+    public ClassNode findAst(Class clazz) throws AstNotFoundException{
+        String name = clazz.getName();
+        ClassNode ast = loadedClasses.get(name);
+        if (ast!=null) {
+            return ast;
+        }
+        return buildFromClass(clazz);
+    }
 
     @Override
     protected ClassNode findAst(String className) throws AstNotFoundException {
