@@ -41,7 +41,8 @@ public class JvmClassNode extends ClassNode {
     private boolean superTypeInitialized,
             fieldsInitialized,
             methodsInitialized,
-            interfacesInitialized;
+            interfacesInitialized,
+            genericTypesInitialized;
 
     private Map<TypeVariable, GenericType> genericTypeMap = null;
 
@@ -126,6 +127,15 @@ public class JvmClassNode extends ClassNode {
             }
         }
         return super.getDeclaredMethodNodes();
+    }
+
+    @Override
+    public GenericType[] getGenericTypes() {
+        if (!this.genericTypesInitialized) {
+            this.genericTypesInitialized = true;
+            this.getGenericTypeMap();
+        }
+        return super.getGenericTypes();
     }
 
     @Nullable
