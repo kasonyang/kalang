@@ -1514,13 +1514,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
      
     private boolean isDefindedId(String id){
-        if(isClassId(id)) return true;
-        if(getNodeById(id,null)!=null) return true;
-        return false;
-    }
-    
-    private boolean isClassId(String name){
-        return this.typeNameResolver.resolve(name, topClass, thisClazz) != null;
+        return this.getNamedLocalVar(id)!=null 
+                || this.getNamedParameter(id) != null;
     }
     
     @Nullable
@@ -1542,11 +1537,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Nullable
     private AstNode getNodeById(@Nonnull String name,@Nullable Token token) {
-        if(isClassId(name)){
-            ClassReference clsRef = new ClassReference(requireAst(name,token));
-            if(token!=null) mapAst(clsRef, token);
-            return clsRef;
-        }
         //find local var
         LocalVarNode var = this.getNamedLocalVar(name);
         if(var!=null){
@@ -1571,6 +1561,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             if(fe==null) fe = this.getStaticFieldExpr(new ClassReference(thisClazz), name, ParserRuleContext.EMPTY);
             if(fe!=null) return fe;
             outerClassInstanceExpr = this.getOuterClassInstanceExpr(outerClassInstanceExpr);
+        }
+        String resolvedTypeName = this.typeNameResolver.resolve(name, topClass, thisClazz);
+        if (resolvedTypeName!=null) {
+            ClassReference clsRef = new ClassReference(requireAst(resolvedTypeName,token));
+            if(token!=null) mapAst(clsRef, token);
+            return clsRef;
         }
         return null;
     }
