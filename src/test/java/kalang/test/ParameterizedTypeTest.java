@@ -22,10 +22,8 @@ public class ParameterizedTypeTest {
         ClassType pt = Types.getClassType(Types.getClassType("java.util.LinkedList").getClassNode(),new Type[]{Types.getIntClassType()});
         ObjectType supType = pt.getSuperType();
         assertTrue(supType instanceof ClassType);        
-//        MethodDescriptor[] mds = supType.getMethodDescriptors(null, true);
-//        for(int i=0;i<mds.length;i++){
-//            System.out.println(mds[i]);
-//        }
+        assertEquals("java.util.AbstractSequentialList<java.lang.Integer>", supType.toString());
+        //MethodDescriptor[] mds = supType.getMethodDescriptors(null, true,true);
         //System.out.print(Arrays.toString(mds));
     }
     
