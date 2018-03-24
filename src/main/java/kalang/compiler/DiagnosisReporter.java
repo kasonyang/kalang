@@ -16,10 +16,10 @@ public class DiagnosisReporter {
 
     private final KalangSource kalangSource;
 
-    public DiagnosisReporter(CompileContext compileContext, DiagnosisHandler disgnosisHandler, KalangSource kalangSource) {
-        this.compileContext = compileContext;
-        this.disgnosisHandler = disgnosisHandler;
-        this.kalangSource = kalangSource;
+    public DiagnosisReporter(CompilationUnit compilationUnit) {
+        this.compileContext = compilationUnit.getCompileContext();
+        this.disgnosisHandler = compileContext.getDiagnosisHandler();
+        this.kalangSource = compilationUnit.getSource();
     }
     
     public void report(Diagnosis.Kind kind,String message,OffsetRange offset){

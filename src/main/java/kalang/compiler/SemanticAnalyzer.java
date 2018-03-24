@@ -49,7 +49,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         this.astLoader = astLoader;
         this.source = source;
         CompileContext ctx = source.getCompileContext();
-        this.diagnosisReporter = new DiagnosisReporter(ctx, ctx.getDiagnosisHandler(), source.getSource());
+        this.diagnosisReporter = new DiagnosisReporter(source);
     }
     
     /**

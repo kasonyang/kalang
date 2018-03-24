@@ -84,7 +84,6 @@ public class CompilationUnit {
     }
 
     protected void parse(DiagnosisHandler semanticErrorHandler, int targetParsingPhase) {
-        astBuilder.setDiagnosisHandler(semanticErrorHandler);
         astBuilder.compile(targetParsingPhase,context.getAstLoader());
     }
 

@@ -409,8 +409,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                             ,classNodeMetaBuilder.getMethodDeclContext(m)
                     );
                 }
-                DiagnosisHandler diagnosisHandler = this.diagnosisReporter.getDisgnosisHandler();
-                new InitializationAnalyzer(compilationUnit, astLoader).check(clazz, m,diagnosisHandler);
+                new InitializationAnalyzer(compilationUnit, astLoader).check(clazz, m);
             }
             if(AstUtil.isConstructor(m)){   
                 @SuppressWarnings("null")
@@ -446,6 +445,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         this.className = compilationUnit.getSource().getClassName();
         this.parser = parser;
         tokenStream = parser.getTokenStream();
+        this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
     }
     
     @Nonnull
@@ -2391,14 +2391,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
     }
     
-    public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler){
-        this.diagnosisReporter = new DiagnosisReporter(
-                compilationUnit.getCompileContext(),
-                diagnosisHandler,
-                compilationUnit.getSource()
-        );
-    }
-
     public DiagnosisReporter getDiagnosisReporter() {
         return diagnosisReporter;
     }

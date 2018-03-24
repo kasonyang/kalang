@@ -63,6 +63,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         this.compilationUnit = compilationUnit;
         this.astBuilder = astBuilder;
         this.classNodeBuilder = classNodeBuilder;
+        this.diagnosisReporter = new DiagnosisReporter(this.compilationUnit);
     }
 
     public void build(ClassNode cn,boolean inScriptMode) {
@@ -339,14 +340,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     public MethodDeclContext getMethodDeclContext(MethodNode mn){
         return this.methodContexts.get(mn);
     }
-    
-    public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler) {
-        this.diagnosisReporter = new DiagnosisReporter(
-                this.compilationUnit.getCompileContext(),
-                diagnosisHandler, this.compilationUnit.getSource()
-        );
-    }
-    
+        
     private ObjectType getScriptType(){
         CompileContext context = this.compilationUnit.getCompileContext();
         Configuration conf = context.getConfiguration();

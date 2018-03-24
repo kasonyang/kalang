@@ -42,10 +42,11 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
     public InitializationAnalyzer(CompilationUnit source, AstLoader astLoader) {
         this.astLoader = astLoader;
         this.source = source;
+        
     }
 
-    public void check(ClassNode clz,MethodNode method, DiagnosisHandler disgnosisHandler) {
-        this.diagnosisReporter = new DiagnosisReporter(source.getCompileContext(), disgnosisHandler, source.getSource());
+    public void check(ClassNode clz,MethodNode method) {
+        this.diagnosisReporter = new DiagnosisReporter(source);
         this.visit(method);
     }
 

@@ -50,11 +50,12 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
 
     AstBuilder astBuilder;
     private final CompilationUnit compilationUnit;
-    private DiagnosisReporter diagnosisReporter;
+    private final DiagnosisReporter diagnosisReporter;
 
     public ClassNodeBuilder(CompilationUnit compilationUnit, AstBuilder astBuilder) {
         this.compilationUnit = compilationUnit;
         this.astBuilder = astBuilder;
+        this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
     }
     
     public ClassNode build(KalangParser.CompilationUnitContext ctx){
@@ -157,12 +158,6 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
 
     public boolean isScript() {
         return isScript;
-    }
-    
-    public void setDiagnosisHandler(DiagnosisHandler diagnosisHandler){
-        this.diagnosisReporter = new DiagnosisReporter(
-                this.compilationUnit.getCompileContext()
-                , diagnosisHandler, this.compilationUnit.getSource());
     }
     
     public String getOptionScript() {
