@@ -109,7 +109,7 @@ public abstract class ShellScript extends Script {
     }
     
     protected int exec(String[] arguments) throws IOException, InterruptedException{
-        return exec(arguments,null,null,null,null);
+        return exec(arguments,null,"","","");
     }
 
     protected int exec(
@@ -125,7 +125,7 @@ public abstract class ShellScript extends Script {
     }
     
     protected Proc start(String[] command) throws IOException {
-        return start(command, null,"","","");
+        return start(command, null,null,null,null);
     }
     
     protected Proc start(
@@ -136,20 +136,26 @@ public abstract class ShellScript extends Script {
             ,@Nullable String errOutput
     ) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(arguments);
-        if (input == null) {
-            pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-        } else if (!input.isEmpty()) {
-            pb.redirectInput(new File(input));
+        if (input != null) {
+            if (input.isEmpty()){
+                pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+            } else {
+                pb.redirectInput(new File(input));
+            }   
         }
-        if (output == null) {
-            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-        } else if (!output.isEmpty()) {
-            pb.redirectOutput(new File(output));
+        if (output != null) {
+            if (output.isEmpty()){
+                pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            } else {
+                pb.redirectOutput(new File(output));
+            }            
         }
-        if (errOutput == null) {
-            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-        } else if (!errOutput.isEmpty()) {
-            pb.redirectError(new File(errOutput));
+        if (errOutput != null) {
+            if (errOutput.isEmpty()) {
+                pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+            } else {
+                pb.redirectError(new File(errOutput));
+            }   
         }
         if (workingDir!=null && !workingDir.isEmpty()) {
             pb.directory(new File(workingDir));
