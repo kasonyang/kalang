@@ -55,8 +55,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     private Map<MethodNode,MethodDeclContext> methodContexts = new HashMap();
     
     private MethodNode method;
-    //TODO remove variable inScriptMode
-    private boolean inScriptMode;
+
     private final CompilationUnit compilationUnit;
     private DiagnosisReporter diagnosisReporter;
     
