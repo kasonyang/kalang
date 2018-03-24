@@ -34,6 +34,10 @@ public abstract class Script {
         return this.arguments;
     }
     
+    protected String argument(int index,@Nullable String defaultValue) {
+        return arguments.length > index ? arguments[index] : defaultValue;
+    }
+    
     protected void handleException(Throwable e) throws Throwable{
         throw e;
     }
