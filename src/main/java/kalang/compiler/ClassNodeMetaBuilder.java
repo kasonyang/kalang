@@ -237,10 +237,10 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.getInterfaces(), mStr, thisClazz, true,true);
         }
         if(isOverriding && overriddenMd==null){            
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"method does not override any method", ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"method does not override or implement a method from a supertype", ctx);
         }
         if(!isOverriding && overriddenMd!=null){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"method override a method but not declare", ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"method overrides or implements a method from a supertype", ctx);
         }
         this.methodContexts.put(method, ctx);
         KalangParser.BlockStmtContext bstm = ctx.blockStmt();
