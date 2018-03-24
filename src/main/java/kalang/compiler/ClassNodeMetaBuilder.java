@@ -333,6 +333,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             this.methodStatsContexts.put(mm, stats.toArray(new KalangParser.StatContext[stats.size()]));
         }
         AstUtil.createEmptyConstructor(thisClazz);
+        AstUtil.createScriptMainMethodIfNotExists(thisClazz);
         return null;
     }
     

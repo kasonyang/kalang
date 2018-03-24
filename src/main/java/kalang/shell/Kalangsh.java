@@ -5,6 +5,7 @@ import java.io.IOException;
 import kalang.compiler.Configuration;
 import kalang.lang.Script;
 import kalang.tool.KalangShell;
+import kalang.util.ClassExecutor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
@@ -34,11 +35,11 @@ public class Kalangsh extends ShellBase {
         String[] args = cli.getArgs();
         KalangShell sh = new KalangShell(config, classLoader);
         try {
-            Script script;
+            Class clazz;
             String[] scriptArgs;
             if (cli.hasOption("code")) {
                 scriptArgs = new String[0];
-                script = sh.parseScript("Temp", cli.getOptionValue("code"), "Tmp.kl");
+                clazz = sh.parse("Temp", cli.getOptionValue("code"), "Tmp.kl");
             } else {
                 if (args.length == 0) {
                     printUsage();
@@ -48,10 +49,10 @@ public class Kalangsh extends ShellBase {
                 if (args.length > 1) {
                     System.arraycopy(args, 1, scriptArgs, 0, scriptArgs.length);
                 }
-                script = sh.parseScript(file);
+                clazz = sh.parse(file);
             }
             if (!cli.hasOption("check")) {
-                script.run(scriptArgs);
+                ClassExecutor.executeMain(clazz, scriptArgs);
             }
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);

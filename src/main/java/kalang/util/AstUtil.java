@@ -12,6 +12,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.ast.ExprStmt;
@@ -29,9 +31,11 @@ import kalang.MethodNotFoundException;
 import kalang.ast.AssignExpr;
 import kalang.ast.ClassReference;
 import kalang.ast.FieldExpr;
+import kalang.ast.NewObjectExpr;
 import kalang.ast.ObjectFieldExpr;
 import kalang.ast.ReturnStmt;
 import kalang.ast.StaticFieldExpr;
+import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.ConstructorDescriptor;
 import kalang.core.ExecutableDescriptor;
@@ -42,6 +46,7 @@ import kalang.core.ClassType;
 import kalang.core.ParameterDescriptor;
 import kalang.core.Type;
 import kalang.core.Types;
+import kalang.exception.Exceptions;
 
 public class AstUtil {
 
@@ -314,6 +319,25 @@ public class AstUtil {
             names[i] = classes[i].name;
         }
         return names;
+    }
+    
+    public static void createScriptMainMethodIfNotExists(ClassNode clazz){
+        ClassType clazzType = Types.getClassType(clazz);
+        MethodDescriptor[] methods = clazzType.getMethodDescriptors(null, false,false);
+        Type[] argTypes = new Type[]{Types.getArrayType(Types.getStringClassType())};
+        MethodDescriptor mainMethod = MethodUtil.getMethodDescriptor(methods, "main", argTypes);
+        if (mainMethod==null) {
+            MethodNode m = clazz.createMethodNode(Types.VOID_TYPE, "main", Modifier.PUBLIC + Modifier.STATIC);
+            ParameterNode p = m.createParameter(argTypes[0], "arg");
+            BlockStmt body = m.getBody();
+            try{
+                NewObjectExpr newScriptExpr = new NewObjectExpr(clazzType);
+                ObjectInvokeExpr invokeExpr = ObjectInvokeExpr.create(newScriptExpr, "run", new ExprNode[]{new ParameterExpr(p)});
+                body.statements.add(new ExprStmt(invokeExpr));
+            } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                throw Exceptions.unexceptedException(ex);
+            }
+        }
     }
     
 }

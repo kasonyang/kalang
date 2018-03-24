@@ -2,6 +2,7 @@ package test.kalang.tool;
 
 import kalang.lang.Script;
 import kalang.tool.KalangShell;
+import kalang.util.ClassExecutor;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -17,8 +18,8 @@ public class KalangShellTest {
     @Test
     public void test() throws Throwable{
         KalangShell shell = new KalangShell();
-        Script script = shell.parseScript("Test", "println(\"test\");", "Test.kl");
-        assertEquals(Script.SUCCESS, script.run());
+        Class script = shell.parse("Test", "println(\"test\");", "Test.kl");
+        ClassExecutor.executeMain(script, new String[0]);
     }
     
 }
