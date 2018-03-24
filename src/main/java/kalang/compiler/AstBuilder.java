@@ -525,9 +525,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if(clazzType==null) return null;
         ClassNode clazzNode = clazzType.getClassNode();
         GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
-        if(clzDeclaredGenericTypes!=null && clzDeclaredGenericTypes.length>0){
-            Type[] typeArguments = new Type[clzDeclaredGenericTypes.length];
-            List<KalangParser.ParameterizedElementTypeContext> parameterTypes = ctx.parameterTypes;
+        List<KalangParser.ParameterizedElementTypeContext> parameterTypes = ctx.parameterTypes;
+        if(parameterTypes!=null && !parameterTypes.isEmpty()){
+            Type[] typeArguments = new Type[parameterTypes.size()];
             if(parameterTypes!=null && parameterTypes.size()>0){
                 if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
                     diagnosisReporter.report(
@@ -542,8 +542,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     //TODO should return null?
                     if(typeArguments[i]==null) return null;
                 }
-            }else{
-                typeArguments = new Type[0];
             }
             return Types.getClassType(clazzType.getClassNode(), typeArguments,nullable);
         }else{
