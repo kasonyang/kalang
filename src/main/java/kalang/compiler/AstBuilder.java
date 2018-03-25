@@ -813,6 +813,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Override
     public AstNode visitIfStat(IfStatContext ctx) {
         ExprNode expr = visitExpression(ctx.expression());
+        if (expr == null){
+            return null;
+        }
+        Type exprType = expr.getType();
+        expr = BoxUtil.assign(expr, expr.getType(), Types.BOOLEAN_TYPE);
+        if (expr == null) {
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, exprType + " cannot be converted to boolean", ctx.expression());
+            return null;
+        }
         BlockStmt trueBody = null;
         BlockStmt falseBody = null;
         VarTable<VarObject,Integer> trueAssigned,falseAssigned;
