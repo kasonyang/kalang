@@ -213,7 +213,7 @@ class<T>{
     
     int interpolationTest(){
         var name = "kalang";
-        return "hello,kalang!".equals("hello,${name}!") ? 6 : 0 ;
+        return "hello,{kalang}!".equals("hello,{${name}}!") ? 6 : 0 ;
     }
     
     int byteDeclTest(){

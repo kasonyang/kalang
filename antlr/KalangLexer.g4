@@ -298,7 +298,7 @@ MultiLineStringCharacters
 
 fragment
 StringCharacter
-    :   ~["\\\$\{]
+    :   ~["\\\$]
     |  '$' ~[\{]
     |   EscapeSequence
     ;
