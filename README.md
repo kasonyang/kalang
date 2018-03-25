@@ -3,4 +3,4 @@
 [![Codecov](https://img.shields.io/codecov/c/github/kasonyang/kalang.svg)](https://codecov.io/gh/kasonyang/kalang)
 
 
-please visit [http://kason.site/projects/kalang](http://kason.site/projects/kalang) for more information.
+please visit [http://kalang.kason.site](http://kalang.kason.site) for more information.
