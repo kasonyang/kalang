@@ -29,7 +29,7 @@ For Linux users:
 
 For Windows users:
 
-1. Download latest binary distribution:[http://file.kason.site/kalang-compiler/kalang-compiler-${version}.zip](http://file.kason.site/kalang-compiler/kalang-compiler-${version}.zip)
+1. Download latest binary distribution:[http://file.kason.site/kalang-compiler/v${version}/kalang-compiler-${version}.zip](http://file.kason.site/kalang-compiler/v${version}/kalang-compiler-${version}.zip)
 2. Unzip the downloaded zip file
 3. Add the absolute path of the `bin` directory to the `PATH` environment variable
 
