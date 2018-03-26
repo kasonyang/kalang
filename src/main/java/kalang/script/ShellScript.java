@@ -147,14 +147,14 @@ public abstract class ShellScript extends Script {
             if (output.isEmpty()){
                 pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             } else {
-                pb.redirectOutput(new File(output));
+                pb.redirectOutput(this.getFileRedirectForOutput(output));
             }            
         }
         if (errOutput != null) {
             if (errOutput.isEmpty()) {
                 pb.redirectError(ProcessBuilder.Redirect.INHERIT);
             } else {
-                pb.redirectError(new File(errOutput));
+                pb.redirectError(this.getFileRedirectForOutput(errOutput));
             }   
         }
         if (workingDir!=null && !workingDir.isEmpty()) {
@@ -220,6 +220,16 @@ public abstract class ShellScript extends Script {
     
     protected void exit(int status){
         System.exit(status);
+    }
+    
+    private ProcessBuilder.Redirect getFileRedirectForOutput(String redirectFile){
+        if (redirectFile.startsWith(">>")){
+            return ProcessBuilder.Redirect.appendTo(new File(redirectFile.substring(2, redirectFile.length())));
+        } else if (redirectFile.startsWith(">")){
+            return ProcessBuilder.Redirect.to(new File(redirectFile.substring(1,redirectFile.length())));
+        } else {
+            return ProcessBuilder.Redirect.appendTo(new File(redirectFile));
+        }
     }
 
 }
