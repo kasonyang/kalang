@@ -238,7 +238,7 @@ class<T>{
     
     int assertStmtTest(){
         try{
-            assert false : 6;
+            assert false : "6";
         } catch (AssertionError ex) {
             return Integer.parseInt(ex.getMessage());
         }

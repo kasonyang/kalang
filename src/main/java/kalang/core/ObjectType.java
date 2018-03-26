@@ -7,6 +7,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 import kalang.ast.FieldNode;
 import kalang.ast.ParameterNode;
+import kalang.util.AccessUtil;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
 /**
@@ -96,6 +97,9 @@ public abstract class ObjectType extends Type{
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
             if("<init>".equals(mds[i].getName())) continue;
+            if (!AccessUtil.isAccessible(mds[i].getModifier(), clazz, caller)){
+                continue;
+            }
             MethodDescriptor md = new MethodDescriptor(
                     mds[i]
                     ,getParameterDescriptors(mds[i])
@@ -111,7 +115,12 @@ public abstract class ObjectType extends Type{
         Map<String,ConstructorDescriptor> descs = new HashMap();
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
-            if(!"<init>".equals(mds[i].getName())) continue;
+            if(!"<init>".equals(mds[i].getName())){
+                continue;
+            }
+            if (!AccessUtil.isAccessible(mds[i].getModifier(), clazz, caller)){
+                continue;
+            }
             ConstructorDescriptor md = new ConstructorDescriptor(
                     mds[i]
                     ,getParameterDescriptors(mds[i])
@@ -136,14 +145,9 @@ public abstract class ObjectType extends Type{
         List<FieldDescriptor> ret = new LinkedList();
         for(int i=0;i<fields.length;i++){
             FieldNode f = fields[i];
-            int fm = f.modifier;
-            boolean accessible = Modifier.isPublic(fm)
-                    || clazz.equals(caller)
-                    || (Modifier.isProtected(fm) && Types.getClassType(caller).isSubTypeOf(this));
-            if(accessible){
+            if(AccessUtil.isAccessible(f.modifier, clazz, caller)){
               ret.add(new StandardFieldDescriptor(f,parseType(f.getType())));
             }
-            
         }
         ObjectType superType = clazz.getSuperType();
         if(superType!=null){
