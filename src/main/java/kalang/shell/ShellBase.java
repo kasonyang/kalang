@@ -77,8 +77,7 @@ public abstract class ShellBase {
             }
         }
         String version = prop.getProperty("version", "UNKNOWN");
-        String buildtime = prop.getProperty("buildtime", "UNKNOWN");
-        System.out.println(String.format("%s %s\nBuild time : %s", appName, version, buildtime));
+        System.out.println(String.format("%s %s", appName, version));
     }
 
     protected Configuration createConfiguration(CommandLine cli) {
