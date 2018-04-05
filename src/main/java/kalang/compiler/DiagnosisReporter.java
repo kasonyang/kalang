@@ -12,19 +12,16 @@ public class DiagnosisReporter {
 
     private final CompileContext compileContext;
 
-    private final DiagnosisHandler disgnosisHandler;
-
     private final KalangSource kalangSource;
 
     public DiagnosisReporter(CompilationUnit compilationUnit) {
         this.compileContext = compilationUnit.getCompileContext();
-        this.disgnosisHandler = compileContext.getDiagnosisHandler();
         this.kalangSource = compilationUnit.getSource();
     }
     
     public void report(Diagnosis.Kind kind,String message,OffsetRange offset){
         Diagnosis diagnosis = new Diagnosis(compileContext, kind, offset, message, kalangSource);
-        this.disgnosisHandler.handleDiagnosis(diagnosis);
+        this.getDisgnosisHandler().handleDiagnosis(diagnosis);
     }
     
     public void report(Diagnosis.Kind kind,String message,Token start,Token end){
@@ -45,16 +42,8 @@ public class DiagnosisReporter {
         this.report(kind, message,OffsetRange.NONE);
     }
     
-    public CompileContext getCompileContext() {
-        return compileContext;
-    }
-
-    public DiagnosisHandler getDisgnosisHandler() {
-        return disgnosisHandler;
-    }
-
-    public KalangSource getKalangSource() {
-        return kalangSource;
+    private DiagnosisHandler getDisgnosisHandler() {
+        return compileContext.getDiagnosisHandler();
     }
     
 }
