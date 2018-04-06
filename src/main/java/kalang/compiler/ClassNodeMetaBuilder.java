@@ -151,6 +151,12 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         }
         for (FieldNode fieldNode : thisClazz.getFields()) {
             int mdf = fieldNode.modifier;
+            if (Modifier.isStatic(mdf)){
+                continue;
+            }
+            if (!Modifier.isPublic(mdf) && !Modifier.isProtected(mdf)){
+                continue;
+            }
             if (!AstUtil.hasGetter(thisClazz, fieldNode)) {
                 AstUtil.createGetter(thisClazz, fieldNode, mdf);
             }
