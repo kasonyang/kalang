@@ -2,31 +2,13 @@ package kalang.compiler;
 
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import kalang.AstNotFoundException;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParserBaseVisitor;
-import kalang.ast.AssignExpr;
-import kalang.ast.AssignableExpr;
-import kalang.ast.BlockStmt;
 import kalang.ast.ClassNode;
-import kalang.ast.ExprNode;
-import kalang.ast.ExprStmt;
-import kalang.ast.FieldNode;
-import kalang.ast.MethodNode;
-import kalang.ast.ParameterExpr;
-import kalang.ast.ParameterNode;
-import kalang.ast.Statement;
-import kalang.ast.ThisExpr;
-import kalang.core.GenericType;
-import kalang.core.ModifierConstant;
-import kalang.core.NullableKind;
 import kalang.core.ObjectType;
 import kalang.core.Types;
-import kalang.exception.Exceptions;
-import kalang.util.AstUtil;
-import kalang.util.ModifierUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
@@ -46,7 +28,7 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
     
     private boolean isScript = false;
     
-    private String optionScript = null;
+    private ObjectType optionScriptBaseType = null;
 
     AstBuilder astBuilder;
     private final CompilationUnit compilationUnit;
@@ -72,7 +54,11 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
         if ("script".equals(optionName)) {
             String optionValue = optionParts.length > 1 ? optionParts[1].trim() : "";
             if (!optionValue.isEmpty()) {
-                this.optionScript = optionValue;
+                try {
+                    this.optionScriptBaseType = Types.getClassType(this.loadAst(optionValue));
+                } catch (AstNotFoundException ex) {
+                    this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "class "+optionValue+" not found");
+                }
             }
         }
         return super.visitCompileOption(ctx);
@@ -160,8 +146,13 @@ public class ClassNodeBuilder extends KalangParserBaseVisitor<Object> {
         return isScript;
     }
     
-    public String getOptionScript() {
-        return this.optionScript;
+    public ObjectType getOptionScriptBaseType() {
+        return this.optionScriptBaseType;
+    }
+    
+    private ClassNode loadAst(String className) throws AstNotFoundException{
+        AstLoader astLoader = this.compilationUnit.getCompileContext().getAstLoader();
+        return astLoader.loadAst(className);
     }
     
 }
