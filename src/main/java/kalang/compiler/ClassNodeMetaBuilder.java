@@ -346,15 +346,16 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         CompileContext context = this.compilationUnit.getCompileContext();
         Configuration conf = context.getConfiguration();
         AstLoader astLoader = context.getAstLoader();
-        String baseClass = this.classNodeBuilder.getOptionScript();
+        ObjectType baseClass = this.classNodeBuilder.getOptionScriptBaseType();
         if(baseClass==null){
-            baseClass = conf.getScriptBaseClass();
+            String defaultBaseClass = conf.getScriptBaseClass();
+            try{
+                baseClass = Types.getClassType(astLoader.loadAst(defaultBaseClass));
+            }catch (AstNotFoundException ex) {
+                throw Exceptions.missingRuntimeClass(defaultBaseClass);
+            }
         }
-        try {
-            return Types.getClassType(astLoader.loadAst(baseClass));
-        } catch (AstNotFoundException ex) {
-            throw Exceptions.missingRuntimeClass(baseClass);
-        }
+        return baseClass;
     }
 
 }
