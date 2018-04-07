@@ -1,9 +1,7 @@
 package kalang.shell;
 
 import java.io.File;
-import java.io.IOException;
 import kalang.compiler.Configuration;
-import kalang.lang.Script;
 import kalang.tool.KalangShell;
 import kalang.util.ClassExecutor;
 import org.apache.commons.cli.CommandLine;
@@ -24,11 +22,11 @@ public class Kalangsh extends ShellBase {
     }
 
     public static void main(String[] args) {
-        new Kalangsh().run(args);
+        System.exit(new Kalangsh().run(args));
     }
 
     @Override
-    protected void execute(CommandLine cli) {
+    protected int execute(CommandLine cli) {
         Configuration config = this.createConfiguration(cli);
         ClassLoader classLoader = this.createClassLoader(cli);
 
@@ -54,8 +52,10 @@ public class Kalangsh extends ShellBase {
             if (!cli.hasOption("check")) {
                 ClassExecutor.executeMain(clazz, scriptArgs);
             }
+            return Constant.SUCCESS;
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
+            return Constant.ERR_UNKNOWN_EXCEPTION;
         }
     }
 

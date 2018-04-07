@@ -15,15 +15,15 @@ public class Kalangeditor extends ShellBase {
     private static final String SYNTAX = "kalangeditor [options]";
 
     public static void main(String[] args) {
-        new Kalangeditor().run(args);
+        System.exit(new Kalangeditor().run(args));
     }
 
     @Override
-    protected void execute(CommandLine cli) {
+    protected int execute(CommandLine cli) {
         Configuration config = this.createConfiguration(cli);
         ClassLoader classLoader = this.createClassLoader(cli);
         kalang.gui.Editor.main(config, classLoader);
-
+        return Constant.SUCCESS;
     }
 
     private Kalangeditor() {

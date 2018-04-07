@@ -41,25 +41,28 @@ public abstract class ShellBase {
         options.addOption("v","version",false,"show version information");
     }
     
-    public void run(String[] args) {
+    public int run(String[] args) {
         DefaultParser parser = new DefaultParser();
         CommandLine cli;
         try {
             cli = parser.parse(options, args, true);
         } catch (ParseException ex) {
             System.err.println(ex.getMessage());
-            return;
+            printUsage();
+            return Constant.ERR_INVALID_ARGUMENTS;
         }
         if (cli == null || cli.hasOption("help")) {
             printUsage();
+            return Constant.SUCCESS;
         } else if (cli.hasOption("version")) {
             printVersion();
+            return Constant.SUCCESS;
         } else {
-            execute(cli);
+            return execute(cli);
         }
     }
     
-    protected abstract void execute(CommandLine cli);
+    protected abstract int execute(CommandLine cli);
     
     protected void printUsage() {
         HelpFormatter formatter = new HelpFormatter();
