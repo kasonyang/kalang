@@ -24,20 +24,6 @@ public class JavaAstLoader extends AstLoader {
     //TODO unused
     private final AstLoader parentAstLoader;
 
-    /**
-     * build ast from java class
-     *
-     * @param clz the java class
-     * @return the ast built from java class
-     * @throws AstNotFoundException
-     */
-    @Nonnull
-    public ClassNode buildFromClass(@Nonnull Class clz) throws AstNotFoundException {
-        ClassNode cn = new JvmClassNode(clz, this);
-        loadedClasses.put(clz.getName(), cn);
-        return cn;
-    }
-
     public JavaAstLoader(@Nullable AstLoader parentAstLoader, @Nonnull ClassLoader javaClassLoader) {
         Objects.requireNonNull(javaClassLoader);
         this.javaClassLoader = javaClassLoader;
@@ -46,15 +32,6 @@ public class JavaAstLoader extends AstLoader {
 
     public JavaAstLoader() {
         this(null, JavaAstLoader.class.getClassLoader());
-    }
-    
-    public ClassNode findAst(Class clazz) throws AstNotFoundException{
-        String name = clazz.getName();
-        ClassNode ast = loadedClasses.get(name);
-        if (ast!=null) {
-            return ast;
-        }
-        return buildFromClass(clazz);
     }
 
     @Override
@@ -78,6 +55,20 @@ public class JavaAstLoader extends AstLoader {
                 throw e;
             }
         }
+    }
+    
+        /**
+     * build ast from java class
+     *
+     * @param clz the java class
+     * @return the ast built from java class
+     * @throws AstNotFoundException
+     */
+    @Nonnull
+    private ClassNode buildFromClass(@Nonnull Class clz) throws AstNotFoundException {
+        ClassNode cn = new JvmClassNode(clz, this);
+        loadedClasses.put(clz.getName(), cn);
+        return cn;
     }
 
 }

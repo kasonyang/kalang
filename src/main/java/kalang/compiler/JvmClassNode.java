@@ -202,7 +202,7 @@ public class JvmClassNode extends ClassNode {
                 return Types.getArrayType(ct);
             } else {
                 try {
-                    return Types.getClassType(this.astLoader.findAst(type));
+                    return Types.getClassType(this.astLoader.findAst(type.getName()));
                 } catch (AstNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
