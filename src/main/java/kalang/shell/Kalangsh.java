@@ -17,7 +17,7 @@ public class Kalangsh extends ShellBase {
 
     private final static String SYNTAX = "kalangsh [options] FILE [options]";
 
-    private Kalangsh() {
+    public Kalangsh() {
         super(APP_NAME, SYNTAX, createOptions());
     }
 
