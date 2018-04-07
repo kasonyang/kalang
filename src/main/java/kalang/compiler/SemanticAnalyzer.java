@@ -20,6 +20,8 @@ import kalang.ast.AnnotationNode;
 import kalang.ast.AssignableExpr;
 import kalang.ast.FieldExpr;
 import kalang.ast.LocalVarNode;
+import kalang.ast.ParameterExpr;
+import kalang.ast.ParameterNode;
 import kalang.ast.VarExpr;
 import kalang.core.ArrayType;
 import kalang.core.FieldDescriptor;
@@ -163,6 +165,12 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             FieldDescriptor field = ((FieldExpr) to).getField();
             if (!isInitializationStmt && Modifier.isFinal(field.getModifier())) {
                 this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", field.getName()),offset);
+                return false;
+            }
+        } else if (to instanceof ParameterExpr) {
+            ParameterNode parameter = ((ParameterExpr) to).getParameter();
+            if (Modifier.isFinal(parameter.modifier)) {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", parameter.getName()),offset);
                 return false;
             }
         }
