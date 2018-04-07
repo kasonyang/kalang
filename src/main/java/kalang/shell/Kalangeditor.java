@@ -15,7 +15,7 @@ public class Kalangeditor extends ShellBase {
     private static final String SYNTAX = "kalangeditor [options]";
 
     public static void main(String[] args) {
-        System.exit(new Kalangeditor().run(args));
+        new Kalangeditor().run(args);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class Kalangeditor extends ShellBase {
         return Constant.SUCCESS;
     }
 
-    private Kalangeditor() {
+    public Kalangeditor() {
         super(APP_NAME, SYNTAX, new Options());
     }
 

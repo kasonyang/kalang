@@ -66,7 +66,7 @@ public class Kalangc extends ShellBase {
         }
     }
 
-    private Kalangc() {
+    public Kalangc() {
         super(APP_NAME, SYNTAX, createOptions());
     }
 
