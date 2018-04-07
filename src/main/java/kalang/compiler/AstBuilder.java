@@ -1145,6 +1145,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         String fname = to.Identifier().getText();
         AssignableExpr toExpr;
         Object expr = visit(exp);
+        if (expr==null) return null;
         if(refKey.equals(".")){
             ExprNode fieldExpr;
             if(expr instanceof ExprNode){
@@ -1359,7 +1360,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Nullable
     private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,List<ExpressionContext> argumentsCtx,ParserRuleContext ctx){
-        ExprNode[] args = visitAll(argumentsCtx).toArray(new ExprNode[0]);
+        List<Object> argsList = visitAll(argumentsCtx);
+        if (argsList.contains(null)) return null;
+        ExprNode[] args = argsList.toArray(new ExprNode[argsList.size()]);
         return getObjectInvokeExpr(target, methodName, args, ctx);
     }
     
@@ -1403,7 +1406,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     private  ExprNode getStaticInvokeExpr(ClassReference clazz,String methodName,List<ExpressionContext> argumentsCtx,ParserRuleContext ctx){
-        return getStaticInvokeExpr(clazz, methodName, visitAll(argumentsCtx).toArray(new ExprNode[0]), ctx);
+        List<Object> argsList = visitAll(argumentsCtx);
+        if (argsList.contains(null)) {
+            return null;
+        }
+        ExprNode[] args = argsList.toArray(new ExprNode[argsList.size()]);
+        return getStaticInvokeExpr(clazz, methodName, args, ctx);
     }
     
     private  ExprNode getStaticInvokeExpr(ClassReference clazz,String methodName, ExprNode[] argumentsCtx,ParserRuleContext ctx){
@@ -1709,7 +1717,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public AstNode visitNewExpr(NewExprContext ctx) {
         ObjectType clsType = parseClassType(ctx.classType());
         if(clsType==null) return null;
-        ExprNode[] params = visitAll(ctx.params).toArray(new ExprNode[0]);
+        List<Object> paramExprsList = visitAll(ctx.params);
+        if (paramExprsList.contains(null)) {
+            return null;
+        }
+        ExprNode[] params = paramExprsList.toArray(new ExprNode[paramExprsList.size()]);
         List<ExprNode> paramList = new LinkedList(Arrays.asList(params));
         NewObjectExpr newExpr;
         try {
