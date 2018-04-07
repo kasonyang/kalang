@@ -18,11 +18,11 @@ public class Kalangc extends ShellBase {
     public final static String SYNTAX = "kalangc";
 
     public static void main(String[] args) {
-        new Kalangc().run(args);
+        System.exit(new Kalangc().run(args));
     }
 
     @Override
-    protected void execute(CommandLine cli) {
+    protected int execute(CommandLine cli) {
         FileSystemCompiler fsc = new FileSystemCompiler();
         StandardDiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
         fsc.setDiagnosisHandler(diagnosisHandler);
@@ -42,21 +42,27 @@ public class Kalangc extends ShellBase {
                 try {
                     fsc.addSourceDir(srcFile);
                 } catch (IOException ex) {//TODO handle ex
-                    throw new RuntimeException(ex);
+                    System.err.println(ex.getMessage());
+                    return Constant.ERR_IO_EXCEPTION;
                 }
             } else {
                 try {
                     //TODO here should be currenDir?
                     fsc.addSource(currentDir, srcFile);
                 } catch (IOException ex) {
+                    System.err.println(ex.getMessage());
                     //TODO show exception message
                 }
             }
         }
         try {
             fsc.compile();
+            return diagnosisHandler.hasError() 
+                    ? Constant.ERR_COMPILE_ERROR 
+                    : Constant.SUCCESS ;
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            System.err.println(ex.getMessage());
+            return Constant.ERR_IO_EXCEPTION;
         }
     }
 
