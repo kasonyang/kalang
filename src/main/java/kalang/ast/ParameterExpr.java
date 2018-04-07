@@ -1,8 +1,7 @@
 package kalang.ast;
-import java.util.*;
 import javax.annotation.Nullable;
 import kalang.core.*;
-public class ParameterExpr extends ExprNode{
+public class ParameterExpr extends AssignableExpr{
     
     protected ParameterNode parameter;
     
