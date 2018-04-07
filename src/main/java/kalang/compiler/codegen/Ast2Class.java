@@ -2,7 +2,6 @@
 package kalang.compiler.codegen;
 import kalang.ast.AbstractAstVisitor;
 import kalang.ast.AssignExpr;
-import kalang.ast.AstVisitor;
 import kalang.ast.BinaryExpr;
 import kalang.ast.BlockStmt;
 import kalang.ast.BreakStmt;
@@ -30,8 +29,6 @@ import kalang.ast.VarExpr;
 import kalang.ast.VarObject;
 import java.io.*;
 import java.lang.reflect.Modifier;
-import java.nio.*;
-import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +37,6 @@ import javax.annotation.Nullable;
 import kalang.AstNotFoundException;
 import kalang.ast.AnnotationNode;
 import kalang.ast.ArrayLengthExpr;
-import kalang.ast.AssignableExpr;
 import kalang.ast.AstNode;
 import kalang.ast.ClassReference;
 import kalang.ast.CompareExpr;
@@ -91,7 +87,6 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import static org.objectweb.asm.Opcodes.*;
 /**
  *The class generate the java class binary data for ast
@@ -664,6 +659,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else if(to instanceof ElementExpr){
             ElementExpr elementExpr = (ElementExpr) to;
             assignArrayElement(elementExpr.getArrayExpr(), elementExpr.getIndex(), from);
+        }else if(to instanceof ParameterExpr){
+            assignVarObject(((ParameterExpr) to).getParameter(), from);
         }else{
             throw new UnknownError("unknown expression:" + to);
         }
