@@ -154,16 +154,16 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }
     }
     
-    public boolean validateAssign(AssignableExpr to,ExprNode from, OffsetRange offset){
+    public boolean validateAssign(AssignableExpr to,ExprNode from, OffsetRange offset,boolean isInitializationStmt){
         if (to instanceof VarExpr) {
             LocalVarNode varObject = ((VarExpr) to).getVar();
-            if (Modifier.isFinal(varObject.modifier)) {
+            if (!isInitializationStmt && Modifier.isFinal(varObject.modifier)) {
                 this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", varObject.getName()),offset);
                 return false;
             }
         } else if (to instanceof FieldExpr){
             FieldDescriptor field = ((FieldExpr) to).getField();
-            if (Modifier.isFinal(field.getModifier())) {
+            if (!isInitializationStmt && Modifier.isFinal(field.getModifier())) {
                 this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", field.getName()),offset);
                 return false;
             }

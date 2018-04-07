@@ -1165,7 +1165,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     return null;
                 }
                 ExprNode fromExpr = visitExpression(fromCtx);
-                if(!this.semanticAnalyzer.validateAssign(toExpr, fromExpr,offsetRange)){
+                if(!this.semanticAnalyzer.validateAssign(toExpr, fromExpr,offsetRange,isInConstructor())){
                   return null;
                 }
                 return new AssignExpr(toExpr,fromExpr);
@@ -1212,7 +1212,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             AssignableExpr toExpr;
             if(to instanceof AssignableExpr){
                 toExpr = (AssignableExpr) to;
-                if(!this.semanticAnalyzer.validateAssign(toExpr, from, OffsetRangeHelper.getOffsetRange(ctx))){
+                if(!this.semanticAnalyzer.validateAssign(toExpr, from, OffsetRangeHelper.getOffsetRange(ctx),isInConstructor())){
                   return null;
                 }
                 AssignExpr aexpr = new AssignExpr(toExpr,from);
@@ -2400,6 +2400,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     public DiagnosisReporter getDiagnosisReporter() {
         return diagnosisReporter;
+    }
+    
+    private boolean isInConstructor(){
+        return "<init>".equals(this.method.getName());
     }
 
 }
