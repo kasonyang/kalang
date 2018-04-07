@@ -2,6 +2,7 @@ package kalang.compiler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import kalang.ast.AssignExpr;
 import kalang.ast.AstNode;
@@ -15,9 +16,10 @@ import kalang.ast.Statement;
 import kalang.ast.TryStmt;
 import kalang.ast.VarExpr;
 import java.util.Set;
-import javax.annotation.Nullable;
 import kalang.ast.AssignableExpr;
 import kalang.ast.LocalVarNode;
+import kalang.ast.ReturnStmt;
+import kalang.ast.ThrowStmt;
 import kalang.core.Type;
 import kalang.core.VarTable;
 import kalang.util.CollectionsUtil;
@@ -38,6 +40,8 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
     private VarTable<LocalVarNode, Void> assignedVars = new VarTable<>();
 
     private DiagnosisReporter diagnosisReporter;
+    
+    private boolean returned = false;
 
     public InitializationAnalyzer(CompilationUnit source, AstLoader astLoader) {
         this.astLoader = astLoader;
@@ -77,16 +81,18 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
     public Type visitTryStmt(TryStmt node) {
         List<VarTable<LocalVarNode, Void>> assignedList = new ArrayList(node.getCatchStmts().size() + 1);
         enterNewFrame();
-        assignedList.add(assignedVars);
-        visit(node.getExecStmt());
+        if (!visitAndCheckReturned(node.getExecStmt())){
+            assignedList.add(assignedVars);
+        }
         exitFrame();
         for (CatchBlock cs : node.getCatchStmts()) {
             enterNewFrame();
-            assignedList.add(assignedVars);
-            visit(cs);
+            if (!visitAndCheckReturned(cs)){
+                assignedList.add(assignedVars);
+            }
             exitFrame();
         }
-        addIntersectedAssignedVar(assignedList.toArray(new VarTable[assignedList.size()]));
+        addIntersectedAssignedVar(assignedList);
         Statement finallyStmt = node.getFinallyStmt();
         if (finallyStmt != null) {
             visit(finallyStmt);
@@ -96,18 +102,18 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
 
     @Override
     public Type visitIfStmt(IfStmt node) {
-        VarTable<LocalVarNode, Void> trueAssignedVars = null, falseAssignedVars = null;
+        List<VarTable<LocalVarNode, Void>> assignedVarsList = new ArrayList(2);
         enterNewFrame();
-        trueAssignedVars = assignedVars;
-        visit(node.getTrueBody());
-        exitFrame();
-        enterNewFrame();
-        falseAssignedVars = assignedVars;
-        visit(node.getFalseBody());
-        exitFrame();
-        if (trueAssignedVars != null && falseAssignedVars != null) {
-            addIntersectedAssignedVar(trueAssignedVars, falseAssignedVars);
+        if (!visitAndCheckReturned(node.getTrueBody())){
+            assignedVarsList.add(assignedVars);
         }
+        exitFrame();
+        enterNewFrame();
+        if (!visitAndCheckReturned(node.getFalseBody())){
+            assignedVarsList.add(assignedVars);
+        }
+        exitFrame();        
+        addIntersectedAssignedVar(assignedVarsList);
         return null;
     }
 
@@ -138,10 +144,19 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         assignedVars = assignedVars.getParent();
     }
 
-    protected void addIntersectedAssignedVar(VarTable<LocalVarNode, Void>... assignedVarsList) {
-        Set<LocalVarNode>[] assigned = new Set[assignedVarsList.length];
+    protected void addIntersectedAssignedVar(List<VarTable<LocalVarNode, Void>> assignedVarsList) {
+        if (assignedVarsList.isEmpty()){
+            return;
+        }
+        if (assignedVarsList.size()==1){
+            for(Map.Entry<LocalVarNode, Void> s:assignedVarsList.get(0).vars().entrySet()){
+                assignedVars.put(s.getKey(), null);
+            }
+            return;
+        }
+        Set<LocalVarNode>[] assigned = new Set[assignedVarsList.size()];
         for (int i = 0; i < assigned.length; i++) {
-            assigned[i] = assignedVarsList[i].keySet();
+            assigned[i] = assignedVarsList.get(i).keySet();
         }
         Set<LocalVarNode> sets = CollectionsUtil.getIntersection(assigned);
         for (LocalVarNode s : sets) {
@@ -155,4 +170,25 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         return super.visitCatchBlock(node);
     }
 
+    @Override
+    public Object visitReturnStmt(ReturnStmt node) {
+        returned = true;
+        return super.visitReturnStmt(node);
+    }
+
+    @Override
+    public Object visitThrowStmt(ThrowStmt node) {
+        returned = true;
+        return super.visitThrowStmt(node);
+    }
+    
+    private boolean visitAndCheckReturned(AstNode node){
+        boolean oldReturned = returned;
+        returned = false;
+        visit(node);
+        boolean ret = returned;
+        returned = oldReturned;
+        return ret;
+    }
+    
 }
