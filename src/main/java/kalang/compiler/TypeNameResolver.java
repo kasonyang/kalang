@@ -63,7 +63,14 @@ public class TypeNameResolver {
         if(id.contains(".")) return id;
         if (simpleToFullNames.containsKey(id)) {
             return this.fixInnerClassName(simpleToFullNames.get(id));
-        } else {
+        } else if (id.contains("$")){
+            String[] idParts = id.split("\\$",2);
+            String outerClassName = simpleToFullNames.get(idParts[0]);
+            if (outerClassName==null){
+                return null;
+            }
+            return outerClassName + "$" + idParts[1];
+        }else {
             String[] innerClassesNames = AstUtil.listInnerClassesNames(topClass, true);
             List<String> candidates = new ArrayList(innerClassesNames.length + 1);
             candidates.add(topClass.name);
