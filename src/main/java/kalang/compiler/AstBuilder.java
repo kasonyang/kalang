@@ -492,7 +492,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         String resolvedName = this.typeNameResolver.resolve(id, topClass, thisClazz);
         ClassNode ast = resolvedName==null ? null : astLoader.getAst(resolvedName);
         if(ast==null){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR, "ast not found:" + id, token);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, token);
         }
         return ast;
     }
