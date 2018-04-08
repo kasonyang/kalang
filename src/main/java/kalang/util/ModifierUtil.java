@@ -1,7 +1,6 @@
 package kalang.util;
 
 import java.lang.reflect.Modifier;
-import org.antlr.v4.runtime.tree.ParseTree;
 
 /**
  *
@@ -44,7 +43,7 @@ public class ModifierUtil {
      * such as "public static".
      * @param defaultAccess the default access modifier,should be one of
      * public,protected,private
-     * @return
+     * @return modifier value
      * @throws InvalidModifierException
      */
     public static int parse(String modifierString,int defaultAccess) throws InvalidModifierException {

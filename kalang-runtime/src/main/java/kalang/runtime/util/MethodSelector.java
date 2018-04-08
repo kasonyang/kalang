@@ -90,9 +90,9 @@ public abstract class MethodSelector<M,T> {
     
     /**
      * 
-     * @param actualType
-     * @param candidate1
-     * @param candidate2
+     * @param actualType actual type
+     * @param candidate1 first candidate
+     * @param candidate2 second candidate
      * @return true if candidate1 is more precise
      */
     protected abstract boolean isMorePreciseType(T actualType,T candidate1,T candidate2);

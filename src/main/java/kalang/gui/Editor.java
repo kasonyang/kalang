@@ -202,9 +202,6 @@ public class Editor extends javax.swing.JFrame {
         logArea.setText(os.toString());
     }//GEN-LAST:event_menuRunActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(Configuration config,@Nullable ClassLoader classLoader) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
