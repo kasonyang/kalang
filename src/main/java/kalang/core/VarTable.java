@@ -3,7 +3,6 @@ package kalang.core;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -63,7 +62,7 @@ public class VarTable<T, V> {
 
     /**
      * get all variables not including parent's
-     * @return 
+     * 
      */
     public V[] toArray(V[] arr) {
         return vars.values().toArray(arr);
@@ -84,7 +83,7 @@ public class VarTable<T, V> {
     
     /**
      * all keys not including parent's
-     * @return 
+     * @return keys
      */
     public Set<T> keySet(){
         return vars.keySet();
@@ -100,7 +99,7 @@ public class VarTable<T, V> {
     
     /**
      * get all values not including parent's
-     * @return 
+     * @return values
      */
     public Collection<V> values(){
         return vars.values();
@@ -108,7 +107,7 @@ public class VarTable<T, V> {
     
     /**
      * get all variables not including parent's
-     * @return 
+     * @return variables map
      */
     public HashMap<T, V> vars(){
         return vars;
