@@ -33,7 +33,7 @@ public abstract class ShellBase {
         this.options = options;
         this.syntax = syntax;
         options.addOption("h", "help", false, "show this help message");
-        options.addOption("v", "verbose", false, "show verbose information");
+        options.addOption(null, "verbose", false, "show verbose information");
         options.addOption(null, "script-base", true, "specify default script base class");
         options.addOption("l", "libpath", true, "library path");
         options.addOption(null,"classpath", true, "compile classpath");
