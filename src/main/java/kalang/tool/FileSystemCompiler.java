@@ -59,6 +59,9 @@ public class FileSystemCompiler {
 
         };
         compiler.setConfiguration(configuration);
+        if (diagnosisHandler != null) {
+            compiler.setDiagnosisHandler(diagnosisHandler);
+        }
         for (Map.Entry<String, File> e : sourceFiles.entrySet()) {
             String className = e.getKey();
             File file = e.getValue();
@@ -66,9 +69,6 @@ public class FileSystemCompiler {
         }
         FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(sourcePaths.toArray(new File[sourcePaths.size()]), new String[]{"kl", "kalang"});
         compiler.setSourceLoader(sourceLoader);
-        if (diagnosisHandler != null) {
-            compiler.setDiagnosisHandler(diagnosisHandler);
-        }
         compiler.compile();
     }
 
