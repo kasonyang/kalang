@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
 import static kalang.compiler.CompilePhase.*;
-import kalang.compiler.codegen.Ast2Java;
 import kalang.util.AntlrErrorString;
 import kalang.util.LexerFactory;
 import kalang.util.OffsetRangeHelper;
@@ -23,7 +22,7 @@ import org.antlr.v4.runtime.RecognitionException;
  *
  * @author Kason Yang
  */
-public class KalangCompiler extends AstLoader implements CompileContext {
+public abstract class KalangCompiler extends AstLoader implements CompileContext {
 
     private int compileTargetPhase = PHASE_ALL;
 
@@ -198,11 +197,6 @@ public class KalangCompiler extends AstLoader implements CompileContext {
     @Override
     public AstBuilder createAstBuilder(CompilationUnit compilationUnit, KalangParser parser) {
         return new AstBuilder(compilationUnit, parser);
-    }
-
-    @Override
-    public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-        return new Ast2Java();
     }
 
     @Override

@@ -1,8 +1,8 @@
 
 package kalang.compiler;
-import kalang.compiler.codegen.Ast2Java;
 import kalang.antlr.KalangLexer;
 import kalang.antlr.KalangParser;
+import kalang.compiler.codegen.Ast2JavaStub;
 import kalang.util.LexerFactory;
 import kalang.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -34,7 +34,7 @@ public class DefaultCompileContext implements CompileContext{
 
     @Override
     public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-        return new Ast2Java();
+        return new Ast2JavaStub();
     }
 
     @Override

@@ -2,8 +2,10 @@ package kalang.test;
 
 import java.util.List;
 import kalang.antlr.KalangLexer;
+import kalang.compiler.CodeGenerator;
 import kalang.compiler.CompilationUnit;
 import kalang.compiler.KalangCompiler;
+import kalang.compiler.codegen.Ast2JavaStub;
 import kalang.util.ParseTreeNavigator;
 import kalang.util.TokenNavigator;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -23,7 +25,12 @@ public class KalangCompilerTest {
     
     @Test
     public void test(){
-        KalangCompiler kc = new KalangCompiler();
+        KalangCompiler kc = new KalangCompiler(){
+            @Override
+            public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
+                return new Ast2JavaStub();
+            }
+        };
         kc.addSource("Test", "class{  }","Test.kl");
         kc.compile();
         CompilationUnit unit = kc.getCompilationUnit("Test");
