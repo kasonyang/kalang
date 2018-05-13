@@ -310,4 +310,4 @@ literal
     |   Identifier '.' 'class'
     |   'null' 
     ;
-varModifier:('static'|'final'|'private'|'public'|'protected')+;
+varModifier:('static'|'final'|'private'|'public'|'protected'|'synchronized'|'abstract'|'native'|'transient'|'volatile')+;

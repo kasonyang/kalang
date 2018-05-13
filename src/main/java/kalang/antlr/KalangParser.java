@@ -337,7 +337,7 @@ public class KalangParser extends Parser {
 			setState(101);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << CONSTRUCTOR) | (1L << VAR) | (1L << VAL) | (1L << FOREACH) | (1L << OVERRIDE) | (1L << ASSERT) | (1L << BOOLEAN) | (1L << BREAK) | (1L << BYTE) | (1L << CHAR) | (1L << CLASS) | (1L << CONTINUE) | (1L << DEFAULT) | (1L << DO) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << INTERFACE) | (1L << LONG) | (1L << NEW) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << RETURN) | (1L << STATIC) | (1L << SUPER) | (1L << THIS) | (1L << THROW) | (1L << TRY) | (1L << VOID) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (SEMI - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)) | (1L << (AT - 64)))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << CONSTRUCTOR) | (1L << VAR) | (1L << VAL) | (1L << FOREACH) | (1L << OVERRIDE) | (1L << ABSTRACT) | (1L << ASSERT) | (1L << BOOLEAN) | (1L << BREAK) | (1L << BYTE) | (1L << CHAR) | (1L << CLASS) | (1L << CONTINUE) | (1L << DEFAULT) | (1L << DO) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << INTERFACE) | (1L << LONG) | (1L << NATIVE) | (1L << NEW) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << RETURN) | (1L << STATIC) | (1L << SUPER) | (1L << SYNCHRONIZED) | (1L << THIS) | (1L << THROW) | (1L << TRANSIENT) | (1L << TRY) | (1L << VOID) | (1L << VOLATILE) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (SEMI - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)) | (1L << (AT - 64)))) != 0)) {
 				{
 				setState(99);
 				switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
@@ -450,7 +450,7 @@ public class KalangParser extends Parser {
 			}
 			setState(111);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << FINAL) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ABSTRACT) | (1L << FINAL) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOLATILE))) != 0)) {
 				{
 				setState(110);
 				varModifier();
@@ -872,7 +872,7 @@ public class KalangParser extends Parser {
 			setState(207);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << CONSTRUCTOR) | (1L << VAR) | (1L << VAL) | (1L << OVERRIDE) | (1L << BOOLEAN) | (1L << BYTE) | (1L << CHAR) | (1L << CLASS) | (1L << DEFAULT) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << INT) | (1L << INTERFACE) | (1L << LONG) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << VOID))) != 0) || _la==Identifier || _la==AT) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << CONSTRUCTOR) | (1L << VAR) | (1L << VAL) | (1L << OVERRIDE) | (1L << ABSTRACT) | (1L << BOOLEAN) | (1L << BYTE) | (1L << CHAR) | (1L << CLASS) | (1L << DEFAULT) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << INT) | (1L << INTERFACE) | (1L << LONG) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOID) | (1L << VOLATILE))) != 0) || _la==Identifier || _la==AT) {
 				{
 				setState(205);
 				switch ( getInterpreter().adaptivePredict(_input,23,_ctx) ) {
@@ -951,7 +951,7 @@ public class KalangParser extends Parser {
 			{
 			setState(211);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << FINAL) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ABSTRACT) | (1L << FINAL) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOLATILE))) != 0)) {
 				{
 				setState(210);
 				varModifier();
@@ -1084,7 +1084,7 @@ public class KalangParser extends Parser {
 
 			setState(236);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << FINAL) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ABSTRACT) | (1L << FINAL) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOLATILE))) != 0)) {
 				{
 				setState(235);
 				varModifier();
@@ -4794,7 +4794,7 @@ public class KalangParser extends Parser {
 				{
 				setState(762);
 				_la = _input.LA(1);
-				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << FINAL) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC))) != 0)) ) {
+				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ABSTRACT) | (1L << FINAL) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOLATILE))) != 0)) ) {
 				_errHandler.recoverInline(this);
 				} else {
 					consume();
@@ -4804,7 +4804,7 @@ public class KalangParser extends Parser {
 				setState(765); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << FINAL) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC))) != 0) );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ABSTRACT) | (1L << FINAL) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOLATILE))) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -4932,66 +4932,66 @@ public class KalangParser extends Parser {
 		"\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLN\2\20\4\2\34"+
 		"\34\63\63\n\2\16\16\20\20\23\23\31\31\37\37&&((;;\3\2]^\3\2[\\\3\2QR\4"+
 		"\2\63\63\66\66\4\2_`dd\4\2OPVW\4\2UUXX\3\2YZ\4\2NNeo\4\2\t\nMM\4\2\t\t"+
-		"MM\5\2\35\35,.\61\61\u0372\2S\3\2\2\2\4`\3\2\2\2\6g\3\2\2\2\bm\3\2\2\2"+
-		"\n\u00c0\3\2\2\2\f\u00c4\3\2\2\2\16\u00d1\3\2\2\2\20\u00d5\3\2\2\2\22"+
-		"\u00e4\3\2\2\2\24\u0114\3\2\2\2\26\u012c\3\2\2\2\30\u013d\3\2\2\2\32\u0157"+
-		"\3\2\2\2\34\u0159\3\2\2\2\36\u015d\3\2\2\2 \u015f\3\2\2\2\"\u0167\3\2"+
-		"\2\2$\u0181\3\2\2\2&\u0183\3\2\2\2(\u0185\3\2\2\2*\u0187\3\2\2\2,\u018d"+
-		"\3\2\2\2.\u0191\3\2\2\2\60\u019a\3\2\2\2\62\u01ac\3\2\2\2\64\u01b2\3\2"+
-		"\2\2\66\u01bf\3\2\2\28\u01d5\3\2\2\2:\u01d7\3\2\2\2<\u01da\3\2\2\2>\u01dd"+
-		"\3\2\2\2@\u01e3\3\2\2\2B\u01eb\3\2\2\2D\u01fc\3\2\2\2F\u0208\3\2\2\2H"+
-		"\u0210\3\2\2\2J\u029f\3\2\2\2L\u02fa\3\2\2\2N\u02fd\3\2\2\2PR\5\4\3\2"+
-		"QP\3\2\2\2RU\3\2\2\2SQ\3\2\2\2ST\3\2\2\2TY\3\2\2\2US\3\2\2\2VX\5\n\6\2"+
-		"WV\3\2\2\2X[\3\2\2\2YW\3\2\2\2YZ\3\2\2\2Z^\3\2\2\2[Y\3\2\2\2\\_\5\b\5"+
-		"\2]_\5\6\4\2^\\\3\2\2\2^]\3\2\2\2_\3\3\2\2\2`a\7t\2\2a\5\3\2\2\2bf\5\22"+
-		"\n\2cf\5$\23\2df\5\b\5\2eb\3\2\2\2ec\3\2\2\2ed\3\2\2\2fi\3\2\2\2ge\3\2"+
-		"\2\2gh\3\2\2\2h\7\3\2\2\2ig\3\2\2\2jl\5\24\13\2kj\3\2\2\2lo\3\2\2\2mk"+
-		"\3\2\2\2mn\3\2\2\2nq\3\2\2\2om\3\2\2\2pr\5N(\2qp\3\2\2\2qr\3\2\2\2r\u0081"+
-		"\3\2\2\2s~\7\24\2\2tu\7P\2\2uz\7q\2\2vw\7L\2\2wy\7q\2\2xv\3\2\2\2y|\3"+
-		"\2\2\2zx\3\2\2\2z{\3\2\2\2{}\3\2\2\2|z\3\2\2\2}\177\7O\2\2~t\3\2\2\2~"+
-		"\177\3\2\2\2\177\u0082\3\2\2\2\u0080\u0082\7\'\2\2\u0081s\3\2\2\2\u0081"+
-		"\u0080\3\2\2\2\u0082\u0084\3\2\2\2\u0083\u0085\7q\2\2\u0084\u0083\3\2"+
-		"\2\2\u0084\u0085\3\2\2\2\u0085\u0088\3\2\2\2\u0086\u0087\7\34\2\2\u0087"+
-		"\u0089\5\30\r\2\u0088\u0086\3\2\2\2\u0088\u0089\3\2\2\2\u0089\u0093\3"+
-		"\2\2\2\u008a\u008b\7#\2\2\u008b\u0090\5\30\r\2\u008c\u008d\7L\2\2\u008d"+
-		"\u008f\5\30\r\2\u008e\u008c\3\2\2\2\u008f\u0092\3\2\2\2\u0090\u008e\3"+
-		"\2\2\2\u0090\u0091\3\2\2\2\u0091\u0094\3\2\2\2\u0092\u0090\3\2\2\2\u0093"+
-		"\u008a\3\2\2\2\u0093\u0094\3\2\2\2\u0094\u0095\3\2\2\2\u0095\u0096\7G"+
-		"\2\2\u0096\u0097\5\16\b\2\u0097\u0098\7H\2\2\u0098\t\3\2\2\2\u0099\u009b"+
-		"\7$\2\2\u009a\u009c\7x\2\2\u009b\u009a\3\2\2\2\u009b\u009c\3\2\2\2\u009c"+
-		"\u009d\3\2\2\2\u009d\u00a2\7q\2\2\u009e\u009f\7x\2\2\u009f\u00a1\7q\2"+
-		"\2\u00a0\u009e\3\2\2\2\u00a1\u00a4\3\2\2\2\u00a2\u00a0\3\2\2\2\u00a2\u00a3"+
-		"\3\2\2\2\u00a3\u00a5\3\2\2\2\u00a4\u00a2\3\2\2\2\u00a5\u00ac\7x\2\2\u00a6"+
-		"\u00a9\7q\2\2\u00a7\u00a8\7\4\2\2\u00a8\u00aa\7q\2\2\u00a9\u00a7\3\2\2"+
-		"\2\u00a9\u00aa\3\2\2\2\u00aa\u00ad\3\2\2\2\u00ab\u00ad\7_\2\2\u00ac\u00a6"+
-		"\3\2\2\2\u00ac\u00ab\3\2\2\2\u00ad\u00c1\3\2\2\2\u00ae\u00af\7$\2\2\u00af"+
-		"\u00b4\7q\2\2\u00b0\u00b1\7M\2\2\u00b1\u00b3\7q\2\2\u00b2\u00b0\3\2\2"+
-		"\2\u00b3\u00b6\3\2\2\2\u00b4\u00b2\3\2\2\2\u00b4\u00b5\3\2\2\2\u00b5\u00b7"+
-		"\3\2\2\2\u00b6\u00b4\3\2\2\2\u00b7\u00be\7M\2\2\u00b8\u00bb\7q\2\2\u00b9"+
-		"\u00ba\7\4\2\2\u00ba\u00bc\7q\2\2\u00bb\u00b9\3\2\2\2\u00bb\u00bc\3\2"+
-		"\2\2\u00bc\u00bf\3\2\2\2\u00bd\u00bf\7_\2\2\u00be\u00b8\3\2\2\2\u00be"+
-		"\u00bd\3\2\2\2\u00bf\u00c1\3\2\2\2\u00c0\u0099\3\2\2\2\u00c0\u00ae\3\2"+
-		"\2\2\u00c1\u00c2\3\2\2\2\u00c2\u00c3\7K\2\2\u00c3\13\3\2\2\2\u00c4\u00c9"+
-		"\7q\2\2\u00c5\u00c6\7M\2\2\u00c6\u00c8\7q\2\2\u00c7\u00c5\3\2\2\2\u00c8"+
-		"\u00cb\3\2\2\2\u00c9\u00c7\3\2\2\2\u00c9\u00ca\3\2\2\2\u00ca\r\3\2\2\2"+
-		"\u00cb\u00c9\3\2\2\2\u00cc\u00d0\5\20\t\2\u00cd\u00d0\5\22\n\2\u00ce\u00d0"+
-		"\5\b\5\2\u00cf\u00cc\3\2\2\2\u00cf\u00cd\3\2\2\2\u00cf\u00ce\3\2\2\2\u00d0"+
-		"\u00d3\3\2\2\2\u00d1\u00cf\3\2\2\2\u00d1\u00d2\3\2\2\2\u00d2\17\3\2\2"+
-		"\2\u00d3\u00d1\3\2\2\2\u00d4\u00d6\5N(\2\u00d5\u00d4\3\2\2\2\u00d5\u00d6"+
-		"\3\2\2\2\u00d6\u00d7\3\2\2\2\u00d7\u00dc\58\35\2\u00d8\u00d9\7L\2\2\u00d9"+
-		"\u00db\58\35\2\u00da\u00d8\3\2\2\2\u00db\u00de\3\2\2\2\u00dc\u00da\3\2"+
-		"\2\2\u00dc\u00dd\3\2\2\2\u00dd\u00df\3\2\2\2\u00de\u00dc\3\2\2\2\u00df"+
-		"\u00e0\7K\2\2\u00e0\21\3\2\2\2\u00e1\u00e3\5\24\13\2\u00e2\u00e1\3\2\2"+
-		"\2\u00e3\u00e6\3\2\2\2\u00e4\u00e2\3\2\2\2\u00e4\u00e5\3\2\2\2\u00e5\u00e8"+
-		"\3\2\2\2\u00e6\u00e4\3\2\2\2\u00e7\u00e9\7\13\2\2\u00e8\u00e7\3\2\2\2"+
-		"\u00e8\u00e9\3\2\2\2\u00e9\u00eb\3\2\2\2\u00ea\u00ec\7\27\2\2\u00eb\u00ea"+
-		"\3\2\2\2\u00eb\u00ec\3\2\2\2\u00ec\u00ee\3\2\2\2\u00ed\u00ef\5N(\2\u00ee"+
-		"\u00ed\3\2\2\2\u00ee\u00ef\3\2\2\2\u00ef\u00f4\3\2\2\2\u00f0\u00f1\5\26"+
-		"\f\2\u00f1\u00f2\7q\2\2\u00f2\u00f5\3\2\2\2\u00f3\u00f5\7\5\2\2\u00f4"+
-		"\u00f0\3\2\2\2\u00f4\u00f3\3\2\2\2\u00f5\u00f6\3\2\2\2\u00f6\u0102\7E"+
-		"\2\2\u00f7\u00f8\5\26\f\2\u00f8\u00ff\7q\2\2\u00f9\u00fa\7L\2\2\u00fa"+
-		"\u00fb\5\26\f\2\u00fb\u00fc\7q\2\2\u00fc\u00fe\3\2\2\2\u00fd\u00f9\3\2"+
-		"\2\2\u00fe\u0101\3\2\2\2\u00ff\u00fd\3\2\2\2\u00ff\u0100\3\2\2\2\u0100"+
+		"MM\n\2\f\f\35\35)),.\61\61\65\6599<<\u0372\2S\3\2\2\2\4`\3\2\2\2\6g\3"+
+		"\2\2\2\bm\3\2\2\2\n\u00c0\3\2\2\2\f\u00c4\3\2\2\2\16\u00d1\3\2\2\2\20"+
+		"\u00d5\3\2\2\2\22\u00e4\3\2\2\2\24\u0114\3\2\2\2\26\u012c\3\2\2\2\30\u013d"+
+		"\3\2\2\2\32\u0157\3\2\2\2\34\u0159\3\2\2\2\36\u015d\3\2\2\2 \u015f\3\2"+
+		"\2\2\"\u0167\3\2\2\2$\u0181\3\2\2\2&\u0183\3\2\2\2(\u0185\3\2\2\2*\u0187"+
+		"\3\2\2\2,\u018d\3\2\2\2.\u0191\3\2\2\2\60\u019a\3\2\2\2\62\u01ac\3\2\2"+
+		"\2\64\u01b2\3\2\2\2\66\u01bf\3\2\2\28\u01d5\3\2\2\2:\u01d7\3\2\2\2<\u01da"+
+		"\3\2\2\2>\u01dd\3\2\2\2@\u01e3\3\2\2\2B\u01eb\3\2\2\2D\u01fc\3\2\2\2F"+
+		"\u0208\3\2\2\2H\u0210\3\2\2\2J\u029f\3\2\2\2L\u02fa\3\2\2\2N\u02fd\3\2"+
+		"\2\2PR\5\4\3\2QP\3\2\2\2RU\3\2\2\2SQ\3\2\2\2ST\3\2\2\2TY\3\2\2\2US\3\2"+
+		"\2\2VX\5\n\6\2WV\3\2\2\2X[\3\2\2\2YW\3\2\2\2YZ\3\2\2\2Z^\3\2\2\2[Y\3\2"+
+		"\2\2\\_\5\b\5\2]_\5\6\4\2^\\\3\2\2\2^]\3\2\2\2_\3\3\2\2\2`a\7t\2\2a\5"+
+		"\3\2\2\2bf\5\22\n\2cf\5$\23\2df\5\b\5\2eb\3\2\2\2ec\3\2\2\2ed\3\2\2\2"+
+		"fi\3\2\2\2ge\3\2\2\2gh\3\2\2\2h\7\3\2\2\2ig\3\2\2\2jl\5\24\13\2kj\3\2"+
+		"\2\2lo\3\2\2\2mk\3\2\2\2mn\3\2\2\2nq\3\2\2\2om\3\2\2\2pr\5N(\2qp\3\2\2"+
+		"\2qr\3\2\2\2r\u0081\3\2\2\2s~\7\24\2\2tu\7P\2\2uz\7q\2\2vw\7L\2\2wy\7"+
+		"q\2\2xv\3\2\2\2y|\3\2\2\2zx\3\2\2\2z{\3\2\2\2{}\3\2\2\2|z\3\2\2\2}\177"+
+		"\7O\2\2~t\3\2\2\2~\177\3\2\2\2\177\u0082\3\2\2\2\u0080\u0082\7\'\2\2\u0081"+
+		"s\3\2\2\2\u0081\u0080\3\2\2\2\u0082\u0084\3\2\2\2\u0083\u0085\7q\2\2\u0084"+
+		"\u0083\3\2\2\2\u0084\u0085\3\2\2\2\u0085\u0088\3\2\2\2\u0086\u0087\7\34"+
+		"\2\2\u0087\u0089\5\30\r\2\u0088\u0086\3\2\2\2\u0088\u0089\3\2\2\2\u0089"+
+		"\u0093\3\2\2\2\u008a\u008b\7#\2\2\u008b\u0090\5\30\r\2\u008c\u008d\7L"+
+		"\2\2\u008d\u008f\5\30\r\2\u008e\u008c\3\2\2\2\u008f\u0092\3\2\2\2\u0090"+
+		"\u008e\3\2\2\2\u0090\u0091\3\2\2\2\u0091\u0094\3\2\2\2\u0092\u0090\3\2"+
+		"\2\2\u0093\u008a\3\2\2\2\u0093\u0094\3\2\2\2\u0094\u0095\3\2\2\2\u0095"+
+		"\u0096\7G\2\2\u0096\u0097\5\16\b\2\u0097\u0098\7H\2\2\u0098\t\3\2\2\2"+
+		"\u0099\u009b\7$\2\2\u009a\u009c\7x\2\2\u009b\u009a\3\2\2\2\u009b\u009c"+
+		"\3\2\2\2\u009c\u009d\3\2\2\2\u009d\u00a2\7q\2\2\u009e\u009f\7x\2\2\u009f"+
+		"\u00a1\7q\2\2\u00a0\u009e\3\2\2\2\u00a1\u00a4\3\2\2\2\u00a2\u00a0\3\2"+
+		"\2\2\u00a2\u00a3\3\2\2\2\u00a3\u00a5\3\2\2\2\u00a4\u00a2\3\2\2\2\u00a5"+
+		"\u00ac\7x\2\2\u00a6\u00a9\7q\2\2\u00a7\u00a8\7\4\2\2\u00a8\u00aa\7q\2"+
+		"\2\u00a9\u00a7\3\2\2\2\u00a9\u00aa\3\2\2\2\u00aa\u00ad\3\2\2\2\u00ab\u00ad"+
+		"\7_\2\2\u00ac\u00a6\3\2\2\2\u00ac\u00ab\3\2\2\2\u00ad\u00c1\3\2\2\2\u00ae"+
+		"\u00af\7$\2\2\u00af\u00b4\7q\2\2\u00b0\u00b1\7M\2\2\u00b1\u00b3\7q\2\2"+
+		"\u00b2\u00b0\3\2\2\2\u00b3\u00b6\3\2\2\2\u00b4\u00b2\3\2\2\2\u00b4\u00b5"+
+		"\3\2\2\2\u00b5\u00b7\3\2\2\2\u00b6\u00b4\3\2\2\2\u00b7\u00be\7M\2\2\u00b8"+
+		"\u00bb\7q\2\2\u00b9\u00ba\7\4\2\2\u00ba\u00bc\7q\2\2\u00bb\u00b9\3\2\2"+
+		"\2\u00bb\u00bc\3\2\2\2\u00bc\u00bf\3\2\2\2\u00bd\u00bf\7_\2\2\u00be\u00b8"+
+		"\3\2\2\2\u00be\u00bd\3\2\2\2\u00bf\u00c1\3\2\2\2\u00c0\u0099\3\2\2\2\u00c0"+
+		"\u00ae\3\2\2\2\u00c1\u00c2\3\2\2\2\u00c2\u00c3\7K\2\2\u00c3\13\3\2\2\2"+
+		"\u00c4\u00c9\7q\2\2\u00c5\u00c6\7M\2\2\u00c6\u00c8\7q\2\2\u00c7\u00c5"+
+		"\3\2\2\2\u00c8\u00cb\3\2\2\2\u00c9\u00c7\3\2\2\2\u00c9\u00ca\3\2\2\2\u00ca"+
+		"\r\3\2\2\2\u00cb\u00c9\3\2\2\2\u00cc\u00d0\5\20\t\2\u00cd\u00d0\5\22\n"+
+		"\2\u00ce\u00d0\5\b\5\2\u00cf\u00cc\3\2\2\2\u00cf\u00cd\3\2\2\2\u00cf\u00ce"+
+		"\3\2\2\2\u00d0\u00d3\3\2\2\2\u00d1\u00cf\3\2\2\2\u00d1\u00d2\3\2\2\2\u00d2"+
+		"\17\3\2\2\2\u00d3\u00d1\3\2\2\2\u00d4\u00d6\5N(\2\u00d5\u00d4\3\2\2\2"+
+		"\u00d5\u00d6\3\2\2\2\u00d6\u00d7\3\2\2\2\u00d7\u00dc\58\35\2\u00d8\u00d9"+
+		"\7L\2\2\u00d9\u00db\58\35\2\u00da\u00d8\3\2\2\2\u00db\u00de\3\2\2\2\u00dc"+
+		"\u00da\3\2\2\2\u00dc\u00dd\3\2\2\2\u00dd\u00df\3\2\2\2\u00de\u00dc\3\2"+
+		"\2\2\u00df\u00e0\7K\2\2\u00e0\21\3\2\2\2\u00e1\u00e3\5\24\13\2\u00e2\u00e1"+
+		"\3\2\2\2\u00e3\u00e6\3\2\2\2\u00e4\u00e2\3\2\2\2\u00e4\u00e5\3\2\2\2\u00e5"+
+		"\u00e8\3\2\2\2\u00e6\u00e4\3\2\2\2\u00e7\u00e9\7\13\2\2\u00e8\u00e7\3"+
+		"\2\2\2\u00e8\u00e9\3\2\2\2\u00e9\u00eb\3\2\2\2\u00ea\u00ec\7\27\2\2\u00eb"+
+		"\u00ea\3\2\2\2\u00eb\u00ec\3\2\2\2\u00ec\u00ee\3\2\2\2\u00ed\u00ef\5N"+
+		"(\2\u00ee\u00ed\3\2\2\2\u00ee\u00ef\3\2\2\2\u00ef\u00f4\3\2\2\2\u00f0"+
+		"\u00f1\5\26\f\2\u00f1\u00f2\7q\2\2\u00f2\u00f5\3\2\2\2\u00f3\u00f5\7\5"+
+		"\2\2\u00f4\u00f0\3\2\2\2\u00f4\u00f3\3\2\2\2\u00f5\u00f6\3\2\2\2\u00f6"+
+		"\u0102\7E\2\2\u00f7\u00f8\5\26\f\2\u00f8\u00ff\7q\2\2\u00f9\u00fa\7L\2"+
+		"\2\u00fa\u00fb\5\26\f\2\u00fb\u00fc\7q\2\2\u00fc\u00fe\3\2\2\2\u00fd\u00f9"+
+		"\3\2\2\2\u00fe\u0101\3\2\2\2\u00ff\u00fd\3\2\2\2\u00ff\u0100\3\2\2\2\u0100"+
 		"\u0103\3\2\2\2\u0101\u00ff\3\2\2\2\u0102\u00f7\3\2\2\2\u0102\u0103\3\2"+
 		"\2\2\u0103\u0104\3\2\2\2\u0104\u010e\7F\2\2\u0105\u0106\78\2\2\u0106\u010b"+
 		"\7q\2\2\u0107\u0108\7L\2\2\u0108\u010a\7q\2\2\u0109\u0107\3\2\2\2\u010a"+
