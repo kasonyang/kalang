@@ -1729,7 +1729,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 paramList.add(0,new ThisExpr(this.getThisType()));
             }
             params = paramList.toArray(new ExprNode[paramList.size()]);
-            newExpr = new NewObjectExpr(clsType,params);
+            newExpr = new NewObjectExpr(clsType,params,thisClazz);
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {
