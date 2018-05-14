@@ -1,14 +1,11 @@
 
 package kalang.ast;
-import java.io.*;
-import java.nio.*;
-import java.net.*;
 import java.util.*;
+import javax.annotation.Nullable;
 import kalang.AmbiguousMethodException;
 import kalang.MethodNotFoundException;
 import kalang.core.ObjectType;
 import kalang.core.Type;
-import kalang.util.AstUtil;
 /**
  *
  * @author Kason Yang 
@@ -25,18 +22,21 @@ public class NewObjectExpr extends ExprNode{
     }
     
     public NewObjectExpr(ObjectType objectType,ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException {
-        this.objectType = objectType;
-        initDefaultConstructor(args);
+        this(objectType,args,null);
     }
     
     public NewObjectExpr(ObjectType objectType) throws MethodNotFoundException, AmbiguousMethodException {
-        this.objectType = objectType;
-        initDefaultConstructor(null);
+        this(objectType,new ExprNode[0],null);
     }
     
-    private void initDefaultConstructor(ExprNode[] args) throws MethodNotFoundException, AmbiguousMethodException{
+    public NewObjectExpr(ObjectType objectType,ExprNode[] args,@Nullable ClassNode caller) throws MethodNotFoundException, AmbiguousMethodException {
+        this.objectType = objectType;
+        initDefaultConstructor(args, caller);
+    }
+    
+    private void initDefaultConstructor(ExprNode[] args,@Nullable ClassNode caller) throws MethodNotFoundException, AmbiguousMethodException{
         constructor = 
-                ObjectInvokeExpr.create(this, "<init>",args);
+                ObjectInvokeExpr.create(this, "<init>",args,caller);
     }
     
     @Override
