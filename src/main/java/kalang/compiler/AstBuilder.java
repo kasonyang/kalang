@@ -1630,7 +1630,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         } else if (ctx.BooleanLiteral() != null) {
             v = ( Boolean.parseBoolean(t));
         } else if (ctx.CharacterLiteral() != null) {
-            char[] chars = t.toCharArray();
+            String strValue = StringLiteralUtil.parse(t);
+            char[] chars = strValue.toCharArray();
             v = ( chars[1]);
         } else if (ctx.StringLiteral() != null) {
             v = (StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
