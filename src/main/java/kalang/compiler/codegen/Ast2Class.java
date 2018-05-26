@@ -719,12 +719,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             if(
                     Types.isNumber(ct)
                     || Types.isBoolean(ct)
+                    || Types.isCharType(ct)
                     || ct.equals(Types.getCharClassType())
                     || ct.equals(Types.getStringClassType())
                     ){
                 return ce.getValue();
             }
-            throw Exceptions.unsupportedTypeException(ce);
+            throw Exceptions.unsupportedTypeException(ct);
         }
     }
 
