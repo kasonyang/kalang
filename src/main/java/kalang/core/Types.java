@@ -191,6 +191,10 @@ public class Types {
     public static boolean isNumber(Type type) {
         return isNumberPrimitive(type) || isNumberClass(type);
     }
+    
+    public static boolean isCharType(Type type) {
+        return CHAR_TYPE.equals(type) || getCharClassType().equals(type);
+    }
 
     public static boolean isBoolean(Type type) {
         return type.equals(getBooleanClassType()) || type.equals(BOOLEAN_TYPE);

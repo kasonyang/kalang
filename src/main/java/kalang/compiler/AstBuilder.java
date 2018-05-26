@@ -1598,34 +1598,34 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 t = t.substring(0,t.length()-1);
                 exceptedType = Types.INT_TYPE;
             }
-            long longValue;
+            Number intValue;
             try{
-                longValue =(int)StringLiteralUtil.parseLong(t);
+                intValue = StringLiteralUtil.parseInteger(t);
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid number", ctx);
                 return null;
             }
             if(Types.BYTE_TYPE.equals(exceptedType)){
                 //TODO check range
-                v = (byte)longValue;
+                v = intValue.byteValue();
             }else if(Types.LONG_TYPE.equals(exceptedType)){
-                v =  longValue;
+                v =  intValue.longValue();
             }else{
                 //TODO check range
-                v = (int)longValue;
+                v = intValue;
             }
         } else if (ctx.FloatingPointLiteral() != null) {
-            double doubleValue;
+            Number floatPointValue;
             try{
-                doubleValue = Double.parseDouble(t);
+                floatPointValue = StringLiteralUtil.parseFloatPoint(t);
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid float value", ctx);
                 return null;
             }
             if(Types.FLOAT_TYPE.equals(exceptedType)){
-                v = (float) doubleValue;
+                v = floatPointValue.floatValue();
             }else{
-                v = doubleValue;
+                v = floatPointValue;
             }
         } else if (ctx.BooleanLiteral() != null) {
             v = ( Boolean.parseBoolean(t));
