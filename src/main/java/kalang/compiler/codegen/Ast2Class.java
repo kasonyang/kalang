@@ -677,6 +677,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitBinaryExpr(BinaryExpr node) {
         ExprNode e1 = node.getExpr1();
         ExprNode e2 = node.getExpr2();
+        Type type1 = e1.getType();
+        Type type2 = e2.getType();
+        if (!type1.equals(type2)) {
+            throw new IllegalArgumentException(String.format("invalid types:%s and %s",type1,type2));
+        }
         int op;
         org.objectweb.asm.Type at = asmType(node.getExpr1().getType());
         switch(node.getOperation()){

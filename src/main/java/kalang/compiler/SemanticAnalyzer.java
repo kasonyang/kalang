@@ -1,7 +1,6 @@
 package kalang.compiler;
 
 import java.lang.reflect.Modifier;
-import kalang.util.MathType;
 import kalang.util.AstUtil;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,17 +82,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         }else{
             return null;
         }
-    }
-
-    public static PrimitiveType getMathType(Type t1, Type t2, String op) {
-        PrimitiveType pt1= getPrimitiveType(t1);
-        PrimitiveType pt2 = getPrimitiveType(t2);
-        if(pt1==null){
-            throw new IllegalArgumentException(t1.getName());
-        }
-        if(pt2==null) throw new IllegalArgumentException(t2.getName());
-        String ret = MathType.getType(pt1.getName(), pt2.getName(), op);
-        return Types.getPrimitiveType(ret);
     }
 
     public boolean validateBinaryExpr(BinaryExpr node) {

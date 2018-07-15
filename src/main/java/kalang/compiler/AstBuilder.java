@@ -119,6 +119,7 @@ import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
 import kalang.util.InvalidModifierException;
+import kalang.util.MathType;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
 import kalang.util.NameUtil;
@@ -732,8 +733,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         Token op = ctx.op;
         if (op != null) {
             String opStr = op.getText();
-            BinaryExpr be = createBinaryExpr(to, cond, opStr);
-            cond = be;
+            //TODO check type
+            cond = this.createBinaryMathExpr(to, cond, opStr);
         }
         AssignExpr as = new AssignExpr(to, from);
         IfStmt is = new IfStmt(cond);
@@ -1115,7 +1116,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return ie;
     }
     
-    private BinaryExpr createBinaryExpr(ExprNode expr1,ExprNode expr2,String op){
+    private BinaryExpr constructBinaryExpr(ExprNode expr1,ExprNode expr2,String op){
         BinaryExpr binExpr;
         switch(op){
             case "==":
@@ -1208,7 +1209,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             ExprNode from = visitExpression(fromCtx);
             if (assignOp.length() > 1) {
                 String op = assignOp.substring(0, assignOp.length() - 1);
-                from = createBinaryExpr(to, from, op);
+                from = createBinaryExpr(op,toCtx, fromCtx,ctx);
             }
             AssignableExpr toExpr;
             if(to instanceof AssignableExpr){
@@ -1290,32 +1291,60 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
     }
     
-    private ExprNode createBinaryExpr(String op,ExpressionContext exprCtx1,ExpressionContext exprCtx2,Token opStart,Token opEnd, ParserRuleContext ctx){
+    private ExprNode createBinaryExpr(String op,ExpressionContext exprCtx1,ExpressionContext exprCtx2,ParserRuleContext ctx){
         ExprNode expr1 = visitExpression(exprCtx1);
         ExprNode expr2 = visitExpression(exprCtx2);
+        if (expr1==null || expr2==null){
+            return null;
+        }
         Type type1 = expr1.getType();
         Type type2 = expr2.getType();
         boolean isPrimitive1 = (type1 instanceof PrimitiveType);
         boolean isPrimitive2 = (type2 instanceof PrimitiveType);
-        ExprNode expr;
-        if(isPrimitive1 && isPrimitive2){
-            expr = createBinaryExpr(expr1,expr2,op);
-        }else if(Types.isNumber(type1) && Types.isNumber(type2)){
-            PrimitiveType t = SemanticAnalyzer.getMathType(type1, type2, op);
-            expr1 = BoxUtil.assign(expr1, type1, t);
-            expr2 = BoxUtil.assign(expr2, type2, t);
-            if(expr1==null) throw Exceptions.unexceptedValue(expr1);
-            if(expr2==null) throw Exceptions.unexceptedValue(expr2);
-            expr = createBinaryExpr(expr1, expr2, op);
-        }else if(op.equals("==") || op.equals("!=")){
-            expr = createBinaryExpr(expr1, expr2, op);
-        }else if(op.equals("+")){
-            expr = this.concatExpressionsToStringExpr(new ExprNode[]{expr1,expr2}, new Token[]{exprCtx1.getStart(),exprCtx2.getStart()});
-        }else{
-            handleSyntaxError("unsupported operation",ParserRuleContext.EMPTY,opStart,opEnd);
+        ExprNode expr;        
+        String errMsg = String.format("bad operand types:%s %s %s",type1,op,type2);
+        if (Types.VOID_TYPE.equals(type1) || Types.VOID_TYPE.equals(type2)) {
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("bad operand types:%s %s %s",type1,op,type2),ctx);
             return null;
         }
-        if(expr!=null) mapAst(expr, ctx);
+        
+        if ("+".equals(op)) {
+            if (Types.isNumber(type1) && Types.isNumber(type2)) {
+                expr = this.createBinaryMathExpr(expr1, expr2, op);
+            } else if (Types.getStringClassType().equals(type1)||Types.getStringClassType().equals(type2)) {
+                expr = this.concatExpressionsToStringExpr(new ExprNode[]{expr1,expr2}, new Token[]{exprCtx1.getStart(),exprCtx2.getStart()});
+            } else {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, errMsg,ctx);
+                return null;
+            }
+        } else if ("==".equals(op) || "!=".equals(op)) {
+            if (Types.isNumber(type1) && Types.isNumber(type2) && (isPrimitive1 || isPrimitive2)) {
+                expr = this.createBinaryMathExpr(expr1, expr2, op);
+            } else if (Types.isBoolean(type1) && Types.isBoolean(type2) && (isPrimitive1 || isPrimitive2)) {
+                expr = this.createBinaryBoolOperateExpr(expr1, expr2, op);
+            } else {
+                expr = this.constructBinaryExpr(expr1, expr2, op);
+            }
+        } else if (">>>".equals(op) || "<<".equals(op) || ">>".equals(op)) {
+            if (Types.isExactNumber(type1) && Types.isExactNumber(type2)) {
+                expr = this.createBinaryMathExpr(expr1, expr2, op);
+            } else {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, errMsg,ctx);
+                return null;
+            }
+        } else if ("&&".equals(op) || "||".equals(op)) {
+            if (!Types.isBoolean(type1) || !Types.isBoolean(type2)) {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, errMsg,ctx);
+                return null;
+            }
+            expr = this.createBinaryBoolOperateExpr(expr1, expr2, op);
+        } else {
+            expr = this.createBinaryMathExpr(expr1, expr2, op);
+        }
+        if (expr == null) {
+            return null;
+        }
+        mapAst(expr, ctx);
         return expr;
     }
 
@@ -1323,7 +1352,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public AstNode visitBinaryExpr(BinaryExprContext ctx) {
         TerminalNode opNode = (TerminalNode) ctx.getChild(1);
         String op = opNode.getText();
-        return createBinaryExpr(op, ctx.expression(0), ctx.expression(1),opNode.getSymbol(),opNode.getSymbol(),ctx);
+        return createBinaryExpr(op, ctx.expression(0), ctx.expression(1),ctx);
     }
     
     @Nullable
@@ -2383,8 +2412,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }else{
             throw Exceptions.unexceptedValue(ctx);
         }
-        return this.createBinaryExpr(op, ctx.expression(0), ctx.expression(1)
-                , opStart,ctx.stop, ctx);
+        return this.createBinaryExpr(op, ctx.expression(0), ctx.expression(1), ctx);
     }
     
     public ExprNode createInitializedArray(Type type,ExprNode[] exprs){
@@ -2417,6 +2445,51 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     private boolean isInConstructor(){
         return "<init>".equals(this.method.getName());
+    }
+    
+    @Nullable
+    private ExprNode requireImplicitCast(Type resultType,@Nullable ExprNode expr,OffsetRange offset) {
+        if (expr==null) {
+            return null;
+        }
+        Type exprType = expr.getType();
+        ExprNode result = BoxUtil.assign(expr, exprType, resultType);
+        if (result == null) {
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s cannot be converted to %s", exprType,resultType), offset);
+            return null;
+        }
+        return result;
+    }
+    
+    private ExprNode createBinaryBoolOperateExpr(ExprNode expr1,ExprNode expr2,String op) {
+        Type type1 = expr1.getType();
+        Type type2 = expr2.getType();
+        boolean isPrimitive1 = type1 instanceof PrimitiveType;
+        boolean isPrimitive2 = type2 instanceof PrimitiveType;
+        PrimitiveType numPriType1 = isPrimitive1 ? (PrimitiveType)type1 : Types.getPrimitiveType((ObjectType)type1);
+        PrimitiveType numPriType2 = isPrimitive2 ? (PrimitiveType)type2 : Types.getPrimitiveType((ObjectType)type2);
+        expr1 = requireImplicitCast(numPriType1, expr1, expr1.offset);
+        expr2 = requireImplicitCast(numPriType2, expr2, expr2.offset);
+        if (expr1 == null || expr2 == null) {
+            return null;
+        }
+        return constructBinaryExpr(expr1, expr2, op);
+    }
+    
+    private ExprNode createBinaryMathExpr(ExprNode expr1,ExprNode expr2,String op){
+        Type type1 = expr1.getType();
+        Type type2 = expr2.getType();
+        boolean isPrimitive1 = type1 instanceof PrimitiveType;
+        boolean isPrimitive2 = type2 instanceof PrimitiveType;
+        PrimitiveType numPriType1 = isPrimitive1 ? (PrimitiveType)type1 : Types.getPrimitiveType((ObjectType)type1);
+        PrimitiveType numPriType2 = isPrimitive2 ? (PrimitiveType)type2 : Types.getPrimitiveType((ObjectType)type2);
+        PrimitiveType resultType = MathType.getType(numPriType1, numPriType2);
+        expr1 = requireImplicitCast(resultType,requireImplicitCast(numPriType1, expr1, expr1.offset),expr1.offset);
+        expr2 = requireImplicitCast(resultType, requireImplicitCast(numPriType2, expr2, expr2.offset), expr2.offset);
+        if (expr1 == null || expr2 == null) {
+            return null;
+        }
+        return constructBinaryExpr(expr1, expr2, op);
     }
 
 }
