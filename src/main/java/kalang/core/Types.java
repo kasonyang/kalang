@@ -83,10 +83,10 @@ public class Types {
     }
     
     private static String[] numberClass = new String[]{
-        BYTE_CLASS_NAME,SHORT_CLASS_NAME , INT_CLASS_NAME,LONG_CLASS_NAME,FLOAT_CLASS_NAME,DOUBLE_CLASS_NAME};
+        BYTE_CLASS_NAME,CHAR_CLASS_NAME,SHORT_CLASS_NAME , INT_CLASS_NAME,LONG_CLASS_NAME,FLOAT_CLASS_NAME,DOUBLE_CLASS_NAME};
 
     private static PrimitiveType[] numberPrimitive = new PrimitiveType[]{
-        BYTE_TYPE,SHORT_TYPE, INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
+        BYTE_TYPE, CHAR_TYPE,SHORT_TYPE, INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
     };
     
     @Nonnull
@@ -192,12 +192,26 @@ public class Types {
         return isNumberPrimitive(type) || isNumberClass(type);
     }
     
+    public static boolean isFloatPointType(Type type) {
+        return FLOAT_TYPE.equals(type) || DOUBLE_TYPE.equals(type)
+                || getFloatClassType().equals(type)
+                || getDoubleClassType().equals(type);
+    }
+    
+    public static boolean isExactNumber(Type type) {
+        return isNumber(type) && !isFloatPointType(type);
+    }
+    
     public static boolean isCharType(Type type) {
         return CHAR_TYPE.equals(type) || getCharClassType().equals(type);
     }
 
     public static boolean isBoolean(Type type) {
         return type.equals(getBooleanClassType()) || type.equals(BOOLEAN_TYPE);
+    }
+    
+    public static boolean isNullType(Type type) {
+        return NULL_TYPE.equals(type);
     }
 
     @Nonnull
@@ -347,6 +361,22 @@ public class Types {
     
     public static ObjectType requireAssertionErrorClassType() {
         return requireClassType(ASSERTION_ERROR_CLASS_NAME);
+    }
+    
+    public static boolean isPrimitiveCastable(PrimitiveType fromType,PrimitiveType toType){
+        if (fromType.equals(toType)) {
+            return true;
+        }
+        HashMap<PrimitiveType, List> baseMap = new HashMap();
+        baseMap.put(BYTE_TYPE,Arrays.asList(new PrimitiveType[]{INT_TYPE,LONG_TYPE,FLOAT_TYPE,DOUBLE_TYPE}));
+        baseMap.put(INT_TYPE, Arrays.asList(new PrimitiveType[]{LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE}));
+        baseMap.put(LONG_TYPE, Arrays.asList(new PrimitiveType[]{FLOAT_TYPE, DOUBLE_TYPE}));
+        baseMap.put(FLOAT_TYPE, Arrays.asList(new PrimitiveType[]{DOUBLE_TYPE}));
+        baseMap.put(DOUBLE_TYPE, new LinkedList());
+        if (baseMap.containsKey(fromType)) {
+            return baseMap.get(fromType).contains(toType);
+        }
+        return false;
     }
 
 }

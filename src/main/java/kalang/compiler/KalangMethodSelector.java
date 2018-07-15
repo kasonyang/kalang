@@ -4,9 +4,9 @@ import kalang.core.ClassType;
 import kalang.core.ExecutableDescriptor;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
+import kalang.core.Types;
 import kalang.runtime.util.MethodSelector;
 import kalang.util.BoxUtil;
-import kalang.util.MathType;
 
 /**
  *
@@ -33,7 +33,7 @@ public class KalangMethodSelector extends MethodSelector<ExecutableDescriptor,Ty
         }else if(actualType instanceof PrimitiveType){
             if((t1 instanceof PrimitiveType) && (t2 instanceof ClassType)) return true;
             if(t1 instanceof PrimitiveType && t2 instanceof PrimitiveType){
-                return MathType.castable(MathType.getType(t1.getName()),MathType.getType(t2.getName()));
+                return Types.isPrimitiveCastable((PrimitiveType)t1,(PrimitiveType)t2);
             }
         }
         //TODO imcomplete isMorePreciseType

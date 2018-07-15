@@ -3,29 +3,15 @@ package kalang.util;
 import kalang.ast.ExprNode;
 import kalang.ast.InvocationExpr;
 import kalang.ast.PrimitiveCastExpr;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.ast.ClassReference;
-import kalang.ast.ConstExpr;
-import kalang.ast.NewArrayExpr;
 import kalang.ast.ObjectInvokeExpr;
 import kalang.ast.StaticInvokeExpr;
 import kalang.AmbiguousMethodException;
 import kalang.AstNotFoundException;
 import kalang.MethodNotFoundException;
-import kalang.ast.AssignExpr;
-import kalang.ast.ElementExpr;
-import kalang.ast.ExprStmt;
-import kalang.ast.LocalVarNode;
-import kalang.ast.MultiStmtExpr;
-import kalang.ast.Statement;
-import kalang.ast.VarDeclStmt;
-import kalang.ast.VarExpr;
 import kalang.compiler.AstLoader;
-import kalang.core.ArrayType;
 import kalang.core.ObjectType;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
@@ -82,7 +68,7 @@ public class BoxUtil {
         if (fromType instanceof PrimitiveType
                 && toType instanceof PrimitiveType) {
             //if ((toType) instanceof PrimitiveType) {
-            if (MathType.castable(MathType.getType(fromType.getName()), MathType.getType(toType.getName()))) {
+            if (Types.isPrimitiveCastable((PrimitiveType)fromType, (PrimitiveType)toType)) {
                 return CAST_PRIMITIVE;
             }
         } else if (fromType instanceof PrimitiveType
