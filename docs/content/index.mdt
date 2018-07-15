@@ -21,7 +21,7 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 
 For Linux users:
 
-    wget http://file.kason.site/kalang-compiler/v${version}/kalang-compiler-${version}.tar
+    wget http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/${version}/kalang-compiler-${version}.tar
     tar -xvf kalang-compiler-${version}.tar
     ln -s `pwd`/kalang-compiler-${version}/bin/kalangc /usr/local/bin/kalangc
     ln -s `pwd`/kalang-compiler-${version}/bin/kalangsh /usr/local/bin/kalangsh
@@ -29,7 +29,7 @@ For Linux users:
 
 For Windows users:
 
-1. Download latest binary distribution:[http://file.kason.site/kalang-compiler/v${version}/kalang-compiler-${version}.zip](http://file.kason.site/kalang-compiler/v${version}/kalang-compiler-${version}.zip)
+1. Download latest binary distribution:[http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/${version}/kalang-compiler-${version}.zip](http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/${version}/kalang-compiler-${version}.zip)
 2. Unzip the downloaded zip file
 3. Add the absolute path of the `bin` directory to the `PATH` environment variable
 
