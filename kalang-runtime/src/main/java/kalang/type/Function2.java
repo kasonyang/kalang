@@ -1,0 +1,11 @@
+package kalang.type;
+
+/**
+ *
+ * @author Kason Yang
+ */
+public interface Function2<R, P1, P2> {
+
+    R run(P1 arg1, P2 arg2);
+
+}
