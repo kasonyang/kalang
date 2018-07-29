@@ -122,6 +122,8 @@ classType:
                     ( ',' parameterTypes+=parameterizedElementType)* 
         '>')?
         (nullable='?')?
+     |
+       '&' returnType=type '(' (paramsTypes+=type (',' paramsTypes+=type)*)? ')'
 ;
 parameterizedElementType:
     type | wildcardType
@@ -241,6 +243,7 @@ expression
         RPAREN #parenExpr
     |   ref=('this'|'super') #selfRefExpr
     |   literal #literalExpr
+    | '{' ( lambdaParams+=Identifier (',' lambdaParams+=Identifier)* '->')? stat* '}' #lambdaExpr
     | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=Identifier ':' values+=expression ( ',' keys+=Identifier ':' values+=expression)*  ']' 
           | '[' ':' ']'
       ) #mapExpr
