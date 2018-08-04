@@ -1042,6 +1042,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             Statement st = visitStat(ctx.stat());
             if(st instanceof BlockStmt){
                 bs.statements.addAll(((BlockStmt)st).statements);
+            } else if (st != null) {
+                bs.statements.add(st);
             }
         }
         popBlock();
