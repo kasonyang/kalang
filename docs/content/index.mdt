@@ -21,7 +21,7 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 
 For Linux users:
 
-    wget http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/${version}/kalang-compiler-${version}.tar
+    wget -O kalang-compiler-${version}.tar http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/${version}/kalang-compiler-${version}.tar
     tar -xvf kalang-compiler-${version}.tar
     ln -s `pwd`/kalang-compiler-${version}/bin/kalangc /usr/local/bin/kalangc
     ln -s `pwd`/kalang-compiler-${version}/bin/kalangsh /usr/local/bin/kalangsh
