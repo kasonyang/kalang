@@ -1426,7 +1426,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 expr = invoke;
             }
         } catch (MethodNotFoundException ex) {
-            methodNotFound(ctx.start, className, methodName, args);
+            methodNotFound(ctx.start, targetType.getName(), methodName, args);
             expr= new UnknownInvocationExpr(target,methodName,args);
         } catch(AmbiguousMethodException ex){
             methodIsAmbiguous(ctx.start,ex);
