@@ -1,5 +1,4 @@
 package kalang.ast;
-import java.util.*;
 import javax.annotation.Nullable;
 import kalang.core.*;
 public class VarExpr extends AssignableExpr{
@@ -33,6 +32,10 @@ public class VarExpr extends AssignableExpr{
     @Override
     public String toString() {
         return var.getName();
+    }
+    
+    public void overrideType(Type newType) {
+        overrideType = newType;
     }
     
     public void removeOverrideType(){
