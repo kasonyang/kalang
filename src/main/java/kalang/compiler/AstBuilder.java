@@ -85,6 +85,7 @@ import kalang.antlr.KalangParserVisitor;
 import kalang.ast.AnnotationNode;
 import kalang.ast.ArrayLengthExpr;
 import kalang.ast.AssignableExpr;
+import kalang.ast.AstVisitor;
 import kalang.ast.ClassReference;
 import kalang.ast.CompareExpr;
 import kalang.ast.ErrorousExpr;
@@ -117,6 +118,8 @@ import kalang.core.Type;
 import kalang.core.Types;
 import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
+import kalang.function.FunctionType;
+import kalang.function.LambdaExpr;
 import kalang.util.BoxUtil;
 import kalang.util.InvalidModifierException;
 import kalang.util.MathType;
@@ -146,6 +149,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private DiagnosisReporter diagnosisReporter;
     
     private SemanticAnalyzer semanticAnalyzer;
+    
+    private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
+    
+    //private Map<MethodNode,List<StatContext>> lambdaStatMap = new HashMap();
+    
+    private int lambdaCounter = 1;
 
     @Override
     public Object visitEmptyStat(KalangParser.EmptyStatContext ctx) {
@@ -387,6 +396,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
             visitMethods(topClass);
+            buildLambdaExpressions(topClass);
         }
     }
     
@@ -508,6 +518,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Nullable
     protected ObjectType parseClassType(KalangParser.ClassTypeContext ctx){
         NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
+        TypeContext returnTypeCtx = ctx.returnType;
+        if ( returnTypeCtx!=null) {
+            Type returnType = this.parseType(returnTypeCtx);
+            List<TypeContext> paramTypeCtxList = ctx.paramsTypes;
+            Type[] paramTypes = new Type[paramTypeCtxList.size()];
+            for(int i=0;i<paramTypes.length;i++) {
+                paramTypes[i] = this.parseType(paramTypeCtxList.get(i));
+            }
+            return new FunctionType(returnType, paramTypes, nullable);
+        }
         Token rawTypeToken = ctx.rawClass;
         List<String> classNameParts = new LinkedList();
         for(Token p:ctx.paths){
@@ -545,7 +565,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 }
             }
             return Types.getClassType(clazzType.getClassNode(), typeArguments,nullable);
-        }else{
+        } else {
             return Types.getClassType(clazzType.getClassNode(), nullable);
         }
     }
@@ -1949,6 +1969,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return new IncrementExpr((AssignableExpr) expr, isDesc, isPrefix);
     }
 
+    
+    
     private ExprNode requireCastable(ExprNode expr1, Type fromType, Type toType,Token token) {
         ExprNode expr = BoxUtil.assign(expr1,fromType,toType);
         if(expr==null){
@@ -2051,6 +2073,17 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public Object visitCompileOption(KalangParser.CompileOptionContext ctx) {
         return null;//Do noting
         //throw Exceptions.unexceptedException("");
+    }
+    
+    @Override
+    public Object visitLambdaExpr(KalangParser.LambdaExprContext ctx) {
+        Type type = Types.requireClassType(Types.FUNCTION_CLASS_NAME);
+        LocalVarNode tmpVar = this.declareTempLocalVar(type);
+        List<Statement> stmts = new ArrayList();
+        stmts.add(new VarDeclStmt(tmpVar));
+        LambdaExpr ms = new LambdaExpr(stmts, new VarExpr(tmpVar));
+        this.lambdaExprCtxMap.put(ms, ctx);
+        return ms;
     }
     
     protected List<AnnotationNode> getAnnotations(@Nullable List<KalangParser.AnnotationContext> ctxs){
@@ -2492,4 +2525,87 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         return constructBinaryExpr(expr1, expr2, op);
     }
 
+    private void buildLambdaExpressions(ClassNode classNode){
+        for(ClassNode c:classNode.classes) {
+            buildLambdaExpressions(c);
+        }
+        List<ClassNode> newLambdaClasses = new LinkedList();
+        final Map<LambdaExpr,FunctionType> lambdaTypes = new HashMap();
+        AstVisitor astVisitor = new AstVisitor(){
+            @Override
+            public Object visitInvocationExpr(InvocationExpr node) {
+                ExprNode[] args = node.getArguments();
+                if (args!=null) {
+                    Type[] argTypes = node.getMethod().getParameterTypes();
+                    for(int i=0;i<args.length;i++) {
+                        ExprNode arg = args[i];
+                        if (arg instanceof LambdaExpr) {
+                            lambdaTypes.put((LambdaExpr) arg ,(FunctionType)argTypes[i]);
+                        }
+                    }
+                }
+                return super.visitInvocationExpr(node);
+            }
+        };
+        astVisitor.visit(classNode);
+        for (Map.Entry<LambdaExpr, FunctionType> e:lambdaTypes.entrySet()) {
+            LambdaExpr lambdaExpr = e.getKey();
+            KalangParser.LambdaExprContext ctx = this.lambdaExprCtxMap.get(lambdaExpr);
+            ClassNode lambdaClassNode = this.createFunctionClassNode(e.getValue(),ctx);
+            ClassType lambdaType = Types.getClassType(lambdaClassNode);
+            //lambdaExpr.getReferenceExpr()
+            NewObjectExpr newExpr;
+            try {
+                newExpr = new NewObjectExpr(lambdaType, new ExprNode[0], classNode);
+            } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                throw Exceptions.unexceptedException(ex);
+            }
+            lambdaExpr.stmts.add(new ExprStmt(
+                    new AssignExpr(lambdaExpr.getReferenceExpr(),newExpr)
+            ));
+            if (lambdaClassNode!=null) {
+                classNode.classes.add(lambdaClassNode);
+                newLambdaClasses.add(lambdaClassNode);
+            }
+        }
+        for(ClassNode c:newLambdaClasses) {
+            buildLambdaExpressions(c);
+        }
+    }
+    
+    private ClassNode createFunctionClassNode(FunctionType type,KalangParser.LambdaExprContext ctx){
+        Type returnType = type.getReturnType();
+        Type[] paramTypes = type.getParameterTypes();
+        String lambdaName = this.thisClazz.name + "$" + "Lambda"+ lambdaCounter++;
+        ClassNode oldClass = thisClazz;
+        MethodNode oldMethod = method;
+        ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
+        classNode.setSuperType(Types.getRootType());
+        classNode.addInterface(type);
+        MethodNode methodNode = method = classNode.createMethodNode(returnType, "run", Modifier.PUBLIC);
+        List<Token> lambdaParams = ctx.lambdaParams;
+        if (paramTypes.length != lambdaParams.size()) {
+            String msg = String.format("expected %d parameters but got %d",paramTypes.length,lambdaParams.size());
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
+            return null;
+        }
+        for (int i=0;i<paramTypes.length;i++) {
+            Type pt = paramTypes[i];
+            methodNode.createParameter(pt,ctx.lambdaParams.get(i).getText());
+        }
+        AstUtil.createEmptyConstructor(classNode);
+        List<StatContext> stats = ctx.stat();
+        BlockStmt bs = this.newBlock();
+        for(StatContext s:stats) {
+            Statement statement = visitStat(s);
+            if(statement!=null) {
+                bs.statements.add(statement);
+            }
+        }
+        methodNode.getBody().statements.add(bs);
+        //TODO check return
+        thisClazz = oldClass;
+        method = oldMethod;
+        return classNode;
+    }
 }

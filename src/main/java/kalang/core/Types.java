@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.compiler.AstLoader;
 import kalang.AstNotFoundException;
+import kalang.type.Function;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 /**
  *
@@ -68,7 +69,9 @@ public class Types {
     
     public final static String ITERABLE_CLASS_NAME = "java.lang.Iterable";
     
-    public final static String ASSERTION_ERROR_CLASS_NAME = AssertionError.class.getName();
+    public final static String ASSERTION_ERROR_CLASS_NAME = AssertionError.class.getName()
+            ,FUNCTION_CLASS_NAME = Function.class.getName()
+            ;
             
     static {
         primitive2class.put(INT_TYPE, INT_CLASS_NAME);
