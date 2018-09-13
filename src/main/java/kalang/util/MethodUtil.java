@@ -46,7 +46,7 @@ public class MethodUtil {
         }
         return MethodUtil.getDeclarationKey(name, typeStrList.toArray(new String[typeStrList.size()]));
     }
-
+    
     public static String getDeclarationKey(MethodNode node) {
         return MethodUtil.getDeclarationKey(node.getName(), getParameterTypes(node));
     }
@@ -102,6 +102,16 @@ public class MethodUtil {
             Type[] mParams = m.getParameterTypes();
             if(!Arrays.equals(mParams, parameterTypes)) continue;
             return m;
+        }
+        return null;
+    }
+    
+    @Nullable
+    public static ExecutableDescriptor getExecutableDescriptor(ExecutableDescriptor[] methods,String declarationkey) {
+        for (ExecutableDescriptor m:methods) {
+            if (declarationkey.equals(m.getDeclarationKey())) {
+                return m;
+            }
         }
         return null;
     }
