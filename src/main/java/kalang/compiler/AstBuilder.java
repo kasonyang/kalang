@@ -112,12 +112,14 @@ import kalang.core.ObjectType;
 import kalang.core.GenericType;
 import kalang.core.NullableKind;
 import kalang.core.ClassType;
+import kalang.core.MethodDescriptor;
 import kalang.core.PrimitiveType;
 import kalang.core.Type;
 import kalang.core.Types;
 import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.util.BoxUtil;
+import kalang.util.InterfaceUtil;
 import kalang.util.InvalidModifierException;
 import kalang.util.MathType;
 import kalang.util.MethodUtil;
@@ -387,6 +389,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
             visitMethods(topClass);
+            checkAndBuildInterfaceMethods(topClass);
         }
     }
     
@@ -2492,6 +2495,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             return null;
         }
         return constructBinaryExpr(expr1, expr2, op);
+    }
+    
+    private void checkAndBuildInterfaceMethods(ClassNode clazz) {
+        for(ClassNode c:clazz.classes) {
+            checkAndBuildInterfaceMethods(c);
+        }
+        if (Modifier.isAbstract(clazz.modifier)) {
+            return;
+        }
+        List<MethodDescriptor> unimplements = InterfaceUtil.checkAndBuildInterfaceMethods(clazz);
+        if (!unimplements.isEmpty()) {
+            for(MethodDescriptor m:unimplements) {
+                String msg = String.format(
+                        "please override abstract method %s in %s",
+                        m.toString()
+                        ,m.getMethodNode().getClassNode().name
+                );
+                diagnosisReporter.report(Diagnosis.Kind.ERROR,msg, clazz.offset);
+            }
+        }
     }
 
 }
