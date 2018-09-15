@@ -156,7 +156,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     //private Map<MethodNode,List<StatContext>> lambdaStatMap = new HashMap();
     
-    private int lambdaCounter = 1;
+    private int anonymousClassCounter = 0;
 
     @Override
     public Object visitEmptyStat(KalangParser.EmptyStatContext ctx) {
@@ -398,6 +398,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
             visitMethods(topClass);
+            processConstructor(topClass);
             buildLambdaExpressions(topClass);
             checkAndBuildInterfaceMethods(topClass);
         }
@@ -409,44 +410,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             BlockStmt mbody = m.getBody();
             StatContext[] stats = classNodeMetaBuilder.getStatContexts(m);
             if(stats!=null){
-                method = m;
-                returned = false;
+                enterMethod(m);
                 visitBlockStmt(stats,mbody);
-                boolean needReturn = (
-                    m.getType() != null
-                    && !m.getType().equals(Types.VOID_TYPE)
-                );
-                if (m.getBody() != null && needReturn && !returned) {
-                    this.diagnosisReporter.report(
-                            Diagnosis.Kind.ERROR
-                            , "Missing return statement in method:" + MethodUtil.toString(method)
-                            ,classNodeMetaBuilder.getMethodDeclContext(m)
-                    );
-                }
-                new InitializationAnalyzer(compilationUnit, astLoader).check(clazz, m);
-            }
-            if(AstUtil.isConstructor(m)){   
-                @SuppressWarnings("null")
-                List<Statement> bodyStmts = mbody.statements;
-                if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
-                    try {
-                        bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
-                    } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                        diagnosisReporter.report(Diagnosis.Kind.ERROR
-                                ,"default constructor not found"
-                                ,classNodeMetaBuilder.getMethodDeclContext(m)
-                        );
-                    }
-                }
-                //check super()
-                int stmtsSize = mbody.statements.size();
-                assert stmtsSize > 0;
-                Statement firstStmt = mbody.statements.get(0);
-                if(!AstUtil.isConstructorCallStatement(firstStmt)){
-                    //TODO handle error
-                    throw new RuntimeException("missing constructor call");
-                }
-                mbody.statements.addAll(1, this.thisClazz.initStmts);
+                checkMethod();
             }
         }
         for(ClassNode c:clazz.classes){
@@ -2601,13 +2567,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private ClassNode createFunctionClassNode(FunctionType type,KalangParser.LambdaExprContext ctx){
         Type returnType = type.getReturnType();
         Type[] paramTypes = type.getParameterTypes();
-        String lambdaName = this.thisClazz.name + "$" + "Lambda"+ lambdaCounter++;
+        String lambdaName = this.thisClazz.name + "$" + ++anonymousClassCounter;
         ClassNode oldClass = thisClazz;
         MethodNode oldMethod = method;
         ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
         classNode.setSuperType(Types.getRootType());
         classNode.addInterface(type);
-        MethodNode methodNode = method = classNode.createMethodNode(returnType, "run", Modifier.PUBLIC);
+        MethodNode methodNode = classNode.createMethodNode(returnType, "run", Modifier.PUBLIC);
+        enterMethod(methodNode);
         List<Token> lambdaParams = ctx.lambdaParams;
         if (paramTypes.length != lambdaParams.size()) {
             String msg = String.format("expected %d parameters but got %d",paramTypes.length,lambdaParams.size());
@@ -2627,10 +2594,74 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 bs.statements.add(statement);
             }
         }
+        if (returnType.equals(Types.getVoidClassType())) {
+            bs.statements.add(new ReturnStmt(new ConstExpr(null)));
+            returned = true;
+        }
         methodNode.getBody().statements.add(bs);
+        checkMethod();
         //TODO check return
         thisClazz = oldClass;
         method = oldMethod;
         return classNode;
+    }
+    
+    private void enterMethod(MethodNode method) {
+        this.method = method;
+        returned = false;
+    }
+    
+    private void checkMethod() {
+        MethodNode m = this.method;
+        boolean needReturn = (
+            m.getType() != null
+            && !m.getType().equals(Types.VOID_TYPE)
+        );
+        if (m.getBody() != null && needReturn && !returned) {
+            this.diagnosisReporter.report(
+                    Diagnosis.Kind.ERROR
+                    , "Missing return statement in method:" + MethodUtil.toString(method)
+                    , m.offset
+            );
+        }
+        new InitializationAnalyzer(compilationUnit, astLoader).check(thisClazz, m);
+    }
+    
+    private void processConstructor(ClassNode clazz) {
+        thisClazz = clazz;
+        processConstructor();
+        for (ClassNode c:thisClazz.classes) {
+            processConstructor(c);
+        }
+    }
+    
+    private void processConstructor() {
+        MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
+        for(MethodNode m:methods) {
+            BlockStmt mbody = m.getBody();
+            if(AstUtil.isConstructor(m)){   
+                @SuppressWarnings("null")
+                List<Statement> bodyStmts = mbody.statements;
+                if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
+                    try {
+                        bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
+                    } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+                        diagnosisReporter.report(Diagnosis.Kind.ERROR
+                                ,"default constructor not found"
+                                ,m.offset
+                        );
+                    }
+                }
+                //check super()
+                int stmtsSize = mbody.statements.size();
+                assert stmtsSize > 0;
+                Statement firstStmt = mbody.statements.get(0);
+                if(!AstUtil.isConstructorCallStatement(firstStmt)){
+                    //TODO handle error
+                    throw new RuntimeException("missing constructor call");
+                }
+                mbody.statements.addAll(1, this.thisClazz.initStmts);
+            }
+        }
     }
 }

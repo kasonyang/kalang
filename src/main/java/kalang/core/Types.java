@@ -381,9 +381,5 @@ public class Types {
         }
         return false;
     }
-    
-    public static boolean hasValue(Type type) {
-        return !Types.VOID_TYPE.equals(type) && !Types.getVoidClassType().equals(type);
-    }
 
 }
