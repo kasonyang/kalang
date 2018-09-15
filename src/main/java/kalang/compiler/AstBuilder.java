@@ -121,9 +121,11 @@ import kalang.core.WildcardType;
 import kalang.exception.Exceptions;
 import kalang.function.FunctionType;
 import kalang.function.LambdaExpr;
+import kalang.type.FunctionClasses;
 import kalang.util.BoxUtil;
 import kalang.util.InterfaceUtil;
 import kalang.util.InvalidModifierException;
+import kalang.util.LambdaUtil;
 import kalang.util.MathType;
 import kalang.util.MethodUtil;
 import kalang.util.ModifierUtil;
@@ -491,11 +493,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if ( returnTypeCtx!=null) {
             Type returnType = this.parseType(returnTypeCtx);
             List<TypeContext> paramTypeCtxList = ctx.paramsTypes;
-            Type[] paramTypes = new Type[paramTypeCtxList.size()];
+            int paramCount = paramTypeCtxList.size();
+            int maxParamCount = FunctionClasses.CLASSES.length-1;
+            if (paramCount > maxParamCount) {
+                String msg = "only support " +maxParamCount + " parameters";
+                diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
+                return Types.getRootType();
+            }
+            Type[] paramTypes = new Type[paramCount];
             for(int i=0;i<paramTypes.length;i++) {
                 paramTypes[i] = this.parseType(paramTypeCtxList.get(i));
             }
-            return new FunctionType(returnType, paramTypes, nullable);
+            return Types.getFunctionType(returnType, paramTypes, nullable);
         }
         Token rawTypeToken = ctx.rawClass;
         List<String> classNameParts = new LinkedList();
@@ -2572,18 +2581,23 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         MethodNode oldMethod = method;
         ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
         classNode.setSuperType(Types.getRootType());
-        classNode.addInterface(type);
         MethodNode methodNode = classNode.createMethodNode(returnType, "run", Modifier.PUBLIC);
         enterMethod(methodNode);
         List<Token> lambdaParams = ctx.lambdaParams;
-        if (paramTypes.length != lambdaParams.size()) {
+        int lambdaParamsCount = ctx.lambdaParams.size();
+        if (paramTypes.length < lambdaParams.size()) {
             String msg = String.format("expected %d parameters but got %d",paramTypes.length,lambdaParams.size());
             this.diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
             return null;
         }
-        for (int i=0;i<paramTypes.length;i++) {
+        for (int i=0;i<lambdaParamsCount;i++) {
             Type pt = paramTypes[i];
             methodNode.createParameter(pt,ctx.lambdaParams.get(i).getText());
+        }
+        ClassType interfaceType = Types.getFunctionType(returnType, MethodUtil.getParameterTypes(methodNode), NullableKind.NONNULL);
+        classNode.addInterface(interfaceType);
+        for(int i=lambdaParamsCount+1;i<=FunctionClasses.CLASSES.length-1;i++) {
+            LambdaUtil.createBridgeRunMethod(classNode, methodNode,paramTypes, i);
         }
         AstUtil.createEmptyConstructor(classNode);
         List<StatContext> stats = ctx.stat();

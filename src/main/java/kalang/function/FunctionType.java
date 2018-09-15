@@ -6,21 +6,16 @@ import kalang.core.ClassType;
 import kalang.core.NullableKind;
 import kalang.core.Type;
 import kalang.core.Types;
-import kalang.type.Function0;
-import kalang.type.Function1;
-import kalang.type.Function2;
-import kalang.type.Function3;
-import kalang.type.Function4;
-import kalang.type.Function5;
+import kalang.type.FunctionClasses;
 
 /**
  *
  * @author Kason Yang
  */
 public class FunctionType extends ClassType {
-    
+
     private Type[] parameterTypes;
-    
+
     private Type returnType;
 
     public FunctionType(Type returnType, @Nullable Type[] parameterTypes, NullableKind nullable) {
@@ -57,7 +52,11 @@ public class FunctionType extends ClassType {
         if (parameterTypes == null) {
             parameterTypes = new Type[0];
         }
-        Type[] types = new Type[parameterTypes.length + 1];
+        int paramCount = parameterTypes.length;
+        if (paramCount > FunctionClasses.CLASSES.length - 1) {
+            throw new IllegalArgumentException("");
+        }
+        Type[] types = new Type[paramCount + 1];
         types[0] = returnType;
         for (int i = 1; i < types.length; i++) {
             types[i] = parameterTypes[i - 1];
@@ -67,11 +66,10 @@ public class FunctionType extends ClassType {
 
     private static ClassNode buildClassNode(@Nullable Type[] parameterTypes) {
         int pcount = parameterTypes == null ? 0 : parameterTypes.length;
-        Class[] functionClasses = new Class[]{
-            Function0.class, Function1.class, Function2.class, Function3.class,
-            Function4.class, Function5.class
-        };
-        return Types.requireClassType(functionClasses[pcount].getName()).getClassNode();
+        if (pcount > FunctionClasses.CLASSES.length - 1) {
+            throw new IllegalArgumentException("");
+        }
+        return Types.requireClassType(FunctionClasses.CLASSES[pcount].getName()).getClassNode();
     }
 
 }
