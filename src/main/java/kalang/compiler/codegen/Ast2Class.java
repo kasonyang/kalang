@@ -346,7 +346,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ParameterNode p = parameters[i];
             visit(p);
             if(p.getType() instanceof ObjectType){
-                md.visitParameterAnnotation(i,getClassDescriptor(getNullableAnnotation((ObjectType)p.getType())), true).visitEnd();
+                String nullableAnnotation = getNullableAnnotation((ObjectType)p.getType());
+                if (nullableAnnotation!=null && nullableAnnotation.isEmpty()) {
+                    md.visitParameterAnnotation(i,getClassDescriptor(nullableAnnotation), true).visitEnd();
+                }
             }
         }
         md.visitLabel(methodStartLabel);
