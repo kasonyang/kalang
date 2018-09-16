@@ -2062,6 +2062,28 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         List<Statement> stmts = new ArrayList();
         stmts.add(new VarDeclStmt(tmpVar));
         LambdaExpr ms = new LambdaExpr(stmts, new VarExpr(tmpVar));
+        Map<String,VarObject> accessibleVars = new HashMap();
+        VarTable<String, LocalVarNode> vtb = this.varTables;
+        while(vtb!=null) {
+            for(Map.Entry<String, LocalVarNode> v:vtb.vars().entrySet()) {
+                String name = v.getKey();
+                LocalVarNode var = v.getValue();
+                if (!accessibleVars.containsKey(name)) {
+                    accessibleVars.put(name, var);
+                }
+            }
+            vtb = vtb.getParent();
+        }
+        ParameterNode[] paramNodes = this.method.getParameters();
+        for(ParameterNode p:paramNodes) {
+            String name = p.getName();
+            if (!accessibleVars.containsKey(name)) {
+                accessibleVars.put(name, p);
+            }
+        }
+        for(Map.Entry<String, VarObject> e:accessibleVars.entrySet()) {
+            ms.putAccessibleVarObject(e.getKey(), e.getValue());
+        }
         this.lambdaExprCtxMap.put(ms, ctx);
         return ms;
     }
@@ -2551,7 +2573,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         for (Map.Entry<LambdaExpr, FunctionType> e:lambdaTypes.entrySet()) {
             LambdaExpr lambdaExpr = e.getKey();
             KalangParser.LambdaExprContext ctx = this.lambdaExprCtxMap.get(lambdaExpr);
-            ClassNode lambdaClassNode = this.createFunctionClassNode(e.getValue(),ctx);
+            ClassNode lambdaClassNode = this.createFunctionClassNode(e.getValue(),lambdaExpr,ctx);
             ClassType lambdaType = Types.getClassType(lambdaClassNode);
             //lambdaExpr.getReferenceExpr()
             NewObjectExpr newExpr;
@@ -2560,7 +2582,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                 throw Exceptions.unexceptedException(ex);
             }
-            lambdaExpr.stmts.add(new ExprStmt(
+            lambdaExpr.stmts.add(1,new ExprStmt(
                     new AssignExpr(lambdaExpr.getReferenceExpr(),newExpr)
             ));
             if (lambdaClassNode!=null) {
@@ -2573,7 +2595,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
     }
     
-    private ClassNode createFunctionClassNode(FunctionType type,KalangParser.LambdaExprContext ctx){
+    private ClassNode createFunctionClassNode(FunctionType type,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
         Type returnType = type.getReturnType();
         Type[] paramTypes = type.getParameterTypes();
         String lambdaName = this.thisClazz.name + "$" + ++anonymousClassCounter;
@@ -2581,6 +2603,22 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         MethodNode oldMethod = method;
         ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
         classNode.setSuperType(Types.getRootType());
+        Map<String, VarObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
+        for( Map.Entry<String, VarObject> v:accessibleVars.entrySet()) {
+            String name = v.getKey();
+            VarObject var = v.getValue();
+            FieldNode f = classNode.createField(var.getType(),name, Modifier.PUBLIC&Modifier.FINAL);
+            AssignExpr assignExpr;
+            ObjectFieldExpr fieldExpr = new ObjectFieldExpr(new VarExpr(lambdaExpr.getReferenceVar()), f);
+            if (var instanceof LocalVarNode) {
+                assignExpr = new AssignExpr(fieldExpr,new VarExpr((LocalVarNode)var));
+            } else if (var instanceof ParameterNode) {
+                assignExpr = new AssignExpr(fieldExpr,new ParameterExpr((ParameterNode)var));
+            } else {
+                throw Exceptions.unexceptedValue(var);
+            }
+            lambdaExpr.stmts.add(new ExprStmt(assignExpr));
+        }
         MethodNode methodNode = classNode.createMethodNode(returnType, "run", Modifier.PUBLIC);
         enterMethod(methodNode);
         List<Token> lambdaParams = ctx.lambdaParams;
