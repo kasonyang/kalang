@@ -53,16 +53,16 @@ public class InterfaceUtil {
                 continue;
             }
             Type[] descriptorParamsTypes = im.getParameterTypes();
-            Type[] interfaceMethodParamsTypes = MethodUtil.getParameterTypes(im.getMethodNode());
+            MethodNode imMethodNode = im.getMethodNode();
+            Type[] interfaceMethodParamsTypes = MethodUtil.getParameterTypes(imMethodNode);
             if (!Arrays.equals(descriptorParamsTypes, interfaceMethodParamsTypes)) {
-                createBridgeMethod(clazz, interfaceMethodParamsTypes, cm);
+                createBridgeMethod(clazz, imMethodNode.getType(),interfaceMethodParamsTypes, cm);
             }
         }
         return unimplements;
     }
 
-    private static void createBridgeMethod(ClassNode clazz, Type[] paramTypes, ExecutableDescriptor targetMethod) {
-        Type returnType = targetMethod.getReturnType();
+    private static void createBridgeMethod(ClassNode clazz,Type returnType,Type[] paramTypes, ExecutableDescriptor targetMethod) {
         Type[] oldParamTypes = targetMethod.getParameterTypes();
         MethodNode m = clazz.createMethodNode(returnType, targetMethod.getName(), targetMethod.getModifier());
         ParameterNode[] paramNodes = new ParameterNode[paramTypes.length];
