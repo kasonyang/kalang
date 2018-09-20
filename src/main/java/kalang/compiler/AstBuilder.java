@@ -2059,9 +2059,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public Object visitLambdaExpr(KalangParser.LambdaExprContext ctx) {
         Type type = Types.requireClassType(Types.FUNCTION_CLASS_NAME);
         LocalVarNode tmpVar = this.declareTempLocalVar(type);
-        List<Statement> stmts = new ArrayList();
-        stmts.add(new VarDeclStmt(tmpVar));
-        LambdaExpr ms = new LambdaExpr(stmts, new VarExpr(tmpVar));
+        LambdaExpr ms = new LambdaExpr(tmpVar);
         Map<String,VarObject> accessibleVars = new HashMap();
         VarTable<String, LocalVarNode> vtb = this.varTables;
         while(vtb!=null) {
@@ -2582,9 +2580,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                 throw Exceptions.unexceptedException(ex);
             }
-            lambdaExpr.stmts.add(1,new ExprStmt(
-                    new AssignExpr(lambdaExpr.getReferenceExpr(),newExpr)
-            ));
+            lambdaExpr.setInitExpr(newExpr);
             if (lambdaClassNode!=null) {
                 classNode.classes.add(lambdaClassNode);
                 newLambdaClasses.add(lambdaClassNode);
@@ -2617,7 +2613,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             } else {
                 throw Exceptions.unexceptedValue(var);
             }
-            lambdaExpr.stmts.add(new ExprStmt(assignExpr));
+            lambdaExpr.addStatement(new ExprStmt(assignExpr));
         }
         MethodNode methodNode = classNode.createMethodNode(returnType, "run", Modifier.PUBLIC);
         enterMethod(methodNode);

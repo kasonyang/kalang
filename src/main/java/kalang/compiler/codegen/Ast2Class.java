@@ -903,7 +903,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitMultiStmtExpr(MultiStmtExpr node) {
-        visitAll(node.stmts);
+        visitAll(node.getStatements());
         visit(node.reference);
         return null;
     }
