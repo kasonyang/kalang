@@ -245,8 +245,30 @@ if(s instanceof String){
 }
 ```
 
+## Closures
 
-## Build from source
+Closures is only support 8 parameters.
+
+```
+void sayHello(String name,&Void(String) callback) {
+    callback.run("Hello,\${name}");
+}
+
+sayHello("kalang" , { result -> println(result); } );
+```
+
+# Dependency manage
+
+```
+#repository http://maven.aliyun.com/nexus/content/groups/public/
+#dependency site.kason:color-console:1.0.0
+
+import site.kason.colorconsole.ColorConsole;
+var console = ColorConsole.getDefault();
+console.info("Hello,world!");
+```
+
+# Build from source
 
 requirements: 
 
