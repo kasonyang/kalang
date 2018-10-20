@@ -188,7 +188,6 @@ public abstract class ShellBase {
             for(int i=0;i<localFiles.length;i++) {
                 localFileURLs[i] = localFiles[i].toURI().toURL();
             }
-            System.out.println(Arrays.toString(localFileURLs));
             classLoader = new URLClassLoader(localFileURLs,classLoader);
         }
         return new KalangShell(config, classLoader);
