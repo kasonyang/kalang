@@ -8,6 +8,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import kalang.compiler.AstLoader;
 import kalang.AstNotFoundException;
+import kalang.function.FunctionType;
+import kalang.type.Function;
+import kalang.type.FunctionClasses;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 /**
  *
@@ -21,6 +24,8 @@ public class Types {
     //private static Map<List,ObjectType> classTypes  = new HashMap<>();
             
     private static final Map<List,ClassType> classTypes = new HashMap();
+    
+    private static final Map<List,FunctionType> functionTypes = new HashMap();
     
     private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();;
     
@@ -68,7 +73,9 @@ public class Types {
     
     public final static String ITERABLE_CLASS_NAME = "java.lang.Iterable";
     
-    public final static String ASSERTION_ERROR_CLASS_NAME = AssertionError.class.getName();
+    public final static String ASSERTION_ERROR_CLASS_NAME = AssertionError.class.getName()
+            ,FUNCTION_CLASS_NAME = Function.class.getName()
+            ;
             
     static {
         primitive2class.put(INT_TYPE, INT_CLASS_NAME);
@@ -379,8 +386,23 @@ public class Types {
         return false;
     }
     
-    public static boolean hasValue(Type type) {
-        return !Types.VOID_TYPE.equals(type) && !Types.getVoidClassType().equals(type);
+    public static ClassType getFunctionType(Type returnType,Type[] parameterTypes, NullableKind nullableKind) {
+        if (parameterTypes == null) {
+            parameterTypes = new Type[0];
+        }
+        int paramCount = parameterTypes.length;
+        if (paramCount > FunctionClasses.CLASSES.length - 1) {
+            throw new IllegalArgumentException("");
+        }
+        List<Type> types = new ArrayList(paramCount + 1);
+        types.add(returnType);
+        types.addAll(Arrays.asList(parameterTypes));
+        FunctionType t = functionTypes.get(types);
+        if (t==null) {
+            t = new FunctionType(returnType, parameterTypes, nullableKind);
+            functionTypes.put(types, t);
+        }
+        return t;
     }
 
 }

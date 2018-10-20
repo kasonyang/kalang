@@ -80,7 +80,7 @@ public class InterfaceUtil {
             params[i] = new ParameterExpr(paramNodes[i]);
         }
         ObjectInvokeExpr invokeExpr = new ObjectInvokeExpr(new ThisExpr(clazz), targetMethod, params);
-        if (Types.hasValue(returnType)) {
+        if (!Types.VOID_TYPE.equals(returnType)) {
             mb.statements.add(new ReturnStmt(invokeExpr));
         } else {
             mb.statements.add(new ExprStmt(invokeExpr));

@@ -22,6 +22,12 @@ class<T>{
         for(int i=0;i<100;i++){
             method(p,q);
         }
+        &String() func0 = null;
+        &String(String) func1 = null;
+        &String(String,String) func2 = null;
+        run0({return 0;});
+        run1({a->return a;});
+        run2({a,b->return a+b;});
     }
     int methodWithReturn(int p){}
 }
