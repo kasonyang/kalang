@@ -1,14 +1,22 @@
 package kalang.shell;
 
 import kalang.compiler.Configuration;
+import kalang.tool.KalangShell;
+import kalang.util.ClassExecutor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  *
  * @author Kason Yang
  */
 public class Kalangeditor extends ShellBase {
+
+    private CommandLine cli;
 
     private static final String APP_NAME = "kalangeditor";
 
@@ -20,14 +28,21 @@ public class Kalangeditor extends ShellBase {
 
     @Override
     protected int execute(CommandLine cli) {
-        Configuration config = this.createConfiguration(cli);
-        ClassLoader classLoader = this.createClassLoader(cli);
-        kalang.gui.Editor.main(config, classLoader);
+        this.cli = cli;
+        kalang.gui.Editor.main(this);
         return Constant.SUCCESS;
     }
 
     public Kalangeditor() {
         super(APP_NAME, SYNTAX, new Options());
+    }
+
+    public void eval(String className,String code) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        ClassLoader classLoader = this.createClassLoader(cli);
+        Configuration config = this.createConfiguration(cli);
+        KalangShell kalangshell = this.createKalangShell(config, classLoader, new StringReader(code));
+        Class clazz = kalangshell.parse(className, code, className + ".kl");
+        ClassExecutor.executeMain(clazz,new String[0]);
     }
 
 }

@@ -8,6 +8,8 @@ import java.util.Date;
 import javax.annotation.Nullable;
 import javax.swing.JTextArea;
 import kalang.compiler.Configuration;
+import kalang.shell.Kalangeditor;
+import kalang.shell.Kalangsh;
 import kalang.tool.KalangShell;
 import kalang.util.ClassExecutor;
 /**
@@ -16,16 +18,13 @@ import kalang.util.ClassExecutor;
  */
 public class Editor extends javax.swing.JFrame {
 
-    private final Configuration configuration;
-    
-    private final ClassLoader classLoader;
+    private final Kalangeditor controller;
 
     /**
      * Creates new form Editor
      */
-    public Editor(Configuration config,@Nullable ClassLoader classLoader) {
-        this.configuration = config;
-        this.classLoader = classLoader==null ? Editor.class.getClassLoader() : classLoader;
+    public Editor(Kalangeditor controller) {
+        this.controller = controller;
         initComponents();
     }
 
@@ -187,14 +186,10 @@ public class Editor extends javax.swing.JFrame {
         PrintStream ps = new PrintStream(os);
         System.setErr(ps);
         System.setOut(ps);
-        KalangShell shell = new KalangShell(configuration,this.classLoader);
         String code = codeArea.getText();
         String className = "Code" + (new Date()).getTime();
         try{
-            Class clazz = shell.parse(className, code,className);
-            if(clazz!=null){
-                ClassExecutor.executeMain(clazz, new String[0]);
-            }
+            controller.eval(className,code);
         } catch (Throwable ex) {
             //System.out.println("compile " + className + " unsuccessfully.");
             ex.printStackTrace(ps);
@@ -202,7 +197,7 @@ public class Editor extends javax.swing.JFrame {
         logArea.setText(os.toString());
     }//GEN-LAST:event_menuRunActionPerformed
 
-    public static void main(Configuration config,@Nullable ClassLoader classLoader) {
+    public static void main(Kalangeditor controller) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -230,7 +225,7 @@ public class Editor extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Editor(config,classLoader).setVisible(true);
+                new Editor(controller).setVisible(true);
             }
         });
     }
