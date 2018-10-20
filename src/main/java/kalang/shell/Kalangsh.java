@@ -1,11 +1,20 @@
 package kalang.shell;
 
-import java.io.File;
 import kalang.compiler.Configuration;
+import kalang.dependency.Artifact;
+import kalang.dependency.DependencyResolver;
+import kalang.dependency.ResolveResult;
 import kalang.tool.KalangShell;
 import kalang.util.ClassExecutor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+
+import javax.annotation.Nullable;
+import java.io.*;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -31,13 +40,14 @@ public class Kalangsh extends ShellBase {
         ClassLoader classLoader = this.createClassLoader(cli);
 
         String[] args = cli.getArgs();
-        KalangShell sh = new KalangShell(config, classLoader);
         try {
             Class clazz;
             String[] scriptArgs;
             if (cli.hasOption("code")) {
+                String code = cli.getOptionValue("code");
+                KalangShell sh = this.createKalangShell(config, classLoader,new StringReader(code));
                 scriptArgs = new String[0];
-                clazz = sh.parse("Temp", cli.getOptionValue("code"), "Tmp.kl");
+                clazz = sh.parse("Temp",code, "Tmp.kl");
             } else {
                 if (args.length == 0) {
                     printUsage();
@@ -47,6 +57,9 @@ public class Kalangsh extends ShellBase {
                 if (args.length > 1) {
                     System.arraycopy(args, 1, scriptArgs, 0, scriptArgs.length);
                 }
+                FileReader fileReader = new FileReader(file);
+                KalangShell sh = this.createKalangShell(config, classLoader, fileReader);
+                fileReader.close();
                 clazz = sh.parse(file);
             }
             if (!cli.hasOption("check")) {

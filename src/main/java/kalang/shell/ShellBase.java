@@ -1,22 +1,24 @@
 package kalang.shell;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+
 import kalang.compiler.Configuration;
+import kalang.dependency.Artifact;
+import kalang.dependency.DependencyResolver;
+import kalang.dependency.ResolveResult;
+import kalang.tool.KalangShell;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -139,6 +141,72 @@ public abstract class ShellBase {
             return file;
         }
         return new File[0];
+    }
+
+    protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader) throws IOException {
+        String scriptBase = "";
+        List<String> dependencies = new LinkedList<>();
+        List<String> repositories = new LinkedList<>();
+        BufferedReader bufferedReader = new BufferedReader(reader);
+        String line;
+        while((line=bufferedReader.readLine())!=null) {
+            line = line.trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+            if (!line.startsWith("#")) {
+                break;
+            }
+            String[] parts = line.split(" ",2);
+            String optionName = parts[0].substring(1);
+            String optionValue = parts.length>1 ? parts[1] : "";
+            switch (optionName) {
+                case "script":
+                    scriptBase = optionValue;
+                    break;
+                case "dependency":
+                    if (!optionValue.isEmpty()){
+                        dependencies.add(optionValue);
+                    }
+                    break;
+                case "repository":
+                    if (!optionValue.isEmpty()) {
+                        repositories.add(optionValue);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (!scriptBase.isEmpty()) {
+            config.setScriptBaseClass(scriptBase);
+        }
+        if (!dependencies.isEmpty()) {
+            ResolveResult resolveResult = resolveDependencies(dependencies,repositories);
+            File[] localFiles = resolveResult.getLocalFiles();
+            URL[] localFileURLs = new URL[localFiles.length];
+            for(int i=0;i<localFiles.length;i++) {
+                localFileURLs[i] = localFiles[i].toURI().toURL();
+            }
+            System.out.println(Arrays.toString(localFileURLs));
+            classLoader = new URLClassLoader(localFileURLs,classLoader);
+        }
+        return new KalangShell(config, classLoader);
+    }
+
+    private ResolveResult resolveDependencies(List<String> dependencies,List<String> repositories) {
+        List<Artifact> artifacts = new LinkedList<>();
+        for(String d:dependencies){
+            d = d.trim();
+            String[] dParts = d.split(":");
+            if (dParts.length!=3) {
+                System.err.println("illeage artifact:" + d);
+                continue;
+            }
+            artifacts.add(new Artifact(dParts[0],dParts[1],dParts[2]));
+        }
+        DependencyResolver resolver =new DependencyResolver(repositories);
+        return resolver.resolve(artifacts.toArray(new Artifact[0]));
     }
 
 }
