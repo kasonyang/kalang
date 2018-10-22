@@ -101,6 +101,13 @@ public class KalangParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitLambdaType(KalangParser.LambdaTypeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitParameterizedElementType(KalangParser.ParameterizedElementTypeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

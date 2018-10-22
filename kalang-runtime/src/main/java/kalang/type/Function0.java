@@ -6,6 +6,6 @@ package kalang.type;
  */
 public interface Function0<R> extends Function {
 
-    R run();
+    R call();
 
 }

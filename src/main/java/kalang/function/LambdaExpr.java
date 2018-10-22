@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import kalang.annotation.Nullable;
 import kalang.ast.AssignExpr;
 import kalang.ast.ExprNode;
 import kalang.ast.ExprStmt;
@@ -14,6 +16,7 @@ import kalang.ast.Statement;
 import kalang.ast.VarDeclStmt;
 import kalang.ast.VarExpr;
 import kalang.ast.VarObject;
+import kalang.core.ObjectType;
 
 /**
  *
@@ -31,11 +34,14 @@ public class LambdaExpr extends MultiStmtExpr {
 
     private final LocalVarNode tmpVar;
 
-    public LambdaExpr(LocalVarNode tmpVar) {
+    private FunctionType functionType;
+
+    public LambdaExpr(LocalVarNode tmpVar,@Nullable FunctionType functionType) {
         super(new LinkedList(), new VarExpr(tmpVar));
         this.referenceVarExpr = new VarExpr(tmpVar);
         this.varDeclStmt = new VarDeclStmt(tmpVar);
         this.tmpVar = tmpVar;
+        this.functionType = functionType;
     }
 
     public VarExpr getReferenceExpr() {
@@ -52,6 +58,11 @@ public class LambdaExpr extends MultiStmtExpr {
 
     public void putAccessibleVarObject(String name, VarObject var) {
         accessibleVarObjects.put(name, var);
+    }
+
+    @Nullable
+    public FunctionType getFunctionType() {
+        return functionType;
     }
 
     public Map<String, VarObject> getAccessibleVarObjects() {
