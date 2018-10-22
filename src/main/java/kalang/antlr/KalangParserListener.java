@@ -128,6 +128,16 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitClassType(KalangParser.ClassTypeContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#lambdaType}.
+	 * @param ctx the parse tree
+	 */
+	void enterLambdaType(KalangParser.LambdaTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#lambdaType}.
+	 * @param ctx the parse tree
+	 */
+	void exitLambdaType(KalangParser.LambdaTypeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#parameterizedElementType}.
 	 * @param ctx the parse tree
 	 */

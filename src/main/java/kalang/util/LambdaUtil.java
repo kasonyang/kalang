@@ -33,7 +33,7 @@ public class LambdaUtil {
         }
         ClassType funcType = Types.getFunctionType(returnType, paramTypes, NullableKind.NONNULL);
         classNode.addInterface(funcType);
-        MethodNode pmethod = classNode.createMethodNode(returnType, "run", Modifier.PUBLIC);
+        MethodNode pmethod = classNode.createMethodNode(returnType, "call", Modifier.PUBLIC);
         ParameterNode[] pNodes = new ParameterNode[paramCount];
         for (int j = 0; j < paramCount; j++) {
             pNodes[j] = pmethod.createParameter(paramTypes[j], "p" + (j + 1));
@@ -44,7 +44,7 @@ public class LambdaUtil {
         }
         ObjectInvokeExpr invokeExpr;
         try {
-            invokeExpr = ObjectInvokeExpr.create(new ThisExpr(classNode), "run", argExprs, classNode);
+            invokeExpr = ObjectInvokeExpr.create(new ThisExpr(classNode), "call", argExprs, classNode);
         } catch (MethodNotFoundException | AmbiguousMethodException ex) {
             throw Exceptions.unexceptedException(ex);
         }

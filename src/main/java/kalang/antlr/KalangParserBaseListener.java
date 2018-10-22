@@ -160,6 +160,18 @@ public class KalangParserBaseListener implements KalangParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterLambdaType(KalangParser.LambdaTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitLambdaType(KalangParser.LambdaTypeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterParameterizedElementType(KalangParser.ParameterizedElementTypeContext ctx) { }
 	/**
 	 * {@inheritDoc}

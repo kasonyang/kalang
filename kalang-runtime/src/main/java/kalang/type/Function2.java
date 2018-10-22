@@ -6,6 +6,6 @@ package kalang.type;
  */
 public interface Function2<R, P1, P2> extends Function {
 
-    R run(P1 arg1, P2 arg2);
+    R call(P1 arg1, P2 arg2);
 
 }

@@ -31,6 +31,7 @@ import kalang.ast.UnaryExpr;
 import kalang.ast.NewArrayExpr;
 import kalang.ast.IfStmt;
 import kalang.ast.ReturnStmt;
+import kalang.type.Function;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -489,22 +490,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Nullable
     protected ObjectType parseClassType(KalangParser.ClassTypeContext ctx){
         NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
-        TypeContext returnTypeCtx = ctx.returnType;
-        if ( returnTypeCtx!=null) {
-            Type returnType = this.parseType(returnTypeCtx);
-            List<TypeContext> paramTypeCtxList = ctx.paramsTypes;
-            int paramCount = paramTypeCtxList.size();
-            int maxParamCount = FunctionClasses.CLASSES.length-1;
-            if (paramCount > maxParamCount) {
-                String msg = "only support " +maxParamCount + " parameters";
-                diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
-                return Types.getRootType();
-            }
-            Type[] paramTypes = new Type[paramCount];
-            for(int i=0;i<paramTypes.length;i++) {
-                paramTypes[i] = this.parseType(paramTypeCtxList.get(i));
-            }
-            return Types.getFunctionType(returnType, paramTypes, nullable);
+        KalangParser.LambdaTypeContext lambdaType = ctx.lambdaType();
+        if (lambdaType!=null) {
+            return this.visitLambdaType(lambdaType);
         }
         Token rawTypeToken = ctx.rawClass;
         List<String> classNameParts = new LinkedList();
@@ -546,6 +534,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         } else {
             return Types.getClassType(clazzType.getClassNode(), nullable);
         }
+    }
+
+    @Override
+    public ObjectType visitLambdaType(KalangParser.LambdaTypeContext ctx) {
+        NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
+        TypeContext returnTypeCtx = ctx.returnType;
+        Type returnType = this.parseType(returnTypeCtx);
+        List<TypeContext> paramTypeCtxList = ctx.paramsTypes;
+        int paramCount = paramTypeCtxList.size();
+        int maxParamCount = FunctionClasses.CLASSES.length-1;
+        if (paramCount > maxParamCount) {
+            String msg = "only support " +maxParamCount + " parameters";
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
+            return Types.getRootType();
+        }
+        Type[] paramTypes = new Type[paramCount];
+        for(int i=0;i<paramTypes.length;i++) {
+            paramTypes[i] = this.parseType(paramTypeCtxList.get(i));
+        }
+        return Types.getFunctionType(returnType, paramTypes, nullable);
     }
 
     @Nullable
@@ -2057,9 +2065,17 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Override
     public Object visitLambdaExpr(KalangParser.LambdaExprContext ctx) {
-        Type type = Types.requireClassType(Types.FUNCTION_CLASS_NAME);
+        KalangParser.LambdaTypeContext lambdaTypeCtx = ctx.lambdaType();
+        FunctionType functionType = null;
+        if (lambdaTypeCtx!=null) {
+            ObjectType lambdaType = this.visitLambdaType(lambdaTypeCtx);
+            if (lambdaType instanceof FunctionType) {
+                functionType = (FunctionType) lambdaType;
+            }
+        }
+        Type type = functionType!=null ? functionType : Types.requireClassType(Types.FUNCTION_CLASS_NAME);
         LocalVarNode tmpVar = this.declareTempLocalVar(type);
-        LambdaExpr ms = new LambdaExpr(tmpVar);
+        LambdaExpr ms = new LambdaExpr(tmpVar,functionType);
         Map<String,VarObject> accessibleVars = new HashMap();
         VarTable<String, LocalVarNode> vtb = this.varTables;
         while(vtb!=null) {
@@ -2550,6 +2566,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             buildLambdaExpressions(c);
         }
         List<ClassNode> newLambdaClasses = new LinkedList();
+        final List<LambdaExpr> lambdaExprs = new LinkedList<>();
         final Map<LambdaExpr,FunctionType> lambdaTypes = new HashMap();
         AstVisitor astVisitor = new AstVisitor(){
             @Override
@@ -2566,12 +2583,27 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 }
                 return super.visitInvocationExpr(node);
             }
+
+            @Override
+            public Object visitMultiStmtExpr(MultiStmtExpr node) {
+                if (node instanceof LambdaExpr) {
+                    lambdaExprs.add((LambdaExpr) node);
+                }
+                return super.visitMultiStmtExpr(node);
+            }
         };
         astVisitor.visit(classNode);
-        for (Map.Entry<LambdaExpr, FunctionType> e:lambdaTypes.entrySet()) {
-            LambdaExpr lambdaExpr = e.getKey();
+        for (LambdaExpr lambdaExpr:lambdaExprs) {
+            FunctionType functionType = lambdaExpr.getFunctionType();
+            if (functionType==null) {
+                functionType = lambdaTypes.get(lambdaExpr);
+            }
+            if (functionType==null) {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR,"missing type",lambdaExpr.offset);
+                continue;
+            }
             KalangParser.LambdaExprContext ctx = this.lambdaExprCtxMap.get(lambdaExpr);
-            ClassNode lambdaClassNode = this.createFunctionClassNode(e.getValue(),lambdaExpr,ctx);
+            ClassNode lambdaClassNode = this.createFunctionClassNode(functionType,lambdaExpr,ctx);
             ClassType lambdaType = Types.getClassType(lambdaClassNode);
             //lambdaExpr.getReferenceExpr()
             NewObjectExpr newExpr;
@@ -2615,7 +2647,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
             lambdaExpr.addStatement(new ExprStmt(assignExpr));
         }
-        MethodNode methodNode = classNode.createMethodNode(returnType, "run", Modifier.PUBLIC);
+        MethodNode methodNode = classNode.createMethodNode(returnType, "call", Modifier.PUBLIC);
         enterMethod(methodNode);
         List<Token> lambdaParams = ctx.lambdaParams;
         int lambdaParamsCount = ctx.lambdaParams.size();
