@@ -1,0 +1,2 @@
+List list = new ArrayList();
+list.toString();

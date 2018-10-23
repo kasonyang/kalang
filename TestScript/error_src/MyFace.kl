@@ -1,3 +1,0 @@
-interface{
-    int myMethod(int p);
-}

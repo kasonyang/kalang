@@ -1,5 +1,0 @@
-class{
-    void test(){
-        hereSyntaxError!
-    }
-}

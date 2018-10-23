@@ -1,0 +1,16 @@
+class Inner{
+    class InnerInInner{
+        public String helloInnerInInner(){
+            return "InnerInInner";
+        }
+    }
+    public String hello(){
+        return "Inner";
+    }
+}
+
+//TODO test inner class
+//var ic = new Inner();
+//ic.hello();
+//var icInIc = new Inner::InnerInInner();
+//icInIc.helloInnerInInner();
