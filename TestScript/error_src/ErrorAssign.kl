@@ -1,8 +1,0 @@
-class{
-    int test(){
-        Object a;
-        int i = 0;
-        i = a;
-        return 1;
-    }
-}

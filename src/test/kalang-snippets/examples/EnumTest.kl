@@ -1,0 +1,3 @@
+import java.lang.annotation.RetentionPolicy;
+var p = RetentionPolicy.SOURCE;
+System.out.print(p.name());

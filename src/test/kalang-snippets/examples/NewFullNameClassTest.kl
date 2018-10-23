@@ -1,0 +1,2 @@
+var file = new java\io\File(".");
+println(file);

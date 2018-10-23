@@ -1,0 +1,6 @@
+Integer i = Integer.valueOf(1);
+System.out.println(i);
+println(i);
+
+byte b = 6;
+System.out.print(b);

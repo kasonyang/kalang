@@ -3,15 +3,15 @@ package kalang.test;
 import java.io.File;
 import java.io.IOException;
 import kalang.compiler.DiagnosisHandler;
+import kalang.tool.KalangShell;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
  *
  * @author Kason Yang
  */
-public class DebugTest extends CompilerTestCase {
-
-    DiagnosisHandler oldHandler;
+public class DebugTest {
 
     public DebugTest() {
 
@@ -19,10 +19,11 @@ public class DebugTest extends CompilerTestCase {
 
     @Test
     public void test() throws IOException {
-        File debugDir = new File("debug");
-        if (debugDir.exists()) {
-            addSourceDir(debugDir);
-            compile();
+        File debugFile = new File("debug/debug.kl");
+        if (debugFile.exists()) {
+            KalangShell shell = new KalangShell();
+            Class clz = shell.parse(debugFile);
+            Assert.assertNotNull(clz);
         }
     }
 
