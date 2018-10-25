@@ -1,9 +1,8 @@
 package kalang.util;
 
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
 import kalang.ast.AssignExpr;
 import kalang.ast.BlockStmt;
 import kalang.ast.CastExpr;
@@ -29,6 +28,7 @@ import kalang.core.Types;
  */
 public class InterfaceUtil {
 
+    @Deprecated
     public static List<MethodDescriptor> checkAndBuildInterfaceMethods(ClassNode clazz) {
         ObjectType[] interfaces = clazz.getInterfaces();
         List<MethodDescriptor> unimplements = new LinkedList();
@@ -38,6 +38,7 @@ public class InterfaceUtil {
         return unimplements;
     }
 
+    @Deprecated
     public static List<MethodDescriptor> checkAndBuildInterfaceMethods(ClassNode clazz, ObjectType interfaceType) {
         MethodDescriptor[] interfaceMethods = interfaceType.getMethodDescriptors(interfaceType.getClassNode(), true, true);
         ClassType clazzType = Types.getClassType(clazz, new Type[0]);
@@ -60,6 +61,26 @@ public class InterfaceUtil {
             }
         }
         return unimplements;
+    }
+
+    public static Map<MethodDescriptor,MethodNode> getImplementationMap(ClassNode clazz) {
+        ObjectType[] interfaces = clazz.getInterfaces();
+        Map<MethodDescriptor,MethodNode> result = new HashMap<>();
+        for (ObjectType itf : interfaces) {
+            doGetImplementationMap(clazz,itf,result);
+        }
+        return result;
+    }
+
+    private static void doGetImplementationMap(ClassNode clazz, ObjectType interfaceType,Map<MethodDescriptor,MethodNode> map) {
+        MethodDescriptor[] interfaceMethods = interfaceType.getMethodDescriptors(null, true, true);
+        ClassType clazzType = Types.getClassType(clazz, new Type[0]);
+        MethodDescriptor[] clazzMethods = clazzType.getMethodDescriptors(null, true, false);
+        for (MethodDescriptor im : interfaceMethods) {
+            String imDeclKey = im.getDeclarationKey();
+            ExecutableDescriptor cm = MethodUtil.getExecutableDescriptor(clazzMethods, imDeclKey);
+            map.put(im,cm==null ? null : cm.getMethodNode());
+        }
     }
 
     private static void createBridgeMethod(ClassNode clazz,Type returnType,Type[] paramTypes, ExecutableDescriptor targetMethod) {

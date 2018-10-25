@@ -2548,13 +2548,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if (Modifier.isAbstract(clazz.modifier)) {
             return;
         }
-        List<MethodDescriptor> unimplements = InterfaceUtil.checkAndBuildInterfaceMethods(clazz);
-        if (!unimplements.isEmpty()) {
-            for(MethodDescriptor m:unimplements) {
+        Map<MethodDescriptor, MethodNode> implementationMap = InterfaceUtil.getImplementationMap(clazz);
+        for(Map.Entry<MethodDescriptor,MethodNode> e:implementationMap.entrySet()) {
+            MethodDescriptor interfaceMethod = e.getKey();
+            MethodNode implementedMethod = e.getValue();
+            if (implementedMethod == null && Modifier.isAbstract(interfaceMethod.getModifier())) {
                 String msg = String.format(
                         "please override abstract method %s in %s",
-                        m.toString()
-                        ,m.getMethodNode().getClassNode().name
+                        interfaceMethod.toString()
+                        ,interfaceMethod.getMethodNode().getClassNode().name
                 );
                 diagnosisReporter.report(Diagnosis.Kind.ERROR,msg, clazz.offset);
             }

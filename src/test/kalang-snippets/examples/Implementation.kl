@@ -1,0 +1,8 @@
+import kalang.type.Function1;
+class implements Function1<String,String> {
+
+    override String call(String value) {
+        return value;
+    }
+
+}
