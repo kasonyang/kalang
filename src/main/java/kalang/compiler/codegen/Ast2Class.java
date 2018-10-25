@@ -64,25 +64,13 @@ import kalang.ast.UnknownInvocationExpr;
 import kalang.ast.VarDeclStmt;
 import kalang.compiler.AstLoader;
 import kalang.compiler.CodeGenerator;
-import kalang.core.ArrayType;
-import kalang.core.ObjectType;
-import kalang.core.ExecutableDescriptor;
-import kalang.core.GenericType;
-import kalang.core.ClassType;
-import kalang.core.NullableKind;
-import kalang.core.PrimitiveType;
-import kalang.core.Type;
-import kalang.core.Types;
+import kalang.core.*;
+
 import static kalang.core.Types.*;
-import kalang.core.VarTable;
-import kalang.core.WildcardType;
+
 import kalang.exception.Exceptions;
 import kalang.tool.OutputManager;
-import kalang.util.AstUtil;
-import kalang.util.MethodUtil;
-import kalang.util.ModifierUtil;
-import kalang.util.NameUtil;
-import kalang.util.Parameters;
+import kalang.util.*;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -293,6 +281,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             classWriter.visitSource(fileName, null);
         }
         visitChildren(node);
+        Map<MethodDescriptor, MethodNode> implementationMap = InterfaceUtil.getImplementationMap(node);
+        for(Map.Entry<MethodDescriptor,MethodNode> e:implementationMap.entrySet()) {
+            MethodDescriptor interfaceMethod = e.getKey();
+            MethodNode implementedMethod = e.getValue();
+            if (implementedMethod!=null) {
+                this.createInterfaceBridgeMethodIfNeed(interfaceMethod.getMethodNode(),implementedMethod);
+            }
+        }
+
         //clinit
         if(!node.staticInitStmts.isEmpty()){
             md = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
@@ -1310,6 +1307,50 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         visit(node.getIndex());
         astore(node.getValueExpr());
         return null;
+    }
+
+    private void createInterfaceBridgeMethodIfNeed(MethodNode interfaceMethod,MethodNode implementMethod) {
+        String desc = getMethodDescriptor(interfaceMethod);
+        String implementDesc = getMethodDescriptor(implementMethod);
+        if (desc.equals(implementDesc)) {
+            return;
+        }
+        int access = interfaceMethod.getModifier() & ~Modifier.ABSTRACT;
+        String name = interfaceMethod.getName();
+        MethodVisitor methodVisitor = classWriter.visitMethod(access, name, desc, methodSignature(interfaceMethod), null);
+        ParameterNode[] params = interfaceMethod.getParameters();
+        for(ParameterNode p : params) {
+            methodVisitor.visitParameter(p.getName(),p.modifier);
+        }
+        ParameterNode[] implementedParams = implementMethod.getParameters();
+        methodVisitor.visitVarInsn(ALOAD,0);
+        int varIdx = 1;
+        for(int i=0;i<params.length;i++) {
+            Type implementedParamType = implementedParams[i].getType();
+            Type interfaceParamType = params[i].getType();
+            org.objectweb.asm.Type interfaceParamAsmType = asmType(interfaceParamType);
+            methodVisitor.visitVarInsn(interfaceParamAsmType.getOpcode(ILOAD),varIdx);
+            if (implementedParamType.isAssignableFrom(interfaceParamType)) {
+                methodVisitor.visitTypeInsn(CHECKCAST,internalName(implementedParamType));
+            }
+            varIdx += interfaceParamAsmType.getSize();
+        }
+        String owner = internalName(implementMethod.getClassNode());
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL,owner,implementMethod.getName(),implementDesc,false);
+        Type returnType = interfaceMethod.getType();
+        if (!Types.VOID_TYPE.equals(returnType)) {
+            methodVisitor.visitInsn(asmType(returnType).getOpcode(IRETURN));
+        }
+        methodVisitor.visitMaxs(0,0);
+        methodVisitor.visitEnd();
+    }
+
+    private String methodSignature(MethodDescriptor m){
+        String ptype = "";
+        for(Type p:m.getParameterTypes()){
+            ptype += typeSignature(p);
+        }
+        return "(" + ptype + ")" + typeSignature(m.getReturnType());
     }
 
 }
