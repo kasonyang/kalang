@@ -1,0 +1,11 @@
+class{
+
+    String name = "test";
+    
+    class InnerClass{
+        public String getName(){
+                return name;
+        }
+    }
+    
+}

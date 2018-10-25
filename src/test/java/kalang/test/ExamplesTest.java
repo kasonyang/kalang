@@ -16,7 +16,7 @@ public class ExamplesTest extends CompilerTestCase {
 
     @Test
     public void testExamples() throws IOException {
-        addSourceDir(new File("examples"));
+        addSourceDir(new File("src/test/kalang-snippets"));
         compile();
     }
 
