@@ -1323,7 +1323,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if ("+".equals(op)) {
             if (Types.isNumber(type1) && Types.isNumber(type2)) {
                 expr = this.createBinaryMathExpr(expr1, expr2, op);
-            } else if (Types.getStringClassType().equals(type1)||Types.getStringClassType().equals(type2)) {
+            } else if (Types.isStringType(type1)||Types.isStringType(type2)) {
                 expr = this.concatExpressionsToStringExpr(new ExprNode[]{expr1,expr2}, new Token[]{exprCtx1.getStart(),exprCtx2.getStart()});
             } else {
                 this.diagnosisReporter.report(Diagnosis.Kind.ERROR, errMsg,ctx);
