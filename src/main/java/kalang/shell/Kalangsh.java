@@ -51,6 +51,7 @@ public class Kalangsh extends ShellBase {
             } else {
                 if (args.length == 0) {
                     printUsage();
+                    return Constant.ERR_INVALID_ARGUMENTS;
                 }
                 File file = new File(args[0]);
                 scriptArgs = new String[args.length - 1];
@@ -60,6 +61,7 @@ public class Kalangsh extends ShellBase {
                 FileReader fileReader = new FileReader(file);
                 KalangShell sh = this.createKalangShell(config, classLoader, fileReader);
                 fileReader.close();
+                sh.addSourcePath(file.getAbsoluteFile().getParentFile());
                 clazz = sh.parse(file);
             }
             if (!cli.hasOption("check")) {
