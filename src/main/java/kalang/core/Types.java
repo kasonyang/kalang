@@ -204,6 +204,13 @@ public class Types {
                 || getFloatClassType().equals(type)
                 || getDoubleClassType().equals(type);
     }
+
+    public static boolean isStringType(Type type) {
+        if (!(type instanceof ObjectType)) {
+            return false;
+        }
+        return Types.getStringClassType().getClassNode().name.equals(((ObjectType) type).getClassNode().name);
+    }
     
     public static boolean isExactNumber(Type type) {
         return isNumber(type) && !isFloatPointType(type);
