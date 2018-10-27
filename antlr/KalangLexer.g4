@@ -470,8 +470,7 @@ INTERPOLATION_END
     }
     ;
 INTERPOLATION_STRING
-    :  (~[\$\{\"] ) +
-        | '$' ~[\{]
-    ;
+    : StringCharacter+
+;
 
 
