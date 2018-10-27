@@ -644,7 +644,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public MultiStmtExpr visitMapExpr(KalangParser.MapExprContext ctx) {
         Type keyType = ctx.keyType!=null 
                 ? requireClassType(ctx.keyType)
-                : Types.getRootType();
+                : Types.getStringClassType();
         Type valueType = ctx.valueType!=null 
                 ? requireClassType(ctx.valueType)
                 : Types.getRootType();
@@ -661,10 +661,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         stmts.add(vds);
         stmts.add(new ExprStmt(new AssignExpr(new VarExpr(vo), newExpr)));
         VarExpr ve = new VarExpr(vo);
-        List<TerminalNode> ids = ctx.Identifier();
+        List<Token> ids = ctx.keys;
+        List<ExpressionContext> values = ctx.values;
         for (int i = 0; i < ids.size(); i++) {
-            ExpressionContext e = ctx.expression(i);
+            ExpressionContext e = values.get(i);
             ExprNode v = (ExprNode) visit(e);
+            if (v==null) {
+                return null;
+            }
             ConstExpr k = new ConstExpr(ctx.Identifier(i).getText());
             ExprNode[] args = new ExprNode[]{k,v};
             InvocationExpr iv;
@@ -1319,7 +1323,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if ("+".equals(op)) {
             if (Types.isNumber(type1) && Types.isNumber(type2)) {
                 expr = this.createBinaryMathExpr(expr1, expr2, op);
-            } else if (Types.getStringClassType().equals(type1)||Types.getStringClassType().equals(type2)) {
+            } else if (Types.isStringType(type1)||Types.isStringType(type2)) {
                 expr = this.concatExpressionsToStringExpr(new ExprNode[]{expr1,expr2}, new Token[]{exprCtx1.getStart(),exprCtx2.getStart()});
             } else {
                 this.diagnosisReporter.report(Diagnosis.Kind.ERROR, errMsg,ctx);

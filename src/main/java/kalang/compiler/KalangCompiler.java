@@ -12,10 +12,7 @@ import kalang.util.AntlrErrorString;
 import kalang.util.LexerFactory;
 import kalang.util.OffsetRangeHelper;
 import kalang.util.TokenStreamFactory;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.DefaultErrorStrategy;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.*;
 
 /**
  * The core compiler
@@ -165,7 +162,21 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
 
     @Override
     public KalangLexer createLexer(CompilationUnit compilationUnit, String source) {
-        return LexerFactory.createLexer(source);
+        KalangLexer lexer = LexerFactory.createLexer(source);
+        lexer.addErrorListener(new BaseErrorListener() {
+            @Override
+            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
+                Diagnosis diagnosis = new Diagnosis(
+                        compilationUnit.getCompileContext()
+                        , Diagnosis.Kind.ERROR
+                        , OffsetRange.NONE //TODO fix offset range
+                        , "line " + line + ":" + charPositionInLine + " " + msg
+                        , compilationUnit.getSource()
+                );
+                diagnosisHandler.handleDiagnosis(diagnosis);
+            }
+        });
+        return lexer;
     }
 
     @Override

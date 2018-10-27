@@ -90,7 +90,6 @@ For example:`kalangc Helloworld.kl` would compile `Helloworld.kl` in current dir
     var s = "Hello,world!";
     println(s);
 
-
 # Dependency manage
 
 You can declare you dependencies in kalang scripts.Kalang shell will resolve the dependencies and download the related files automatically when executing.

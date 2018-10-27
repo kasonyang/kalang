@@ -1,0 +1,7 @@
+var name = "kalang";
+var nameOnly = "${name}";
+var nameFirst = "${name}!";
+var nameLast = "hello,${name}";
+var nameMid = "hello,${name}!";
+var pathWin = "src\\${name}\\runtime";
+var pathUnix = "src/${name}/runtime";

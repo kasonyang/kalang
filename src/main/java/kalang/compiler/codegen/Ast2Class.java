@@ -83,6 +83,8 @@ import static org.objectweb.asm.Opcodes.*;
  */
 public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerator{
 
+    private static Logger LOG = Logger.getLogger(Ast2Class.class.getName());
+
     private ClassWriter classWriter;
     private MethodVisitor md;
     
@@ -320,7 +322,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         this.classWriter = oldClassWriter;
         return null;
     }
-    private static final Logger LOG = Logger.getLogger(Ast2Class.class.getName());
 
     @Override
     public Object visitMethodNode(MethodNode node) {
@@ -422,6 +423,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitBreakStmt(BreakStmt node) {
+        if (breakLabels.isEmpty()) {
+            LOG.warning("redundant break statement:" + node.offset);
+            return null;
+        }
         md.visitJumpInsn(GOTO, breakLabels.peek());
         return null;
     }

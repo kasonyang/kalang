@@ -2,6 +2,8 @@ package kalang.tool;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import javax.annotation.Nullable;
 import kalang.KalangClassLoader;
 import kalang.lang.Script;
@@ -19,6 +21,8 @@ public class KalangShell {
     
     private ClassLoader parentClassLoader;
 
+    private final List<File> sourcePaths = new LinkedList<>();
+
     public KalangShell(Configuration configuration,@Nullable ClassLoader parentClassLoader) {
         this.configuration = configuration;
         this.parentClassLoader = parentClassLoader==null ? KalangShell.class.getClassLoader() : parentClassLoader;
@@ -26,6 +30,10 @@ public class KalangShell {
 
     public KalangShell() {
         this(new Configuration(),null);
+    }
+
+    public void addSourcePath(File path) {
+        this.sourcePaths.add(path);
     }
 
     public Class parse(String className, String code, String fileName) {
@@ -56,7 +64,7 @@ public class KalangShell {
     }
 
     private KalangClassLoader createClassLoader() {
-        return new KalangClassLoader(new File[0],this.configuration,this.parentClassLoader);
+        return new KalangClassLoader(sourcePaths.toArray(new File[0]),this.configuration,this.parentClassLoader);
     }
 
     private Script createScriptInstance(Class scriptClass) {
