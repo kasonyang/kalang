@@ -94,22 +94,12 @@ public abstract class ShellBase {
                 continue;
             }
             File ld = new File(l);
-            if (!ld.isDirectory()) {
-                continue;
-            }
-            Collection<File> jars = FileUtils.listFiles(ld, new String[]{"jar"}, false);
-            for (File j : jars) {
-                try {
-                    urls.add(j.toURI().toURL());
-                } catch (MalformedURLException ex) {
-                    ex.printStackTrace(System.err);
-                }
-            }
+            addClasspathFromLibPath(urls,ld);
         }
         File[] cps = parseClassPath(cli);
-        for (int i = 0; i < cps.length; i++) {
+        for (File cp : cps) {
             try {
-                urls.add(cps[i].toURI().toURL());
+                urls.add(cp.toURI().toURL());
             } catch (MalformedURLException ex) {
                 ex.printStackTrace(System.err);
             }
@@ -119,7 +109,7 @@ public abstract class ShellBase {
                 System.out.println("Add class path:" + u);
             }
         }
-        return new URLClassLoader(urls.toArray(new URL[urls.size()]));
+        return new URLClassLoader(urls.toArray(new URL[0]));
     }
 
     protected File[] parseClassPath(CommandLine cli) {
@@ -138,6 +128,8 @@ public abstract class ShellBase {
         String scriptBase = "";
         List<String> dependencies = new LinkedList<>();
         List<String> repositories = new LinkedList<>();
+        List<URL> classpaths = new LinkedList<>();
+        List<File> sourcepaths = new LinkedList<>();
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
         while((line=bufferedReader.readLine())!=null) {
@@ -151,19 +143,28 @@ public abstract class ShellBase {
             String[] parts = line.split(" ",2);
             String optionName = parts[0].substring(1);
             String optionValue = parts.length>1 ? parts[1] : "";
+            if (optionValue.isEmpty()) {
+                continue;
+            }
             switch (optionName) {
                 case "script":
+                case "base":
                     scriptBase = optionValue;
                     break;
                 case "dependency":
-                    if (!optionValue.isEmpty()){
-                        dependencies.add(optionValue);
-                    }
+                    dependencies.add(optionValue);
                     break;
                 case "repository":
-                    if (!optionValue.isEmpty()) {
-                        repositories.add(optionValue);
-                    }
+                    repositories.add(optionValue);
+                    break;
+                case "classpath":
+                    classpaths.add(new File(optionValue).toURI().toURL());
+                    break;
+                case "libpath":
+                    addClasspathFromLibPath(classpaths,new File(optionValue));
+                    break;
+                case "sourcepath":
+                    sourcepaths.add(new File(optionValue));
                     break;
                 default:
                     break;
@@ -174,14 +175,16 @@ public abstract class ShellBase {
         }
         if (!dependencies.isEmpty()) {
             ResolveResult resolveResult = resolveDependencies(dependencies,repositories);
-            File[] localFiles = resolveResult.getLocalFiles();
-            URL[] localFileURLs = new URL[localFiles.length];
-            for(int i=0;i<localFiles.length;i++) {
-                localFileURLs[i] = localFiles[i].toURI().toURL();
+            for(File localFile:resolveResult.getLocalFiles()) {
+                classpaths.add(localFile.toURI().toURL());
             }
-            classLoader = new URLClassLoader(localFileURLs,classLoader);
+            classLoader = new URLClassLoader(classpaths.toArray(new URL[0]),classLoader);
         }
-        return new KalangShell(config, classLoader);
+        KalangShell shell = new KalangShell(config, classLoader);
+        for(File sp : sourcepaths) {
+            shell.addSourcePath(sp);
+        }
+        return shell;
     }
 
     private ResolveResult resolveDependencies(List<String> dependencies,List<String> repositories) {
@@ -197,6 +200,20 @@ public abstract class ShellBase {
         }
         DependencyResolver resolver =new DependencyResolver(repositories);
         return resolver.resolve(artifacts.toArray(new Artifact[0]));
+    }
+
+    private void addClasspathFromLibPath(List<URL> list,File libpath) {
+        if (!libpath.exists() || !libpath.isDirectory()) {
+            return;
+        }
+        Collection<File> jars = FileUtils.listFiles(libpath, new String[]{"jar"}, false);
+        for (File j : jars) {
+            try {
+                list.add(j.toURI().toURL());
+            } catch (MalformedURLException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 
 }
