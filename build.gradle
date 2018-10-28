@@ -69,11 +69,4 @@ tasks.withType(Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
-processResources {
-    from("src/main/resources"){
-        include 'default.properties'
-        expand  version: project.version,
-                buildtime: new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format( new Date() )
-    }
-}
 
