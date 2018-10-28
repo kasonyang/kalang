@@ -18,25 +18,25 @@ public class KalangParser extends Parser {
 		new PredictionContextCache();
 	public static final int
 		DOUBLE_COLON=1, AS=2, CONSTRUCTOR=3, VAR=4, VAL=5, FOREACH=6, ARROW=7, 
-		START_DOT=8, OVERRIDE=9, ABSTRACT=10, ASSERT=11, BOOLEAN=12, BREAK=13, 
-		BYTE=14, CASE=15, CATCH=16, CHAR=17, CLASS=18, CONST=19, CONTINUE=20, 
-		DEFAULT=21, DO=22, DOUBLE=23, ELSE=24, ENUM=25, EXTENDS=26, FINAL=27, 
-		FINALLY=28, FLOAT=29, FOR=30, IF=31, GOTO=32, IMPLEMENTS=33, IMPORT=34, 
-		INSTANCEOF=35, INT=36, INTERFACE=37, LONG=38, NATIVE=39, NEW=40, PACKAGE=41, 
-		PRIVATE=42, PROTECTED=43, PUBLIC=44, RETURN=45, SHORT=46, STATIC=47, STRICTFP=48, 
-		SUPER=49, SWITCH=50, SYNCHRONIZED=51, THIS=52, THROW=53, THROWS=54, TRANSIENT=55, 
-		TRY=56, VOID=57, VOLATILE=58, WHILE=59, IntegerLiteral=60, FloatingPointLiteral=61, 
-		BooleanLiteral=62, CharacterLiteral=63, StringLiteral=64, MultiLineStringLiteral=65, 
-		NullLiteral=66, LPAREN=67, RPAREN=68, LBRACE=69, RBRACE=70, LBRACK=71, 
-		RBRACK=72, SEMI=73, COMMA=74, DOT=75, ASSIGN=76, GT=77, LT=78, BANG=79, 
-		TILDE=80, QUESTION=81, COLON=82, EQUAL=83, LE=84, GE=85, NOTEQUAL=86, 
-		AND=87, OR=88, INC=89, DEC=90, ADD=91, SUB=92, MUL=93, DIV=94, BITAND=95, 
-		BITOR=96, CARET=97, MOD=98, ADD_ASSIGN=99, SUB_ASSIGN=100, MUL_ASSIGN=101, 
-		DIV_ASSIGN=102, AND_ASSIGN=103, OR_ASSIGN=104, XOR_ASSIGN=105, MOD_ASSIGN=106, 
-		LSHIFT_ASSIGN=107, RSHIFT_ASSIGN=108, URSHIFT_ASSIGN=109, InterpolationPreffixString=110, 
-		Identifier=111, AT=112, ELLIPSIS=113, COMPILE_OPTION_LINE=114, WS=115, 
-		COMMENT=116, LINE_COMMENT=117, PACKAGE_DELIMITER=118, INTERPOLATION_INTERUPT=119, 
-		INTERPOLATION_END=120, INTERPOLATION_STRING=121;
+		LAMBDA_ARROW=8, START_DOT=9, OVERRIDE=10, ABSTRACT=11, ASSERT=12, BOOLEAN=13, 
+		BREAK=14, BYTE=15, CASE=16, CATCH=17, CHAR=18, CLASS=19, CONST=20, CONTINUE=21, 
+		DEFAULT=22, DO=23, DOUBLE=24, ELSE=25, ENUM=26, EXTENDS=27, FINAL=28, 
+		FINALLY=29, FLOAT=30, FOR=31, IF=32, GOTO=33, IMPLEMENTS=34, IMPORT=35, 
+		INSTANCEOF=36, INT=37, INTERFACE=38, LONG=39, NATIVE=40, NEW=41, PACKAGE=42, 
+		PRIVATE=43, PROTECTED=44, PUBLIC=45, RETURN=46, SHORT=47, STATIC=48, STRICTFP=49, 
+		SUPER=50, SWITCH=51, SYNCHRONIZED=52, THIS=53, THROW=54, THROWS=55, TRANSIENT=56, 
+		TRY=57, VOID=58, VOLATILE=59, WHILE=60, IntegerLiteral=61, FloatingPointLiteral=62, 
+		BooleanLiteral=63, CharacterLiteral=64, StringLiteral=65, MultiLineStringLiteral=66, 
+		NullLiteral=67, LPAREN=68, RPAREN=69, LBRACE=70, RBRACE=71, LBRACK=72, 
+		RBRACK=73, SEMI=74, COMMA=75, DOT=76, ASSIGN=77, GT=78, LT=79, BANG=80, 
+		TILDE=81, QUESTION=82, COLON=83, EQUAL=84, LE=85, GE=86, NOTEQUAL=87, 
+		AND=88, OR=89, INC=90, DEC=91, ADD=92, SUB=93, MUL=94, DIV=95, BITAND=96, 
+		BITOR=97, CARET=98, MOD=99, ADD_ASSIGN=100, SUB_ASSIGN=101, MUL_ASSIGN=102, 
+		DIV_ASSIGN=103, AND_ASSIGN=104, OR_ASSIGN=105, XOR_ASSIGN=106, MOD_ASSIGN=107, 
+		LSHIFT_ASSIGN=108, RSHIFT_ASSIGN=109, URSHIFT_ASSIGN=110, InterpolationPreffixString=111, 
+		Identifier=112, AT=113, ELLIPSIS=114, COMPILE_OPTION_LINE=115, WS=116, 
+		COMMENT=117, LINE_COMMENT=118, PACKAGE_DELIMITER=119, INTERPOLATION_INTERUPT=120, 
+		INTERPOLATION_END=121, INTERPOLATION_STRING=122;
 	public static final int
 		RULE_compilationUnit = 0, RULE_compileOption = 1, RULE_scriptDef = 2, 
 		RULE_classDef = 3, RULE_importDecl = 4, RULE_qualifiedName = 5, RULE_classBody = 6, 
@@ -62,14 +62,14 @@ public class KalangParser extends Parser {
 
 	private static final String[] _LITERAL_NAMES = {
 		null, "'::'", "'as'", "'constructor'", "'var'", "'val'", "'foreach'", 
-		"'->'", "'*.'", "'override'", "'abstract'", "'assert'", "'boolean'", "'break'", 
-		"'byte'", "'case'", "'catch'", "'char'", "'class'", "'const'", "'continue'", 
-		"'default'", "'do'", "'double'", "'else'", "'enum'", "'extends'", "'final'", 
-		"'finally'", "'float'", "'for'", "'if'", "'goto'", "'implements'", "'import'", 
-		"'instanceof'", "'int'", "'interface'", "'long'", "'native'", "'new'", 
-		"'package'", "'private'", "'protected'", "'public'", "'return'", "'short'", 
-		"'static'", "'strictfp'", "'super'", "'switch'", "'synchronized'", "'this'", 
-		"'throw'", "'throws'", "'transient'", "'try'", "'void'", "'volatile'", 
+		"'->'", "'=>'", "'*.'", "'override'", "'abstract'", "'assert'", "'boolean'", 
+		"'break'", "'byte'", "'case'", "'catch'", "'char'", "'class'", "'const'", 
+		"'continue'", "'default'", "'do'", "'double'", "'else'", "'enum'", "'extends'", 
+		"'final'", "'finally'", "'float'", "'for'", "'if'", "'goto'", "'implements'", 
+		"'import'", "'instanceof'", "'int'", "'interface'", "'long'", "'native'", 
+		"'new'", "'package'", "'private'", "'protected'", "'public'", "'return'", 
+		"'short'", "'static'", "'strictfp'", "'super'", "'switch'", "'synchronized'", 
+		"'this'", "'throw'", "'throws'", "'transient'", "'try'", "'void'", "'volatile'", 
 		"'while'", null, null, null, null, null, null, "'null'", "'('", "')'", 
 		"'{'", "'}'", "'['", "']'", "';'", "','", "'.'", "'='", "'>'", "'<'", 
 		"'!'", "'~'", "'?'", "':'", "'=='", "'<='", "'>='", "'!='", "'&&'", "'||'", 
@@ -80,23 +80,24 @@ public class KalangParser extends Parser {
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, "DOUBLE_COLON", "AS", "CONSTRUCTOR", "VAR", "VAL", "FOREACH", "ARROW", 
-		"START_DOT", "OVERRIDE", "ABSTRACT", "ASSERT", "BOOLEAN", "BREAK", "BYTE", 
-		"CASE", "CATCH", "CHAR", "CLASS", "CONST", "CONTINUE", "DEFAULT", "DO", 
-		"DOUBLE", "ELSE", "ENUM", "EXTENDS", "FINAL", "FINALLY", "FLOAT", "FOR", 
-		"IF", "GOTO", "IMPLEMENTS", "IMPORT", "INSTANCEOF", "INT", "INTERFACE", 
-		"LONG", "NATIVE", "NEW", "PACKAGE", "PRIVATE", "PROTECTED", "PUBLIC", 
-		"RETURN", "SHORT", "STATIC", "STRICTFP", "SUPER", "SWITCH", "SYNCHRONIZED", 
-		"THIS", "THROW", "THROWS", "TRANSIENT", "TRY", "VOID", "VOLATILE", "WHILE", 
-		"IntegerLiteral", "FloatingPointLiteral", "BooleanLiteral", "CharacterLiteral", 
-		"StringLiteral", "MultiLineStringLiteral", "NullLiteral", "LPAREN", "RPAREN", 
-		"LBRACE", "RBRACE", "LBRACK", "RBRACK", "SEMI", "COMMA", "DOT", "ASSIGN", 
-		"GT", "LT", "BANG", "TILDE", "QUESTION", "COLON", "EQUAL", "LE", "GE", 
-		"NOTEQUAL", "AND", "OR", "INC", "DEC", "ADD", "SUB", "MUL", "DIV", "BITAND", 
-		"BITOR", "CARET", "MOD", "ADD_ASSIGN", "SUB_ASSIGN", "MUL_ASSIGN", "DIV_ASSIGN", 
-		"AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN", "MOD_ASSIGN", "LSHIFT_ASSIGN", 
-		"RSHIFT_ASSIGN", "URSHIFT_ASSIGN", "InterpolationPreffixString", "Identifier", 
-		"AT", "ELLIPSIS", "COMPILE_OPTION_LINE", "WS", "COMMENT", "LINE_COMMENT", 
-		"PACKAGE_DELIMITER", "INTERPOLATION_INTERUPT", "INTERPOLATION_END", "INTERPOLATION_STRING"
+		"LAMBDA_ARROW", "START_DOT", "OVERRIDE", "ABSTRACT", "ASSERT", "BOOLEAN", 
+		"BREAK", "BYTE", "CASE", "CATCH", "CHAR", "CLASS", "CONST", "CONTINUE", 
+		"DEFAULT", "DO", "DOUBLE", "ELSE", "ENUM", "EXTENDS", "FINAL", "FINALLY", 
+		"FLOAT", "FOR", "IF", "GOTO", "IMPLEMENTS", "IMPORT", "INSTANCEOF", "INT", 
+		"INTERFACE", "LONG", "NATIVE", "NEW", "PACKAGE", "PRIVATE", "PROTECTED", 
+		"PUBLIC", "RETURN", "SHORT", "STATIC", "STRICTFP", "SUPER", "SWITCH", 
+		"SYNCHRONIZED", "THIS", "THROW", "THROWS", "TRANSIENT", "TRY", "VOID", 
+		"VOLATILE", "WHILE", "IntegerLiteral", "FloatingPointLiteral", "BooleanLiteral", 
+		"CharacterLiteral", "StringLiteral", "MultiLineStringLiteral", "NullLiteral", 
+		"LPAREN", "RPAREN", "LBRACE", "RBRACE", "LBRACK", "RBRACK", "SEMI", "COMMA", 
+		"DOT", "ASSIGN", "GT", "LT", "BANG", "TILDE", "QUESTION", "COLON", "EQUAL", 
+		"LE", "GE", "NOTEQUAL", "AND", "OR", "INC", "DEC", "ADD", "SUB", "MUL", 
+		"DIV", "BITAND", "BITOR", "CARET", "MOD", "ADD_ASSIGN", "SUB_ASSIGN", 
+		"MUL_ASSIGN", "DIV_ASSIGN", "AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN", "MOD_ASSIGN", 
+		"LSHIFT_ASSIGN", "RSHIFT_ASSIGN", "URSHIFT_ASSIGN", "InterpolationPreffixString", 
+		"Identifier", "AT", "ELLIPSIS", "COMPILE_OPTION_LINE", "WS", "COMMENT", 
+		"LINE_COMMENT", "PACKAGE_DELIMITER", "INTERPOLATION_INTERUPT", "INTERPOLATION_END", 
+		"INTERPOLATION_STRING"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -338,7 +339,7 @@ public class KalangParser extends Parser {
 			setState(103);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << CONSTRUCTOR) | (1L << VAR) | (1L << VAL) | (1L << FOREACH) | (1L << OVERRIDE) | (1L << ABSTRACT) | (1L << ASSERT) | (1L << BOOLEAN) | (1L << BREAK) | (1L << BYTE) | (1L << CHAR) | (1L << CLASS) | (1L << CONTINUE) | (1L << DEFAULT) | (1L << DO) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << INTERFACE) | (1L << LONG) | (1L << NATIVE) | (1L << NEW) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << RETURN) | (1L << STATIC) | (1L << SUPER) | (1L << SYNCHRONIZED) | (1L << THIS) | (1L << THROW) | (1L << TRANSIENT) | (1L << TRY) | (1L << VOID) | (1L << VOLATILE) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (SEMI - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)) | (1L << (AT - 64)))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << CONSTRUCTOR) | (1L << VAR) | (1L << VAL) | (1L << FOREACH) | (1L << OVERRIDE) | (1L << ABSTRACT) | (1L << ASSERT) | (1L << BOOLEAN) | (1L << BREAK) | (1L << BYTE) | (1L << CHAR) | (1L << CLASS) | (1L << CONTINUE) | (1L << DEFAULT) | (1L << DO) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << INTERFACE) | (1L << LONG) | (1L << NATIVE) | (1L << NEW) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << RETURN) | (1L << STATIC) | (1L << SUPER) | (1L << SYNCHRONIZED) | (1L << THIS) | (1L << THROW) | (1L << TRANSIENT) | (1L << TRY) | (1L << VOID) | (1L << VOLATILE) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (SEMI - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)) | (1L << (AT - 64)))) != 0)) {
 				{
 				setState(101);
 				switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
@@ -873,7 +874,7 @@ public class KalangParser extends Parser {
 			setState(209);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << CONSTRUCTOR) | (1L << VAR) | (1L << VAL) | (1L << OVERRIDE) | (1L << ABSTRACT) | (1L << BOOLEAN) | (1L << BYTE) | (1L << CHAR) | (1L << CLASS) | (1L << DEFAULT) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << INT) | (1L << INTERFACE) | (1L << LONG) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOID) | (1L << VOLATILE))) != 0) || ((((_la - 95)) & ~0x3f) == 0 && ((1L << (_la - 95)) & ((1L << (BITAND - 95)) | (1L << (Identifier - 95)) | (1L << (AT - 95)))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << CONSTRUCTOR) | (1L << VAR) | (1L << VAL) | (1L << OVERRIDE) | (1L << ABSTRACT) | (1L << BOOLEAN) | (1L << BYTE) | (1L << CHAR) | (1L << CLASS) | (1L << DEFAULT) | (1L << DOUBLE) | (1L << FINAL) | (1L << FLOAT) | (1L << INT) | (1L << INTERFACE) | (1L << LONG) | (1L << NATIVE) | (1L << PRIVATE) | (1L << PROTECTED) | (1L << PUBLIC) | (1L << STATIC) | (1L << SYNCHRONIZED) | (1L << TRANSIENT) | (1L << VOID) | (1L << VOLATILE))) != 0) || ((((_la - 96)) & ~0x3f) == 0 && ((1L << (_la - 96)) & ((1L << (BITAND - 96)) | (1L << (Identifier - 96)) | (1L << (AT - 96)))) != 0)) {
 				{
 				setState(207);
 				switch ( getInterpreter().adaptivePredict(_input,23,_ctx) ) {
@@ -2456,7 +2457,7 @@ public class KalangParser extends Parser {
 			setState(425);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << VAR) | (1L << VAL) | (1L << FOREACH) | (1L << ASSERT) | (1L << BOOLEAN) | (1L << BREAK) | (1L << BYTE) | (1L << CHAR) | (1L << CONTINUE) | (1L << DO) | (1L << DOUBLE) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << RETURN) | (1L << SUPER) | (1L << THIS) | (1L << THROW) | (1L << TRY) | (1L << VOID) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (SEMI - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << VAR) | (1L << VAL) | (1L << FOREACH) | (1L << ASSERT) | (1L << BOOLEAN) | (1L << BREAK) | (1L << BYTE) | (1L << CHAR) | (1L << CONTINUE) | (1L << DO) | (1L << DOUBLE) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << RETURN) | (1L << SUPER) | (1L << THIS) | (1L << THROW) | (1L << TRY) | (1L << VOID) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (SEMI - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				{
 				setState(422);
@@ -2622,7 +2623,7 @@ public class KalangParser extends Parser {
 			match(RETURN);
 			setState(450);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				setState(449);
 				expression(0);
@@ -3188,7 +3189,7 @@ public class KalangParser extends Parser {
 			match(SEMI);
 			setState(519);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				setState(518);
 				((ForStatContext)_localctx).condition = expression(0);
@@ -3199,7 +3200,7 @@ public class KalangParser extends Parser {
 			match(SEMI);
 			setState(523);
 			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 				{
 				setState(522);
 				((ForStatContext)_localctx).updateExpressions = expressions();
@@ -4138,14 +4139,14 @@ public class KalangParser extends Parser {
 						_la = _input.LA(1);
 					}
 					setState(581);
-					match(ARROW);
+					match(LAMBDA_ARROW);
 					}
 					break;
 				}
 				setState(587);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << VAR) | (1L << VAL) | (1L << FOREACH) | (1L << ASSERT) | (1L << BOOLEAN) | (1L << BREAK) | (1L << BYTE) | (1L << CHAR) | (1L << CONTINUE) | (1L << DO) | (1L << DOUBLE) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << RETURN) | (1L << SUPER) | (1L << THIS) | (1L << THROW) | (1L << TRY) | (1L << VOID) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (SEMI - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+				while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << VAR) | (1L << VAL) | (1L << FOREACH) | (1L << ASSERT) | (1L << BOOLEAN) | (1L << BREAK) | (1L << BYTE) | (1L << CHAR) | (1L << CONTINUE) | (1L << DO) | (1L << DOUBLE) | (1L << FLOAT) | (1L << FOR) | (1L << IF) | (1L << INT) | (1L << LONG) | (1L << NEW) | (1L << RETURN) | (1L << SUPER) | (1L << THIS) | (1L << THROW) | (1L << TRY) | (1L << VOID) | (1L << WHILE) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (SEMI - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 					{
 					{
 					setState(584);
@@ -4257,7 +4258,7 @@ public class KalangParser extends Parser {
 				match(LBRACK);
 				setState(633);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 					{
 					setState(625);
 					expression(0);
@@ -4316,7 +4317,7 @@ public class KalangParser extends Parser {
 				match(LPAREN);
 				setState(650);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 					{
 					setState(642);
 					((MemberInvocationExprContext)_localctx).expression = expression(0);
@@ -4358,7 +4359,7 @@ public class KalangParser extends Parser {
 				match(LPAREN);
 				setState(664);
 				_la = _input.LA(1);
-				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 					{
 					setState(656);
 					((NewExprContext)_localctx).expression = expression(0);
@@ -4422,7 +4423,7 @@ public class KalangParser extends Parser {
 					match(LBRACE);
 					setState(687);
 					_la = _input.LA(1);
-					if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+					if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 						{
 						setState(679);
 						((NewArrayExprContext)_localctx).expression = expression(0);
@@ -4536,7 +4537,7 @@ public class KalangParser extends Parser {
 						if (!(precpred(_ctx, 15))) throw new FailedPredicateException(this, "precpred(_ctx, 15)");
 						setState(716);
 						_la = _input.LA(1);
-						if ( !(((((_la - 93)) & ~0x3f) == 0 && ((1L << (_la - 93)) & ((1L << (MUL - 93)) | (1L << (DIV - 93)) | (1L << (MOD - 93)))) != 0)) ) {
+						if ( !(((((_la - 94)) & ~0x3f) == 0 && ((1L << (_la - 94)) & ((1L << (MUL - 94)) | (1L << (DIV - 94)) | (1L << (MOD - 94)))) != 0)) ) {
 						_errHandler.recoverInline(this);
 						} else {
 							consume();
@@ -4609,7 +4610,7 @@ public class KalangParser extends Parser {
 						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
 						setState(733);
 						_la = _input.LA(1);
-						if ( !(((((_la - 77)) & ~0x3f) == 0 && ((1L << (_la - 77)) & ((1L << (GT - 77)) | (1L << (LT - 77)) | (1L << (LE - 77)) | (1L << (GE - 77)))) != 0)) ) {
+						if ( !(((((_la - 78)) & ~0x3f) == 0 && ((1L << (_la - 78)) & ((1L << (GT - 78)) | (1L << (LT - 78)) | (1L << (LE - 78)) | (1L << (GE - 78)))) != 0)) ) {
 						_errHandler.recoverInline(this);
 						} else {
 							consume();
@@ -4712,7 +4713,7 @@ public class KalangParser extends Parser {
 						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
 						setState(757);
 						_la = _input.LA(1);
-						if ( !(((((_la - 76)) & ~0x3f) == 0 && ((1L << (_la - 76)) & ((1L << (ASSIGN - 76)) | (1L << (ADD_ASSIGN - 76)) | (1L << (SUB_ASSIGN - 76)) | (1L << (MUL_ASSIGN - 76)) | (1L << (DIV_ASSIGN - 76)) | (1L << (AND_ASSIGN - 76)) | (1L << (OR_ASSIGN - 76)) | (1L << (XOR_ASSIGN - 76)) | (1L << (MOD_ASSIGN - 76)) | (1L << (LSHIFT_ASSIGN - 76)) | (1L << (RSHIFT_ASSIGN - 76)) | (1L << (URSHIFT_ASSIGN - 76)))) != 0)) ) {
+						if ( !(((((_la - 77)) & ~0x3f) == 0 && ((1L << (_la - 77)) & ((1L << (ASSIGN - 77)) | (1L << (ADD_ASSIGN - 77)) | (1L << (SUB_ASSIGN - 77)) | (1L << (MUL_ASSIGN - 77)) | (1L << (DIV_ASSIGN - 77)) | (1L << (AND_ASSIGN - 77)) | (1L << (OR_ASSIGN - 77)) | (1L << (XOR_ASSIGN - 77)) | (1L << (MOD_ASSIGN - 77)) | (1L << (LSHIFT_ASSIGN - 77)) | (1L << (RSHIFT_ASSIGN - 77)) | (1L << (URSHIFT_ASSIGN - 77)))) != 0)) ) {
 						_errHandler.recoverInline(this);
 						} else {
 							consume();
@@ -4742,7 +4743,7 @@ public class KalangParser extends Parser {
 						match(LPAREN);
 						setState(771);
 						_la = _input.LA(1);
-						if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral) | (1L << CharacterLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
+						if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << NEW) | (1L << SUPER) | (1L << THIS) | (1L << IntegerLiteral) | (1L << FloatingPointLiteral) | (1L << BooleanLiteral))) != 0) || ((((_la - 64)) & ~0x3f) == 0 && ((1L << (_la - 64)) & ((1L << (CharacterLiteral - 64)) | (1L << (StringLiteral - 64)) | (1L << (MultiLineStringLiteral - 64)) | (1L << (NullLiteral - 64)) | (1L << (LPAREN - 64)) | (1L << (LBRACE - 64)) | (1L << (LBRACK - 64)) | (1L << (LT - 64)) | (1L << (BANG - 64)) | (1L << (TILDE - 64)) | (1L << (INC - 64)) | (1L << (DEC - 64)) | (1L << (ADD - 64)) | (1L << (SUB - 64)) | (1L << (BITAND - 64)) | (1L << (InterpolationPreffixString - 64)) | (1L << (Identifier - 64)))) != 0)) {
 							{
 							setState(763);
 							((InvokeExprContext)_localctx).expression = expression(0);
@@ -5085,7 +5086,7 @@ public class KalangParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3{\u032e\4\2\t\2\4"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3|\u032e\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -5146,11 +5147,11 @@ public class KalangParser extends Parser {
 		"\u0306\n\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'"+
 		"\3\'\7\'\u0318\n\'\f\'\16\'\u031b\13\'\3(\3(\3(\3(\3(\3(\3(\3(\3(\3(\5"+
 		"(\u0327\n(\3)\6)\u032a\n)\r)\16)\u032b\3)\2\4\26L*\2\4\6\b\n\f\16\20\22"+
-		"\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNP\2\20\4\2\34\34\63"+
-		"\63\n\2\16\16\20\20\23\23\31\31\37\37&&((;;\3\2]^\3\2[\\\3\2QR\4\2\63"+
-		"\63\66\66\4\2_`dd\4\2OPVW\4\2UUXX\3\2YZ\4\2NNeo\4\2\t\nMM\4\2\t\tMM\n"+
-		"\2\f\f\35\35)),.\61\61\65\6599<<\u03a6\2U\3\2\2\2\4b\3\2\2\2\6i\3\2\2"+
-		"\2\bo\3\2\2\2\n\u00c2\3\2\2\2\f\u00c6\3\2\2\2\16\u00d3\3\2\2\2\20\u00d7"+
+		"\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNP\2\20\4\2\35\35\64"+
+		"\64\n\2\17\17\21\21\24\24\32\32  \'\'))<<\3\2^_\3\2\\]\3\2RS\4\2\64\64"+
+		"\67\67\4\2`aee\4\2PQWX\4\2VVYY\3\2Z[\4\2OOfp\5\2\t\t\13\13NN\4\2\t\tN"+
+		"N\n\2\r\r\36\36**-/\62\62\66\66::==\u03a6\2U\3\2\2\2\4b\3\2\2\2\6i\3\2"+
+		"\2\2\bo\3\2\2\2\n\u00c2\3\2\2\2\f\u00c6\3\2\2\2\16\u00d3\3\2\2\2\20\u00d7"+
 		"\3\2\2\2\22\u00e6\3\2\2\2\24\u0116\3\2\2\2\26\u012e\3\2\2\2\30\u0158\3"+
 		"\2\2\2\32\u015a\3\2\2\2\34\u016d\3\2\2\2\36\u016f\3\2\2\2 \u0173\3\2\2"+
 		"\2\"\u0175\3\2\2\2$\u017d\3\2\2\2&\u0197\3\2\2\2(\u0199\3\2\2\2*\u019b"+
@@ -5161,97 +5162,97 @@ public class KalangParser extends Parser {
 		"\2\2P\u0329\3\2\2\2RT\5\4\3\2SR\3\2\2\2TW\3\2\2\2US\3\2\2\2UV\3\2\2\2"+
 		"V[\3\2\2\2WU\3\2\2\2XZ\5\n\6\2YX\3\2\2\2Z]\3\2\2\2[Y\3\2\2\2[\\\3\2\2"+
 		"\2\\`\3\2\2\2][\3\2\2\2^a\5\b\5\2_a\5\6\4\2`^\3\2\2\2`_\3\2\2\2a\3\3\2"+
-		"\2\2bc\7t\2\2c\5\3\2\2\2dh\5\22\n\2eh\5&\24\2fh\5\b\5\2gd\3\2\2\2ge\3"+
+		"\2\2bc\7u\2\2c\5\3\2\2\2dh\5\22\n\2eh\5&\24\2fh\5\b\5\2gd\3\2\2\2ge\3"+
 		"\2\2\2gf\3\2\2\2hk\3\2\2\2ig\3\2\2\2ij\3\2\2\2j\7\3\2\2\2ki\3\2\2\2ln"+
 		"\5\24\13\2ml\3\2\2\2nq\3\2\2\2om\3\2\2\2op\3\2\2\2ps\3\2\2\2qo\3\2\2\2"+
-		"rt\5P)\2sr\3\2\2\2st\3\2\2\2t\u0083\3\2\2\2u\u0080\7\24\2\2vw\7P\2\2w"+
-		"|\7q\2\2xy\7L\2\2y{\7q\2\2zx\3\2\2\2{~\3\2\2\2|z\3\2\2\2|}\3\2\2\2}\177"+
-		"\3\2\2\2~|\3\2\2\2\177\u0081\7O\2\2\u0080v\3\2\2\2\u0080\u0081\3\2\2\2"+
-		"\u0081\u0084\3\2\2\2\u0082\u0084\7\'\2\2\u0083u\3\2\2\2\u0083\u0082\3"+
-		"\2\2\2\u0084\u0086\3\2\2\2\u0085\u0087\7q\2\2\u0086\u0085\3\2\2\2\u0086"+
-		"\u0087\3\2\2\2\u0087\u008a\3\2\2\2\u0088\u0089\7\34\2\2\u0089\u008b\5"+
+		"rt\5P)\2sr\3\2\2\2st\3\2\2\2t\u0083\3\2\2\2u\u0080\7\25\2\2vw\7Q\2\2w"+
+		"|\7r\2\2xy\7M\2\2y{\7r\2\2zx\3\2\2\2{~\3\2\2\2|z\3\2\2\2|}\3\2\2\2}\177"+
+		"\3\2\2\2~|\3\2\2\2\177\u0081\7P\2\2\u0080v\3\2\2\2\u0080\u0081\3\2\2\2"+
+		"\u0081\u0084\3\2\2\2\u0082\u0084\7(\2\2\u0083u\3\2\2\2\u0083\u0082\3\2"+
+		"\2\2\u0084\u0086\3\2\2\2\u0085\u0087\7r\2\2\u0086\u0085\3\2\2\2\u0086"+
+		"\u0087\3\2\2\2\u0087\u008a\3\2\2\2\u0088\u0089\7\35\2\2\u0089\u008b\5"+
 		"\30\r\2\u008a\u0088\3\2\2\2\u008a\u008b\3\2\2\2\u008b\u0095\3\2\2\2\u008c"+
-		"\u008d\7#\2\2\u008d\u0092\5\30\r\2\u008e\u008f\7L\2\2\u008f\u0091\5\30"+
+		"\u008d\7$\2\2\u008d\u0092\5\30\r\2\u008e\u008f\7M\2\2\u008f\u0091\5\30"+
 		"\r\2\u0090\u008e\3\2\2\2\u0091\u0094\3\2\2\2\u0092\u0090\3\2\2\2\u0092"+
 		"\u0093\3\2\2\2\u0093\u0096\3\2\2\2\u0094\u0092\3\2\2\2\u0095\u008c\3\2"+
-		"\2\2\u0095\u0096\3\2\2\2\u0096\u0097\3\2\2\2\u0097\u0098\7G\2\2\u0098"+
-		"\u0099\5\16\b\2\u0099\u009a\7H\2\2\u009a\t\3\2\2\2\u009b\u009d\7$\2\2"+
-		"\u009c\u009e\7x\2\2\u009d\u009c\3\2\2\2\u009d\u009e\3\2\2\2\u009e\u009f"+
-		"\3\2\2\2\u009f\u00a4\7q\2\2\u00a0\u00a1\7x\2\2\u00a1\u00a3\7q\2\2\u00a2"+
+		"\2\2\u0095\u0096\3\2\2\2\u0096\u0097\3\2\2\2\u0097\u0098\7H\2\2\u0098"+
+		"\u0099\5\16\b\2\u0099\u009a\7I\2\2\u009a\t\3\2\2\2\u009b\u009d\7%\2\2"+
+		"\u009c\u009e\7y\2\2\u009d\u009c\3\2\2\2\u009d\u009e\3\2\2\2\u009e\u009f"+
+		"\3\2\2\2\u009f\u00a4\7r\2\2\u00a0\u00a1\7y\2\2\u00a1\u00a3\7r\2\2\u00a2"+
 		"\u00a0\3\2\2\2\u00a3\u00a6\3\2\2\2\u00a4\u00a2\3\2\2\2\u00a4\u00a5\3\2"+
-		"\2\2\u00a5\u00a7\3\2\2\2\u00a6\u00a4\3\2\2\2\u00a7\u00ae\7x\2\2\u00a8"+
-		"\u00ab\7q\2\2\u00a9\u00aa\7\4\2\2\u00aa\u00ac\7q\2\2\u00ab\u00a9\3\2\2"+
-		"\2\u00ab\u00ac\3\2\2\2\u00ac\u00af\3\2\2\2\u00ad\u00af\7_\2\2\u00ae\u00a8"+
-		"\3\2\2\2\u00ae\u00ad\3\2\2\2\u00af\u00c3\3\2\2\2\u00b0\u00b1\7$\2\2\u00b1"+
-		"\u00b6\7q\2\2\u00b2\u00b3\7M\2\2\u00b3\u00b5\7q\2\2\u00b4\u00b2\3\2\2"+
+		"\2\2\u00a5\u00a7\3\2\2\2\u00a6\u00a4\3\2\2\2\u00a7\u00ae\7y\2\2\u00a8"+
+		"\u00ab\7r\2\2\u00a9\u00aa\7\4\2\2\u00aa\u00ac\7r\2\2\u00ab\u00a9\3\2\2"+
+		"\2\u00ab\u00ac\3\2\2\2\u00ac\u00af\3\2\2\2\u00ad\u00af\7`\2\2\u00ae\u00a8"+
+		"\3\2\2\2\u00ae\u00ad\3\2\2\2\u00af\u00c3\3\2\2\2\u00b0\u00b1\7%\2\2\u00b1"+
+		"\u00b6\7r\2\2\u00b2\u00b3\7N\2\2\u00b3\u00b5\7r\2\2\u00b4\u00b2\3\2\2"+
 		"\2\u00b5\u00b8\3\2\2\2\u00b6\u00b4\3\2\2\2\u00b6\u00b7\3\2\2\2\u00b7\u00b9"+
-		"\3\2\2\2\u00b8\u00b6\3\2\2\2\u00b9\u00c0\7M\2\2\u00ba\u00bd\7q\2\2\u00bb"+
-		"\u00bc\7\4\2\2\u00bc\u00be\7q\2\2\u00bd\u00bb\3\2\2\2\u00bd\u00be\3\2"+
-		"\2\2\u00be\u00c1\3\2\2\2\u00bf\u00c1\7_\2\2\u00c0\u00ba\3\2\2\2\u00c0"+
+		"\3\2\2\2\u00b8\u00b6\3\2\2\2\u00b9\u00c0\7N\2\2\u00ba\u00bd\7r\2\2\u00bb"+
+		"\u00bc\7\4\2\2\u00bc\u00be\7r\2\2\u00bd\u00bb\3\2\2\2\u00bd\u00be\3\2"+
+		"\2\2\u00be\u00c1\3\2\2\2\u00bf\u00c1\7`\2\2\u00c0\u00ba\3\2\2\2\u00c0"+
 		"\u00bf\3\2\2\2\u00c1\u00c3\3\2\2\2\u00c2\u009b\3\2\2\2\u00c2\u00b0\3\2"+
-		"\2\2\u00c3\u00c4\3\2\2\2\u00c4\u00c5\7K\2\2\u00c5\13\3\2\2\2\u00c6\u00cb"+
-		"\7q\2\2\u00c7\u00c8\7M\2\2\u00c8\u00ca\7q\2\2\u00c9\u00c7\3\2\2\2\u00ca"+
+		"\2\2\u00c3\u00c4\3\2\2\2\u00c4\u00c5\7L\2\2\u00c5\13\3\2\2\2\u00c6\u00cb"+
+		"\7r\2\2\u00c7\u00c8\7N\2\2\u00c8\u00ca\7r\2\2\u00c9\u00c7\3\2\2\2\u00ca"+
 		"\u00cd\3\2\2\2\u00cb\u00c9\3\2\2\2\u00cb\u00cc\3\2\2\2\u00cc\r\3\2\2\2"+
 		"\u00cd\u00cb\3\2\2\2\u00ce\u00d2\5\20\t\2\u00cf\u00d2\5\22\n\2\u00d0\u00d2"+
 		"\5\b\5\2\u00d1\u00ce\3\2\2\2\u00d1\u00cf\3\2\2\2\u00d1\u00d0\3\2\2\2\u00d2"+
 		"\u00d5\3\2\2\2\u00d3\u00d1\3\2\2\2\u00d3\u00d4\3\2\2\2\u00d4\17\3\2\2"+
 		"\2\u00d5\u00d3\3\2\2\2\u00d6\u00d8\5P)\2\u00d7\u00d6\3\2\2\2\u00d7\u00d8"+
-		"\3\2\2\2\u00d8\u00d9\3\2\2\2\u00d9\u00de\5:\36\2\u00da\u00db\7L\2\2\u00db"+
+		"\3\2\2\2\u00d8\u00d9\3\2\2\2\u00d9\u00de\5:\36\2\u00da\u00db\7M\2\2\u00db"+
 		"\u00dd\5:\36\2\u00dc\u00da\3\2\2\2\u00dd\u00e0\3\2\2\2\u00de\u00dc\3\2"+
 		"\2\2\u00de\u00df\3\2\2\2\u00df\u00e1\3\2\2\2\u00e0\u00de\3\2\2\2\u00e1"+
-		"\u00e2\7K\2\2\u00e2\21\3\2\2\2\u00e3\u00e5\5\24\13\2\u00e4\u00e3\3\2\2"+
+		"\u00e2\7L\2\2\u00e2\21\3\2\2\2\u00e3\u00e5\5\24\13\2\u00e4\u00e3\3\2\2"+
 		"\2\u00e5\u00e8\3\2\2\2\u00e6\u00e4\3\2\2\2\u00e6\u00e7\3\2\2\2\u00e7\u00ea"+
-		"\3\2\2\2\u00e8\u00e6\3\2\2\2\u00e9\u00eb\7\13\2\2\u00ea\u00e9\3\2\2\2"+
-		"\u00ea\u00eb\3\2\2\2\u00eb\u00ed\3\2\2\2\u00ec\u00ee\7\27\2\2\u00ed\u00ec"+
-		"\3\2\2\2\u00ed\u00ee\3\2\2\2\u00ee\u00f0\3\2\2\2\u00ef\u00f1\5P)\2\u00f0"+
+		"\3\2\2\2\u00e8\u00e6\3\2\2\2\u00e9\u00eb\7\f\2\2\u00ea\u00e9\3\2\2\2\u00ea"+
+		"\u00eb\3\2\2\2\u00eb\u00ed\3\2\2\2\u00ec\u00ee\7\30\2\2\u00ed\u00ec\3"+
+		"\2\2\2\u00ed\u00ee\3\2\2\2\u00ee\u00f0\3\2\2\2\u00ef\u00f1\5P)\2\u00f0"+
 		"\u00ef\3\2\2\2\u00f0\u00f1\3\2\2\2\u00f1\u00f6\3\2\2\2\u00f2\u00f3\5\26"+
-		"\f\2\u00f3\u00f4\7q\2\2\u00f4\u00f7\3\2\2\2\u00f5\u00f7\7\5\2\2\u00f6"+
-		"\u00f2\3\2\2\2\u00f6\u00f5\3\2\2\2\u00f7\u00f8\3\2\2\2\u00f8\u0104\7E"+
-		"\2\2\u00f9\u00fa\5\26\f\2\u00fa\u0101\7q\2\2\u00fb\u00fc\7L\2\2\u00fc"+
-		"\u00fd\5\26\f\2\u00fd\u00fe\7q\2\2\u00fe\u0100\3\2\2\2\u00ff\u00fb\3\2"+
+		"\f\2\u00f3\u00f4\7r\2\2\u00f4\u00f7\3\2\2\2\u00f5\u00f7\7\5\2\2\u00f6"+
+		"\u00f2\3\2\2\2\u00f6\u00f5\3\2\2\2\u00f7\u00f8\3\2\2\2\u00f8\u0104\7F"+
+		"\2\2\u00f9\u00fa\5\26\f\2\u00fa\u0101\7r\2\2\u00fb\u00fc\7M\2\2\u00fc"+
+		"\u00fd\5\26\f\2\u00fd\u00fe\7r\2\2\u00fe\u0100\3\2\2\2\u00ff\u00fb\3\2"+
 		"\2\2\u0100\u0103\3\2\2\2\u0101\u00ff\3\2\2\2\u0101\u0102\3\2\2\2\u0102"+
 		"\u0105\3\2\2\2\u0103\u0101\3\2\2\2\u0104\u00f9\3\2\2\2\u0104\u0105\3\2"+
-		"\2\2\u0105\u0106\3\2\2\2\u0106\u0110\7F\2\2\u0107\u0108\78\2\2\u0108\u010d"+
-		"\7q\2\2\u0109\u010a\7L\2\2\u010a\u010c\7q\2\2\u010b\u0109\3\2\2\2\u010c"+
+		"\2\2\u0105\u0106\3\2\2\2\u0106\u0110\7G\2\2\u0107\u0108\79\2\2\u0108\u010d"+
+		"\7r\2\2\u0109\u010a\7M\2\2\u010a\u010c\7r\2\2\u010b\u0109\3\2\2\2\u010c"+
 		"\u010f\3\2\2\2\u010d\u010b\3\2\2\2\u010d\u010e\3\2\2\2\u010e\u0111\3\2"+
 		"\2\2\u010f\u010d\3\2\2\2\u0110\u0107\3\2\2\2\u0110\u0111\3\2\2\2\u0111"+
-		"\u0114\3\2\2\2\u0112\u0115\5\60\31\2\u0113\u0115\7K\2\2\u0114\u0112\3"+
-		"\2\2\2\u0114\u0113\3\2\2\2\u0115\23\3\2\2\2\u0116\u0117\7r\2\2\u0117\u0129"+
-		"\7q\2\2\u0118\u0126\7E\2\2\u0119\u011a\7q\2\2\u011a\u011b\7N\2\2\u011b"+
-		"\u0122\5N(\2\u011c\u011d\7L\2\2\u011d\u011e\7q\2\2\u011e\u011f\7N\2\2"+
+		"\u0114\3\2\2\2\u0112\u0115\5\60\31\2\u0113\u0115\7L\2\2\u0114\u0112\3"+
+		"\2\2\2\u0114\u0113\3\2\2\2\u0115\23\3\2\2\2\u0116\u0117\7s\2\2\u0117\u0129"+
+		"\7r\2\2\u0118\u0126\7F\2\2\u0119\u011a\7r\2\2\u011a\u011b\7O\2\2\u011b"+
+		"\u0122\5N(\2\u011c\u011d\7M\2\2\u011d\u011e\7r\2\2\u011e\u011f\7O\2\2"+
 		"\u011f\u0121\5N(\2\u0120\u011c\3\2\2\2\u0121\u0124\3\2\2\2\u0122\u0120"+
 		"\3\2\2\2\u0122\u0123\3\2\2\2\u0123\u0127\3\2\2\2\u0124\u0122\3\2\2\2\u0125"+
 		"\u0127\5N(\2\u0126\u0119\3\2\2\2\u0126\u0125\3\2\2\2\u0126\u0127\3\2\2"+
-		"\2\u0127\u0128\3\2\2\2\u0128\u012a\7F\2\2\u0129\u0118\3\2\2\2\u0129\u012a"+
+		"\2\u0127\u0128\3\2\2\2\u0128\u012a\7G\2\2\u0129\u0118\3\2\2\2\u0129\u012a"+
 		"\3\2\2\2\u012a\25\3\2\2\2\u012b\u012c\b\f\1\2\u012c\u012f\5\30\r\2\u012d"+
 		"\u012f\5 \21\2\u012e\u012b\3\2\2\2\u012e\u012d\3\2\2\2\u012f\u0138\3\2"+
-		"\2\2\u0130\u0131\f\3\2\2\u0131\u0132\7I\2\2\u0132\u0134\7J\2\2\u0133\u0135"+
-		"\7S\2\2\u0134\u0133\3\2\2\2\u0134\u0135\3\2\2\2\u0135\u0137\3\2\2\2\u0136"+
+		"\2\2\u0130\u0131\f\3\2\2\u0131\u0132\7J\2\2\u0132\u0134\7K\2\2\u0133\u0135"+
+		"\7T\2\2\u0134\u0133\3\2\2\2\u0134\u0135\3\2\2\2\u0135\u0137\3\2\2\2\u0136"+
 		"\u0130\3\2\2\2\u0137\u013a\3\2\2\2\u0138\u0136\3\2\2\2\u0138\u0139\3\2"+
-		"\2\2\u0139\27\3\2\2\2\u013a\u0138\3\2\2\2\u013b\u013c\7q\2\2\u013c\u013e"+
-		"\7x\2\2\u013d\u013b\3\2\2\2\u013e\u0141\3\2\2\2\u013f\u013d\3\2\2\2\u013f"+
-		"\u0140\3\2\2\2\u0140\u0142\3\2\2\2\u0141\u013f\3\2\2\2\u0142\u0145\7q"+
-		"\2\2\u0143\u0144\7\3\2\2\u0144\u0146\7q\2\2\u0145\u0143\3\2\2\2\u0145"+
-		"\u0146\3\2\2\2\u0146\u0152\3\2\2\2\u0147\u0148\7P\2\2\u0148\u014d\5\34"+
-		"\17\2\u0149\u014a\7L\2\2\u014a\u014c\5\34\17\2\u014b\u0149\3\2\2\2\u014c"+
+		"\2\2\u0139\27\3\2\2\2\u013a\u0138\3\2\2\2\u013b\u013c\7r\2\2\u013c\u013e"+
+		"\7y\2\2\u013d\u013b\3\2\2\2\u013e\u0141\3\2\2\2\u013f\u013d\3\2\2\2\u013f"+
+		"\u0140\3\2\2\2\u0140\u0142\3\2\2\2\u0141\u013f\3\2\2\2\u0142\u0145\7r"+
+		"\2\2\u0143\u0144\7\3\2\2\u0144\u0146\7r\2\2\u0145\u0143\3\2\2\2\u0145"+
+		"\u0146\3\2\2\2\u0146\u0152\3\2\2\2\u0147\u0148\7Q\2\2\u0148\u014d\5\34"+
+		"\17\2\u0149\u014a\7M\2\2\u014a\u014c\5\34\17\2\u014b\u0149\3\2\2\2\u014c"+
 		"\u014f\3\2\2\2\u014d\u014b\3\2\2\2\u014d\u014e\3\2\2\2\u014e\u0150\3\2"+
-		"\2\2\u014f\u014d\3\2\2\2\u0150\u0151\7O\2\2\u0151\u0153\3\2\2\2\u0152"+
-		"\u0147\3\2\2\2\u0152\u0153\3\2\2\2\u0153\u0155\3\2\2\2\u0154\u0156\7S"+
+		"\2\2\u014f\u014d\3\2\2\2\u0150\u0151\7P\2\2\u0151\u0153\3\2\2\2\u0152"+
+		"\u0147\3\2\2\2\u0152\u0153\3\2\2\2\u0153\u0155\3\2\2\2\u0154\u0156\7T"+
 		"\2\2\u0155\u0154\3\2\2\2\u0155\u0156\3\2\2\2\u0156\u0159\3\2\2\2\u0157"+
 		"\u0159\5\32\16\2\u0158\u013f\3\2\2\2\u0158\u0157\3\2\2\2\u0159\31\3\2"+
-		"\2\2\u015a\u015b\7a\2\2\u015b\u015c\5\26\f\2\u015c\u0165\7E\2\2\u015d"+
-		"\u0162\5\26\f\2\u015e\u015f\7L\2\2\u015f\u0161\5\26\f\2\u0160\u015e\3"+
+		"\2\2\u015a\u015b\7b\2\2\u015b\u015c\5\26\f\2\u015c\u0165\7F\2\2\u015d"+
+		"\u0162\5\26\f\2\u015e\u015f\7M\2\2\u015f\u0161\5\26\f\2\u0160\u015e\3"+
 		"\2\2\2\u0161\u0164\3\2\2\2\u0162\u0160\3\2\2\2\u0162\u0163\3\2\2\2\u0163"+
 		"\u0166\3\2\2\2\u0164\u0162\3\2\2\2\u0165\u015d\3\2\2\2\u0165\u0166\3\2"+
-		"\2\2\u0166\u0167\3\2\2\2\u0167\u0169\7F\2\2\u0168\u016a\7S\2\2\u0169\u0168"+
+		"\2\2\u0166\u0167\3\2\2\2\u0167\u0169\7G\2\2\u0168\u016a\7T\2\2\u0169\u0168"+
 		"\3\2\2\2\u0169\u016a\3\2\2\2\u016a\33\3\2\2\2\u016b\u016e\5\26\f\2\u016c"+
 		"\u016e\5\36\20\2\u016d\u016b\3\2\2\2\u016d\u016c\3\2\2\2\u016e\35\3\2"+
-		"\2\2\u016f\u0170\7S\2\2\u0170\u0171\t\2\2\2\u0171\u0172\5\30\r\2\u0172"+
+		"\2\2\u016f\u0170\7T\2\2\u0170\u0171\t\2\2\2\u0171\u0172\5\30\r\2\u0172"+
 		"\37\3\2\2\2\u0173\u0174\t\3\2\2\u0174!\3\2\2\2\u0175\u017a\5:\36\2\u0176"+
-		"\u0177\7L\2\2\u0177\u0179\5:\36\2\u0178\u0176\3\2\2\2\u0179\u017c\3\2"+
+		"\u0177\7M\2\2\u0177\u0179\5:\36\2\u0178\u0176\3\2\2\2\u0179\u017c\3\2"+
 		"\2\2\u017a\u0178\3\2\2\2\u017a\u017b\3\2\2\2\u017b#\3\2\2\2\u017c\u017a"+
-		"\3\2\2\2\u017d\u017e\7!\2\2\u017e\u017f\7E\2\2\u017f\u0180\5L\'\2\u0180"+
-		"\u0181\7F\2\2\u0181\u0184\5&\24\2\u0182\u0183\7\32\2\2\u0183\u0185\5&"+
+		"\3\2\2\2\u017d\u017e\7\"\2\2\u017e\u017f\7F\2\2\u017f\u0180\5L\'\2\u0180"+
+		"\u0181\7G\2\2\u0181\u0184\5&\24\2\u0182\u0183\7\33\2\2\u0183\u0185\5&"+
 		"\24\2\u0184\u0182\3\2\2\2\u0184\u0185\3\2\2\2\u0185%\3\2\2\2\u0186\u0198"+
 		"\5(\25\2\u0187\u0198\5\60\31\2\u0188\u0198\58\35\2\u0189\u0198\5\66\34"+
 		"\2\u018a\u0198\5J&\2\u018b\u0198\5$\23\2\u018c\u0198\5@!\2\u018d\u0198"+
@@ -5262,150 +5263,150 @@ public class KalangParser extends Parser {
 		"\2\2\u0197\u018b\3\2\2\2\u0197\u018c\3\2\2\2\u0197\u018d\3\2\2\2\u0197"+
 		"\u018e\3\2\2\2\u0197\u018f\3\2\2\2\u0197\u0190\3\2\2\2\u0197\u0191\3\2"+
 		"\2\2\u0197\u0192\3\2\2\2\u0197\u0193\3\2\2\2\u0197\u0194\3\2\2\2\u0197"+
-		"\u0195\3\2\2\2\u0197\u0196\3\2\2\2\u0198\'\3\2\2\2\u0199\u019a\7K\2\2"+
-		"\u019a)\3\2\2\2\u019b\u019c\5L\'\2\u019c+\3\2\2\2\u019d\u019e\7\r\2\2"+
-		"\u019e\u01a1\5L\'\2\u019f\u01a0\7T\2\2\u01a0\u01a2\5L\'\2\u01a1\u019f"+
-		"\3\2\2\2\u01a1\u01a2\3\2\2\2\u01a2-\3\2\2\2\u01a3\u01a4\7\67\2\2\u01a4"+
-		"\u01a5\5L\'\2\u01a5\u01a6\7K\2\2\u01a6/\3\2\2\2\u01a7\u01ab\7G\2\2\u01a8"+
-		"\u01aa\5&\24\2\u01a9\u01a8\3\2\2\2\u01aa\u01ad\3\2\2\2\u01ab\u01a9\3\2"+
-		"\2\2\u01ab\u01ac\3\2\2\2\u01ac\u01ae\3\2\2\2\u01ad\u01ab\3\2\2\2\u01ae"+
-		"\u01af\7H\2\2\u01af\61\3\2\2\2\u01b0\u01b1\7:\2\2\u01b1\u01bb\5\60\31"+
-		"\2\u01b2\u01b3\7\22\2\2\u01b3\u01b4\7E\2\2\u01b4\u01b5\5\30\r\2\u01b5"+
-		"\u01b6\7q\2\2\u01b6\u01b7\7F\2\2\u01b7\u01b8\5\60\31\2\u01b8\u01ba\3\2"+
-		"\2\2\u01b9\u01b2\3\2\2\2\u01ba\u01bd\3\2\2\2\u01bb\u01b9\3\2\2\2\u01bb"+
-		"\u01bc\3\2\2\2\u01bc\u01c0\3\2\2\2\u01bd\u01bb\3\2\2\2\u01be\u01bf\7\36"+
-		"\2\2\u01bf\u01c1\5\60\31\2\u01c0\u01be\3\2\2\2\u01c0\u01c1\3\2\2\2\u01c1"+
-		"\63\3\2\2\2\u01c2\u01c4\7/\2\2\u01c3\u01c5\5L\'\2\u01c4\u01c3\3\2\2\2"+
-		"\u01c4\u01c5\3\2\2\2\u01c5\u01c6\3\2\2\2\u01c6\u01c7\7K\2\2\u01c7\65\3"+
-		"\2\2\2\u01c8\u01c9\5L\'\2\u01c9\u01d0\7!\2\2\u01ca\u01d1\7U\2\2\u01cb"+
-		"\u01d1\7P\2\2\u01cc\u01d1\7O\2\2\u01cd\u01d1\7X\2\2\u01ce\u01d1\7W\2\2"+
-		"\u01cf\u01d1\7V\2\2\u01d0\u01ca\3\2\2\2\u01d0\u01cb\3\2\2\2\u01d0\u01cc"+
-		"\3\2\2\2\u01d0\u01cd\3\2\2\2\u01d0\u01ce\3\2\2\2\u01d0\u01cf\3\2\2\2\u01d0"+
-		"\u01d1\3\2\2\2\u01d1\u01d2\3\2\2\2\u01d2\u01d3\5L\'\2\u01d3\u01d4\7K\2"+
-		"\2\u01d4\67\3\2\2\2\u01d5\u01d6\5\"\22\2\u01d6\u01d7\7K\2\2\u01d79\3\2"+
-		"\2\2\u01d8\u01db\7\6\2\2\u01d9\u01db\7\7\2\2\u01da\u01d8\3\2\2\2\u01da"+
-		"\u01d9\3\2\2\2\u01db\u01dc\3\2\2\2\u01dc\u01df\7q\2\2\u01dd\u01de\7\4"+
-		"\2\2\u01de\u01e0\5\26\f\2\u01df\u01dd\3\2\2\2\u01df\u01e0\3\2\2\2\u01e0"+
-		"\u01e3\3\2\2\2\u01e1\u01e2\7N\2\2\u01e2\u01e4\5L\'\2\u01e3\u01e1\3\2\2"+
-		"\2\u01e3\u01e4\3\2\2\2\u01e4\u01ec\3\2\2\2\u01e5\u01e6\5\26\f\2\u01e6"+
-		"\u01e9\7q\2\2\u01e7\u01e8\7N\2\2\u01e8\u01ea\5L\'\2\u01e9\u01e7\3\2\2"+
-		"\2\u01e9\u01ea\3\2\2\2\u01ea\u01ec\3\2\2\2\u01eb\u01da\3\2\2\2\u01eb\u01e5"+
-		"\3\2\2\2\u01ec;\3\2\2\2\u01ed\u01ee\7\17\2\2\u01ee\u01ef\7K\2\2\u01ef"+
-		"=\3\2\2\2\u01f0\u01f1\7\26\2\2\u01f1\u01f2\7K\2\2\u01f2?\3\2\2\2\u01f3"+
-		"\u01f4\7=\2\2\u01f4\u01f5\7E\2\2\u01f5\u01f6\5L\'\2\u01f6\u01f7\7F\2\2"+
-		"\u01f7\u01f8\5&\24\2\u01f8A\3\2\2\2\u01f9\u01fa\7\30\2\2\u01fa\u01fb\5"+
-		"\60\31\2\u01fb\u01fc\7=\2\2\u01fc\u01fd\7E\2\2\u01fd\u01fe\5L\'\2\u01fe"+
-		"\u01ff\7F\2\2\u01ff\u0200\7K\2\2\u0200C\3\2\2\2\u0201\u0202\7 \2\2\u0202"+
-		"\u0205\7E\2\2\u0203\u0206\5\"\22\2\u0204\u0206\5H%\2\u0205\u0203\3\2\2"+
-		"\2\u0205\u0204\3\2\2\2\u0205\u0206\3\2\2\2\u0206\u0207\3\2\2\2\u0207\u0209"+
-		"\7K\2\2\u0208\u020a\5L\'\2\u0209\u0208\3\2\2\2\u0209\u020a\3\2\2\2\u020a"+
-		"\u020b\3\2\2\2\u020b\u020d\7K\2\2\u020c\u020e\5H%\2\u020d\u020c\3\2\2"+
-		"\2\u020d\u020e\3\2\2\2\u020e\u020f\3\2\2\2\u020f\u0210\7F\2\2\u0210\u0211"+
-		"\5&\24\2\u0211E\3\2\2\2\u0212\u0213\7\b\2\2\u0213\u0214\7E\2\2\u0214\u0215"+
-		"\5L\'\2\u0215\u0218\7\4\2\2\u0216\u0217\7q\2\2\u0217\u0219\7L\2\2\u0218"+
-		"\u0216\3\2\2\2\u0218\u0219\3\2\2\2\u0219\u021a\3\2\2\2\u021a\u021b\7q"+
-		"\2\2\u021b\u021c\7F\2\2\u021c\u021d\5&\24\2\u021dG\3\2\2\2\u021e\u0223"+
-		"\5L\'\2\u021f\u0220\7L\2\2\u0220\u0222\5L\'\2\u0221\u021f\3\2\2\2\u0222"+
-		"\u0225\3\2\2\2\u0223\u0221\3\2\2\2\u0223\u0224\3\2\2\2\u0224I\3\2\2\2"+
-		"\u0225\u0223\3\2\2\2\u0226\u0227\5L\'\2\u0227\u0228\7K\2\2\u0228K\3\2"+
-		"\2\2\u0229\u022a\b\'\1\2\u022a\u022b\t\4\2\2\u022b\u02cc\5L\'\25\u022c"+
-		"\u022d\t\5\2\2\u022d\u02cc\5L\'\24\u022e\u022f\t\6\2\2\u022f\u02cc\5L"+
-		"\'\23\u0230\u0231\7E\2\2\u0231\u0232\5\26\f\2\u0232\u0233\7F\2\2\u0233"+
-		"\u0234\5L\'\22\u0234\u02cc\3\2\2\2\u0235\u0236\7E\2\2\u0236\u0237\5L\'"+
-		"\2\u0237\u0238\7F\2\2\u0238\u02cc\3\2\2\2\u0239\u02cc\t\7\2\2\u023a\u02cc"+
-		"\5N(\2\u023b\u023d\5\32\16\2\u023c\u023b\3\2\2\2\u023c\u023d\3\2\2\2\u023d"+
-		"\u023e\3\2\2\2\u023e\u0248\7G\2\2\u023f\u0244\7q\2\2\u0240\u0241\7L\2"+
-		"\2\u0241\u0243\7q\2\2\u0242\u0240\3\2\2\2\u0243\u0246\3\2\2\2\u0244\u0242"+
-		"\3\2\2\2\u0244\u0245\3\2\2\2\u0245\u0247\3\2\2\2\u0246\u0244\3\2\2\2\u0247"+
-		"\u0249\7\t\2\2\u0248\u023f\3\2\2\2\u0248\u0249\3\2\2\2\u0249\u024d\3\2"+
-		"\2\2\u024a\u024c\5&\24\2\u024b\u024a\3\2\2\2\u024c\u024f\3\2\2\2\u024d"+
-		"\u024b\3\2\2\2\u024d\u024e\3\2\2\2\u024e\u0250\3\2\2\2\u024f\u024d\3\2"+
-		"\2\2\u0250\u02cc\7H\2\2\u0251\u0252\7P\2\2\u0252\u0253\7q\2\2\u0253\u0254"+
-		"\7L\2\2\u0254\u0255\7q\2\2\u0255\u0257\7O\2\2\u0256\u0251\3\2\2\2\u0256"+
-		"\u0257\3\2\2\2\u0257\u026a\3\2\2\2\u0258\u0259\7I\2\2\u0259\u025a\7q\2"+
-		"\2\u025a\u025b\7T\2\2\u025b\u0262\5L\'\2\u025c\u025d\7L\2\2\u025d\u025e"+
-		"\7q\2\2\u025e\u025f\7T\2\2\u025f\u0261\5L\'\2\u0260\u025c\3\2\2\2\u0261"+
-		"\u0264\3\2\2\2\u0262\u0260\3\2\2\2\u0262\u0263\3\2\2\2\u0263\u0265\3\2"+
-		"\2\2\u0264\u0262\3\2\2\2\u0265\u0266\7J\2\2\u0266\u026b\3\2\2\2\u0267"+
-		"\u0268\7I\2\2\u0268\u0269\7T\2\2\u0269\u026b\7J\2\2\u026a\u0258\3\2\2"+
-		"\2\u026a\u0267\3\2\2\2\u026b\u02cc\3\2\2\2\u026c\u026d\7P\2\2\u026d\u026e"+
-		"\5\26\f\2\u026e\u026f\7O\2\2\u026f\u0271\3\2\2\2\u0270\u026c\3\2\2\2\u0270"+
-		"\u0271\3\2\2\2\u0271\u0272\3\2\2\2\u0272\u027b\7I\2\2\u0273\u0278\5L\'"+
-		"\2\u0274\u0275\7L\2\2\u0275\u0277\5L\'\2\u0276\u0274\3\2\2\2\u0277\u027a"+
-		"\3\2\2\2\u0278\u0276\3\2\2\2\u0278\u0279\3\2\2\2\u0279\u027c\3\2\2\2\u027a"+
-		"\u0278\3\2\2\2\u027b\u0273\3\2\2\2\u027b\u027c\3\2\2\2\u027c\u027d\3\2"+
-		"\2\2\u027d\u02cc\7J\2\2\u027e\u0282\7q\2\2\u027f\u0282\7\66\2\2\u0280"+
-		"\u0282\7\63\2\2\u0281\u027e\3\2\2\2\u0281\u027f\3\2\2\2\u0281\u0280\3"+
-		"\2\2\2\u0282\u0283\3\2\2\2\u0283\u028c\7E\2\2\u0284\u0289\5L\'\2\u0285"+
-		"\u0286\7L\2\2\u0286\u0288\5L\'\2\u0287\u0285\3\2\2\2\u0288\u028b\3\2\2"+
-		"\2\u0289\u0287\3\2\2\2\u0289\u028a\3\2\2\2\u028a\u028d\3\2\2\2\u028b\u0289"+
-		"\3\2\2\2\u028c\u0284\3\2\2\2\u028c\u028d\3\2\2\2\u028d\u028e\3\2\2\2\u028e"+
-		"\u02cc\7F\2\2\u028f\u0290\7*\2\2\u0290\u0291\5\30\r\2\u0291\u029a\7E\2"+
-		"\2\u0292\u0297\5L\'\2\u0293\u0294\7L\2\2\u0294\u0296\5L\'\2\u0295\u0293"+
-		"\3\2\2\2\u0296\u0299\3\2\2\2\u0297\u0295\3\2\2\2\u0297\u0298\3\2\2\2\u0298"+
-		"\u029b\3\2\2\2\u0299\u0297\3\2\2\2\u029a\u0292\3\2\2\2\u029a\u029b\3\2"+
-		"\2\2\u029b\u029c\3\2\2\2\u029c\u029d\7F\2\2\u029d\u02cc\3\2\2\2\u029e"+
-		"\u029f\7*\2\2\u029f\u02a0\5\26\f\2\u02a0\u02a1\7I\2\2\u02a1\u02a2\5L\'"+
-		"\2\u02a2\u02a3\7J\2\2\u02a3\u02b6\3\2\2\2\u02a4\u02a5\7*\2\2\u02a5\u02a6"+
-		"\5\26\f\2\u02a6\u02a7\7I\2\2\u02a7\u02a8\7J\2\2\u02a8\u02b1\7G\2\2\u02a9"+
-		"\u02ae\5L\'\2\u02aa\u02ab\7L\2\2\u02ab\u02ad\5L\'\2\u02ac\u02aa\3\2\2"+
-		"\2\u02ad\u02b0\3\2\2\2\u02ae\u02ac\3\2\2\2\u02ae\u02af\3\2\2\2\u02af\u02b2"+
-		"\3\2\2\2\u02b0\u02ae\3\2\2\2\u02b1\u02a9\3\2\2\2\u02b1\u02b2\3\2\2\2\u02b2"+
-		"\u02b3\3\2\2\2\u02b3\u02b4\7H\2\2\u02b4\u02b6\3\2\2\2\u02b5\u029e\3\2"+
-		"\2\2\u02b5\u02a4\3\2\2\2\u02b6\u02cc\3\2\2\2\u02b7\u02cc\7q\2\2\u02b8"+
-		"\u02b9\7p\2\2\u02b9\u02c2\5L\'\2\u02ba\u02bc\7H\2\2\u02bb\u02bd\7{\2\2"+
-		"\u02bc\u02bb\3\2\2\2\u02bc\u02bd\3\2\2\2\u02bd\u02be\3\2\2\2\u02be\u02bf"+
-		"\7y\2\2\u02bf\u02c1\5L\'\2\u02c0\u02ba\3\2\2\2\u02c1\u02c4\3\2\2\2\u02c2"+
-		"\u02c0\3\2\2\2\u02c2\u02c3\3\2\2\2\u02c3\u02c5\3\2\2\2\u02c4\u02c2\3\2"+
-		"\2\2\u02c5\u02c7\7H\2\2\u02c6\u02c8\7{\2\2\u02c7\u02c6\3\2\2\2\u02c7\u02c8"+
-		"\3\2\2\2\u02c8\u02c9\3\2\2\2\u02c9\u02ca\7z\2\2\u02ca\u02cc\3\2\2\2\u02cb"+
-		"\u0229\3\2\2\2\u02cb\u022c\3\2\2\2\u02cb\u022e\3\2\2\2\u02cb\u0230\3\2"+
-		"\2\2\u02cb\u0235\3\2\2\2\u02cb\u0239\3\2\2\2\u02cb\u023a\3\2\2\2\u02cb"+
-		"\u023c\3\2\2\2\u02cb\u0256\3\2\2\2\u02cb\u0270\3\2\2\2\u02cb\u0281\3\2"+
-		"\2\2\u02cb\u028f\3\2\2\2\u02cb\u02b5\3\2\2\2\u02cb\u02b7\3\2\2\2\u02cb"+
-		"\u02b8\3\2\2\2\u02cc\u0319\3\2\2\2\u02cd\u02ce\f\21\2\2\u02ce\u02cf\t"+
-		"\b\2\2\u02cf\u0318\5L\'\22\u02d0\u02d1\f\20\2\2\u02d1\u02d2\t\4\2\2\u02d2"+
-		"\u0318\5L\'\21\u02d3\u02db\f\17\2\2\u02d4\u02d5\7P\2\2\u02d5\u02dc\7P"+
-		"\2\2\u02d6\u02d7\7O\2\2\u02d7\u02d8\7O\2\2\u02d8\u02dc\7O\2\2\u02d9\u02da"+
-		"\7O\2\2\u02da\u02dc\7O\2\2\u02db\u02d4\3\2\2\2\u02db\u02d6\3\2\2\2\u02db"+
-		"\u02d9\3\2\2\2\u02dc\u02dd\3\2\2\2\u02dd\u0318\5L\'\20\u02de\u02df\f\16"+
-		"\2\2\u02df\u02e0\t\t\2\2\u02e0\u0318\5L\'\17\u02e1\u02e2\f\f\2\2\u02e2"+
-		"\u02e3\t\n\2\2\u02e3\u0318\5L\'\r\u02e4\u02e5\f\13\2\2\u02e5\u02e6\7a"+
-		"\2\2\u02e6\u0318\5L\'\f\u02e7\u02e8\f\n\2\2\u02e8\u02e9\7c\2\2\u02e9\u0318"+
-		"\5L\'\13\u02ea\u02eb\f\t\2\2\u02eb\u02ec\7b\2\2\u02ec\u0318\5L\'\n\u02ed"+
-		"\u02ee\f\b\2\2\u02ee\u02ef\t\13\2\2\u02ef\u0318\5L\'\t\u02f0\u02f1\f\7"+
-		"\2\2\u02f1\u02f2\7S\2\2\u02f2\u02f3\5L\'\2\u02f3\u02f4\7T\2\2\u02f4\u02f5"+
-		"\5L\'\b\u02f5\u0318\3\2\2\2\u02f6\u02f7\f\3\2\2\u02f7\u02f8\t\f\2\2\u02f8"+
-		"\u0318\5L\'\3\u02f9\u02fa\f\34\2\2\u02fa\u02fb\t\r\2\2\u02fb\u02fc\7q"+
-		"\2\2\u02fc\u0305\7E\2\2\u02fd\u0302\5L\'\2\u02fe\u02ff\7L\2\2\u02ff\u0301"+
-		"\5L\'\2\u0300\u02fe\3\2\2\2\u0301\u0304\3\2\2\2\u0302\u0300\3\2\2\2\u0302"+
-		"\u0303\3\2\2\2\u0303\u0306\3\2\2\2\u0304\u0302\3\2\2\2\u0305\u02fd\3\2"+
-		"\2\2\u0305\u0306\3\2\2\2\u0306\u0307\3\2\2\2\u0307\u0318\7F\2\2\u0308"+
-		"\u0309\f\33\2\2\u0309\u030a\t\16\2\2\u030a\u0318\7q\2\2\u030b\u030c\f"+
-		"\31\2\2\u030c\u030d\7I\2\2\u030d\u030e\5L\'\2\u030e\u030f\7J\2\2\u030f"+
-		"\u0318\3\2\2\2\u0310\u0311\f\26\2\2\u0311\u0318\t\5\2\2\u0312\u0313\f"+
-		"\r\2\2\u0313\u0314\7%\2\2\u0314\u0318\7q\2\2\u0315\u0316\f\5\2\2\u0316"+
-		"\u0318\7M\2\2\u0317\u02cd\3\2\2\2\u0317\u02d0\3\2\2\2\u0317\u02d3\3\2"+
-		"\2\2\u0317\u02de\3\2\2\2\u0317\u02e1\3\2\2\2\u0317\u02e4\3\2\2\2\u0317"+
-		"\u02e7\3\2\2\2\u0317\u02ea\3\2\2\2\u0317\u02ed\3\2\2\2\u0317\u02f0\3\2"+
-		"\2\2\u0317\u02f6\3\2\2\2\u0317\u02f9\3\2\2\2\u0317\u0308\3\2\2\2\u0317"+
-		"\u030b\3\2\2\2\u0317\u0310\3\2\2\2\u0317\u0312\3\2\2\2\u0317\u0315\3\2"+
-		"\2\2\u0318\u031b\3\2\2\2\u0319\u0317\3\2\2\2\u0319\u031a\3\2\2\2\u031a"+
-		"M\3\2\2\2\u031b\u0319\3\2\2\2\u031c\u0327\7>\2\2\u031d\u0327\7?\2\2\u031e"+
-		"\u0327\7A\2\2\u031f\u0327\7B\2\2\u0320\u0327\7C\2\2\u0321\u0327\7@\2\2"+
-		"\u0322\u0323\7q\2\2\u0323\u0324\7M\2\2\u0324\u0327\7\24\2\2\u0325\u0327"+
-		"\7D\2\2\u0326\u031c\3\2\2\2\u0326\u031d\3\2\2\2\u0326\u031e\3\2\2\2\u0326"+
-		"\u031f\3\2\2\2\u0326\u0320\3\2\2\2\u0326\u0321\3\2\2\2\u0326\u0322\3\2"+
-		"\2\2\u0326\u0325\3\2\2\2\u0327O\3\2\2\2\u0328\u032a\t\17\2\2\u0329\u0328"+
-		"\3\2\2\2\u032a\u032b\3\2\2\2\u032b\u0329\3\2\2\2\u032b\u032c\3\2\2\2\u032c"+
-		"Q\3\2\2\2gU[`gios|\u0080\u0083\u0086\u008a\u0092\u0095\u009d\u00a4\u00ab"+
-		"\u00ae\u00b6\u00bd\u00c0\u00c2\u00cb\u00d1\u00d3\u00d7\u00de\u00e6\u00ea"+
-		"\u00ed\u00f0\u00f6\u0101\u0104\u010d\u0110\u0114\u0122\u0126\u0129\u012e"+
-		"\u0134\u0138\u013f\u0145\u014d\u0152\u0155\u0158\u0162\u0165\u0169\u016d"+
-		"\u017a\u0184\u0197\u01a1\u01ab\u01bb\u01c0\u01c4\u01d0\u01da\u01df\u01e3"+
-		"\u01e9\u01eb\u0205\u0209\u020d\u0218\u0223\u023c\u0244\u0248\u024d\u0256"+
-		"\u0262\u026a\u0270\u0278\u027b\u0281\u0289\u028c\u0297\u029a\u02ae\u02b1"+
-		"\u02b5\u02bc\u02c2\u02c7\u02cb\u02db\u0302\u0305\u0317\u0319\u0326\u032b";
+		"\u0195\3\2\2\2\u0197\u0196\3\2\2\2\u0198\'\3\2\2\2\u0199\u019a\7L\2\2"+
+		"\u019a)\3\2\2\2\u019b\u019c\5L\'\2\u019c+\3\2\2\2\u019d\u019e\7\16\2\2"+
+		"\u019e\u01a1\5L\'\2\u019f\u01a0\7U\2\2\u01a0\u01a2\5L\'\2\u01a1\u019f"+
+		"\3\2\2\2\u01a1\u01a2\3\2\2\2\u01a2-\3\2\2\2\u01a3\u01a4\78\2\2\u01a4\u01a5"+
+		"\5L\'\2\u01a5\u01a6\7L\2\2\u01a6/\3\2\2\2\u01a7\u01ab\7H\2\2\u01a8\u01aa"+
+		"\5&\24\2\u01a9\u01a8\3\2\2\2\u01aa\u01ad\3\2\2\2\u01ab\u01a9\3\2\2\2\u01ab"+
+		"\u01ac\3\2\2\2\u01ac\u01ae\3\2\2\2\u01ad\u01ab\3\2\2\2\u01ae\u01af\7I"+
+		"\2\2\u01af\61\3\2\2\2\u01b0\u01b1\7;\2\2\u01b1\u01bb\5\60\31\2\u01b2\u01b3"+
+		"\7\23\2\2\u01b3\u01b4\7F\2\2\u01b4\u01b5\5\30\r\2\u01b5\u01b6\7r\2\2\u01b6"+
+		"\u01b7\7G\2\2\u01b7\u01b8\5\60\31\2\u01b8\u01ba\3\2\2\2\u01b9\u01b2\3"+
+		"\2\2\2\u01ba\u01bd\3\2\2\2\u01bb\u01b9\3\2\2\2\u01bb\u01bc\3\2\2\2\u01bc"+
+		"\u01c0\3\2\2\2\u01bd\u01bb\3\2\2\2\u01be\u01bf\7\37\2\2\u01bf\u01c1\5"+
+		"\60\31\2\u01c0\u01be\3\2\2\2\u01c0\u01c1\3\2\2\2\u01c1\63\3\2\2\2\u01c2"+
+		"\u01c4\7\60\2\2\u01c3\u01c5\5L\'\2\u01c4\u01c3\3\2\2\2\u01c4\u01c5\3\2"+
+		"\2\2\u01c5\u01c6\3\2\2\2\u01c6\u01c7\7L\2\2\u01c7\65\3\2\2\2\u01c8\u01c9"+
+		"\5L\'\2\u01c9\u01d0\7\"\2\2\u01ca\u01d1\7V\2\2\u01cb\u01d1\7Q\2\2\u01cc"+
+		"\u01d1\7P\2\2\u01cd\u01d1\7Y\2\2\u01ce\u01d1\7X\2\2\u01cf\u01d1\7W\2\2"+
+		"\u01d0\u01ca\3\2\2\2\u01d0\u01cb\3\2\2\2\u01d0\u01cc\3\2\2\2\u01d0\u01cd"+
+		"\3\2\2\2\u01d0\u01ce\3\2\2\2\u01d0\u01cf\3\2\2\2\u01d0\u01d1\3\2\2\2\u01d1"+
+		"\u01d2\3\2\2\2\u01d2\u01d3\5L\'\2\u01d3\u01d4\7L\2\2\u01d4\67\3\2\2\2"+
+		"\u01d5\u01d6\5\"\22\2\u01d6\u01d7\7L\2\2\u01d79\3\2\2\2\u01d8\u01db\7"+
+		"\6\2\2\u01d9\u01db\7\7\2\2\u01da\u01d8\3\2\2\2\u01da\u01d9\3\2\2\2\u01db"+
+		"\u01dc\3\2\2\2\u01dc\u01df\7r\2\2\u01dd\u01de\7\4\2\2\u01de\u01e0\5\26"+
+		"\f\2\u01df\u01dd\3\2\2\2\u01df\u01e0\3\2\2\2\u01e0\u01e3\3\2\2\2\u01e1"+
+		"\u01e2\7O\2\2\u01e2\u01e4\5L\'\2\u01e3\u01e1\3\2\2\2\u01e3\u01e4\3\2\2"+
+		"\2\u01e4\u01ec\3\2\2\2\u01e5\u01e6\5\26\f\2\u01e6\u01e9\7r\2\2\u01e7\u01e8"+
+		"\7O\2\2\u01e8\u01ea\5L\'\2\u01e9\u01e7\3\2\2\2\u01e9\u01ea\3\2\2\2\u01ea"+
+		"\u01ec\3\2\2\2\u01eb\u01da\3\2\2\2\u01eb\u01e5\3\2\2\2\u01ec;\3\2\2\2"+
+		"\u01ed\u01ee\7\20\2\2\u01ee\u01ef\7L\2\2\u01ef=\3\2\2\2\u01f0\u01f1\7"+
+		"\27\2\2\u01f1\u01f2\7L\2\2\u01f2?\3\2\2\2\u01f3\u01f4\7>\2\2\u01f4\u01f5"+
+		"\7F\2\2\u01f5\u01f6\5L\'\2\u01f6\u01f7\7G\2\2\u01f7\u01f8\5&\24\2\u01f8"+
+		"A\3\2\2\2\u01f9\u01fa\7\31\2\2\u01fa\u01fb\5\60\31\2\u01fb\u01fc\7>\2"+
+		"\2\u01fc\u01fd\7F\2\2\u01fd\u01fe\5L\'\2\u01fe\u01ff\7G\2\2\u01ff\u0200"+
+		"\7L\2\2\u0200C\3\2\2\2\u0201\u0202\7!\2\2\u0202\u0205\7F\2\2\u0203\u0206"+
+		"\5\"\22\2\u0204\u0206\5H%\2\u0205\u0203\3\2\2\2\u0205\u0204\3\2\2\2\u0205"+
+		"\u0206\3\2\2\2\u0206\u0207\3\2\2\2\u0207\u0209\7L\2\2\u0208\u020a\5L\'"+
+		"\2\u0209\u0208\3\2\2\2\u0209\u020a\3\2\2\2\u020a\u020b\3\2\2\2\u020b\u020d"+
+		"\7L\2\2\u020c\u020e\5H%\2\u020d\u020c\3\2\2\2\u020d\u020e\3\2\2\2\u020e"+
+		"\u020f\3\2\2\2\u020f\u0210\7G\2\2\u0210\u0211\5&\24\2\u0211E\3\2\2\2\u0212"+
+		"\u0213\7\b\2\2\u0213\u0214\7F\2\2\u0214\u0215\5L\'\2\u0215\u0218\7\4\2"+
+		"\2\u0216\u0217\7r\2\2\u0217\u0219\7M\2\2\u0218\u0216\3\2\2\2\u0218\u0219"+
+		"\3\2\2\2\u0219\u021a\3\2\2\2\u021a\u021b\7r\2\2\u021b\u021c\7G\2\2\u021c"+
+		"\u021d\5&\24\2\u021dG\3\2\2\2\u021e\u0223\5L\'\2\u021f\u0220\7M\2\2\u0220"+
+		"\u0222\5L\'\2\u0221\u021f\3\2\2\2\u0222\u0225\3\2\2\2\u0223\u0221\3\2"+
+		"\2\2\u0223\u0224\3\2\2\2\u0224I\3\2\2\2\u0225\u0223\3\2\2\2\u0226\u0227"+
+		"\5L\'\2\u0227\u0228\7L\2\2\u0228K\3\2\2\2\u0229\u022a\b\'\1\2\u022a\u022b"+
+		"\t\4\2\2\u022b\u02cc\5L\'\25\u022c\u022d\t\5\2\2\u022d\u02cc\5L\'\24\u022e"+
+		"\u022f\t\6\2\2\u022f\u02cc\5L\'\23\u0230\u0231\7F\2\2\u0231\u0232\5\26"+
+		"\f\2\u0232\u0233\7G\2\2\u0233\u0234\5L\'\22\u0234\u02cc\3\2\2\2\u0235"+
+		"\u0236\7F\2\2\u0236\u0237\5L\'\2\u0237\u0238\7G\2\2\u0238\u02cc\3\2\2"+
+		"\2\u0239\u02cc\t\7\2\2\u023a\u02cc\5N(\2\u023b\u023d\5\32\16\2\u023c\u023b"+
+		"\3\2\2\2\u023c\u023d\3\2\2\2\u023d\u023e\3\2\2\2\u023e\u0248\7H\2\2\u023f"+
+		"\u0244\7r\2\2\u0240\u0241\7M\2\2\u0241\u0243\7r\2\2\u0242\u0240\3\2\2"+
+		"\2\u0243\u0246\3\2\2\2\u0244\u0242\3\2\2\2\u0244\u0245\3\2\2\2\u0245\u0247"+
+		"\3\2\2\2\u0246\u0244\3\2\2\2\u0247\u0249\7\n\2\2\u0248\u023f\3\2\2\2\u0248"+
+		"\u0249\3\2\2\2\u0249\u024d\3\2\2\2\u024a\u024c\5&\24\2\u024b\u024a\3\2"+
+		"\2\2\u024c\u024f\3\2\2\2\u024d\u024b\3\2\2\2\u024d\u024e\3\2\2\2\u024e"+
+		"\u0250\3\2\2\2\u024f\u024d\3\2\2\2\u0250\u02cc\7I\2\2\u0251\u0252\7Q\2"+
+		"\2\u0252\u0253\7r\2\2\u0253\u0254\7M\2\2\u0254\u0255\7r\2\2\u0255\u0257"+
+		"\7P\2\2\u0256\u0251\3\2\2\2\u0256\u0257\3\2\2\2\u0257\u026a\3\2\2\2\u0258"+
+		"\u0259\7J\2\2\u0259\u025a\7r\2\2\u025a\u025b\7U\2\2\u025b\u0262\5L\'\2"+
+		"\u025c\u025d\7M\2\2\u025d\u025e\7r\2\2\u025e\u025f\7U\2\2\u025f\u0261"+
+		"\5L\'\2\u0260\u025c\3\2\2\2\u0261\u0264\3\2\2\2\u0262\u0260\3\2\2\2\u0262"+
+		"\u0263\3\2\2\2\u0263\u0265\3\2\2\2\u0264\u0262\3\2\2\2\u0265\u0266\7K"+
+		"\2\2\u0266\u026b\3\2\2\2\u0267\u0268\7J\2\2\u0268\u0269\7U\2\2\u0269\u026b"+
+		"\7K\2\2\u026a\u0258\3\2\2\2\u026a\u0267\3\2\2\2\u026b\u02cc\3\2\2\2\u026c"+
+		"\u026d\7Q\2\2\u026d\u026e\5\26\f\2\u026e\u026f\7P\2\2\u026f\u0271\3\2"+
+		"\2\2\u0270\u026c\3\2\2\2\u0270\u0271\3\2\2\2\u0271\u0272\3\2\2\2\u0272"+
+		"\u027b\7J\2\2\u0273\u0278\5L\'\2\u0274\u0275\7M\2\2\u0275\u0277\5L\'\2"+
+		"\u0276\u0274\3\2\2\2\u0277\u027a\3\2\2\2\u0278\u0276\3\2\2\2\u0278\u0279"+
+		"\3\2\2\2\u0279\u027c\3\2\2\2\u027a\u0278\3\2\2\2\u027b\u0273\3\2\2\2\u027b"+
+		"\u027c\3\2\2\2\u027c\u027d\3\2\2\2\u027d\u02cc\7K\2\2\u027e\u0282\7r\2"+
+		"\2\u027f\u0282\7\67\2\2\u0280\u0282\7\64\2\2\u0281\u027e\3\2\2\2\u0281"+
+		"\u027f\3\2\2\2\u0281\u0280\3\2\2\2\u0282\u0283\3\2\2\2\u0283\u028c\7F"+
+		"\2\2\u0284\u0289\5L\'\2\u0285\u0286\7M\2\2\u0286\u0288\5L\'\2\u0287\u0285"+
+		"\3\2\2\2\u0288\u028b\3\2\2\2\u0289\u0287\3\2\2\2\u0289\u028a\3\2\2\2\u028a"+
+		"\u028d\3\2\2\2\u028b\u0289\3\2\2\2\u028c\u0284\3\2\2\2\u028c\u028d\3\2"+
+		"\2\2\u028d\u028e\3\2\2\2\u028e\u02cc\7G\2\2\u028f\u0290\7+\2\2\u0290\u0291"+
+		"\5\30\r\2\u0291\u029a\7F\2\2\u0292\u0297\5L\'\2\u0293\u0294\7M\2\2\u0294"+
+		"\u0296\5L\'\2\u0295\u0293\3\2\2\2\u0296\u0299\3\2\2\2\u0297\u0295\3\2"+
+		"\2\2\u0297\u0298\3\2\2\2\u0298\u029b\3\2\2\2\u0299\u0297\3\2\2\2\u029a"+
+		"\u0292\3\2\2\2\u029a\u029b\3\2\2\2\u029b\u029c\3\2\2\2\u029c\u029d\7G"+
+		"\2\2\u029d\u02cc\3\2\2\2\u029e\u029f\7+\2\2\u029f\u02a0\5\26\f\2\u02a0"+
+		"\u02a1\7J\2\2\u02a1\u02a2\5L\'\2\u02a2\u02a3\7K\2\2\u02a3\u02b6\3\2\2"+
+		"\2\u02a4\u02a5\7+\2\2\u02a5\u02a6\5\26\f\2\u02a6\u02a7\7J\2\2\u02a7\u02a8"+
+		"\7K\2\2\u02a8\u02b1\7H\2\2\u02a9\u02ae\5L\'\2\u02aa\u02ab\7M\2\2\u02ab"+
+		"\u02ad\5L\'\2\u02ac\u02aa\3\2\2\2\u02ad\u02b0\3\2\2\2\u02ae\u02ac\3\2"+
+		"\2\2\u02ae\u02af\3\2\2\2\u02af\u02b2\3\2\2\2\u02b0\u02ae\3\2\2\2\u02b1"+
+		"\u02a9\3\2\2\2\u02b1\u02b2\3\2\2\2\u02b2\u02b3\3\2\2\2\u02b3\u02b4\7I"+
+		"\2\2\u02b4\u02b6\3\2\2\2\u02b5\u029e\3\2\2\2\u02b5\u02a4\3\2\2\2\u02b6"+
+		"\u02cc\3\2\2\2\u02b7\u02cc\7r\2\2\u02b8\u02b9\7q\2\2\u02b9\u02c2\5L\'"+
+		"\2\u02ba\u02bc\7I\2\2\u02bb\u02bd\7|\2\2\u02bc\u02bb\3\2\2\2\u02bc\u02bd"+
+		"\3\2\2\2\u02bd\u02be\3\2\2\2\u02be\u02bf\7z\2\2\u02bf\u02c1\5L\'\2\u02c0"+
+		"\u02ba\3\2\2\2\u02c1\u02c4\3\2\2\2\u02c2\u02c0\3\2\2\2\u02c2\u02c3\3\2"+
+		"\2\2\u02c3\u02c5\3\2\2\2\u02c4\u02c2\3\2\2\2\u02c5\u02c7\7I\2\2\u02c6"+
+		"\u02c8\7|\2\2\u02c7\u02c6\3\2\2\2\u02c7\u02c8\3\2\2\2\u02c8\u02c9\3\2"+
+		"\2\2\u02c9\u02ca\7{\2\2\u02ca\u02cc\3\2\2\2\u02cb\u0229\3\2\2\2\u02cb"+
+		"\u022c\3\2\2\2\u02cb\u022e\3\2\2\2\u02cb\u0230\3\2\2\2\u02cb\u0235\3\2"+
+		"\2\2\u02cb\u0239\3\2\2\2\u02cb\u023a\3\2\2\2\u02cb\u023c\3\2\2\2\u02cb"+
+		"\u0256\3\2\2\2\u02cb\u0270\3\2\2\2\u02cb\u0281\3\2\2\2\u02cb\u028f\3\2"+
+		"\2\2\u02cb\u02b5\3\2\2\2\u02cb\u02b7\3\2\2\2\u02cb\u02b8\3\2\2\2\u02cc"+
+		"\u0319\3\2\2\2\u02cd\u02ce\f\21\2\2\u02ce\u02cf\t\b\2\2\u02cf\u0318\5"+
+		"L\'\22\u02d0\u02d1\f\20\2\2\u02d1\u02d2\t\4\2\2\u02d2\u0318\5L\'\21\u02d3"+
+		"\u02db\f\17\2\2\u02d4\u02d5\7Q\2\2\u02d5\u02dc\7Q\2\2\u02d6\u02d7\7P\2"+
+		"\2\u02d7\u02d8\7P\2\2\u02d8\u02dc\7P\2\2\u02d9\u02da\7P\2\2\u02da\u02dc"+
+		"\7P\2\2\u02db\u02d4\3\2\2\2\u02db\u02d6\3\2\2\2\u02db\u02d9\3\2\2\2\u02dc"+
+		"\u02dd\3\2\2\2\u02dd\u0318\5L\'\20\u02de\u02df\f\16\2\2\u02df\u02e0\t"+
+		"\t\2\2\u02e0\u0318\5L\'\17\u02e1\u02e2\f\f\2\2\u02e2\u02e3\t\n\2\2\u02e3"+
+		"\u0318\5L\'\r\u02e4\u02e5\f\13\2\2\u02e5\u02e6\7b\2\2\u02e6\u0318\5L\'"+
+		"\f\u02e7\u02e8\f\n\2\2\u02e8\u02e9\7d\2\2\u02e9\u0318\5L\'\13\u02ea\u02eb"+
+		"\f\t\2\2\u02eb\u02ec\7c\2\2\u02ec\u0318\5L\'\n\u02ed\u02ee\f\b\2\2\u02ee"+
+		"\u02ef\t\13\2\2\u02ef\u0318\5L\'\t\u02f0\u02f1\f\7\2\2\u02f1\u02f2\7T"+
+		"\2\2\u02f2\u02f3\5L\'\2\u02f3\u02f4\7U\2\2\u02f4\u02f5\5L\'\b\u02f5\u0318"+
+		"\3\2\2\2\u02f6\u02f7\f\3\2\2\u02f7\u02f8\t\f\2\2\u02f8\u0318\5L\'\3\u02f9"+
+		"\u02fa\f\34\2\2\u02fa\u02fb\t\r\2\2\u02fb\u02fc\7r\2\2\u02fc\u0305\7F"+
+		"\2\2\u02fd\u0302\5L\'\2\u02fe\u02ff\7M\2\2\u02ff\u0301\5L\'\2\u0300\u02fe"+
+		"\3\2\2\2\u0301\u0304\3\2\2\2\u0302\u0300\3\2\2\2\u0302\u0303\3\2\2\2\u0303"+
+		"\u0306\3\2\2\2\u0304\u0302\3\2\2\2\u0305\u02fd\3\2\2\2\u0305\u0306\3\2"+
+		"\2\2\u0306\u0307\3\2\2\2\u0307\u0318\7G\2\2\u0308\u0309\f\33\2\2\u0309"+
+		"\u030a\t\16\2\2\u030a\u0318\7r\2\2\u030b\u030c\f\31\2\2\u030c\u030d\7"+
+		"J\2\2\u030d\u030e\5L\'\2\u030e\u030f\7K\2\2\u030f\u0318\3\2\2\2\u0310"+
+		"\u0311\f\26\2\2\u0311\u0318\t\5\2\2\u0312\u0313\f\r\2\2\u0313\u0314\7"+
+		"&\2\2\u0314\u0318\7r\2\2\u0315\u0316\f\5\2\2\u0316\u0318\7N\2\2\u0317"+
+		"\u02cd\3\2\2\2\u0317\u02d0\3\2\2\2\u0317\u02d3\3\2\2\2\u0317\u02de\3\2"+
+		"\2\2\u0317\u02e1\3\2\2\2\u0317\u02e4\3\2\2\2\u0317\u02e7\3\2\2\2\u0317"+
+		"\u02ea\3\2\2\2\u0317\u02ed\3\2\2\2\u0317\u02f0\3\2\2\2\u0317\u02f6\3\2"+
+		"\2\2\u0317\u02f9\3\2\2\2\u0317\u0308\3\2\2\2\u0317\u030b\3\2\2\2\u0317"+
+		"\u0310\3\2\2\2\u0317\u0312\3\2\2\2\u0317\u0315\3\2\2\2\u0318\u031b\3\2"+
+		"\2\2\u0319\u0317\3\2\2\2\u0319\u031a\3\2\2\2\u031aM\3\2\2\2\u031b\u0319"+
+		"\3\2\2\2\u031c\u0327\7?\2\2\u031d\u0327\7@\2\2\u031e\u0327\7B\2\2\u031f"+
+		"\u0327\7C\2\2\u0320\u0327\7D\2\2\u0321\u0327\7A\2\2\u0322\u0323\7r\2\2"+
+		"\u0323\u0324\7N\2\2\u0324\u0327\7\25\2\2\u0325\u0327\7E\2\2\u0326\u031c"+
+		"\3\2\2\2\u0326\u031d\3\2\2\2\u0326\u031e\3\2\2\2\u0326\u031f\3\2\2\2\u0326"+
+		"\u0320\3\2\2\2\u0326\u0321\3\2\2\2\u0326\u0322\3\2\2\2\u0326\u0325\3\2"+
+		"\2\2\u0327O\3\2\2\2\u0328\u032a\t\17\2\2\u0329\u0328\3\2\2\2\u032a\u032b"+
+		"\3\2\2\2\u032b\u0329\3\2\2\2\u032b\u032c\3\2\2\2\u032cQ\3\2\2\2gU[`gi"+
+		"os|\u0080\u0083\u0086\u008a\u0092\u0095\u009d\u00a4\u00ab\u00ae\u00b6"+
+		"\u00bd\u00c0\u00c2\u00cb\u00d1\u00d3\u00d7\u00de\u00e6\u00ea\u00ed\u00f0"+
+		"\u00f6\u0101\u0104\u010d\u0110\u0114\u0122\u0126\u0129\u012e\u0134\u0138"+
+		"\u013f\u0145\u014d\u0152\u0155\u0158\u0162\u0165\u0169\u016d\u017a\u0184"+
+		"\u0197\u01a1\u01ab\u01bb\u01c0\u01c4\u01d0\u01da\u01df\u01e3\u01e9\u01eb"+
+		"\u0205\u0209\u020d\u0218\u0223\u023c\u0244\u0248\u024d\u0256\u0262\u026a"+
+		"\u0270\u0278\u027b\u0281\u0289\u028c\u0297\u029a\u02ae\u02b1\u02b5\u02bc"+
+		"\u02c2\u02c7\u02cb\u02db\u0302\u0305\u0317\u0319\u0326\u032b";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

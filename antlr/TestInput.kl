@@ -26,8 +26,8 @@ class<T>{
         &String(String) func1 = null;
         &String(String,String) func2 = null;
         run0({return 0;});
-        run1({a->return a;});
-        run2({a,b->return a+b;});
+        run1({a=>return a;});
+        run2({a,b=>return a+b;});
     }
     int methodWithReturn(int p){}
 }
