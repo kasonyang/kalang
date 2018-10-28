@@ -13,6 +13,7 @@ VAR:'var';
 VAL: 'val';
 FOREACH:'foreach';
 ARROW:'->';
+LAMBDA_ARROW:'=>';
 START_DOT: '*.';
 OVERRIDE   : 'override' ;
 ABSTRACT      : 'abstract';

@@ -182,5 +182,5 @@ void sayHello(String name,&Void(String) callback) {
     callback.run("Hello,${name}");
 }
 
-sayHello("kalang" , { result -> println(result); } );
+sayHello("kalang" , { result => println(result); } );
 ```
