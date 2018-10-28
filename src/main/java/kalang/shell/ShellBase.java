@@ -10,6 +10,7 @@ import kalang.compiler.Configuration;
 import kalang.dependency.Artifact;
 import kalang.dependency.DependencyResolver;
 import kalang.dependency.ResolveResult;
+import kalang.lang.Runtime;
 import kalang.tool.KalangShell;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -72,17 +73,7 @@ public abstract class ShellBase {
     }
     
     protected void printVersion() {
-        Properties prop = new Properties();
-        InputStream is = this.getClass().getResourceAsStream("/default.properties");
-        if (is != null) {
-            try {
-                prop.load(is);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-        String version = prop.getProperty("version", "UNKNOWN");
-        System.out.println(String.format("%s %s", appName, version));
+        System.out.println(String.format("%s v%s", appName, Runtime.getVersion()));
     }
 
     protected Configuration createConfiguration(CommandLine cli) {

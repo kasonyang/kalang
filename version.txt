@@ -1,1 +1,1 @@
-dev.{{DATE}}
+{{DATE}}.{{TIME}}.0
