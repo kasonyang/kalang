@@ -669,7 +669,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             if (v==null) {
                 return null;
             }
-            ConstExpr k = new ConstExpr(ctx.Identifier(i).getText());
+            ConstExpr k = new ConstExpr(ids.get(i).getText());
             ExprNode[] args = new ExprNode[]{k,v};
             InvocationExpr iv;
             try {

@@ -12,14 +12,15 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class SnippetsTest {
 
-//    @Test
-//    public void testExamples() throws Exception {
-//        File examplesSrcDir = new File("src/test/kalang-snippets/examples");
-//        testAll(examplesSrcDir,false);
-//    }
+    @Test
+    public void testExamples() throws Exception {
+        File examplesSrcDir = new File("src/test/kalang-snippets/examples");
+        testAll(examplesSrcDir,false);
+    }
 
     @Test
     public void testAutomation() throws Exception {
@@ -60,8 +61,8 @@ public class SnippetsTest {
                     ret = m.invoke(inst, (Object[]) null);
                 }
             } catch (Exception ex) {
-                System.err.println("Exception in method:" + m.getName());
                 ex.printStackTrace();
+                fail("Exception in method:" + m.getName());
                 continue;
             }
             assertEquals("result of method[" + methodName + "] should be 6", 6, ret);

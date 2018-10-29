@@ -1,0 +1,6 @@
+int lambdaExprTest() {
+    var cb = &String(String){ value =>
+        return value;
+    };
+    return Integer.parseInt(cb.call("6"));
+}

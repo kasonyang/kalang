@@ -1335,7 +1335,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             Type interfaceParamType = params[i].getType();
             org.objectweb.asm.Type interfaceParamAsmType = asmType(interfaceParamType);
             methodVisitor.visitVarInsn(interfaceParamAsmType.getOpcode(ILOAD),varIdx);
-            if (implementedParamType.isAssignableFrom(interfaceParamType)) {
+            if (!implementedParamType.isAssignableFrom(interfaceParamType)) {
                 methodVisitor.visitTypeInsn(CHECKCAST,internalName(implementedParamType));
             }
             varIdx += interfaceParamAsmType.getSize();
