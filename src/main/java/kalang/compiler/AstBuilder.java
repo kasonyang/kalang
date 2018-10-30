@@ -707,8 +707,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public AstNode visitQuestionExpr(KalangParser.QuestionExprContext ctx) {
         List<Statement> stmts = new LinkedList<>();
         ExprNode conditionExpr = (ExprNode) visit(ctx.expression(0));
+        newOverrideTypeStack();
+        onIf(conditionExpr,true);
         ExprNode trueExpr = (ExprNode) visit(ctx.expression(1));
+        popOverrideTypeStack();
+        newOverrideTypeStack();
+        onIf(conditionExpr,false);
         ExprNode falseExpr = (ExprNode)  visit(ctx.expression(2));
+        popOverrideTypeStack();
         Type trueType = trueExpr.getType();
         Type falseType  = falseExpr.getType();
         Type type;
