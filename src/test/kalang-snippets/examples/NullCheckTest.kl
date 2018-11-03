@@ -1,0 +1,2 @@
+String? name = null;
+String value = name==null ? "" : name.toString();

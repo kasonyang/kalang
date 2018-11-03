@@ -147,10 +147,10 @@ var stringArray = ["hello","world"];//String[]
 ## Declare map
 
 ```
-var objectMap = [name:"kalang",year:2016];//Map<Object,Object>
-var stringMap = <String,String>[name:"kalang",type:"language"];//Map<String,String>
+var objectMap = ["name":"kalang","year":2016];//Map<String,Object>
+var stringMap = ["name":"kalang","type":"language"];//Map<String,String>
 var ov = objectMap.get("name");//ov is Object type
-var sv = stringMap.get("name");sv is String type
+var sv = stringMap.get("name");//sv is String type
 ```
 
 ## Null safe

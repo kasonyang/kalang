@@ -248,7 +248,7 @@ expression
     |   ref=('this'|'super') #selfRefExpr
     |   literal #literalExpr
     | lambdaType? '{' ( lambdaParams+=Identifier (',' lambdaParams+=Identifier)* '=>')? stat* '}' #lambdaExpr
-    | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=Identifier ':' values+=expression ( ',' keys+=Identifier ':' values+=expression)*  ']' 
+    | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=expression ':' values+=expression ( ',' keys+=expression ':' values+=expression)*  ']'
           | '[' ':' ']'
       ) #mapExpr
     | ('<' type '>')? '[' ( expression ( ',' expression )* )? ']'  # arrayExpr
