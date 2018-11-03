@@ -34,12 +34,8 @@ import kalang.ast.ReturnStmt;
 import kalang.type.Function;
 import kalang.util.AstUtil;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.BlockStmtContext;
 import kalang.antlr.KalangParser.BreakStatContext;
@@ -642,12 +638,28 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Override
     public MultiStmtExpr visitMapExpr(KalangParser.MapExprContext ctx) {
-        Type keyType = ctx.keyType!=null 
+        List<Token> ids = ctx.keys;
+        List<ExpressionContext> values = ctx.values;
+        ExprNode[] keyExprs = new ExprNode[ids.size()];
+        ExprNode[] valuesExprs = new ExprNode[values.size()];
+        for (int i = 0; i < ids.size(); i++) {
+            ExpressionContext e = values.get(i);
+            ExprNode v = (ExprNode) visit(e);
+            if (v==null) {
+                return null;
+            }
+            ConstExpr k = new ConstExpr(ids.get(i).getText());
+            keyExprs[i] = k;
+            valuesExprs[i] = v;
+        }
+        Type[] valuesTypes = AstUtil.getExprTypes(valuesExprs);
+        Objects.requireNonNull(valuesTypes);
+        Type keyType = ctx.keyType!=null
                 ? requireClassType(ctx.keyType)
                 : Types.getStringClassType();
-        Type valueType = ctx.valueType!=null 
+        Type valueType = ctx.valueType!=null
                 ? requireClassType(ctx.valueType)
-                : Types.getRootType();
+                : TypeUtil.getCommonType(valuesTypes);
         if(keyType==null || valueType == null) return null;
         LocalVarNode vo = declareTempLocalVar(Types.getClassType(Types.getMapImplClassType().getClassNode(),new Type[]{keyType,valueType}));
         VarDeclStmt vds = new VarDeclStmt(vo);
@@ -661,16 +673,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         stmts.add(vds);
         stmts.add(new ExprStmt(new AssignExpr(new VarExpr(vo), newExpr)));
         VarExpr ve = new VarExpr(vo);
-        List<Token> ids = ctx.keys;
-        List<ExpressionContext> values = ctx.values;
-        for (int i = 0; i < ids.size(); i++) {
-            ExpressionContext e = values.get(i);
-            ExprNode v = (ExprNode) visit(e);
-            if (v==null) {
-                return null;
-            }
-            ConstExpr k = new ConstExpr(ids.get(i).getText());
-            ExprNode[] args = new ExprNode[]{k,v};
+        for(int i=0;i<keyExprs.length;i++) {
+            ExprNode[] args = new ExprNode[]{keyExprs[i],valuesExprs[i]};
             InvocationExpr iv;
             try {
                 iv = ObjectInvokeExpr.create(ve, "put",args);

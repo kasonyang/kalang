@@ -1,4 +1,4 @@
 int mapExpr(){
-    var map = <String,String>[a:"5",b:"6",c:"7"];
-    return Integer.parseInt(map.get("b"));
+    var map = [a:"a",b:"ab",c:"abc"];
+    return map.get("b").length()+4;
 }
