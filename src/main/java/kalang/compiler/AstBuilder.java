@@ -638,25 +638,31 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
     @Override
     public MultiStmtExpr visitMapExpr(KalangParser.MapExprContext ctx) {
-        List<Token> ids = ctx.keys;
+        List<ExpressionContext> keys = ctx.keys;
         List<ExpressionContext> values = ctx.values;
-        ExprNode[] keyExprs = new ExprNode[ids.size()];
+        ExprNode[] keyExprs = new ExprNode[keys.size()];
         ExprNode[] valuesExprs = new ExprNode[values.size()];
-        for (int i = 0; i < ids.size(); i++) {
+        for (int i = 0; i < keys.size(); i++) {
+            ExpressionContext ke = keys.get(i);
             ExpressionContext e = values.get(i);
-            ExprNode v = (ExprNode) visit(e);
+            ExprNode k = visitExpression(ke);
+            if (k==null) {
+                return null;
+            }
+            ExprNode v = visitExpression(e);
             if (v==null) {
                 return null;
             }
-            ConstExpr k = new ConstExpr(ids.get(i).getText());
             keyExprs[i] = k;
             valuesExprs[i] = v;
         }
         Type[] valuesTypes = AstUtil.getExprTypes(valuesExprs);
         Objects.requireNonNull(valuesTypes);
+        Type[] keyTypes = AstUtil.getExprTypes(keyExprs);
+        Objects.requireNonNull(keyTypes);
         Type keyType = ctx.keyType!=null
                 ? requireClassType(ctx.keyType)
-                : Types.getStringClassType();
+                : TypeUtil.getCommonType(keyTypes);
         Type valueType = ctx.valueType!=null
                 ? requireClassType(ctx.valueType)
                 : TypeUtil.getCommonType(valuesTypes);

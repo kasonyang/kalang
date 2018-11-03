@@ -1,4 +1,4 @@
 int mapExpr(){
-    var map = [a:"a",b:"ab",c:"abc"];
+    var map = ["a":"a","b":"ab","c":"abc"];
     return map.get("b").length()+4;
 }
