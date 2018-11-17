@@ -301,22 +301,38 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if(expr instanceof InstanceOfExpr && onTrue){
             InstanceOfExpr ie = (InstanceOfExpr) expr;
             changeTypeTemporarilyIfCould(ie.getExpr(),Types.getClassType(ie.getTarget().getReferencedClassNode()));
-        }
-        if(expr instanceof CompareExpr){
+        } else if(expr instanceof CompareExpr) {
             CompareExpr ce = (CompareExpr) expr;
             ExprNode e1 = ce.getExpr1();
             ExprNode e2 = ce.getExpr2();
             boolean isEQ = ce.getOperation().equals(CompareExpr.OP_EQ);
-            if(e1.getType().equals(Types.NULL_TYPE)){
-                onNull(e2, onTrue,isEQ);
-            }else if(e2.getType().equals(Types.NULL_TYPE)){
-                onNull(e1,onTrue,isEQ);
+            if (e1.getType().equals(Types.NULL_TYPE)) {
+                onNull(e2, onTrue, isEQ);
+            } else if (e2.getType().equals(Types.NULL_TYPE)) {
+                onNull(e1, onTrue, isEQ);
             }
-        }
-        if(expr instanceof UnaryExpr){
+        } else if (expr instanceof StaticInvokeExpr) {
+            StaticInvokeExpr sie = (StaticInvokeExpr) expr;
+            ExprNode[] args = sie.getArguments();
+            if (args==null || args.length != 2) {
+                return;
+            }
+            String invokeClass = sie.getInvokeClass().getReferencedClassNode().name;
+            if (!Objects.class.getName().equals(invokeClass)) {
+                return;
+            }
+            String methodName = sie.getMethod().getName();
+            if (!"equals".equals(methodName) && !"deepEquals".equals(methodName)) {
+                return;
+            }
+            if (Types.NULL_TYPE.equals(args[0].getType())) {
+                onNull(args[1],onTrue,true);
+            } else if (Types.NULL_TYPE.equals(args[1].getType())) {
+                onNull(args[0],onTrue,true);
+            }
+        } else if(expr instanceof UnaryExpr){
             onIf(((UnaryExpr) expr).getExpr(),!onTrue);
-        }
-        if(expr instanceof LogicExpr){
+        } else if(expr instanceof LogicExpr){
             LogicExpr le = (LogicExpr) expr;
             if(le.getOperation().equals(LogicExpr.OP_LOGIC_AND)){
                 if(onTrue){
@@ -1346,13 +1362,26 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 return null;
             }
         } else if ("==".equals(op) || "!=".equals(op)) {
-            if (Types.isNumber(type1) && Types.isNumber(type2) && (isPrimitive1 || isPrimitive2)) {
+            if (type1 instanceof ObjectType) {
+                ClassReference objectsRef = new ClassReference(Types.requireClassType(Objects.class.getName()).getClassNode());
+                expr = this.getStaticInvokeExpr(objectsRef, "equals", new ExprNode[]{expr1, expr2}, ctx);
+                if ("!=".equals(op)) {
+                    expr = new UnaryExpr(expr, "!");
+                }
+            } else if (Types.isNumber(type1) && Types.isNumber(type2) && (isPrimitive1 || isPrimitive2)) {
                 expr = this.createBinaryMathExpr(expr1, expr2, op);
             } else if (Types.isBoolean(type1) && Types.isBoolean(type2) && (isPrimitive1 || isPrimitive2)) {
                 expr = this.createBinaryBoolOperateExpr(expr1, expr2, op);
             } else {
                 expr = this.constructBinaryExpr(expr1, expr2, op);
             }
+        } else if ("===".equals(op) || "!==".equals(op)) {
+            if (!(type1 instanceof ObjectType)) {
+                String msg = "object type is required";
+                diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
+                return null;
+            }
+            expr = constructBinaryExpr(expr1,expr2,op.substring(0,2));
         } else if (">>>".equals(op) || "<<".equals(op) || ">>".equals(op)) {
             if (Types.isExactNumber(type1) && Types.isExactNumber(type2)) {
                 expr = this.createBinaryMathExpr(expr1, expr2, op);

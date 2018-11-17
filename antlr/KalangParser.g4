@@ -281,7 +281,7 @@ expression
         ) expression #bitShiftExpr
     |   expression ('<=' | '>=' | '>' | '<') expression #binaryExpr
     |   expression INSTANCEOF Identifier  #instanceofExpr
-    |   expression ('=='|'!=') expression #binaryExpr
+    |   expression ('=='|'==='|'!='|'!==') expression #binaryExpr
     |   expression '&' expression #binaryExpr
     |   expression '^' expression #binaryExpr
     |   expression '|' expression #binaryExpr

@@ -1,0 +1,11 @@
+int equalsObject(){
+    var fa = new File("a");
+    var fb = new File("a");
+    return fa == fb ? 6 : 1;
+}
+
+int sameObject() {
+    var fa = new File("a");
+    var fb = new File("a");
+    return fa === fb ? 1 : 6;
+}
