@@ -1,5 +1,0 @@
-class SuperCall{
-    constructor(){
-        super();
-    }
-}

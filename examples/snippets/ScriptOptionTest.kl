@@ -1,2 +1,0 @@
-#script kalang.script.ShellScript
-println(randomInt());

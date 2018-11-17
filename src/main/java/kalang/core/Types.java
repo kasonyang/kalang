@@ -348,10 +348,15 @@ public class Types {
     }
 
     /**
-     * @return the rootType
+     * @return the non-null rootType
+     * @deprecated
      */
     public static ObjectType getRootType() {
         return requireClassType(ROOT_CLASS_NAME);
+    }
+
+    public static boolean isRootObjectType(ObjectType type) {
+        return type.getClassNode().name.equals(ROOT_CLASS_NAME);
     }
     
     public static ObjectType getScriptType(){

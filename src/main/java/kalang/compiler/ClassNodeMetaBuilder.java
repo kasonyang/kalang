@@ -10,21 +10,7 @@ import kalang.AstNotFoundException;
 import kalang.antlr.KalangParser;
 import kalang.antlr.KalangParser.MethodDeclContext;
 import kalang.antlr.KalangParserBaseVisitor;
-import kalang.ast.AnnotationNode;
-import kalang.ast.AssignExpr;
-import kalang.ast.AssignableExpr;
-import kalang.ast.BlockStmt;
-import kalang.ast.ClassNode;
-import kalang.ast.ClassReference;
-import kalang.ast.ExprNode;
-import kalang.ast.ExprStmt;
-import kalang.ast.FieldNode;
-import kalang.ast.MethodNode;
-import kalang.ast.ObjectFieldExpr;
-import kalang.ast.ParameterExpr;
-import kalang.ast.ParameterNode;
-import kalang.ast.StaticFieldExpr;
-import kalang.ast.ThisExpr;
+import kalang.ast.*;
 import kalang.core.GenericType;
 import kalang.core.MethodDescriptor;
 import kalang.core.ModifierConstant;
@@ -331,8 +317,9 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
                 visit(m);
             }
         }
-        MethodNode mm = thisClazz.createMethodNode(Types.VOID_TYPE,"execute",Modifier.PUBLIC);
+        MethodNode mm = thisClazz.createMethodNode(Types.INT_TYPE,"execute",Modifier.PUBLIC);
         mm.addExceptionType(Types.getExceptionClassType());
+        mm.setDefaultReturnValue(new ConstExpr(0));
         method = mm;
         List<KalangParser.StatContext> stats = ctx.stat();
         if(stats!=null){

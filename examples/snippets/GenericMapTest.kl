@@ -1,3 +1,0 @@
-var list = new ArrayList<String>();
-var map = new HashMap<String,List<String>>();
-map.put("test",list);

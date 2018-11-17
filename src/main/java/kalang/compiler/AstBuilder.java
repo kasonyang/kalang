@@ -1395,18 +1395,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 expr = new ObjectInvokeExpr(new ThisExpr(getThisType()), ms.selectedMethod, ms.appliedArguments);
             }
         } catch (MethodNotFoundException ex) {
-            if(args.length==1 && (methodName.equals("print") || methodName.equals("println"))){
-                try {
-                    StaticFieldExpr fieldExpr = StaticFieldExpr.create(new ClassReference(Types.requireClassType("java.lang.System").getClassNode()),"out",null);
-                    expr = getObjectInvokeExpr(fieldExpr, methodName, args, ctx);
-                } catch (FieldNotFoundException fnfEx) {
-                    throw Exceptions.unexceptedException(fnfEx);
-                }
-            }
-            if(expr==null){
-                this.methodNotFound(ctx.getStart(), className, methodName, args);
-                expr = new UnknownInvocationExpr(null, methodName, args);
-            }
+            this.methodNotFound(ctx.getStart(), className, methodName, args);
+            expr = new UnknownInvocationExpr(null, methodName, args);
         } catch (AmbiguousMethodException ex) {
             methodIsAmbiguous(ctx.start, ex);
             return null;
@@ -2719,12 +2709,18 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             m.getType() != null
             && !m.getType().equals(Types.VOID_TYPE)
         );
-        if (m.getBody() != null && needReturn && !returned) {
-            this.diagnosisReporter.report(
-                    Diagnosis.Kind.ERROR
-                    , "Missing return statement in method:" + MethodUtil.toString(method)
-                    , m.offset
-            );
+        BlockStmt mbody = m.getBody();
+        if (mbody != null && needReturn && !returned) {
+            ConstExpr defaultVal = m.getDefaultReturnValue();
+            if (defaultVal!=null) {
+                mbody.statements.add(new ReturnStmt(defaultVal));
+            } else {
+                this.diagnosisReporter.report(
+                        Diagnosis.Kind.ERROR
+                        , "Missing return statement in method:" + MethodUtil.toString(method)
+                        , m.offset
+                );
+            }
         }
         new InitializationAnalyzer(compilationUnit, astLoader).check(thisClazz, m);
     }
