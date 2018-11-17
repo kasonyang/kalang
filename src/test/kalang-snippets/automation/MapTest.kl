@@ -2,3 +2,8 @@ int mapExpr(){
     var map = ["a":"a","b":"ab","c":"abc"];
     return map.get("b").length()+4;
 }
+
+int primitiveMapExpr(){
+    var map = [1:5,2:6];
+    return map.get(2);
+}
