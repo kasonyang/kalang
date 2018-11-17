@@ -1,3 +1,0 @@
-List<String> list = Collections.singletonList("test");
-list.add("hello");
-String item = list.get(0);

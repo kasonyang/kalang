@@ -10,6 +10,9 @@ public class MethodNode extends AstNode implements Annotationable{
     private Type type;
     
     private String name;
+
+    @Nullable
+    private ConstExpr defaultReturnValue;
     
     private final List<ParameterNode> parameters = new LinkedList();
     
@@ -105,5 +108,14 @@ public class MethodNode extends AstNode implements Annotationable{
     public Type[] getExceptionTypes(){
         return this.exceptionTypes.toArray(new Type[exceptionTypes.size()]);
     }
-    
+
+    @Nullable
+    public ConstExpr getDefaultReturnValue() {
+        return defaultReturnValue;
+    }
+
+    public void setDefaultReturnValue(ConstExpr defaultReturnValue) {
+        this.defaultReturnValue = defaultReturnValue;
+    }
+
 }

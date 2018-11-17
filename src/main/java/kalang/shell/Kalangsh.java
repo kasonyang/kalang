@@ -4,6 +4,7 @@ import kalang.compiler.Configuration;
 import kalang.dependency.Artifact;
 import kalang.dependency.DependencyResolver;
 import kalang.dependency.ResolveResult;
+import kalang.lang.Script;
 import kalang.tool.KalangShell;
 import kalang.util.ClassExecutor;
 import org.apache.commons.cli.CommandLine;
@@ -65,7 +66,12 @@ public class Kalangsh extends ShellBase {
                 clazz = sh.parse(file);
             }
             if (!cli.hasOption("check")) {
-                ClassExecutor.executeMain(clazz, scriptArgs);
+                if (Script.class.isAssignableFrom(clazz)) { //script check
+                    Script scriptInstance = (Script)clazz.newInstance();
+                    return scriptInstance.run(scriptArgs);
+                } else {
+                    ClassExecutor.executeMain(clazz, scriptArgs);
+                }
             }
             return Constant.SUCCESS;
         } catch (Throwable ex) {

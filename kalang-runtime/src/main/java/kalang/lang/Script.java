@@ -12,15 +12,14 @@ public abstract class Script {
 
     private String[] arguments = new String[0];
 
-    protected abstract void execute() throws Throwable;
+    protected abstract int execute() throws Throwable;
 
     public int run() throws Throwable {
         try{
-            execute();
+            return execute();
         }catch(Throwable e) {
-            handleException(e);
+            return handleException(e);
         }
-        return SUCCESS;
     }
 
     public int run(@Nullable String[] arguments) throws Throwable {
@@ -38,8 +37,20 @@ public abstract class Script {
         return arguments.length > index ? arguments[index] : defaultValue;
     }
     
-    protected void handleException(Throwable e) throws Throwable{
+    protected int handleException(Throwable e) throws Throwable{
         throw e;
+    }
+
+    protected void println(Object msg) {
+        System.out.println(msg);
+    }
+
+    protected void print(Object msg) {
+        System.out.print(msg);
+    }
+
+    protected void printf(String format,Object... args) {
+        System.out.printf(format,args);
     }
 
 }
