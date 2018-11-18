@@ -1,26 +1,20 @@
 plugins {
     id 'org.jbake.site' version '1.1.1'
 }
-import java.text.SimpleDateFormat
 
 apply plugin:'java'
 apply plugin:'application'
 apply from:'gradle/version.gradle'
 apply from:'gradle/docs.gradle'
-mainClassName = "kalang.shell.Kalangc"
+mainClassName = "kalang.compiler.shell.Kalangc"
 startScripts.applicationName = "kalangc"
-//mainClassName = "kalang.Compiler"
 
 repositories{
   mavenCentral()
-  maven {
-    url  "http://dl.bintray.com/kasonyang/maven" 
-  }
 }
 
 dependencies{
   compile 'org.antlr:antlr4-runtime:4.5.1'
-  //compile 'org.codehaus.groovy:groovy-all:2.3.10'
   compile 'org.apache.commons:commons-collections4:4.1'
   testCompile 'junit:junit:4.12'
   compile 'org.ow2.asm:asm:5.0.4'
@@ -46,7 +40,7 @@ jacocoTestReport {
 
 task startScriptsForShell(type: CreateStartScripts) {
   outputDir = file('build/scripts')
-  mainClassName = 'kalang.shell.Kalangsh'
+  mainClassName = 'kalang.compiler.shell.Kalangsh'
   applicationName = "kalangsh"
   classpath = startScripts.classpath
 }
@@ -56,7 +50,7 @@ startScripts.dependsOn startScriptsForShell
 
 task startScriptsForEditor(type: CreateStartScripts) {
   outputDir = file('build/scripts')
-  mainClassName = 'kalang.shell.Kalangeditor'
+  mainClassName = 'kalang.compiler.shell.Kalangeditor'
   applicationName = "kalangeditor"
   classpath = startScripts.classpath
 }
