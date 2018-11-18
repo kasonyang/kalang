@@ -1,18 +1,20 @@
 package kalang.test;
 
-import java.util.List;
-import kalang.antlr.KalangLexer;
-import kalang.compiler.CodeGenerator;
-import kalang.compiler.CompilationUnit;
-import kalang.compiler.KalangCompiler;
-import kalang.compiler.codegen.Ast2JavaStub;
-import kalang.util.ParseTreeNavigator;
-import kalang.util.TokenNavigator;
+import kalang.compiler.antlr.KalangLexer;
+import kalang.compiler.compile.CodeGenerator;
+import kalang.compiler.compile.CompilationUnit;
+import kalang.compiler.compile.KalangCompiler;
+import kalang.compiler.compile.codegen.Ast2JavaStub;
+import kalang.compiler.util.ParseTreeNavigator;
+import kalang.compiler.util.TokenNavigator;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *

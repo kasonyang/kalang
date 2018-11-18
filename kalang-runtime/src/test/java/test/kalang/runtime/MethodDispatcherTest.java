@@ -1,13 +1,13 @@
 package test.kalang.runtime;
 
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import kalang.runtime.dynamic.FieldVisitor;
 import kalang.runtime.dynamic.MethodAmbiguousException;
 import kalang.runtime.dynamic.MethodDispatcher;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 /**

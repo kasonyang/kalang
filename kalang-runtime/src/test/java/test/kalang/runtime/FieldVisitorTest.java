@@ -1,7 +1,9 @@
 package test.kalang.runtime;
+
 import kalang.runtime.dynamic.FieldVisitor;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *

@@ -1,7 +1,7 @@
 package test.kalang.tool;
 
 import junit.framework.Assert;
-import kalang.shell.Kalangc;
+import kalang.compiler.shell.Kalangc;
 import org.junit.Test;
 
 /**

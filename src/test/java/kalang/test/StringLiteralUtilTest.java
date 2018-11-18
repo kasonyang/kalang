@@ -1,8 +1,9 @@
 package kalang.test;
 
-import kalang.util.StringLiteralUtil;
+import kalang.compiler.util.StringLiteralUtil;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *

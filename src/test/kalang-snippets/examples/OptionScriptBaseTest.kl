@@ -1,2 +1,2 @@
-#script kalang.script.ShellScript
+#script kalang.compiler.script.ShellScript
 println(randomInt());
