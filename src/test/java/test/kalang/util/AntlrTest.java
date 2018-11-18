@@ -1,14 +1,14 @@
 package test.kalang.util;
 
-import java.io.File;
-import java.io.IOException;
-import kalang.antlr.KalangParser;
-import kalang.compiler.KalangSource;
-import kalang.util.KalangSourceUtil;
-import kalang.util.TokenStreamFactory;
+import kalang.compiler.antlr.KalangParser;
+import kalang.compiler.compile.KalangSource;
+import kalang.compiler.util.KalangSourceUtil;
+import kalang.compiler.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  *

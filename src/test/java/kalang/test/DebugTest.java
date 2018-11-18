@@ -1,11 +1,11 @@
 package kalang.test;
 
-import java.io.File;
-import java.io.IOException;
-import kalang.compiler.DiagnosisHandler;
-import kalang.tool.KalangShell;
+import kalang.compiler.tool.KalangShell;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  *

@@ -1,17 +1,11 @@
 package kalang.test;
 
-import kalang.antlr.KalangLexer;
-import kalang.antlr.KalangParser;
-import kalang.util.TokenStreamFactory;
-import org.antlr.v4.runtime.DefaultErrorStrategy;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.Token;
+import kalang.compiler.antlr.KalangLexer;
+import kalang.compiler.antlr.KalangParser;
+import kalang.compiler.util.TokenStreamFactory;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.IntervalSet;
-import org.antlr.v4.runtime.misc.Pair;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *

@@ -1,9 +1,9 @@
 package kalang.test;
 
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
-import kalang.tool.FileSystemOutputManager;
-import org.junit.Test;
 
 /**
  *

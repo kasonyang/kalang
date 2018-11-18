@@ -1,10 +1,7 @@
 package test.kalang.automation;
 
-import kalang.KalangClassLoader;
-import kalang.compiler.KalangCompiler;
+import kalang.compiler.tool.KalangShell;
 import kalang.lang.Script;
-import kalang.tool.FileSystemCompiler;
-import kalang.tool.KalangShell;
 import org.junit.Test;
 
 import java.io.File;
