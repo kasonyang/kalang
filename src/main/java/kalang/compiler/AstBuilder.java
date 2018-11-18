@@ -676,12 +676,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         Objects.requireNonNull(valuesTypes);
         Type[] keyTypes = AstUtil.getExprTypes(keyExprs);
         Objects.requireNonNull(keyTypes);
-        Type keyType = ctx.keyType!=null
+        ObjectType keyType = ctx.keyType != null
                 ? requireClassType(ctx.keyType)
-                : TypeUtil.getCommonType(keyTypes);
-        Type valueType = ctx.valueType!=null
+                : getTypeForGeneric(TypeUtil.getCommonType(keyTypes));
+        ObjectType valueType = ctx.valueType != null
                 ? requireClassType(ctx.valueType)
-                : TypeUtil.getCommonType(valuesTypes);
+                : getTypeForGeneric(TypeUtil.getCommonType(valuesTypes));
         if(keyType==null || valueType == null) return null;
         LocalVarNode vo = declareTempLocalVar(Types.getClassType(Types.getMapImplClassType().getClassNode(),new Type[]{keyType,valueType}));
         VarDeclStmt vds = new VarDeclStmt(vo);
@@ -2790,5 +2790,17 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 mbody.statements.addAll(1, this.thisClazz.initStmts);
             }
         }
+    }
+
+    @Nonnull
+    private ObjectType getTypeForGeneric(Type type) {
+        if (Types.NULL_TYPE.equals(type)) {
+            return Types.getRootType();
+        } else if (type instanceof PrimitiveType) {
+            ObjectType objType = Types.getClassType((PrimitiveType) type);
+            Objects.requireNonNull(objType);
+            return objType;
+        }
+        return (ObjectType) type;
     }
 }
