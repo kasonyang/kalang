@@ -1,16 +1,15 @@
 package kalang.test;
 
-import java.util.Arrays;
-import kalang.ast.ClassNode;
-import kalang.compiler.AstLoader;
-import kalang.AstNotFoundException;
-import kalang.core.ArrayType;
-import kalang.core.ClassType;
-import kalang.core.ObjectType;
-import kalang.core.Type;
-import kalang.core.Types;
+import kalang.compiler.AstNotFoundException;
+import kalang.compiler.ast.ClassNode;
+import kalang.compiler.compile.AstLoader;
+import kalang.compiler.core.*;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *

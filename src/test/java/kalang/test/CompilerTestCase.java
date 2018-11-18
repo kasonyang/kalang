@@ -1,13 +1,14 @@
 package kalang.test;
 
+import junit.framework.Assert;
+import kalang.compiler.compile.Diagnosis;
+import kalang.compiler.compile.DiagnosisHandler;
+import kalang.compiler.compile.StandardDiagnosisHandler;
+import kalang.compiler.tool.FileSystemCompiler;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import junit.framework.Assert;
-import kalang.compiler.Diagnosis;
-import kalang.compiler.DiagnosisHandler;
-import kalang.compiler.StandardDiagnosisHandler;
-import kalang.tool.FileSystemCompiler;
 
 /**
  *

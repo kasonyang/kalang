@@ -1,10 +1,8 @@
 package test.kalang.tool;
 
-import kalang.lang.Script;
-import kalang.tool.KalangShell;
-import kalang.util.ClassExecutor;
+import kalang.compiler.tool.KalangShell;
+import kalang.compiler.util.ClassExecutor;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *

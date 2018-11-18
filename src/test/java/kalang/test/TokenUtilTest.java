@@ -1,12 +1,14 @@
 package kalang.test;
 
-import java.util.List;
-import kalang.util.TokenStreamFactory;
+import kalang.compiler.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.IntStream;
 import org.antlr.v4.runtime.Token;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *

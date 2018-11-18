@@ -1,9 +1,12 @@
 package kalang.test;
 
-import java.io.File;
-import kalang.util.FilePathUtil;
+import kalang.compiler.util.FilePathUtil;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.io.File;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *

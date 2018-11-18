@@ -1,12 +1,14 @@
 package test.kalang.core;
 
-import kalang.AstNotFoundException;
-import kalang.ast.ClassNode;
-import kalang.core.ClassType;
-import kalang.core.ObjectType;
-import kalang.core.Types;
+import kalang.compiler.AstNotFoundException;
+import kalang.compiler.ast.ClassNode;
+import kalang.compiler.core.ClassType;
+import kalang.compiler.core.ObjectType;
+import kalang.compiler.core.Types;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  *

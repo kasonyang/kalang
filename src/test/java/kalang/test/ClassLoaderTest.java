@@ -1,13 +1,12 @@
 package kalang.test;
 
+import kalang.compiler.KalangClassLoader;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import kalang.KalangClassLoader;
-import kalang.lang.Script;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
