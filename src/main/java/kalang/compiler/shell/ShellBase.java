@@ -177,6 +177,8 @@ public abstract class ShellBase {
             for(File localFile:resolveResult.getLocalFiles()) {
                 classpaths.add(localFile.toURI().toURL());
             }
+        }
+        if (!classpaths.isEmpty()) {
             classLoader = new URLClassLoader(classpaths.toArray(new URL[0]),classLoader);
         }
         KalangShell shell = new KalangShell(config, classLoader);

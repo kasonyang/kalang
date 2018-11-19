@@ -1,0 +1,26 @@
+int testCallB(){
+    return new A().callB();
+}
+
+int testCallSelf(){
+    return new A().callSelf();
+}
+
+
+static class A {
+    int callB() {
+        return new B().run();
+    }
+    int callSelf(){
+        return new A().run();
+    }
+    private int run() {
+        return 6;
+    }
+}
+
+static class B {
+    int run() {
+        return 6;
+    }
+}

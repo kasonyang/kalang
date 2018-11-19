@@ -68,16 +68,16 @@ public class TypeNameResolver {
             return outerClassName + "$" + idParts[1];
         }else {
             String[] innerClassesNames = AstUtil.listInnerClassesNames(topClass, true);
-            List<String> candidates = new ArrayList(innerClassesNames.length + 1);
-            candidates.add(topClass.name);
-            candidates.addAll(Arrays.asList(innerClassesNames));
-            for (String c : candidates) {
-                if (id.equals(NameUtil.getClassNameWithoutPackage(c))) {
-                    return c;
+            String path = declaringClass.name;
+            while(!path.isEmpty()) {
+                String name = path + "$" + id;
+                for(String c:innerClassesNames) {
+                    if (name.equals(c)) {
+                        return c;
+                    }
                 }
-                if ((declaringClass.name + "$" + id).equals(c)) {
-                    return c;
-                }
+                int last$ = path.lastIndexOf('$');
+                path = last$ > 0 ? path.substring(0,last$) : "";
             }
             List<String> paths = new ArrayList<>(importPackages.size() + 1);
             paths.add(NameUtil.getPackageName(topClass.name));

@@ -1,5 +1,6 @@
 package kalang.test;
 
+import kalang.compiler.shell.Kalangsh;
 import kalang.compiler.tool.KalangShell;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,9 +22,8 @@ public class DebugTest {
     public void test() throws IOException {
         File debugFile = new File("debug/debug.kl");
         if (debugFile.exists()) {
-            KalangShell shell = new KalangShell();
-            Class clz = shell.parse(debugFile);
-            Assert.assertNotNull(clz);
+            int result = new Kalangsh().run(new String[]{debugFile.getCanonicalPath()});
+            Assert.assertEquals(0,result);
         }
     }
 
