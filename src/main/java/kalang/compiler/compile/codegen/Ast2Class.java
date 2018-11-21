@@ -19,10 +19,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +37,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private ClassWriter classWriter;
     private MethodVisitor md;
     
-    OutputManager outputManager;
+    private OutputManager outputManager;
     
     private Map<Integer,Label> lineLabels = new HashMap();
     
@@ -56,11 +53,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private Stack<Label> breakLabels = new Stack<>();
     private Stack<Label> continueLabels = new Stack<>();
-    
-    private Label methodStartLabel ;
-    private Label methodEndLabel;
-    
-    private final static int 
+
+    private Stack<CatchContext> catchContextStack = new Stack<>();
+
+    private final static int
             T_I = 0,
             T_L = 1,
             T_F = 2,
@@ -283,8 +279,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             annotationNullable(md,(ObjectType)node.getType());
         }
         annotation(md, node.getAnnotations());
-        this.methodStartLabel = new Label();
-        this.methodEndLabel = new Label();
+        Label methodStartLabel = new Label();
+        Label methodEndLabel = new Label();
         if(AstUtil.isStatic(node.getModifier())){
             varIdCounter = 0;
         }else{
@@ -332,6 +328,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         int startVarIdx = this.varStartIndexOfFrame.pop();
         this.varIdCounter = startVarIdx;
         this.varTables = this.varTables.popStack();
+    }
+
+    private int declareNewVar(Type type) {
+        int vid = varIdCounter;
+        int vSize = asmType(type).getSize();
+        varIdCounter += vSize;
+        return vid;
     }
     
     private void declareNewVar(VarObject vo){
@@ -509,41 +512,93 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             Type type = node.expr.getType();
             lnsn = asmType(type).getOpcode(IRETURN);
         }
+        if (!catchContextStack.isEmpty()){
+            CatchContext catchContext  = catchContextStack.pop();
+            Statement finallyStmt = catchContext.getFinallyStatement();
+            if (finallyStmt!=null) {
+                this.newFrame();
+                Label startLabel = new Label();
+                Label endLabel = new Label();
+                md.visitLabel(startLabel);
+                visit(finallyStmt);
+                md.visitLabel(endLabel);
+                catchContext.addExclude(startLabel,endLabel);
+            }
+            catchContextStack.push(catchContext);
+        }
         md.visitInsn(lnsn);
         return null;
     }
 
     @Override
     public Object visitTryStmt(TryStmt node) {
-        Label startLabel = new Label();
-        Label endLabel = new Label();
-        Label stopLabel = new Label();
-        md.visitLabel(startLabel);
-        visit(node.getExecStmt());
-        md.visitJumpInsn(GOTO, stopLabel);
-        md.visitLabel(endLabel);
+        this.newFrame();
+        Label tryStartLabel = new Label();
+        Label tryEndLabel = new Label();
+        Label exitLabel = new Label();
+        Label finallyStartLabel = new Label();
+        BlockStmt execStmt = node.getExecStmt();
+        BlockStmt finallyStmt = node.getFinallyStmt();
+        boolean hasFinallyStmt = finallyStmt!=null && !finallyStmt.statements.isEmpty();
+        CatchContext catchContextOfTry = new CatchContext(tryStartLabel, tryEndLabel, finallyStmt);
+        catchContextStack.push(catchContextOfTry);
+        md.visitLabel(tryStartLabel);
+        visit(execStmt);
+        md.visitLabel(tryEndLabel);
+        this.popFrame();
+        catchContextStack.pop();
+        if (finallyStmt!=null) {
+            this.newFrame();
+            visit(finallyStmt);
+            this.popFrame();
+        }
+        md.visitJumpInsn(GOTO,exitLabel);
+        Label[] catchLabelsOfTry = catchContextOfTry.getCatchLabels();
         if(node.getCatchStmts()!=null){
             for(CatchBlock s:node.getCatchStmts()){
                 this.newFrame();
-                Label handler = new Label();
-                md.visitLabel(handler);
+                Label catchStartLabel = new Label();
+                Label catchStopLabel = new Label();
+                CatchContext catchContextOfCatch = new CatchContext(catchStartLabel,catchStopLabel,finallyStmt);
+                catchContextStack.push(catchContextOfCatch);
+                md.visitLabel(catchStartLabel);
                 visit(s);
-                md.visitJumpInsn(GOTO, stopLabel);
-                String type = asmType(s.catchVar.getType()).getInternalName();
-                md.visitTryCatchBlock(startLabel, endLabel, handler,type);
+                md.visitLabel(catchStopLabel);
                 this.popFrame();
+                catchContextStack.pop();
+                if (finallyStmt!=null) {
+                    this.newFrame();
+                    visit(finallyStmt);
+                    this.popFrame();
+                }
+                md.visitJumpInsn(GOTO,exitLabel);
+                Label[] catchLabelsOfCatch = catchContextOfCatch.getCatchLabels();
+                String type = asmType(s.catchVar.getType()).getInternalName();
+                for(int j=0;j<catchLabelsOfTry.length;j+=2) {
+                    md.visitTryCatchBlock(catchLabelsOfTry[j],catchLabelsOfTry[j+1],catchStartLabel,type);
+                }
+                if (hasFinallyStmt) {
+                    for(int j=0;j<catchLabelsOfCatch.length;j+=2) {
+                        md.visitTryCatchBlock(catchLabelsOfCatch[j],catchLabelsOfCatch[j+1],finallyStartLabel,null);
+                    }
+                }
             }
         }
-        if(node.getFinallyStmt()!=null){
+        if(hasFinallyStmt){//any exception handler
+            for(int i=0;i<catchLabelsOfTry.length-1;i+=2) {
+                md.visitTryCatchBlock(catchLabelsOfTry[i],catchLabelsOfTry[i+1],finallyStartLabel,null);
+            }
             this.newFrame();
-            Label handler = new Label();
-            md.visitLabel(handler);
-            visit(node.getFinallyStmt());
-            md.visitJumpInsn(GOTO, stopLabel);
-            md.visitTryCatchBlock(startLabel, endLabel, handler, null);
+            md.visitLabel(finallyStartLabel);
+            int exVarId = this.declareNewVar(Types.getRootType());
+            md.visitVarInsn(ASTORE,exVarId);
+            visit(finallyStmt);
+            md.visitVarInsn(ALOAD,exVarId);
+            md.visitInsn(ATHROW);
             this.popFrame();
         }
-        md.visitLabel(stopLabel);
+        md.visitLabel(exitLabel);
+        md.visitInsn(NOP);
         return null;
     }
 
