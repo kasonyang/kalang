@@ -9,3 +9,13 @@ int sameObject() {
     var fb = new File("a");
     return fa === fb ? 1 : 6;
 }
+
+int incrementExpr() {
+    int i=6;
+    return i++;
+}
+
+int incrementExpr2() {
+    int i=5;
+    return ++i;
+}
