@@ -1,0 +1,72 @@
+int tryTest() {
+    try {
+        return 6;
+    } catch (Exception ex) {
+        return 1;
+    }
+}
+
+int tryCatchTest() {
+    try {
+        throw new Exception("6");
+    } catch (Exception ex) {
+        return Integer.parseInt(ex.getMessage());
+    }
+}
+
+int tryCatchFinallyTest() {
+    try {
+        return 1;
+    } catch (Exception ex) {
+        return 2;
+    } finally {
+        return 6;
+    }
+}
+
+int nestedTryCatchFinallyTest() {
+    int i=0;
+    try{
+        try {
+            i++;
+            throw new Exception("test");
+        }catch(Exception ex) {
+            return i++;
+        } finally {
+            return i++;
+        }
+    }finally {
+        return i+3;
+    }
+}
+
+int nestedTryCatchFinallyTestWithoutReturn() {
+    int i=0;
+    try{
+        try {
+            i++;
+        }catch(Exception ex) {
+            return i++;
+        } finally {
+            i++;
+        }
+    }finally {
+        i+=4;
+    }
+    return i;
+}
+
+int nestedTryFinallyTest() {
+    int i=0;
+    try{
+        try {
+            i++;
+            throw new Exception("test");
+        } finally {
+            return i++;
+        }
+    }finally {
+        return i+4;
+    }
+}
+
