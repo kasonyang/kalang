@@ -4,11 +4,13 @@ import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.MethodNotFoundException;
 import kalang.compiler.compile.KalangMethodSelector;
 import kalang.compiler.core.ExecutableDescriptor;
+import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Type;
 import kalang.compiler.util.AstUtil;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,6 +62,9 @@ public abstract class InvocationExpr extends ExprNode {
         ExecutableDescriptor md = selectedList.get(0);
         ExprNode[] matchedParam = AstUtil.matchTypes(args, types, md.getParameterTypes());
         Objects.requireNonNull(matchedParam);
+        if (md instanceof MethodDescriptor) {
+            md = ((MethodDescriptor) md).toParameterized(new HashMap<>(),AstUtil.getExprTypes(matchedParam));
+        }
         return new MethodSelection(md,matchedParam);
     }
     
