@@ -80,9 +80,11 @@ public class TypeNameResolver {
                 path = last$ > 0 ? path.substring(0,last$) : "";
             }
             List<String> paths = new ArrayList<>(importPackages.size() + 1);
-            paths.add(NameUtil.getPackageName(topClass.name));
             paths.addAll(importPackages);
-            for (String p : paths) {
+            paths.add(NameUtil.getPackageName(topClass.name));
+            int pathSize = paths.size();
+            for (int i=pathSize-1;i>=0;i--) {
+                String p = paths.get(i);
                 String clsName;
                 if (p != null && p.length() > 0) {
                     clsName = p + "." + id;
