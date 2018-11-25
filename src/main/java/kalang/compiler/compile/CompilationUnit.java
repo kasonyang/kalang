@@ -3,6 +3,8 @@ package kalang.compiler.compile;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
+import kalang.compiler.core.Types;
+import kalang.lang.DefaultStaticMembers;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import javax.annotation.Nonnull;
@@ -43,6 +45,7 @@ public class CompilationUnit {
         astBuilder.importPackage("java.io");
         astBuilder.importPackage("java.nio");
         astBuilder.importPackage("kalang.io");
+        astBuilder.importStaticMember(Types.requireClassType(DefaultStaticMembers.class.getName()).getClassNode(),null);
         semanticAnalyzer = context.createSemanticAnalyzer(this,context.getAstLoader());
         compile(PHASE_INITIALIZE);
     }
