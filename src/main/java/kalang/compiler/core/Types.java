@@ -372,6 +372,10 @@ public class Types {
         return requireClassType(STRING_CLASS_NAME);
     }
 
+    public static ObjectType getFunctionType() {
+        return requireClassType(FUNCTION_CLASS_NAME);
+    }
+
     public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {
         return Types.getClassType(clazzType.getClassNode(),clazzType.getTypeArguments(),nullable);
     }
