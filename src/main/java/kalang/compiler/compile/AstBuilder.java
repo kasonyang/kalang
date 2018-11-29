@@ -108,13 +108,9 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     protected ClassNode thisClazz;
     
     private ClassNode topClass;
-    
-    private boolean returned = false;
-    
-    private MethodNode method;
-    
-    private VarTable<VarObject,Type> overrideTypes = new VarTable();
-    
+
+    private MethodContext methodCtx;
+
     //TODO merge SemanticAnalyzer.assignedVars
     //private VarTable<VarObject,NullableKind> assignedNullables = new VarTable();
     
@@ -124,10 +120,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             NULLSTATE_MUST_NONNULL = 1,
             NULLSTATE_UNKNOWN = 2,
             NULLSTATE_NULLABLE = 3;
-    
-    private VarTable<VarObject,Integer> nullState = new VarTable();
-    
-    private VarTable<String,LocalVarNode> varTables = new VarTable();
+
     //private final HashMap<MethodNode,BlockStmtContext> methodBodys = new HashMap<>();
 
     @Nonnull
@@ -149,16 +142,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private final CompilationUnit compilationUnit;
     
     private void newOverrideTypeStack(){
-        overrideTypes = new VarTable(overrideTypes);
+        methodCtx.overrideTypes = new VarTable(methodCtx.overrideTypes);
     }
     
     private void popOverrideTypeStack(){
-        overrideTypes = overrideTypes.getParent();
+        methodCtx.overrideTypes = methodCtx.overrideTypes.getParent();
     }
     
     private void removeOverrideType(ExprNode expr){
         VarObject key = getOverrideTypeKey(expr);
-        if(key!=null) overrideTypes.remove(key, true);
+        if(key!=null) methodCtx.overrideTypes.remove(key, true);
     }
     
     @Nullable
@@ -178,7 +171,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private void changeTypeTemporarilyIfCould(ExprNode expr,Type type){
         VarObject key = getOverrideTypeKey(expr);
         if(key!=null){
-            overrideTypes.put(key, type);
+            methodCtx.overrideTypes.put(key, type);
         }
     }
     
@@ -186,7 +179,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         boolean mustNull = (onTrue && isEQ) || (!onTrue && !isEQ);
         VarObject key = this.getOverrideTypeKey(expr);
         if(key!=null){
-            nullState.put(key,mustNull ? NULLSTATE_MUST_NULL : NULLSTATE_MUST_NONNULL);
+            methodCtx.nullState.put(key,mustNull ? NULLSTATE_MUST_NULL : NULLSTATE_MUST_NONNULL);
         }
     }
     
@@ -486,7 +479,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             ex.printStackTrace(System.err);
             return null;
         }
-        if(tree instanceof StatContext && returned){
+        if(tree instanceof StatContext && methodCtx.returned){
             diagnosisReporter.report(Diagnosis.Kind.ERROR
                     ,"unreachable statement"
                     , (StatContext) tree
@@ -507,11 +500,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     private void newFrame(){
-        this.varTables = this.varTables.newStack();
+        methodCtx.newFrame();
     }
     
     private void popFrame(){
-        this.varTables = this.varTables.popStack();
+        methodCtx.popFrame();
     }
     
     BlockStmt newBlock(){
@@ -541,7 +534,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public ThrowStmt visitThrowStat(KalangParser.ThrowStatContext ctx) {
         ThrowStmt ts = new ThrowStmt(visitExpression(ctx.expression()));
         mapAst(ts, ctx);
-        this.returned = true;
+        this.methodCtx.returned = true;
         return ts;
     }
 
@@ -761,29 +754,29 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         BlockStmt trueBody = null;
         BlockStmt falseBody = null;
         VarTable<VarObject,Integer> trueAssigned,falseAssigned;
-        this.nullState = trueAssigned = this.nullState.newStack();
+        this.methodCtx.nullState = trueAssigned = this.methodCtx.nullState.newStack();
         newOverrideTypeStack();
         onIf(expr, true);
         if (ctx.trueStmt != null) {
             trueBody=requireBlock(ctx.trueStmt);
         }
         popOverrideTypeStack();
-        this.nullState = this.nullState.popStack();
-        boolean trueReturned = this.returned;
-        this.returned = false;
-        this.nullState = falseAssigned = this.nullState.newStack();
+        this.methodCtx.nullState = this.methodCtx.nullState.popStack();
+        boolean trueReturned = this.methodCtx.returned;
+        this.methodCtx.returned = false;
+        this.methodCtx.nullState = falseAssigned = this.methodCtx.nullState.newStack();
         newOverrideTypeStack();
         onIf(expr,false);
         if (ctx.falseStmt != null) {
             falseBody=requireBlock(ctx.falseStmt);
         }
         popOverrideTypeStack();
-        this.nullState = this.nullState.popStack();
+        this.methodCtx.nullState = this.methodCtx.nullState.popStack();
         handleMultiBranchedAssign(trueAssigned.vars(),falseAssigned.vars());
-        boolean falseReturned = this.returned;
+        boolean falseReturned = this.methodCtx.returned;
         if(trueReturned) onIf(expr,false);
         if(falseReturned) onIf(expr,true);
-        this.returned = falseReturned && trueReturned;
+        this.methodCtx.returned = falseReturned && trueReturned;
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
         return ifStmt;
@@ -816,7 +809,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
         }
         for(Map.Entry<VarObject,Integer> e:ret.entrySet()){
-            this.nullState.put(e.getKey(), e.getValue());
+            this.methodCtx.nullState.put(e.getKey(), e.getValue());
         }
     }
 
@@ -849,8 +842,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         if (ctx.expression() != null) {
             rs.expr = visitExpression(ctx.expression());
         }
-        if(!semanticAnalyzer.validateReturnStmt(method, rs)) return null;
-        this.returned = true;
+        if(!semanticAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
+        this.methodCtx.returned = true;
         return rs;
     }
 
@@ -1205,7 +1198,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 }else{
                     throw Exceptions.unexceptedValue(type);
                 }
-                nullState.put(key, ns);
+                methodCtx.nullState.put(key, ns);
             }
         }
     }
@@ -1538,8 +1531,8 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Nullable
     private ParameterNode getNamedParameter(String name){
-        if (method != null) {
-            for (ParameterNode p : method.getParameters()) {
+        if (methodCtx != null) {
+            for (ParameterNode p : methodCtx.method.getParameters()) {
                 if (p.getName().equals(name)) {
                     return p;
                 }
@@ -1550,7 +1543,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Nullable
     private LocalVarNode getNamedLocalVar(String name){
-        return this.varTables.get(name);
+        return methodCtx!=null ? this.methodCtx.varTables.get(name) : null;
     }
 
     @Nullable
@@ -1774,12 +1767,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public AstNode visitTryStat(TryStatContext ctx) {
         //TODO handle multi-branched assign
         BlockStmt tryExecStmt = requireBlock(ctx.exec);
-        boolean tryReturned = this.returned;
+        boolean tryReturned = this.methodCtx.returned;
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
                 this.newFrame();
-                this.returned = false;
+                this.methodCtx.returned = false;
                 String vName = ctx.catchVarNames.get(i).getText();
                 String vType = ctx.catchTypes.get(i).getText();
                 LocalVarNode vo = this.declareLocalVar(vName,requireClassType(vType, ctx.catchTypes.get(i).start),Modifier.FINAL,ctx);
@@ -1787,7 +1780,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 BlockStmt catchExecStmt = requireBlock(ctx.catchExec.get(i));
                 CatchBlock catchStmt = new CatchBlock(vo,catchExecStmt); 
                 tryCatchBlocks.add(catchStmt);
-                this.returned = this.returned && tryReturned;
+                this.methodCtx.returned = this.methodCtx.returned && tryReturned;
                 this.popFrame();
             }
         }
@@ -2043,7 +2036,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         LocalVarNode tmpVar = this.declareTempLocalVar(type);
         LambdaExpr ms = new LambdaExpr(tmpVar,functionType);
         Map<String,VarObject> accessibleVars = new HashMap();
-        VarTable<String, LocalVarNode> vtb = this.varTables;
+        VarTable<String, LocalVarNode> vtb = this.methodCtx.varTables;
         while(vtb!=null) {
             for(Map.Entry<String, LocalVarNode> v:vtb.vars().entrySet()) {
                 String name = v.getKey();
@@ -2054,7 +2047,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             }
             vtb = vtb.getParent();
         }
-        ParameterNode[] paramNodes = this.method.getParameters();
+        ParameterNode[] paramNodes = this.methodCtx.method.getParameters();
         for(ParameterNode p:paramNodes) {
             String name = p.getName();
             if (!accessibleVars.containsKey(name)) {
@@ -2189,7 +2182,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             return null;
         }
         if(name!=null){
-            this.varTables.put(name,localVarNode);
+            this.methodCtx.varTables.put(name,localVarNode);
         }
         return localVarNode;
     }
@@ -2346,11 +2339,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
 
     private Type getVarObjectType(VarObject p) {
-        Type type = this.overrideTypes.get(p);
+        Type type = this.methodCtx.overrideTypes.get(p);
         if(type==null) type = p.getType();
         //TODO handle other object type
         if(type instanceof ClassType){
-            Integer ns = nullState.get(p);
+            Integer ns = methodCtx.nullState.get(p);
             NullableKind nullable;
             if(ns==null){
                 nullable = ((ObjectType) type).getNullable();
@@ -2467,7 +2460,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
     
     private boolean isInConstructor(){
-        return "<init>".equals(this.method.getName());
+        return "<init>".equals(this.methodCtx.method.getName());
     }
     
     @Nullable
@@ -2608,7 +2601,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         String lambdaName = this.thisClazz.name + "$" + ++anonymousClassCounter;
         ClassNode oldClass = thisClazz;
-        MethodNode oldMethod = method;
+        MethodContext oldMethodCtx = this.methodCtx;
         ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
         classNode.setSuperType(Types.getRootType());
         Map<String, VarObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
@@ -2656,36 +2649,36 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         if (returnType.equals(Types.getVoidClassType())) {
             bs.statements.add(new ReturnStmt(new ConstExpr(null)));
-            returned = true;
+            methodCtx.returned = true;
         }
         methodNode.getBody().statements.add(bs);
         checkMethod();
         //TODO check return
         thisClazz = oldClass;
-        method = oldMethod;
+        methodCtx = oldMethodCtx;
         return classNode;
     }
     
     private void enterMethod(MethodNode method) {
-        this.method = method;
-        returned = false;
+        methodCtx = new MethodContext(this.thisClazz,method);
+        methodCtx.returned = false;
     }
     
     private void checkMethod() {
-        MethodNode m = this.method;
+        MethodNode m = this.methodCtx.method;
         boolean needReturn = (
             m.getType() != null
             && !m.getType().equals(Types.VOID_TYPE)
         );
         BlockStmt mbody = m.getBody();
-        if (mbody != null && needReturn && !returned) {
+        if (mbody != null && needReturn && !methodCtx.returned) {
             ConstExpr defaultVal = m.getDefaultReturnValue();
             if (defaultVal!=null) {
                 mbody.statements.add(new ReturnStmt(defaultVal));
             } else {
                 this.diagnosisReporter.report(
                         Diagnosis.Kind.ERROR
-                        , "Missing return statement in method:" + MethodUtil.toString(method)
+                        , "Missing return statement in method:" + MethodUtil.toString(methodCtx.method)
                         , m.offset
                 );
             }
