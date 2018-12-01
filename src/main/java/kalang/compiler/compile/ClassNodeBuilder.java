@@ -40,7 +40,17 @@ public class ClassNodeBuilder extends AstBuilderBase {
         this.compilationUnit = compilationUnit;
         this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
     }
-    
+
+    @Override
+    ClassNode getCurrentClass() {
+        return thisClazz;
+    }
+
+    @Override
+    ClassNode getTopClass() {
+        return topClass;
+    }
+
     public ClassNode build(KalangParser.CompilationUnitContext ctx){
         this.visitCompilationUnit(ctx);
         return topClass;

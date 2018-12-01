@@ -37,8 +37,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private ClassNodeBuilder classNodeBuilder;
     private ClassNodeMetaBuilder classNodeMetaBuilder;
 
-    private SemanticAnalyzer semanticAnalyzer;
-    
     private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
 
     private Map<String,ClassNode> staticImportMembers = new HashMap<>();
@@ -89,7 +87,17 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         popBlock();
         return new IfStmt(failExpr,body,null);
     }
-    
+
+    @Override
+    ClassNode getCurrentClass() {
+        return thisClazz;
+    }
+
+    @Override
+    ClassNode getTopClass() {
+        return topClass;
+    }
+
     static class VarInfo{
         public Type type;
         public String name;
@@ -242,25 +250,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public String getClassName() {
         return className;
     }
-    
-    @Nullable
-    private ClassReference requireClassReference(@Nonnull Token token){
-        ClassNode ast = requireAst(token);
-        if(ast==null) return null;
-        return new ClassReference(ast);
-    }
-    
-    @Nullable
-    protected ObjectType requireClassType(@Nonnull Token token){
-        return requireClassType(token.getText(),token);
-    }
-    
-    @Nullable
-    private ObjectType requireClassType(@Nonnull String id,@Nonnull Token token){
-        ClassNode ast = requireAst(id, token);
-        if(ast==null) return null;
-        return Types.getClassType(ast,new Type[0]);
-    }
 
     public void compile(){
         compile(PARSING_PHASE_ALL,null);
@@ -277,7 +266,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             this.astLoader = astLoader;
         }
         compilationUnit.getTypeNameResolver().setAstLoader(astLoader);
-        this.semanticAnalyzer = new SemanticAnalyzer(compilationUnit, astLoader);
         if(targetPhase>=PARSING_PHASE_INIT && parsingPhase < PARSING_PHASE_INIT){
             parsingPhase = PARSING_PHASE_INIT;
             CompilationUnitContext cunit = parser.compilationUnit();
@@ -357,110 +345,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return parser;
     }
 
-    @Nullable
-    private ClassNode requireAst(Token token){
-        return requireAst(token.getText(),token);
-    }
-
-    /**
-     * checks whether a class is available
-     * @param id
-     * @param token
-     * @return
-     */
-    @Nullable
-    private ClassNode requireAst(String id,Token token) {
-        ClassNode ast = resolveNamedClass(id, topClass, thisClazz);
-        if(ast==null){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, token);
-        }
-        return ast;
-    }
-    
-    @Nullable
-    protected ObjectType parseClassType(KalangParser.ClassTypeContext ctx){
-        NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
-        KalangParser.LambdaTypeContext lambdaType = ctx.lambdaType();
-        if (lambdaType!=null) {
-            return this.visitLambdaType(lambdaType);
-        }
-        Token rawTypeToken = ctx.rawClass;
-        List<String> classNameParts = new LinkedList();
-        for(Token p:ctx.paths){
-            classNameParts.add(p.getText());
-        }
-        if(ctx.innerClass!=null){
-            classNameParts.add(rawTypeToken.getText() + "$" + ctx.innerClass.getText());
-        }else{
-            classNameParts.add(rawTypeToken.getText());
-        }
-        String rawType = String.join(".", classNameParts);
-        for(GenericType gt:thisClazz.getGenericTypes()){
-            if(rawType.equals(gt.getName())) return gt;
-        }
-        ObjectType clazzType = requireClassType(rawType,rawTypeToken);
-        if(clazzType==null) return null;
-        ClassNode clazzNode = clazzType.getClassNode();
-        GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
-        List<KalangParser.ParameterizedElementTypeContext> parameterTypes = ctx.parameterTypes;
-        if(parameterTypes!=null && !parameterTypes.isEmpty()){
-            Type[] typeArguments = new Type[parameterTypes.size()];
-            if(parameterTypes!=null && parameterTypes.size()>0){
-                if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
-                    diagnosisReporter.report(
-                            Diagnosis.Kind.ERROR
-                            , "wrong number of type arguments"
-                            ,ctx
-                    );
-                    return null;
-                }
-                for(int i=0;i<typeArguments.length;i++){
-                    typeArguments[i] = parseParameterizedElementType(parameterTypes.get(i));
-                    //TODO should return null?
-                    if(typeArguments[i]==null) return null;
-                }
-            }
-            return Types.getClassType(clazzType.getClassNode(), typeArguments,nullable);
-        } else {
-            return Types.getClassType(clazzType.getClassNode(), nullable);
-        }
-    }
-
     @Override
     public ObjectType visitLambdaType(KalangParser.LambdaTypeContext ctx) {
-        NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
-        TypeContext returnTypeCtx = ctx.returnType;
-        Type returnType = this.parseType(returnTypeCtx);
-        List<TypeContext> paramTypeCtxList = ctx.paramsTypes;
-        int paramCount = paramTypeCtxList.size();
-        int maxParamCount = FunctionClasses.CLASSES.length-1;
-        if (paramCount > maxParamCount) {
-            String msg = "only support " +maxParamCount + " parameters";
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
-            return Types.getRootType();
-        }
-        Type[] paramTypes = new Type[paramCount];
-        for(int i=0;i<paramTypes.length;i++) {
-            paramTypes[i] = this.parseType(paramTypeCtxList.get(i));
-        }
-        return Types.getFunctionType(returnType, paramTypes, nullable);
-    }
-
-    @Nullable
-    protected Type parseType(TypeContext ctx) {
-        KalangParser.ClassTypeContext ct = ctx.classType();
-        KalangParser.PrimitiveTypeContext pt = ctx.primitiveType();
-        if(ct!=null){
-            return parseClassType(ct);
-        }else if(pt!=null){
-            return Types.getPrimitiveType(pt.getText());
-        }else{
-            NullableKind nullable = ctx.nullable!=null ? NullableKind.NULLABLE : NullableKind.NONNULL;
-            TypeContext t = ctx.type();
-            Type cpt = parseType(t);
-            if(cpt==null) return null;
-            return Types.getArrayType(cpt,nullable);
-        }
+        return parseLambdaType(ctx);
     }
 
     @Override
@@ -1550,70 +1437,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return null;
     }
-    
-    public ConstExpr parseLiteral(LiteralContext ctx,@Nullable Type exceptedType){
-        String t = ctx.getText();
-        Object v;
-        if (ctx.IntegerLiteral() != null) {
-            //NOTE should show tip for autocast?
-            if(t.toUpperCase().endsWith("L")){
-                t = t.substring(0,t.length()-1);
-                exceptedType = Types.LONG_TYPE;
-            }else if(t.toLowerCase().endsWith("i")){
-                t = t.substring(0,t.length()-1);
-                exceptedType = Types.INT_TYPE;
-            }
-            Number intValue;
-            try{
-                intValue = StringLiteralUtil.parseInteger(t);
-            }catch(NumberFormatException ex){
-                this.handleSyntaxError("invalid number", ctx);
-                return null;
-            }
-            if(Types.BYTE_TYPE.equals(exceptedType)){
-                //TODO check range
-                v = intValue.byteValue();
-            }else if(Types.LONG_TYPE.equals(exceptedType)){
-                v =  intValue.longValue();
-            }else{
-                //TODO check range
-                v = intValue;
-            }
-        } else if (ctx.FloatingPointLiteral() != null) {
-            Number floatPointValue;
-            try{
-                floatPointValue = StringLiteralUtil.parseFloatPoint(t);
-            }catch(NumberFormatException ex){
-                this.handleSyntaxError("invalid float value", ctx);
-                return null;
-            }
-            if(Types.FLOAT_TYPE.equals(exceptedType)){
-                v = floatPointValue.floatValue();
-            }else{
-                v = floatPointValue;
-            }
-        } else if (ctx.BooleanLiteral() != null) {
-            v = ( Boolean.parseBoolean(t));
-        } else if (ctx.CharacterLiteral() != null) {
-            String strValue = StringLiteralUtil.parse(t);
-            char[] chars = strValue.toCharArray();
-            v = ( chars[1]);
-        } else if (ctx.StringLiteral() != null) {
-            v = (StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
-        } else if(ctx.MultiLineStringLiteral()!=null){
-            v = StringLiteralUtil.parse(t.substring(3,t.length()-3));
-        }else if(ctx.Identifier()!=null){
-            ClassReference cr = requireClassReference(ctx.Identifier().getSymbol());
-            v = (cr);
-        } else if(ctx.getText().equals("null")) {
-            v = null;
-        }else{
-            throw Exceptions.unexceptedValue(ctx.getText());
-        }
-        ConstExpr ce = new ConstExpr(v);
-        mapAst(ce,ctx);
-        return ce;
-    }
 
     @Override
     public ConstExpr visitLiteral(LiteralContext ctx) {
@@ -1873,28 +1696,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return expr;
     }
     
-    @Nullable
-    protected ExprNode getObjectFieldExpr(ExprNode expr,String fieldName,@Nullable ParserRuleContext rule){
-        ExprNode ret;
-        Type type = expr.getType();
-        if(!(type instanceof  ObjectType)){
-            //AstBuilder.this.handleSyntaxError("unsupported type", rule==null ? ParserRuleContext.EMPTY : rule);
-            return null;
-        }
-        ObjectType exprType = (ObjectType) type;
-        if ((exprType instanceof ArrayType)){
-            return null;
-        } else {
-            try {
-                ret = ObjectFieldExpr.create(expr, fieldName,exprType.getClassNode());
-            } catch (FieldNotFoundException ex) {
-                return null;
-            }
-        }
-        if(rule!=null) mapAst(ret, rule);
-        return ret;
-    }
-    
     protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName,@Nullable ParserRuleContext rule){
         ExprNode ret;
         Type type = expr.getType();
@@ -2007,17 +1808,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return ms;
     }
     
-    protected List<AnnotationNode> getAnnotations(@Nullable List<KalangParser.AnnotationContext> ctxs){
-        List<AnnotationNode> list = new LinkedList<>();
-        if(ctxs!=null){
-            for(KalangParser.AnnotationContext an:ctxs){
-                AnnotationNode anNode = visitAnnotation(an);
-                if(anNode!=null) list.add(anNode);
-            }
-        }
-        return list;
-    }
-    
     @Nullable
     private ExprNode getOuterClassInstanceExpr(ExprNode expr){
         return this.getObjectFieldExpr(expr, "this$0", null);
@@ -2080,31 +1870,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public Object visitParameterizedElementType(KalangParser.ParameterizedElementTypeContext ctx) {
         return null;
     }
-    
-    private Type parseParameterizedElementType(KalangParser.ParameterizedElementTypeContext ctx){
-        TypeContext type = ctx.type();
-        if(type!=null){
-            return parseType(type);
-        }else{
-            return parseWildcardType(ctx.wildcardType());
-        }
-    }
 
     @Override
     public Object visitWildcardType(KalangParser.WildcardTypeContext ctx) {
         return null;
-    }
-    
-    private Type parseWildcardType(KalangParser.WildcardTypeContext ctx){
-        ObjectType classType = parseClassType(ctx.classType());
-        if(classType==null) return null;
-        Type[] bounds = new Type[]{classType};
-        String boundKind = ctx.boundKind.getText();
-        if(boundKind.equals("super")){
-            return new WildcardType(new Type[]{Types.getRootType()},bounds);
-        }else{
-            return new WildcardType(bounds,null);
-        }
     }
 
     public ObjectType getThisType() {
@@ -2696,7 +2465,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private void buildClassNodeMeta(ClassNode cn) {
         ParserRuleContext ctx = classNodeBuilder.getClassNodeDefContext(cn);
         if (ctx!=null) {
-            classNodeMetaBuilder.build(cn,ctx);
+            classNodeMetaBuilder.build(topClass,cn,ctx);
         }
         for(ClassNode c:cn.classes) {
             buildClassNodeMeta(c);

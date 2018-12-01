@@ -27,13 +27,12 @@ import java.util.Map;
  */
 public class ClassNodeMetaBuilder extends AstBuilderBase {
 
-    AstBuilder astBuilder;
+    private AstBuilder astBuilder;
     private ClassNode thisClazz;
+    private ClassNode topClass;
     
-    private Map<MethodNode,KalangParser.StatContext[]> methodStatsContexts = new HashMap();
-    
-    private Map<MethodNode,MethodDeclContext> methodContexts = new HashMap();
-    
+    private Map<MethodNode,KalangParser.StatContext[]> methodStatsContexts = new HashMap<>();
+
     private MethodNode method;
 
     private final CompilationUnit compilationUnit;
@@ -46,15 +45,16 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         this.diagnosisReporter = new DiagnosisReporter(this.compilationUnit);
     }
 
-    public void build(ClassNode cn,ParserRuleContext ctx) {
+    public void build(ClassNode topClass, ClassNode cn,ParserRuleContext ctx) {
         this.thisClazz = cn;
+        this.topClass = topClass;
         astBuilder.thisClazz = cn;
         visit(ctx);
     }
 
     @Override
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
-        thisClazz.annotations.addAll(astBuilder.getAnnotations(ctx.annotation()));
+        thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
         thisClazz.modifier = parseModifier(ctx.varModifier());
         List<Token> gnrTypes = ctx.genericTypes;
         if (gnrTypes != null && !gnrTypes.isEmpty()) {
@@ -66,7 +66,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         }
         ObjectType superType = null;
         if (ctx.parentClass != null) {
-            ObjectType parentClass = astBuilder.parseClassType(ctx.parentClass);
+            ObjectType parentClass = parseClassType(ctx.parentClass);
             if (parentClass != null) {
                 superType = parentClass;
             }
@@ -81,7 +81,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
-                ObjectType itfClz = astBuilder.parseClassType(itf);
+                ObjectType itfClz = parseClassType(itf);
                 if (itfClz != null) {
                     thisClazz.addInterface(itfClz);
                 }
@@ -114,7 +114,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
                             throw Exceptions.unexceptedValue(enclosingClass);
                         }
                         ParameterNode outerInstanceParam = node.createParameter(0, Types.getClassType(enclosingClass), "this$0");
-                        ExprNode parentFieldExpr = astBuilder.getObjectFieldExpr(
+                        ExprNode parentFieldExpr = getObjectFieldExpr(
                                 new ThisExpr(Types.getClassType(thisClazz)), "this$0", ParserRuleContext.EMPTY
                         );
                         if (parentFieldExpr == null) {
@@ -164,7 +164,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
             if (ctx.type() == null) {
                 type = Types.VOID_TYPE;
             } else {
-                type = astBuilder.parseType(ctx.returnType);
+                type = parseType(ctx.returnType);
             }
             name = ctx.name.getText();
         }
@@ -178,7 +178,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
             paramNames = new String[paramSize];
             for(int i=0;i<paramSize;i++){
                 KalangParser.TypeContext t = paramTypesCtx.get(i);
-                paramTypes[i] = astBuilder.parseType(t);
+                paramTypes[i] = parseType(t);
                 paramNames[i] = ctx.paramIds.get(i).getText();
             }
         }else{
@@ -209,7 +209,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         for(int i=0;i<paramTypes.length;i++){
             method.createParameter(paramTypes[i], paramNames[i]);
         }
-        for(AnnotationNode a:astBuilder.getAnnotations(ctx.annotation()))  method.addAnnotation(a);
+        for(AnnotationNode a:getAnnotations(ctx.annotation()))  method.addAnnotation(a);
         ObjectType superType = thisClazz.getSuperType();
         if(superType==null){//the superType of interface may be null
             superType = Types.getRootType();
@@ -224,7 +224,6 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         if(!isOverriding && overriddenMd!=null){
             diagnosisReporter.report(Diagnosis.Kind.ERROR,"method overrides or implements a method from a supertype", ctx);
         }
-        this.methodContexts.put(method, ctx);
         KalangParser.BlockStmtContext bstm = ctx.blockStmt();
         if(bstm!=null){
             List<KalangParser.StatContext> stats = bstm.stat();
@@ -232,7 +231,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         }
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {
-                ObjectType exType = astBuilder.requireClassType(et);
+                ObjectType exType = requireClassType(et);
                 if(exType!=null){
                     method.addExceptionType(exType);
                 }
@@ -332,4 +331,13 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         }
     }
 
+    @Override
+    ClassNode getCurrentClass() {
+        return thisClazz;
+    }
+
+    @Override
+    ClassNode getTopClass() {
+        return topClass;
+    }
 }
