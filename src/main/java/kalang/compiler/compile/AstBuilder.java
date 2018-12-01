@@ -13,6 +13,7 @@ import kalang.compiler.exception.Exceptions;
 import kalang.compiler.function.FunctionType;
 import kalang.compiler.function.LambdaExpr;
 import kalang.compiler.util.*;
+import kalang.runtime.dynamic.MethodDispatcher;
 import kalang.type.FunctionClasses;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -31,13 +32,11 @@ import java.util.*;
  * 
  * @author Kason Yang
  */
-public class AstBuilder extends AbstractParseTreeVisitor implements KalangParserVisitor {
+public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Object> {
 
     private ClassNodeBuilder classNodeBuilder;
     private ClassNodeMetaBuilder classNodeMetaBuilder;
-    
-    private DiagnosisReporter diagnosisReporter;
-    
+
     private SemanticAnalyzer semanticAnalyzer;
     
     private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
@@ -126,7 +125,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Nonnull
     private AstLoader astLoader;
     
-    private final TypeNameResolver typeNameResolver = new TypeNameResolver();
+
 
     private ParserRuleContext compilationContext;
 
@@ -277,7 +276,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }else{
             this.astLoader = astLoader;
         }
-        this.typeNameResolver.setAstLoader(astLoader);
+        compilationUnit.getTypeNameResolver().setAstLoader(astLoader);
         this.semanticAnalyzer = new SemanticAnalyzer(compilationUnit, astLoader);
         if(targetPhase>=PARSING_PHASE_INIT && parsingPhase < PARSING_PHASE_INIT){
             parsingPhase = PARSING_PHASE_INIT;
@@ -286,14 +285,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             for(ImportDeclContext ic:cunit.importDecl()){
                 this.visitImportDecl(ic);
             }
-            this.classNodeBuilder = new ClassNodeBuilder(this.compilationUnit,this);
+            this.classNodeBuilder = new ClassNodeBuilder(this.compilationUnit);
             topClass = classNodeBuilder.build(cunit);
         }
         if(targetPhase>=PARSING_PHASE_META
                 && parsingPhase < PARSING_PHASE_META){
             parsingPhase = PARSING_PHASE_META;
-            this.classNodeMetaBuilder = new ClassNodeMetaBuilder(this.compilationUnit, this, classNodeBuilder);
-            classNodeMetaBuilder.build(topClass, classNodeBuilder.isScript());
+            this.classNodeMetaBuilder = new ClassNodeMetaBuilder(this.compilationUnit, this);
+            buildClassNodeMeta(topClass);
         }
         if(targetPhase>=PARSING_PHASE_ALL
                 && parsingPhase < PARSING_PHASE_ALL){
@@ -322,11 +321,12 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
 
     public AstBuilder(@Nonnull CompilationUnit compilationUnit, @Nonnull KalangParser parser) {
+        super(compilationUnit);
         this.compilationUnit = compilationUnit;
         this.className = compilationUnit.getSource().getClassName();
         this.parser = parser;
         tokenStream = parser.getTokenStream();
-        this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
+
     }
     
     @Nonnull
@@ -356,7 +356,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public KalangParser getParser() {
         return parser;
     }
-    
+
     @Nullable
     private ClassNode requireAst(Token token){
         return requireAst(token.getText(),token);
@@ -366,22 +366,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
      * checks whether a class is available
      * @param id
      * @param token
-     * @return 
+     * @return
      */
     @Nullable
     private ClassNode requireAst(String id,Token token) {
-        String resolvedName = this.typeNameResolver.resolve(id, topClass, thisClazz);
-        ClassNode ast = resolvedName==null ? null : astLoader.getAst(resolvedName);
+        ClassNode ast = resolveNamedClass(id, topClass, thisClazz);
         if(ast==null){
             diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, token);
         }
-        return ast;
-    }
-    
-    @Nullable
-    private ClassNode getAst(String id){
-        String resolvedName = this.typeNameResolver.resolve(id, topClass, thisClazz);
-        ClassNode ast = resolvedName==null ? null : astLoader.getAst(resolvedName);
         return ast;
     }
     
@@ -489,7 +481,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     }
 
     public void importPackage(@Nonnull String packageName) {
-        this.typeNameResolver.importPackage(packageName);
+        compilationUnit.getTypeNameResolver().importPackage(packageName);
     }
     
     BlockStmt wrapBlock(Statement... statms){
@@ -520,14 +512,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     @Nonnull
     public ClassNode getAst() {
         return this.topClass;
-    }
-    
-    protected void mapAst(@Nonnull AstNode node,@Nonnull ParserRuleContext tree){
-         node.offset = OffsetRangeHelper.getOffsetRange(tree);
-    }
-    
-    protected void mapAst(@Nonnull AstNode node,@Nonnull Token token){
-        node.offset = OffsetRangeHelper.getOffsetRange(token);
     }
     
     @Override
@@ -901,21 +885,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 , "method not found:" + MethodUtil.toString(className,methodName, types)
                 , token
         );
-    }
-    
-    //TODO add stop token
-    private void handleSyntaxError(String msg, Token token) {
-        //TODO what does EMPTY means?
-        handleSyntaxError(msg, (ParserRuleContext.EMPTY), token, token);
-    }
-
-    private void handleSyntaxError(String msg,ParserRuleContext tree) {
-        handleSyntaxError(msg, tree, tree.start, tree.stop);
-    }
-    
-    //TODO remove rule
-    private void handleSyntaxError(String desc,ParserRuleContext rule,Token start,Token stop){
-        diagnosisReporter.report(Diagnosis.Kind.ERROR, desc,start,stop);
     }
 
     @Override
@@ -1453,7 +1422,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 params[i] = visitExpression(ctx.params.get(i));
             }
             invokeArgs[2] = createInitializedArray(Types.getRootType(), params);
-            ClassNode dispatcherAst = getAst("kalang.runtime.dynamic.MethodDispatcher");
+            ClassNode dispatcherAst = astLoader.getAst(MethodDispatcher.class.getName());
             if(dispatcherAst==null){
                 throw Exceptions.unexceptedException("Runtime library is required!");
             }
@@ -1573,7 +1542,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             if(fe!=null) return fe;
             outerClassInstanceExpr = this.getOuterClassInstanceExpr(outerClassInstanceExpr);
         }
-        String resolvedTypeName = this.typeNameResolver.resolve(name, topClass, thisClazz);
+        String resolvedTypeName = compilationUnit.getTypeNameResolver().resolve(name, topClass, thisClazz);
         if (resolvedTypeName!=null) {
             ClassReference clsRef = new ClassReference(requireAst(resolvedTypeName,token));
             if(token!=null) mapAst(clsRef, token);
@@ -1668,14 +1637,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 prefix += p.getText() + ".";
             }
         }
+        TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
         if (name.equals("*")) {
-            this.typeNameResolver.importPackage(prefix.substring(0, prefix.length() - 1));
+            typeNameResolver.importPackage(prefix.substring(0, prefix.length() - 1));
         } else {
             String key = name;
             if (ctx.alias != null) {
                 key = ctx.alias.getText();
             }
-            this.typeNameResolver.importClass(prefix + name,key);
+            typeNameResolver.importClass(prefix + name,key);
         }        
         return null;
     }
@@ -1684,30 +1654,6 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public AstNode visitQualifiedName(QualifiedNameContext ctx) {
         //do nothing
         return null;
-    }
-    
-    protected String parseTreeToText(ParseTree ctx){
-        if(ctx instanceof TerminalNode) return ctx.getText();
-        StringBuilder sb = new StringBuilder();
-        int childCount = ctx.getChildCount();
-        for(int i=0;i<childCount;i++){
-            if(i>0) sb.append(" ");
-            sb.append(parseTreeToText(ctx.getChild(i)));
-        }
-        return sb.toString();
-    }
-
-    protected int parseModifier(VarModifierContext modifier) {
-        int defaultModifier = Modifier.PUBLIC;
-        if (modifier == null) return defaultModifier;
-        String modifierText = parseTreeToText(modifier);
-        if(modifierText.isEmpty()) return defaultModifier;
-        try {
-            return ModifierUtil.parse(modifierText);
-        } catch (InvalidModifierException ex) {
-            this.handleSyntaxError(ex.getMessage(), modifier);
-            return defaultModifier;
-        }
     }
 
     @Override
@@ -2745,5 +2691,15 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
 
         }
         return this.getObjectInvokeExpr(namedExpr,"call",args,ctx);
+    }
+
+    private void buildClassNodeMeta(ClassNode cn) {
+        ParserRuleContext ctx = classNodeBuilder.getClassNodeDefContext(cn);
+        if (ctx!=null) {
+            classNodeMetaBuilder.build(cn,ctx);
+        }
+        for(ClassNode c:cn.classes) {
+            buildClassNodeMeta(c);
+        }
     }
 }

@@ -31,6 +31,8 @@ public class CompilationUnit {
     
     private final CompileContext context;
 
+    private final TypeNameResolver typeNameResolver = new TypeNameResolver();
+
     public CompilationUnit(@Nonnull KalangSource source,CompileContext context) {
         this.source = source;
         this.context = context;
@@ -130,6 +132,10 @@ public class CompilationUnit {
 
     public CompileContext getCompileContext() {
         return context;
+    }
+
+    public TypeNameResolver getTypeNameResolver() {
+        return typeNameResolver;
     }
 
 }
