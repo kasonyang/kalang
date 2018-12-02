@@ -2,6 +2,7 @@ package kalang.lang;
 
 import kalang.annotation.Nonnull;
 import kalang.annotation.Nullable;
+import kalang.annotation.PluginMethod;
 import kalang.type.Function1;
 
 import java.util.*;
@@ -32,11 +33,13 @@ public class DefaultStaticMembers {
     }
 
     @Nullable
+    @PluginMethod
     public static <T> T find(T[] list, Function1<Boolean, T> handler) {
         return find(Arrays.asList(list), handler);
     }
 
     @Nonnull
+    @PluginMethod
     public static <T> List<T> findAll(Collection<T> list, Function1<Boolean, T> handler) {
         List<T> result = new LinkedList<>();
         for (T it : list) {
@@ -49,11 +52,13 @@ public class DefaultStaticMembers {
     }
 
     @Nonnull
+    @PluginMethod
     public static <T> List<T> findAll(T[] list, Function1<Boolean, T> handler) {
         return findAll(Arrays.asList(list), handler);
     }
 
     @Nonnull
+    @PluginMethod
     public static <R,E> List<R> map(Collection<E> list,Function1<R,E> handler) {
         List<R> result = new LinkedList<>();
         for(E it : list) {
@@ -63,6 +68,7 @@ public class DefaultStaticMembers {
     }
 
     @Nonnull
+    @PluginMethod
     public static <R,E> List<R> map(E[] list,Function1<R,E> handler) {
         return map(Arrays.asList(list),handler);
     }
