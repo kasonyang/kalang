@@ -1457,6 +1457,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         String name = ctx.name.getText();
         String delim = ctx.delim.getText();
         String prefix = "";
+        boolean isStaticImport = ctx.importMode != null;
         if("\\".equals(delim)){
             boolean relative = ctx.root == null || ctx.root.getText().length() == 0;
             String packageName = this.getPackageName();
@@ -1471,13 +1472,31 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
         if (name.equals("*")) {
-            typeNameResolver.importPackage(prefix.substring(0, prefix.length() - 1));
+            String location = prefix.substring(0, prefix.length() - 1);
+            if (isStaticImport) {
+                ClassNode locationCls = requireAst(location, ctx.stop);
+                if (locationCls==null) {
+                    return null;
+                }
+                importStaticMember(locationCls,null);
+            } else {
+                typeNameResolver.importPackage(location);
+            }
+
         } else {
             String key = name;
             if (ctx.alias != null) {
                 key = ctx.alias.getText();
             }
-            typeNameResolver.importClass(prefix + name,key);
+            if (isStaticImport) {
+                //TODO support alias
+                String location = prefix.substring(0,prefix.length()-1);
+                ClassNode locationCls = requireAst(location, ctx.stop);
+                if (locationCls==null) return null;
+                importStaticMember(locationCls,name);
+            }else{
+                typeNameResolver.importClass(prefix + name,key);
+            }
         }        
         return null;
     }
