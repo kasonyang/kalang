@@ -41,16 +41,4 @@ public abstract class Script {
         throw e;
     }
 
-    protected void println(Object msg) {
-        System.out.println(msg);
-    }
-
-    protected void print(Object msg) {
-        System.out.print(msg);
-    }
-
-    protected void printf(String format,Object... args) {
-        System.out.printf(format,args);
-    }
-
 }

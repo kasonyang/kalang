@@ -419,4 +419,15 @@ public class Types {
         return t;
     }
 
+    public static boolean isFunctionType(Type type) {
+        if (type instanceof FunctionType) {
+            return true;
+        }
+        if (!(type instanceof ClassType)) {
+            return false;
+        }
+        ClassType classType = (ClassType) type;
+        return Types.requireClassType(Function.class.getName()).isAssignableFrom(classType);
+    }
+
 }

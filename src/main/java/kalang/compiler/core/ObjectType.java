@@ -75,8 +75,12 @@ public abstract class ObjectType extends Type{
         }
         return ret;
     }
-    
+
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,boolean includeSuperType,boolean includeInterfaces){
+        return getMethodDescriptors(caller,null,includeSuperType,includeInterfaces);
+    }
+
+    public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,@Nullable String name,boolean includeSuperType,boolean includeInterfaces){
         Map<String,MethodDescriptor> descs = new HashMap();
         List<ObjectType> superList = new LinkedList();
         if(includeSuperType){
@@ -91,7 +95,7 @@ public abstract class ObjectType extends Type{
             superList.addAll(Arrays.asList(itfs));
         }
         for(ObjectType st:superList){
-            MethodDescriptor[] ms = st.getMethodDescriptors(caller, includeSuperType,includeInterfaces);
+            MethodDescriptor[] ms = st.getMethodDescriptors(caller, name,includeSuperType,includeInterfaces);
             for(MethodDescriptor m:ms){
                 descs.put(m.getDeclarationKey(),m);
             }
@@ -100,6 +104,9 @@ public abstract class ObjectType extends Type{
         for(int i=0;i<mds.length;i++){
             if("<init>".equals(mds[i].getName())) continue;
             if (!AccessUtil.isAccessible(mds[i].getModifier(), clazz, caller)){
+                continue;
+            }
+            if (name!=null && !name.isEmpty() && !name.equals(mds[i].getName())) {
                 continue;
             }
             MethodDescriptor md = new MethodDescriptor(
