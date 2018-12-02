@@ -1,6 +1,7 @@
 package kalang.compiler.compile;
 
 import kalang.compiler.AstNotFoundException;
+import kalang.compiler.ast.AnnotationNode;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.ast.FieldNode;
 import kalang.compiler.ast.MethodNode;
@@ -25,11 +26,13 @@ public class JvmClassNode extends ClassNode {
 
     private final Class clazz;
 
-    private boolean superTypeInitialized,
-            fieldsInitialized,
-            methodsInitialized,
-            interfacesInitialized,
-            genericTypesInitialized;
+    private boolean superTypeInitialized
+            , fieldsInitialized
+            , methodsInitialized
+            , interfacesInitialized
+            , genericTypesInitialized
+            , annotationInitialized
+            ;
 
     private Map<TypeVariable, GenericType> genericTypeMap = null;
 
@@ -113,6 +116,9 @@ public class JvmClassNode extends ClassNode {
                 for (Class e : m.getExceptionTypes()) {
                     methodNode.addExceptionType(getType(e,gTypeMap, e, NullableKind.NONNULL));
                 }
+                for(Annotation a:m.getAnnotations()){
+                    methodNode.addAnnotation(transAnnotation(a));
+                }
             }
         }
         return super.getDeclaredMethodNodes();
@@ -125,6 +131,17 @@ public class JvmClassNode extends ClassNode {
             this.getGenericTypeMap();
         }
         return super.getGenericTypes();
+    }
+
+    @Override
+    public AnnotationNode[] getAnnotations() {
+        if (!annotationInitialized) {
+            annotationInitialized = true;
+            for(Annotation a:clazz.getAnnotations()) {
+                annotations.add(transAnnotation(a));
+            }
+        }
+        return super.getAnnotations();
     }
 
     @Nullable
@@ -281,6 +298,11 @@ public class JvmClassNode extends ClassNode {
             classNode.addInterface(it);
         }
         return genericClassType;
+    }
+
+    private AnnotationNode transAnnotation(Annotation an) {
+        ObjectType anType = (ObjectType) transType(an.annotationType(), getGenericTypeMap());
+        return new AnnotationNode(anType.getClassNode());
     }
 
 }

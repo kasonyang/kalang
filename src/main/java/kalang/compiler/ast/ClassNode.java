@@ -29,7 +29,8 @@ public class ClassNode extends AstNode implements Annotationable{
     protected final List<MethodNode> methods = new LinkedList();
     
     private final List<ObjectType> interfaces = new LinkedList();
-    
+
+    //TODO make private
     public final List<AnnotationNode> annotations = new LinkedList<>();
     
     public final List<Statement> staticInitStmts = new LinkedList<>();
