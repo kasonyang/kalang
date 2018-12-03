@@ -288,7 +288,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             parsingPhase = PARSING_PHASE_ALL;
             visitMethods(topClass);
             processConstructor(topClass);
-            buildLambdaExpressions(topClass);
             checkAndBuildInterfaceMethods(topClass);
         }
     }
@@ -896,7 +895,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if(clazz==null) throw Exceptions.unexceptedValue(clazz);
             try {
                 InvocationExpr.MethodSelection apply = InvocationExpr.applyMethod(clazz, methodName, args,clazz.getConstructorDescriptors(thisClazz));
-                ie = new ObjectInvokeExpr(target, apply.selectedMethod, apply.appliedArguments);
+                ie = onInvocationExpr(new ObjectInvokeExpr(target, apply.selectedMethod, apply.appliedArguments));
             } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                 this.methodNotFound(ctx.start, clazz.getName(), methodName, args);
                 return null;
@@ -1180,9 +1179,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         try {
             InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,namedMethods);
             if(Modifier.isStatic(ms.selectedMethod.getModifier())){
-                expr = new StaticInvokeExpr(new ClassReference(clazzType.getClassNode()), ms.selectedMethod, ms.appliedArguments);
+                expr = onInvocationExpr(new StaticInvokeExpr(new ClassReference(clazzType.getClassNode()), ms.selectedMethod, ms.appliedArguments));
             }else{
-                expr = new ObjectInvokeExpr(new ThisExpr(clazzType), ms.selectedMethod, ms.appliedArguments);
+                expr = onInvocationExpr(new ObjectInvokeExpr(new ThisExpr(clazzType), ms.selectedMethod, ms.appliedArguments));
             }
         } catch (MethodNotFoundException ex) {
             this.methodNotFound(ctx.getStart(), clazzType, methodName, args);
@@ -1228,15 +1227,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     LinkedList<ExprNode> newArgs = new LinkedList();
                     newArgs.add(target);
                     newArgs.addAll(Arrays.asList(args));
-                    try {
-                        return StaticInvokeExpr.create(
-                                new ClassReference(pluginClass)
-                                , methodName
-                                , newArgs.toArray(new ExprNode[0])
-                        );
-                    }catch(MethodNotFoundException ex) {
-                        methodNotFound(ctx.start,pluginClass.name,methodName,newArgs.toArray(new ExprNode[0]));
-                    }
+                    return getStaticInvokeExpr(new ClassReference(pluginClass),methodName, newArgs.toArray(new ExprNode[0]),ctx);
                 }
             }
             InvocationExpr.MethodSelection ms = ObjectInvokeExpr.applyMethod(targetClassType, methodName, args,methods);
@@ -1244,7 +1235,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if(AstUtil.isStatic(md.getModifier())){
                 throw new MethodNotFoundException(methodName + " is static");
             }
-            ObjectInvokeExpr invoke = new ObjectInvokeExpr(target, md, ms.appliedArguments);
+            InvocationExpr invoke = onInvocationExpr(new ObjectInvokeExpr(target, md, ms.appliedArguments));
             if(invoke.getMethod().getMethodNode().getType() instanceof GenericType){
                 Type invokeType = invoke.getType();
                 if(invokeType instanceof ObjectType){
@@ -1279,7 +1270,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ExprNode[] args = argumentsCtx;
         ExprNode expr;
         try {
-            expr = StaticInvokeExpr.create(clazz, methodName, args);
+            expr = onInvocationExpr(StaticInvokeExpr.create(clazz, methodName, args));
         } catch (MethodNotFoundException ex) {
             methodNotFound(ctx.start, clazz.getReferencedClassNode().name, methodName, args);
             expr = new UnknownInvocationExpr(clazz, methodName , args);
@@ -1832,19 +1823,17 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         for(Map.Entry<String, VarObject> e:accessibleVars.entrySet()) {
             ms.putAccessibleVarObject(e.getKey(), e.getValue());
         }
-        this.lambdaExprCtxMap.put(ms, ctx);
+        if (functionType!=null){
+            createLambdaNode(functionType,ms,ctx);
+        } else {
+            lambdaExprCtxMap.put(ms, ctx);
+        }
         return ms;
     }
     
     @Nullable
     private ExprNode getOuterClassInstanceExpr(ExprNode expr){
         return this.getObjectFieldExpr(expr, "this$0", null);
-    }
-    
-    private ExprNode requireOuterClassInstanceExpr(ExprNode e){
-        ExprNode expr = this.getOuterClassInstanceExpr(e);
-        if(expr==null) throw Exceptions.unexceptedException("BUG!");
-        return expr;
     }
 
     @Override
@@ -2273,68 +2262,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
     }
 
-    private void buildLambdaExpressions(ClassNode classNode){
-        for(ClassNode c:classNode.classes) {
-            buildLambdaExpressions(c);
-        }
-        List<ClassNode> newLambdaClasses = new LinkedList();
-        final List<LambdaExpr> lambdaExprs = new LinkedList<>();
-        final Map<LambdaExpr,ClassType> lambdaTypes = new HashMap();
-        AstVisitor astVisitor = new AstVisitor(){
-            @Override
-            public Object visitInvocationExpr(InvocationExpr node) {
-                ExprNode[] args = node.getArguments();
-                if (args!=null) {
-                    Type[] argTypes = node.getMethod().getParameterTypes();
-                    for(int i=0;i<args.length;i++) {
-                        ExprNode arg = args[i];
-                        if (arg instanceof LambdaExpr) {
-                            lambdaTypes.put((LambdaExpr) arg ,(ClassType) argTypes[i]);
-                        }
-                    }
-                }
-                return super.visitInvocationExpr(node);
-            }
-
-            @Override
-            public Object visitMultiStmtExpr(MultiStmtExpr node) {
-                if (node instanceof LambdaExpr) {
-                    lambdaExprs.add((LambdaExpr) node);
-                }
-                return super.visitMultiStmtExpr(node);
-            }
-        };
-        astVisitor.visit(classNode);
-        for (LambdaExpr lambdaExpr:lambdaExprs) {
-            ClassType functionType = lambdaExpr.getFunctionType();
-            if (functionType==null) {
-                functionType = lambdaTypes.get(lambdaExpr);
-            }
-            if (functionType==null) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR,"missing type",lambdaExpr.offset);
-                continue;
-            }
-            KalangParser.LambdaExprContext ctx = this.lambdaExprCtxMap.get(lambdaExpr);
-            ClassNode lambdaClassNode = this.createFunctionClassNode(functionType,lambdaExpr,ctx);
-            ClassType lambdaType = Types.getClassType(lambdaClassNode);
-            //lambdaExpr.getReferenceExpr()
-            NewObjectExpr newExpr;
-            try {
-                newExpr = new NewObjectExpr(lambdaType, new ExprNode[0], classNode);
-            } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-                throw Exceptions.unexceptedException(ex);
-            }
-            lambdaExpr.setInitExpr(newExpr);
-            if (lambdaClassNode!=null) {
-                classNode.classes.add(lambdaClassNode);
-                newLambdaClasses.add(lambdaClassNode);
-            }
-        }
-        for(ClassNode c:newLambdaClasses) {
-            buildLambdaExpressions(c);
-        }
-    }
-    
     private ClassNode createFunctionClassNode(ClassType type,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
         Type[] typeArguments = type.getTypeArguments();
         Type returnType = typeArguments[0];
@@ -2536,6 +2463,45 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         }
         return scStaticMethods;
+    }
+
+    private void createLambdaNode(ClassType inferredLambdaType,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
+        ClassType functionType = lambdaExpr.getFunctionType();
+        if (functionType==null) {
+            functionType = inferredLambdaType;
+        }
+        if (functionType==null) {
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR,"missing type",lambdaExpr.offset);
+            return;
+        }
+        ClassNode lambdaClassNode = this.createFunctionClassNode(functionType,lambdaExpr,ctx);
+        ClassType lambdaType = Types.getClassType(lambdaClassNode);
+        //lambdaExpr.getReferenceExpr()
+        NewObjectExpr newExpr;
+        try {
+            newExpr = new NewObjectExpr(lambdaType, new ExprNode[0],thisClazz);
+        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+            throw Exceptions.unexceptedException(ex);
+        }
+        lambdaExpr.setInitExpr(newExpr);
+        thisClazz.classes.add(lambdaClassNode);
+    }
+
+    private InvocationExpr onInvocationExpr(InvocationExpr invocationExpr){
+        ExprNode[] args = invocationExpr.getArguments();
+        Type[] paramTypes = invocationExpr.getMethod().getParameterTypes();
+        for(int i=0;i<args.length;i++) {
+            ExprNode arg = args[i];
+            if (arg instanceof LambdaExpr) {
+                boolean isInit = ((LambdaExpr) arg).getInitExpr() != null;
+                if (!isInit) {
+                    ClassType lambdaType = (ClassType) paramTypes[i];
+                    LambdaExprContext ctx = lambdaExprCtxMap.get(arg);
+                    createLambdaNode(lambdaType, (LambdaExpr) arg,ctx);
+                }
+            }
+        }
+        return invocationExpr;
     }
 
 }
