@@ -7,9 +7,7 @@ int testPluginFind() {
     return list.find({ it => return it == 5; }) + 1;
 }
 
-/*
 int testMap() {
     var lens = map(<Integer>[123456],{ it => return String.valueOf(it); });
-    return Integer.parseInt(lens.get(0).length());
+    return lens.get(0).length();
 }
-*/

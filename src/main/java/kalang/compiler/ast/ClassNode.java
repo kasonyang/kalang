@@ -5,9 +5,8 @@ import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Type;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
 /**
  * 
  * @author Kason Yang
@@ -36,6 +35,8 @@ public class ClassNode extends AstNode implements Annotationable{
     public final List<Statement> staticInitStmts = new LinkedList<>();
     
     public final List<Statement> initStmts = new LinkedList<>();
+
+    public final Map<GenericType,Type> inferredGenericTypes = new HashMap<>();
     
     protected List<GenericType> genericTypes = new LinkedList<>();
     
