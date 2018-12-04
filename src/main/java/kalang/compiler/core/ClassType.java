@@ -197,6 +197,16 @@ public class ClassType extends ObjectType {
             superType =(ObjectType) parseType(superType);
         }
         return superType;
-    }    
+    }
+
+    public ClassType toParameterized(Map<GenericType,Type> genericTypeTypeMap) {
+        GenericType[] gts = clazz.getGenericTypes();
+        Type[] typeArgs = new Type[gts.length];
+        for(int i=0;i<typeArgs.length;i++) {
+            Type aType = genericTypeTypeMap.get(gts[i]);
+            typeArgs[i] = aType==null ? gts[i] : aType;
+        }
+        return Types.getClassType(clazz,typeArgs);
+    }
 
 }
