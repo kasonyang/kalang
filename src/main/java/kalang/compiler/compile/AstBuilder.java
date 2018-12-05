@@ -37,6 +37,17 @@ import static kalang.compiler.compile.MethodContext.*;
  */
 public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Object> {
 
+    static class VarInfo{
+        public Type type;
+        public String name;
+        public int modifier;
+    }
+
+    public static final int
+            PARSING_PHASE_INIT = 1,
+            PARSING_PHASE_META = 2,
+            PARSING_PHASE_ALL = 3;
+
     private ClassNodeBuilder classNodeBuilder;
     private ClassNodeMetaBuilder classNodeMetaBuilder;
 
@@ -49,6 +60,31 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     //private Map<MethodNode,List<StatContext>> lambdaStatMap = new HashMap();
     
     private int anonymousClassCounter = 0;
+
+    private int parsingPhase=0;
+    //static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
+
+    protected ClassNode thisClazz;
+
+    private ClassNode topClass;
+
+    private MethodContext methodCtx;
+
+    @Nonnull
+    private AstLoader astLoader;
+
+    private ParserRuleContext compilationContext;
+
+    @Nonnull
+    private TokenStream tokenStream;
+
+    @Nonnull
+    private final String className;
+
+    @Nonnull
+    private KalangParser parser;
+
+    private final CompilationUnit compilationUnit;
 
     @Override
     public Object visitEmptyStat(KalangParser.EmptyStatContext ctx) {
@@ -100,51 +136,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     ClassNode getTopClass() {
         return topClass;
     }
-
-    static class VarInfo{
-        public Type type;
-        public String name;
-        public int modifier;
-    }
-    
-    public static final int 
-            PARSING_PHASE_INIT = 1,
-            PARSING_PHASE_META = 2,
-            PARSING_PHASE_ALL = 3;
-   
-    private int parsingPhase=0;
-    //static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
-    
-    protected ClassNode thisClazz;
-    
-    private ClassNode topClass;
-
-    private MethodContext methodCtx;
-
-    //TODO merge SemanticAnalyzer.assignedVars
-    //private VarTable<VarObject,NullableKind> assignedNullables = new VarTable();
-    
-    //private VarTable<VarObject,Boolean> mustNullorNonnull = new VarTable();
-
-    //private final HashMap<MethodNode,BlockStmtContext> methodBodys = new HashMap<>();
-
-    @Nonnull
-    private AstLoader astLoader;
-    
-
-
-    private ParserRuleContext compilationContext;
-
-    @Nonnull
-    private TokenStream tokenStream;
-
-    @Nonnull
-    private final String className;
-        
-    @Nonnull
-    private KalangParser parser;
-    
-    private final CompilationUnit compilationUnit;
     
     public ParserRuleContext getParseTree(){
         return compilationContext;
@@ -274,20 +265,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         compilationUnit.getTypeNameResolver().importPackage(packageName);
     }
     
-    BlockStmt wrapBlock(Statement... statms){
-        BlockStmt bs = newBlock();
-        bs.statements.addAll(Arrays.asList(statms));
-        popBlock();
-        return bs;
-    }
-    
-    BlockStmt newBlock(){
+    private BlockStmt newBlock(){
         BlockStmt bs = new BlockStmt();
         methodCtx.newFrame();
         return bs;
     }
     
-    void popBlock(){
+    private void popBlock(){
         methodCtx.popFrame();
     }
 
@@ -480,10 +464,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     
     private boolean isNonStaticInnerClass(ClassNode clazz){
         return clazz.enclosingClass!=null && !Modifier.isStatic(clazz.modifier);
-    }
-    
-    private boolean isDeclaringNonStaticInnerClass(){
-        return isNonStaticInnerClass(thisClazz);
     }
 
     @Override
