@@ -396,29 +396,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public AstNode visitPostIfStmt(KalangParser.PostIfStmtContext ctx) {
-        ExprNode leftExpr = visitExpression(ctx.expression(0));
-        if (!(leftExpr instanceof AssignExpr)) {
-            diagnosisReporter.report(Diagnosis.Kind.ERROR, "AssignExpr required", ctx);
-        }
-        AssignExpr assignExpr = (AssignExpr) leftExpr;
-        AssignableExpr to = assignExpr.getTo();
-        ExprNode from = assignExpr.getFrom();
-        ExprNode cond = visitExpression(ctx.expression(1));
-        Token op = ctx.op;
-        if (op != null) {
-            String opStr = op.getText();
-            //TODO check type
-            cond = this.createBinaryMathExpr(to, cond, opStr);
-        }
-        AssignExpr as = new AssignExpr(to, from);
-        IfStmt is = new IfStmt(cond);
-        is.getTrueBody().statements.add(new ExprStmt(as));
-        mapAst(is,ctx);
-        return is;
-    }
-
-    @Override
     public AstNode visitCompilationUnit(CompilationUnitContext ctx) {
         visitChildren(ctx);
         return null;

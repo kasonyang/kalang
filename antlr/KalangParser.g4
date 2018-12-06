@@ -150,7 +150,6 @@ stat:
     emptyStat
     |blockStmt
     |varDeclStat
-    |postIfStmt
     |exprStat
     |ifStat
     |whileStat
@@ -191,17 +190,6 @@ tryStat:
 ;
 returnStat:
     'return' expression? ';'
-;
-postIfStmt:
-    expression //(ASSIGN|MULTI_ASSIGN) expression 
-     'if' (
-            op = '=='
-            |op ='<'
-            |op ='>'
-            |op ='!='
-            |op ='>='
-            |op ='<='
-     )? expression ';'
 ;
 varDeclStat:
   localVarDecl ';'
