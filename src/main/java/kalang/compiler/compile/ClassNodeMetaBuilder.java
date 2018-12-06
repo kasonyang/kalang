@@ -3,7 +3,6 @@ package kalang.compiler.compile;
 import kalang.compiler.AstNotFoundException;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.antlr.KalangParser.MethodDeclContext;
-import kalang.compiler.antlr.KalangParserBaseVisitor;
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
