@@ -221,7 +221,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         if(isOverriding && overriddenMd==null){            
             diagnosisReporter.report(Diagnosis.Kind.ERROR,"method does not override or implement a method from a supertype", ctx);
         }
-        if(!isOverriding && overriddenMd!=null){
+        if(!isOverriding && overriddenMd!=null && !"<init>".equals(overriddenMd.getName())){
             diagnosisReporter.report(Diagnosis.Kind.ERROR,"method overrides or implements a method from a supertype", ctx);
         }
         KalangParser.BlockStmtContext bstm = ctx.blockStmt();

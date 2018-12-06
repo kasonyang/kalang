@@ -8,15 +8,15 @@ import kalang.runtime.util.MethodSelector;
  *
  * @author Kason Yang
  */
-public class KalangMethodSelector extends MethodSelector<ExecutableDescriptor,Type> {
+public class KalangMethodSelector extends MethodSelector<MethodDescriptor,Type> {
 
     @Override
-    protected String getMethodName(ExecutableDescriptor m) {
+    protected String getMethodName(MethodDescriptor m) {
         return m.getName();
     }
 
     @Override
-    protected Type[] getMethodParameterTypes(ExecutableDescriptor m) {
+    protected Type[] getMethodParameterTypes(MethodDescriptor m) {
         return m.getParameterTypes();
     }
 

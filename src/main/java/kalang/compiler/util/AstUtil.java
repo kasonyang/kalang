@@ -49,16 +49,16 @@ public class AstUtil {
     
     public static boolean createEmptyConstructor(ClassNode clazzNode){
         ObjectType supType = clazzNode.getSuperType();
-        if(supType==null){
+        if (supType == null) {
             throw new RuntimeException("super type is null:" + clazzNode.name);
         }
-       ConstructorDescriptor[] constructors = supType.getConstructorDescriptors(clazzNode);
-        ConstructorDescriptor m = MethodUtil.getConstructorDescriptor(constructors, null);
-       if(m!=null){
-            MethodNode mm = clazzNode.createMethodNode(Types.VOID_TYPE,m.getName(),m.getModifier());
-            for(Type e : m.getExceptionTypes()) mm.addExceptionType(e);
+        MethodDescriptor[] constructors = supType.getConstructorDescriptors(clazzNode);
+        MethodDescriptor m = MethodUtil.getMethodDescriptor(constructors, "<init>", null);
+        if (m != null) {
+            MethodNode mm = clazzNode.createMethodNode(Types.VOID_TYPE, m.getName(), m.getModifier());
+            for (Type e : m.getExceptionTypes()) mm.addExceptionType(e);
             ParameterDescriptor[] pds = m.getParameterDescriptors();
-            for(ParameterDescriptor pd:pds){
+            for (ParameterDescriptor pd : pds) {
                 ParameterNode p = mm.createParameter(pd.getType(), pd.getName());
                 //TODO update mm.createParameter
                 p.modifier = pd.getModifier();
@@ -66,21 +66,21 @@ public class AstUtil {
             BlockStmt body = mm.getBody();
             ParameterNode[] parameters = mm.getParameters();
             ExprNode[] params = new ExprNode[parameters.length];
-            for(int i=0;i<params.length;i++){
+            for (int i = 0; i < params.length; i++) {
                 params[i] = new ParameterExpr(parameters[i]);
             }
             body.statements.add(
                     new ExprStmt(
                             new ObjectInvokeExpr(
-                                    new SuperExpr(clazzNode), 
+                                    new SuperExpr(clazzNode),
                                     m,
                                     params)
                     )
             );
             return true;
-       }else{
-           return false;
-       }
+        } else {
+            return false;
+        }
     }
     
     public static boolean containsConstructor(ClassNode clazz){
@@ -91,14 +91,14 @@ public class AstUtil {
         return false;
     }
 
-    public static ExecutableDescriptor[] filterMethodByName(ExecutableDescriptor[] mds, String methodName) {
-        List<ExecutableDescriptor> methods = new ArrayList(mds.length);
-        for (ExecutableDescriptor m : mds) {
+    public static MethodDescriptor[] filterMethodByName(MethodDescriptor[] mds, String methodName) {
+        List<MethodDescriptor> methods = new ArrayList(mds.length);
+        for (MethodDescriptor m : mds) {
             if (m.getName().equals(methodName)) {
                 methods.add(m);
             }
         }
-        return methods.toArray(new ExecutableDescriptor[methods.size()]);
+        return methods.toArray(new MethodDescriptor[methods.size()]);
     }
 
     public static ExprNode matchType(Type from, Type target, ExprNode expr) {
@@ -140,9 +140,9 @@ public class AstUtil {
     }
     
     @Nullable
-    public static ExecutableDescriptor getExactedMethod(ObjectType targetType,ExecutableDescriptor[] candidates,String methodName,@Nullable Type[] types){
-        ExecutableDescriptor[] methods = filterMethodByName(candidates, methodName);
-        for(ExecutableDescriptor m:methods){
+    public static MethodDescriptor getExactedMethod(ObjectType targetType,MethodDescriptor[] candidates,String methodName,@Nullable Type[] types){
+        MethodDescriptor[] methods = filterMethodByName(candidates, methodName);
+        for(MethodDescriptor m:methods){
            Type[] mdTypes = m.getParameterTypes();
            if(Arrays.equals(mdTypes, types)) return m;
            if(mdTypes==null || mdTypes.length==0){
@@ -170,7 +170,7 @@ public class AstUtil {
         try{
             ExprStmt exprStmt = (ExprStmt) stmt;
             InvocationExpr invExpr = (InvocationExpr) exprStmt.getExpr();
-            ExecutableDescriptor method = invExpr.getMethod();
+            MethodDescriptor method = invExpr.getMethod();
             return method.getName().equals("<init>") && !Modifier.isStatic(method.getModifier());
         }catch(ClassCastException ex){
             return false;

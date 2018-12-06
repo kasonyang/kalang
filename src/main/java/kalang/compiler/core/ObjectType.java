@@ -102,7 +102,6 @@ public abstract class ObjectType extends Type{
         }
         MethodNode[] mds = clazz.getDeclaredMethodNodes();
         for(int i=0;i<mds.length;i++){
-            if("<init>".equals(mds[i].getName())) continue;
             if (!AccessUtil.isAccessible(mds[i].getModifier(), clazz, caller)){
                 continue;
             }
@@ -120,24 +119,8 @@ public abstract class ObjectType extends Type{
         return descs.values().toArray(new MethodDescriptor[descs.size()]);
     }
     
-    public ConstructorDescriptor[] getConstructorDescriptors(@Nullable ClassNode caller){
-        Map<String,ConstructorDescriptor> descs = new HashMap();
-        MethodNode[] mds = clazz.getDeclaredMethodNodes();
-        for(int i=0;i<mds.length;i++){
-            if(!"<init>".equals(mds[i].getName())){
-                continue;
-            }
-            if (!AccessUtil.isAccessible(mds[i].getModifier(), clazz, caller)){
-                continue;
-            }
-            ConstructorDescriptor md = new ConstructorDescriptor(
-                    mds[i]
-                    ,getParameterDescriptors(mds[i])
-                    ,parseTypes(mds[i].getExceptionTypes())
-            );
-            descs.put(md.getDeclarationKey(), md);
-        }
-        return descs.values().toArray(new ConstructorDescriptor[descs.size()]);
+    public MethodDescriptor[] getConstructorDescriptors(@Nullable ClassNode caller){
+        return this.getMethodDescriptors(caller,"<init>",false,false);
     }
     
     @Nullable
