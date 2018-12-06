@@ -530,6 +530,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         mapAst(rs,ctx);
         if (ctx.expression() != null) {
             rs.expr = visitExpression(ctx.expression());
+        } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
+            rs.expr = new ConstExpr(null);
         }
         if(!semanticAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
         this.methodCtx.returned = true;
