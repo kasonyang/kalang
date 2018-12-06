@@ -3,7 +3,7 @@ package kalang.compiler.ast;
 
 import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.MethodNotFoundException;
-import kalang.compiler.core.ExecutableDescriptor;
+import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.util.AstUtil;
 import kalang.compiler.util.Parameters;
@@ -28,11 +28,11 @@ public class ObjectInvokeExpr extends InvocationExpr{
         ClassNode clazz = targetType.getClassNode();
         boolean recursive = ! "<init>".equals(methodName);
         //MethodNode[] candidates = AstUtil.listAccessibleMethods(clazz, caller , recursive);
-        List<ExecutableDescriptor> candidates = new LinkedList();
+        List<MethodDescriptor> candidates = new LinkedList();
         candidates.addAll(Arrays.asList(targetType.getMethodDescriptors(caller,recursive,true)));
-        candidates.addAll(Arrays.asList(targetType.getConstructorDescriptors(caller)));
-        MethodSelection ms = applyMethod(targetType, methodName, args,candidates.toArray(new ExecutableDescriptor[candidates.size()]));
-        ExecutableDescriptor md = ms.selectedMethod;
+        //candidates.addAll(Arrays.asList(targetType.getConstructorDescriptors(caller)));
+        MethodSelection ms = applyMethod(targetType, methodName, args,candidates.toArray(new MethodDescriptor[candidates.size()]));
+        MethodDescriptor md = ms.selectedMethod;
         if(AstUtil.isStatic(md.getModifier())){
             throw new MethodNotFoundException(methodName + " is static");
         }
@@ -43,7 +43,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
     
     //private final ClassNode specialClass;
 
-    public ObjectInvokeExpr(ExprNode invokeTarget, ExecutableDescriptor method, ExprNode[] args) {
+    public ObjectInvokeExpr(ExprNode invokeTarget, MethodDescriptor method, ExprNode[] args) {
         super((ObjectType)invokeTarget.getType(),method, args);
         Parameters.requireTrue(!Modifier.isStatic(method.getModifier()));
         this.invokeTarget = invokeTarget;

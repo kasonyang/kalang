@@ -18,7 +18,7 @@ public class GenericTest {
         MethodDescriptor[] mds = type.getMethodDescriptors(null, "singletonList", true, true);
         StaticInvokeExpr staticInvoke = StaticInvokeExpr.create(new ClassReference(type.getClassNode()), "singletonList", new ExprNode[]{new ConstExpr("test")});
         Assert.assertNotNull(staticInvoke);
-        ExecutableDescriptor md = staticInvoke.getMethod();
+        MethodDescriptor md = staticInvoke.getMethod();
         ClassType returnType = (ClassType) md.getReturnType();
         Type[] typeArgs = returnType.getTypeArguments();
         Assert.assertEquals(1,typeArgs.length);
@@ -33,7 +33,7 @@ public class GenericTest {
         ClassType linkListType = Types.getClassType(rawLinkListType.getClassNode(), new Type[]{integerType});
         StaticInvokeExpr staticInvoke = StaticInvokeExpr.create(new ClassReference(type.getClassNode()), "min", new ExprNode[]{new NewObjectExpr(linkListType)});
         Assert.assertNotNull(staticInvoke);
-        ExecutableDescriptor md = staticInvoke.getMethod();
+        MethodDescriptor md = staticInvoke.getMethod();
         ClassType returnType = (ClassType) md.getReturnType();
         Assert.assertEquals(integerType,returnType);
     }

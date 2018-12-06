@@ -793,7 +793,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitInvocationExpr(InvocationExpr node) {
         int opc;
-        ExecutableDescriptor method = node.getMethod();
+        MethodDescriptor method = node.getMethod();
         String ownerClass;// = internalName(node.getMethod().classNode);
         if (node instanceof StaticInvokeExpr) {
             opc = INVOKESTATIC;

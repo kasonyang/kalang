@@ -1043,7 +1043,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 }
             }
             InvocationExpr.MethodSelection ms = ObjectInvokeExpr.applyMethod(targetClassType, methodName, args,methods);
-            ExecutableDescriptor md = ms.selectedMethod;
+            MethodDescriptor md = ms.selectedMethod;
             if(AstUtil.isStatic(md.getModifier())){
                 throw new MethodNotFoundException(methodName + " is static");
             }
@@ -2280,19 +2280,17 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         }
         if (!inferredTypes.isEmpty()) {
-            ExecutableDescriptor md = invocationExpr.getMethod();
+            MethodDescriptor md = invocationExpr.getMethod();
             for(int i=0;i<paramTypes.length;i++) {
                 if (paramTypes[i] instanceof ClassType) {
                     paramTypes[i] = ((ClassType) paramTypes[i]).toParameterized(inferredTypes);
                 }
             }
-            if (md instanceof MethodDescriptor) {
-                MethodDescriptor newMd = ((MethodDescriptor) md).toParameterized(inferredTypes, paramTypes);
-                if (invocationExpr instanceof StaticInvokeExpr) {
-                    invocationExpr = new StaticInvokeExpr(((StaticInvokeExpr) invocationExpr).getInvokeClass(),newMd,args);
-                } else if (invocationExpr instanceof ObjectInvokeExpr) {
-                    invocationExpr = new ObjectInvokeExpr(((ObjectInvokeExpr) invocationExpr).getInvokeTarget(),newMd,args);
-                }
+            MethodDescriptor newMd = md.toParameterized(inferredTypes, paramTypes);
+            if (invocationExpr instanceof StaticInvokeExpr) {
+                invocationExpr = new StaticInvokeExpr(((StaticInvokeExpr) invocationExpr).getInvokeClass(),newMd,args);
+            } else if (invocationExpr instanceof ObjectInvokeExpr) {
+                invocationExpr = new ObjectInvokeExpr(((ObjectInvokeExpr) invocationExpr).getInvokeTarget(),newMd,args);
             }
         }
         return invocationExpr;

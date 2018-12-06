@@ -30,7 +30,7 @@ public class InterfaceUtil {
         List<MethodDescriptor> unimplements = new LinkedList();
         for (MethodDescriptor im : interfaceMethods) {
             String imDeclKey = im.getDeclarationKey();
-            ExecutableDescriptor cm = MethodUtil.getExecutableDescriptor(clazzMethods, imDeclKey);
+            MethodDescriptor cm = MethodUtil.getMethodDescriptor(clazzMethods, imDeclKey);
             if (cm == null) {
                 if (Modifier.isAbstract(im.getModifier())) {
                     unimplements.add(im);
@@ -62,12 +62,12 @@ public class InterfaceUtil {
         MethodDescriptor[] clazzMethods = clazzType.getMethodDescriptors(null, true, false);
         for (MethodDescriptor im : interfaceMethods) {
             String imDeclKey = im.getDeclarationKey();
-            ExecutableDescriptor cm = MethodUtil.getExecutableDescriptor(clazzMethods, imDeclKey);
+            MethodDescriptor cm = MethodUtil.getMethodDescriptor(clazzMethods, imDeclKey);
             map.put(im,cm==null ? null : cm.getMethodNode());
         }
     }
 
-    private static void createBridgeMethod(ClassNode clazz,Type returnType,Type[] paramTypes, ExecutableDescriptor targetMethod) {
+    private static void createBridgeMethod(ClassNode clazz,Type returnType,Type[] paramTypes, MethodDescriptor targetMethod) {
         Type[] oldParamTypes = targetMethod.getParameterTypes();
         MethodNode m = clazz.createMethodNode(returnType, targetMethod.getName(), targetMethod.getModifier());
         ParameterNode[] paramNodes = new ParameterNode[paramTypes.length];
