@@ -1,7 +1,8 @@
 package test.kalang.profile;
 
-import java.io.IOException;
 import kalang.test.DebugTest;
+
+import java.io.IOException;
 
 /**
  *

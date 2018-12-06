@@ -1,11 +1,7 @@
 package kalang.compiler.compile;
 
-import kalang.compiler.AstNotFoundException;
 import kalang.compiler.antlr.KalangParser;
-import kalang.compiler.antlr.KalangParserBaseVisitor;
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.core.ObjectType;
-import kalang.compiler.core.Types;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
