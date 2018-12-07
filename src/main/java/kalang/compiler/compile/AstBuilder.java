@@ -954,13 +954,21 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         ExprNode expr;
         ObjectType clazzType = getThisType();
+        ExprNode invokeTarget = new ThisExpr(clazzType);
         MethodDescriptor[] namedMethods = clazzType.getMethodDescriptors(thisClazz, methodName ,true, true);
         if (namedMethods.length<=0 && namedNode instanceof FieldExpr) {
             return this.getLambdaCall(methodName,(FieldExpr)namedNode,args,ctx);
         }
         if (namedMethods.length<=0) {
+            ExprNode outerClassExpr = new ThisExpr(thisClazz);
+            while(namedMethods.length<=0 && (outerClassExpr = getOuterClassInstanceExpr(outerClassExpr))!=null) {
+                namedMethods = ((ObjectType)outerClassExpr.getType()).getMethodDescriptors(thisClazz,methodName,true,true);
+            }
+            invokeTarget = outerClassExpr;
+        }
+        if (namedMethods.length<=0) {
             namedMethods = getStaticImportedMethods(methodName).toArray(new MethodDescriptor[0]);
-            if (namedMethods.length>=0) {
+            if (namedMethods.length>0) {
                 clazzType = Types.getClassType(namedMethods[0].getMethodNode().getClassNode());
             }
         }
@@ -969,7 +977,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if(Modifier.isStatic(ms.selectedMethod.getModifier())){
                 expr = onInvocationExpr(new StaticInvokeExpr(new ClassReference(clazzType.getClassNode()), ms.selectedMethod, ms.appliedArguments));
             }else{
-                expr = onInvocationExpr(new ObjectInvokeExpr(new ThisExpr(clazzType), ms.selectedMethod, ms.appliedArguments));
+                expr = onInvocationExpr(new ObjectInvokeExpr(invokeTarget, ms.selectedMethod, ms.appliedArguments));
             }
         } catch (MethodNotFoundException ex) {
             this.methodNotFound(ctx.getStart(), clazzType, methodName, args);
@@ -2022,6 +2030,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         MethodContext oldMethodCtx = this.methodCtx;
         ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
         classNode.setSuperType(Types.getRootType());
+        if (!Modifier.isStatic(methodCtx.method.getModifier())){
+            FieldNode outerClassField = classNode.createField(Types.getClassType(oldClass), "this$0", Modifier.PUBLIC);
+            ObjectFieldExpr outerFieldExpr = new ObjectFieldExpr(new VarExpr(lambdaExpr.getReferenceVar()), outerClassField);
+            lambdaExpr.addStatement(new ExprStmt(new AssignExpr(outerFieldExpr,new ThisExpr(oldClass))));
+        }
         Map<String, VarObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
         for( Map.Entry<String, VarObject> v:accessibleVars.entrySet()) {
             String name = v.getKey();
