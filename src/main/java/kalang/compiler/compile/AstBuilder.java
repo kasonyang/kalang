@@ -41,6 +41,10 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     private SemanticAnalyzer semanticAnalyzer;
     
     private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
+
+    private Map<String,ClassNode> staticImportMembers = new HashMap<>();
+
+    private List<ClassNode> staticImportPaths = new LinkedList<>();
     
     //private Map<MethodNode,List<StatContext>> lambdaStatMap = new HashMap();
     
@@ -1303,14 +1307,44 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     
     @Nullable
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
-        ExprNode expr = null;
+        AstNode namedNode = this.getNodeById(methodName, ctx.start);
+        if (namedNode!=null && (namedNode instanceof ParameterExpr || namedNode instanceof VarExpr)) {
+            return this.getLambdaCall(methodName,(ExprNode) namedNode,args,ctx);
+        }
+        ExprNode expr;
+        ObjectType clazzType = getThisType();
+        MethodDescriptor[] namedMethods = clazzType.getMethodDescriptors(thisClazz, methodName ,true, true);
+        if (namedMethods.length<=0 && namedNode instanceof FieldExpr) {
+            return this.getLambdaCall(methodName,(FieldExpr)namedNode,args,ctx);
+        }
+        if (namedMethods.length<=0) {
+            ClassNode classOfStaticImport = staticImportMembers.get(methodName);
+            if (classOfStaticImport!=null) {
+                return this.getStaticInvokeExpr(new ClassReference(classOfStaticImport),methodName,args,ctx);
+            }
+            for (int i=staticImportPaths.size()-1;i>=0;i--) {
+                ClassNode sc = staticImportPaths.get(i);
+                ClassType scType = Types.getClassType(sc);
+                MethodDescriptor[] scMethods = scType.getMethodDescriptors(thisClazz, methodName,true, true);
+                List<MethodDescriptor> scStaticMethods = new LinkedList<>();
+                for(MethodDescriptor m:scMethods) {
+                    if (Modifier.isStatic(m.getModifier())) {
+                        scStaticMethods.add(m);
+                    }
+                }
+                if (!scStaticMethods.isEmpty()) {
+                    clazzType = scType;
+                    namedMethods = scStaticMethods.toArray(new MethodDescriptor[0]);
+                    break;
+                }
+            }
+        }
         try {
-            ObjectType clazzType = getThisType();
-            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,clazzType.getMethodDescriptors(thisClazz, true,true));
+            InvocationExpr.MethodSelection ms = InvocationExpr.applyMethod(clazzType, methodName, args,namedMethods);
             if(Modifier.isStatic(ms.selectedMethod.getModifier())){
-                expr = new StaticInvokeExpr(new ClassReference(thisClazz), ms.selectedMethod, ms.appliedArguments);
+                expr = new StaticInvokeExpr(new ClassReference(clazzType.getClassNode()), ms.selectedMethod, ms.appliedArguments);
             }else{
-                expr = new ObjectInvokeExpr(new ThisExpr(getThisType()), ms.selectedMethod, ms.appliedArguments);
+                expr = new ObjectInvokeExpr(new ThisExpr(clazzType), ms.selectedMethod, ms.appliedArguments);
             }
         } catch (MethodNotFoundException ex) {
             this.methodNotFound(ctx.getStart(), className, methodName, args);
@@ -2419,6 +2453,14 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public DiagnosisReporter getDiagnosisReporter() {
         return diagnosisReporter;
     }
+
+    public void importStaticMember(ClassNode classNode,@Nullable String name) {
+        if (name!=null && !name.isEmpty()) {
+            this.staticImportMembers.put(name,classNode);
+        } else {
+            this.staticImportPaths.add(classNode);
+        }
+    }
     
     private boolean isInConstructor(){
         return "<init>".equals(this.method.getName());
@@ -2691,5 +2733,16 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
             return objType;
         }
         return (ObjectType) type;
+    }
+
+    @Nullable
+    private ExprNode getLambdaCall(String name,ExprNode namedExpr,ExprNode[] args,ParserRuleContext ctx) {
+        Type namedExprType = namedExpr.getType();
+        if(!Types.isFunctionType(namedExprType)){
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,name+" is not callable");
+            return null;
+
+        }
+        return this.getObjectInvokeExpr(namedExpr,"call",args,ctx);
     }
 }
