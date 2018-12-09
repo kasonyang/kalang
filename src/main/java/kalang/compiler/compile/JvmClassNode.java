@@ -92,8 +92,10 @@ public class JvmClassNode extends ClassNode {
                 Type mType;
                 String mName;
                 int mModifier;
+                HashMap<TypeVariable,GenericType> gTypeMap = new HashMap<>(getGenericTypeMap());
+
                 if (m instanceof Method) {
-                    mType = getType(((Method) m).getGenericReturnType(), getGenericTypeMap(), ((Method) m).getReturnType(), nullable);
+                    mType = getType(((Method) m).getGenericReturnType(), gTypeMap , ((Method) m).getReturnType(), nullable);
                     mName = m.getName();
                     mModifier = m.getModifiers();
                 } else if (m instanceof Constructor) {
@@ -106,10 +108,10 @@ public class JvmClassNode extends ClassNode {
                 MethodNode methodNode = createMethodNode(mType, mName, mModifier);
                 for (Parameter p : m.getParameters()) {
                     NullableKind pnullable = getNullable(p.getAnnotations());
-                    methodNode.createParameter(getType(p.getParameterizedType(), getGenericTypeMap(), p.getType(), pnullable), p.getName());
+                    methodNode.createParameter(getType(p.getParameterizedType(), gTypeMap, p.getType(), pnullable), p.getName());
                 }
                 for (Class e : m.getExceptionTypes()) {
-                    methodNode.addExceptionType(getType(e, getGenericTypeMap(), e, NullableKind.NONNULL));
+                    methodNode.addExceptionType(getType(e,gTypeMap, e, NullableKind.NONNULL));
                 }
             }
         }
@@ -141,12 +143,11 @@ public class JvmClassNode extends ClassNode {
     @Nullable
     private Type transType(java.lang.reflect.Type t, Map<TypeVariable, GenericType> genericTypes) {
         if (t instanceof TypeVariable) {
-            GenericType vt = genericTypes.get((TypeVariable) t);
-            //FIXME it may be null if TypeVariable comes from method
-            if (vt != null) {
-                return vt;
+            GenericType vt = genericTypes.get(t);
+            if (vt==null) {
+                vt = this.transTypeVariableToGenericType((TypeVariable) t,genericTypes);
             }
-            return null;
+            return vt;
         } else if (t instanceof java.lang.reflect.ParameterizedType) {
             java.lang.reflect.ParameterizedType pt = (java.lang.reflect.ParameterizedType) t;
             Type rawType = transType(pt.getRawType(), genericTypes);
@@ -234,23 +235,7 @@ public class JvmClassNode extends ClassNode {
             TypeVariable[] typeParameters = clazz.getTypeParameters();
             if (typeParameters.length > 0) {
                 for (TypeVariable pt : typeParameters) {
-                    ObjectType[] bounds = castToClassTypes(transType(pt.getBounds(), gTypesMap));
-                    ObjectType superType;
-                    ObjectType[] interfaces;
-                    if (bounds != null && bounds.length > 0) {
-                        if (ModifierUtil.isInterface(bounds[0].getModifier())) {
-                            superType = Types.getRootType();
-                            interfaces = bounds;
-                        } else {
-                            superType = bounds[0];
-                            interfaces = new ObjectType[bounds.length - 1];
-                            System.arraycopy(bounds, 1, interfaces, 0, interfaces.length);
-                        }
-                    } else {
-                        superType = Types.getRootType();
-                        interfaces = bounds;
-                    }
-                    GenericType gt = new GenericType(pt.getName(), superType, interfaces, NullableKind.NONNULL);
+                    GenericType gt = this.transTypeVariableToGenericType(pt, gTypesMap);
                     gTypesMap.put(pt, gt);
                     declareGenericType(gt);
                 }
@@ -269,6 +254,33 @@ public class JvmClassNode extends ClassNode {
             cts[i] = (ClassType) types[i];
         }
         return cts;
+    }
+
+    private GenericType transTypeVariableToGenericType(TypeVariable pt,Map<TypeVariable,GenericType> gTypesMap){
+        GenericType genericClassType = new GenericType(pt.getName(), Types.getRootType(), new ObjectType[0], NullableKind.NONNULL);
+        gTypesMap.put(pt,genericClassType);
+        ObjectType[] bounds = castToClassTypes(transType(pt.getBounds(), gTypesMap));
+        ObjectType superType;
+        ObjectType[] interfaces;
+        if (bounds != null && bounds.length > 0) {
+            if (ModifierUtil.isInterface(bounds[0].getModifier())) {
+                superType = Types.getRootType();
+                interfaces = bounds;
+            } else {
+                superType = bounds[0];
+                interfaces = new ObjectType[bounds.length - 1];
+                System.arraycopy(bounds, 1, interfaces, 0, interfaces.length);
+            }
+        } else {
+            superType = Types.getRootType();
+            interfaces = bounds;
+        }
+        ClassNode classNode = genericClassType.getClassNode();
+        classNode.setSuperType(superType);
+        for(ObjectType it:interfaces) {
+            classNode.addInterface(it);
+        }
+        return genericClassType;
     }
 
 }

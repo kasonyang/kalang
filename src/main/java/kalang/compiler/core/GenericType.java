@@ -29,4 +29,10 @@ public class GenericType extends ObjectType{
         return name;
     }
 
+    @Override
+    public boolean isAssignableFrom(Type type) {
+        ObjectType superType = getSuperType();
+        Objects.requireNonNull(superType);
+        return superType.isAssignableFrom(type);
+    }
 }
