@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -320,6 +321,33 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
         if(rule!=null) mapAst(ret, rule);
         return ret;
+    }
+
+    protected List<MethodDescriptor> getStaticMethods(ClassNode clazz,String methodName) {
+        ClassType scType = Types.getClassType(clazz);
+        MethodDescriptor[] scMethods = scType.getMethodDescriptors(getCurrentClass(), methodName,true, true);
+        List<MethodDescriptor> scStaticMethods = new LinkedList<>();
+        for(MethodDescriptor m:scMethods) {
+            if (Modifier.isStatic(m.getModifier())) {
+                scStaticMethods.add(m);
+            }
+        }
+        return scStaticMethods;
+    }
+
+    protected List<MethodDescriptor> getStaticImportedMethods(String methodName) {
+        ClassNode classOfStaticImport = compilationUnit.staticImportMembers.get(methodName);
+        if (classOfStaticImport!=null) {
+            return getStaticMethods(classOfStaticImport,methodName);
+        }
+        for (int i=compilationUnit.staticImportPaths.size()-1;i>=0;i--) {
+            ClassNode sc = compilationUnit.staticImportPaths.get(i);
+            List<MethodDescriptor> mds = getStaticMethods(sc, methodName);
+            if (!mds.isEmpty()) {
+                return mds;
+            }
+        }
+        return Collections.EMPTY_LIST;
     }
 
     private String parseTreeToText(ParseTree ctx) {

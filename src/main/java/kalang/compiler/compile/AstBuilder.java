@@ -50,10 +50,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
 
-    private Map<String,ClassNode> staticImportMembers = new HashMap<>();
-
-    private List<ClassNode> staticImportPaths = new LinkedList<>();
-    
     //private Map<MethodNode,List<StatContext>> lambdaStatMap = new HashMap();
     
     private int anonymousClassCounter = 0;
@@ -1941,9 +1937,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     public void importStaticMember(ClassNode classNode,@Nullable String name) {
         if (name!=null && !name.isEmpty()) {
-            this.staticImportMembers.put(name,classNode);
+            compilationUnit.staticImportMembers.put(name,classNode);
         } else {
-            this.staticImportPaths.add(classNode);
+            compilationUnit.staticImportPaths.add(classNode);
         }
     }
     
@@ -2199,32 +2195,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return results;
     }
 
-    private List<MethodDescriptor> getStaticImportedMethods(String methodName) {
-        ClassNode classOfStaticImport = staticImportMembers.get(methodName);
-        if (classOfStaticImport!=null) {
-            return getStaticMethods(classOfStaticImport,methodName);
-        }
-        for (int i=staticImportPaths.size()-1;i>=0;i--) {
-            ClassNode sc = staticImportPaths.get(i);
-            List<MethodDescriptor> mds = getStaticMethods(sc, methodName);
-            if (!mds.isEmpty()) {
-                return mds;
-            }
-        }
-        return Collections.EMPTY_LIST;
-    }
 
-    private List<MethodDescriptor> getStaticMethods(ClassNode clazz,String methodName) {
-        ClassType scType = Types.getClassType(clazz);
-        MethodDescriptor[] scMethods = scType.getMethodDescriptors(thisClazz, methodName,true, true);
-        List<MethodDescriptor> scStaticMethods = new LinkedList<>();
-        for(MethodDescriptor m:scMethods) {
-            if (Modifier.isStatic(m.getModifier())) {
-                scStaticMethods.add(m);
-            }
-        }
-        return scStaticMethods;
-    }
+
 
     private ClassNode createLambdaNode(ClassType inferredLambdaType,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
         ClassType functionType = lambdaExpr.getFunctionType();

@@ -12,6 +12,11 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 import javax.annotation.Nonnull;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import static kalang.compiler.compile.CompilePhase.*;
 
 /**
@@ -35,6 +40,10 @@ public class CompilationUnit {
     private final CompileContext context;
 
     private final TypeNameResolver typeNameResolver = new TypeNameResolver();
+
+    public Map<String,ClassNode> staticImportMembers = new HashMap<>();
+
+    public List<ClassNode> staticImportPaths = new LinkedList<>();
 
     public CompilationUnit(@Nonnull KalangSource source,CompileContext context) {
         this.source = source;
