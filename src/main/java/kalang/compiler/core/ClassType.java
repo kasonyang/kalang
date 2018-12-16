@@ -164,6 +164,9 @@ public class ClassType extends ObjectType {
         if(type instanceof ClassType){
             ClassType other = (ClassType) type;
             if(!nullable.isAssignableFrom(other.getNullable())) return false;
+            if (Types.getFunctionType().equals(type) && Types.getFunctionType().isAssignableFrom(this)) {//TODO optimize required
+                return true;
+            }
             ClassNode otherClazz = other.getClassNode();
             if(!clazz.equals(otherClazz)) return false;
             GenericType[] gts = clazz.getGenericTypes();

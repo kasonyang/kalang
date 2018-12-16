@@ -2539,7 +2539,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
         List<ClassNode> newLambdaClasses = new LinkedList();
         final List<LambdaExpr> lambdaExprs = new LinkedList<>();
-        final Map<LambdaExpr,FunctionType> lambdaTypes = new HashMap();
+        final Map<LambdaExpr,ClassType> lambdaTypes = new HashMap();
         AstVisitor astVisitor = new AstVisitor(){
             @Override
             public Object visitInvocationExpr(InvocationExpr node) {
@@ -2549,7 +2549,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                     for(int i=0;i<args.length;i++) {
                         ExprNode arg = args[i];
                         if (arg instanceof LambdaExpr) {
-                            lambdaTypes.put((LambdaExpr) arg ,(FunctionType)argTypes[i]);
+                            lambdaTypes.put((LambdaExpr) arg ,(ClassType) argTypes[i]);
                         }
                     }
                 }
@@ -2566,7 +2566,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         };
         astVisitor.visit(classNode);
         for (LambdaExpr lambdaExpr:lambdaExprs) {
-            FunctionType functionType = lambdaExpr.getFunctionType();
+            ClassType functionType = lambdaExpr.getFunctionType();
             if (functionType==null) {
                 functionType = lambdaTypes.get(lambdaExpr);
             }
@@ -2595,9 +2595,13 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         }
     }
     
-    private ClassNode createFunctionClassNode(FunctionType type,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
-        Type returnType = type.getReturnType();
-        Type[] paramTypes = type.getParameterTypes();
+    private ClassNode createFunctionClassNode(ClassType type,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
+        Type[] typeArguments = type.getTypeArguments();
+        Type returnType = typeArguments[0];
+        Type[] paramTypes = new Type[typeArguments.length-1];
+        if (paramTypes.length>0){
+            System.arraycopy(typeArguments,1,paramTypes,0,paramTypes.length);
+        }
         String lambdaName = this.thisClazz.name + "$" + ++anonymousClassCounter;
         ClassNode oldClass = thisClazz;
         MethodNode oldMethod = method;

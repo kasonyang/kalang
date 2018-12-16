@@ -820,6 +820,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 ,method.getName()
                 ,getMethodDescriptor(method.getMethodNode())
         );
+        String expectedReturnType = internalName(method.getReturnType());
+        String actualReturnType = internalName(method.getMethodNode().getType());
+        if (!expectedReturnType.equals(actualReturnType)) {
+            md.visitTypeInsn(CHECKCAST,expectedReturnType);
+        }
         return null;
     }
 
