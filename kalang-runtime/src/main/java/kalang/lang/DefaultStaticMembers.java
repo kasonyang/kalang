@@ -53,4 +53,20 @@ public class DefaultStaticMembers {
         return findAll(Arrays.asList(list), handler);
     }
 
+    @Nonnull
+    public static <R,E> List<R> map(Collection<E> list,Function1<R,E> handler) {
+        List<R> result = new LinkedList<>();
+        for(E it : list) {
+            result.add(handler.call(it));
+        }
+        return result;
+    }
+
+    @Nonnull
+    public static <R,E> List<R> map(E[] list,Function1<R,E> handler) {
+        return map(Arrays.asList(list),handler);
+    }
+
+
+
 }

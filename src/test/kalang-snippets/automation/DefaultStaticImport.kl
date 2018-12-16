@@ -1,3 +1,10 @@
 int testFind(){
     return find(<Integer>[5,6,7],{ it => return it == 6; } );
 }
+
+/*
+int testMap() {
+    var lens = map(<Integer>[123456],{ it => return String.valueOf(it); });
+    return Integer.parseInt(lens.get(0).length());
+}
+*/
