@@ -897,7 +897,11 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
     public void methodIsAmbiguous(Token token , AmbiguousMethodException ex){
         diagnosisReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), token);
     }
-    
+
+    public void methodNotFound(Token token , Type type,String methodName,ExprNode[] params){
+        methodNotFound(token,type.getName(),methodName,params);
+    }
+
     public void methodNotFound(Token token , String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
         diagnosisReporter.report(Diagnosis.Kind.ERROR
@@ -1347,7 +1351,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 expr = new ObjectInvokeExpr(new ThisExpr(clazzType), ms.selectedMethod, ms.appliedArguments);
             }
         } catch (MethodNotFoundException ex) {
-            this.methodNotFound(ctx.getStart(), className, methodName, args);
+            this.methodNotFound(ctx.getStart(), clazzType, methodName, args);
             expr = new UnknownInvocationExpr(null, methodName, args);
         } catch (AmbiguousMethodException ex) {
             methodIsAmbiguous(ctx.start, ex);
@@ -1394,7 +1398,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
                 expr = invoke;
             }
         } catch (MethodNotFoundException ex) {
-            methodNotFound(ctx.start, className, methodName, args);
+            methodNotFound(ctx.start, targetType, methodName, args);
             expr= new UnknownInvocationExpr(target,methodName,args);
         } catch(AmbiguousMethodException ex){
             methodIsAmbiguous(ctx.start,ex);
@@ -1419,7 +1423,7 @@ public class AstBuilder extends AbstractParseTreeVisitor implements KalangParser
         try {
             expr = StaticInvokeExpr.create(clazz, methodName, args);
         } catch (MethodNotFoundException ex) {
-            methodNotFound(ctx.start, className, methodName, args);
+            methodNotFound(ctx.start, clazz.getReferencedClassNode().name, methodName, args);
             expr = new UnknownInvocationExpr(clazz, methodName , args);
         } catch(AmbiguousMethodException ex){
             methodIsAmbiguous(ctx.start, ex);
