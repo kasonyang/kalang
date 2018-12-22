@@ -25,10 +25,9 @@ import java.util.Map;
  *
  * @author Kason Yang
  */
-public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
+public class ClassNodeMetaBuilder extends AstBuilderBase {
 
     AstBuilder astBuilder;
-    private final ClassNodeBuilder classNodeBuilder;
     private ClassNode thisClazz;
     
     private Map<MethodNode,KalangParser.StatContext[]> methodStatsContexts = new HashMap();
@@ -40,27 +39,23 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     private final CompilationUnit compilationUnit;
     private DiagnosisReporter diagnosisReporter;
     
-    public ClassNodeMetaBuilder(CompilationUnit compilationUnit, AstBuilder astBuilder, ClassNodeBuilder classNodeBuilder) {
+    public ClassNodeMetaBuilder(CompilationUnit compilationUnit, AstBuilder astBuilder) {
+        super(compilationUnit);
         this.compilationUnit = compilationUnit;
         this.astBuilder = astBuilder;
-        this.classNodeBuilder = classNodeBuilder;
         this.diagnosisReporter = new DiagnosisReporter(this.compilationUnit);
     }
 
-    public void build(ClassNode cn,boolean inScriptMode) {
+    public void build(ClassNode cn,ParserRuleContext ctx) {
         this.thisClazz = cn;
         astBuilder.thisClazz = cn;
-        ParserRuleContext ctx = classNodeBuilder.getClassNodeDefContext(cn);
-        if(ctx!=null) visit(ctx);
-        for (ClassNode c : cn.classes) {
-            build(c,false);
-        }
-    }    
+        visit(ctx);
+    }
 
     @Override
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
         thisClazz.annotations.addAll(astBuilder.getAnnotations(ctx.annotation()));
-        thisClazz.modifier = astBuilder.parseModifier(ctx.varModifier());
+        thisClazz.modifier = parseModifier(ctx.varModifier());
         List<Token> gnrTypes = ctx.genericTypes;
         if (gnrTypes != null && !gnrTypes.isEmpty()) {
             for (Token g : gnrTypes) {
@@ -174,7 +169,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
             name = ctx.name.getText();
         }
         List<KalangParser.TypeContext> paramTypesCtx = ctx.paramTypes;
-        int modifier = astBuilder.parseModifier(ctx.varModifier());
+        int modifier = parseModifier(ctx.varModifier());
         Type[] paramTypes;
         String[] paramNames;
         if (paramTypesCtx != null) {
@@ -243,7 +238,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
                 }
             }
         }
-        astBuilder.mapAst(method, ctx);
+        mapAst(method, ctx);
         MethodNode m = method;
         method=null;
         return m;
@@ -267,7 +262,7 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
     
     @Override
     public Void visitFieldDecl(KalangParser.FieldDeclContext ctx) {
-        int fieldModifier = astBuilder.parseModifier(ctx.varModifier());
+        int fieldModifier = parseModifier(ctx.varModifier());
         for(KalangParser.VarDeclContext vd:ctx.varDecl()){
             ExprNode initExpr;
             if(vd.expression()!=null){
@@ -324,26 +319,17 @@ public class ClassNodeMetaBuilder extends KalangParserBaseVisitor<Object> {
         AstUtil.createScriptMainMethodIfNotExists(thisClazz);
         return null;
     }
-    
-    
-    public MethodDeclContext getMethodDeclContext(MethodNode mn){
-        return this.methodContexts.get(mn);
-    }
         
     private ObjectType getScriptType(){
         CompileContext context = this.compilationUnit.getCompileContext();
         Configuration conf = context.getConfiguration();
         AstLoader astLoader = context.getAstLoader();
-        ObjectType baseClass = this.classNodeBuilder.getOptionScriptBaseType();
-        if(baseClass==null){
-            String defaultBaseClass = conf.getScriptBaseClass();
-            try{
-                baseClass = Types.getClassType(astLoader.loadAst(defaultBaseClass));
-            }catch (AstNotFoundException ex) {
-                throw Exceptions.missingRuntimeClass(defaultBaseClass);
-            }
+        String defaultBaseClass = conf.getScriptBaseClass();
+        try{
+            return Types.getClassType(astLoader.loadAst(defaultBaseClass));
+        }catch (AstNotFoundException ex) {
+            throw Exceptions.missingRuntimeClass(defaultBaseClass);
         }
-        return baseClass;
     }
 
 }
