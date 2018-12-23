@@ -1,5 +1,6 @@
 package kalang.compiler.compile;
 
+import kalang.annotation.PluginMethod;
 import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.FieldNotFoundException;
 import kalang.compiler.MethodNotFoundException;
@@ -1171,25 +1172,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             return this.getLambdaCall(methodName,(FieldExpr)namedNode,args,ctx);
         }
         if (namedMethods.length<=0) {
-            ClassNode classOfStaticImport = staticImportMembers.get(methodName);
-            if (classOfStaticImport!=null) {
-                return this.getStaticInvokeExpr(new ClassReference(classOfStaticImport),methodName,args,ctx);
-            }
-            for (int i=staticImportPaths.size()-1;i>=0;i--) {
-                ClassNode sc = staticImportPaths.get(i);
-                ClassType scType = Types.getClassType(sc);
-                MethodDescriptor[] scMethods = scType.getMethodDescriptors(thisClazz, methodName,true, true);
-                List<MethodDescriptor> scStaticMethods = new LinkedList<>();
-                for(MethodDescriptor m:scMethods) {
-                    if (Modifier.isStatic(m.getModifier())) {
-                        scStaticMethods.add(m);
-                    }
-                }
-                if (!scStaticMethods.isEmpty()) {
-                    clazzType = scType;
-                    namedMethods = scStaticMethods.toArray(new MethodDescriptor[0]);
-                    break;
-                }
+            namedMethods = getStaticImportedMethods(methodName).toArray(new MethodDescriptor[0]);
+            if (namedMethods.length>=0) {
+                clazzType = Types.getClassType(namedMethods[0].getMethodNode().getClassNode());
             }
         }
         try {
@@ -1233,9 +1218,33 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             handleSyntaxError("expression may be null", ctx);
             return null;
         }
+        MethodDescriptor[] methods = targetClassType.getMethodDescriptors(thisClazz, methodName, true, true);
         ExprNode expr;
         try {
-            ObjectInvokeExpr invoke = ObjectInvokeExpr.create(target, methodName, args,thisClazz);
+            if (methods.length<=0) {//find plugin method
+                List<MethodDescriptor> pluginMethods = getImportedPluginMethod(methodName);
+                if (!pluginMethods.isEmpty()) {
+                    ClassNode pluginClass = pluginMethods.get(0).getMethodNode().getClassNode();
+                    LinkedList<ExprNode> newArgs = new LinkedList();
+                    newArgs.add(target);
+                    newArgs.addAll(Arrays.asList(args));
+                    try {
+                        return StaticInvokeExpr.create(
+                                new ClassReference(pluginClass)
+                                , methodName
+                                , newArgs.toArray(new ExprNode[0])
+                        );
+                    }catch(MethodNotFoundException ex) {
+                        methodNotFound(ctx.start,pluginClass.name,methodName,newArgs.toArray(new ExprNode[0]));
+                    }
+                }
+            }
+            InvocationExpr.MethodSelection ms = ObjectInvokeExpr.applyMethod(targetClassType, methodName, args,methods);
+            ExecutableDescriptor md = ms.selectedMethod;
+            if(AstUtil.isStatic(md.getModifier())){
+                throw new MethodNotFoundException(methodName + " is static");
+            }
+            ObjectInvokeExpr invoke = new ObjectInvokeExpr(target, md, ms.appliedArguments);
             if(invoke.getMethod().getMethodNode().getType() instanceof GenericType){
                 Type invokeType = invoke.getType();
                 if(invokeType instanceof ObjectType){
@@ -2471,4 +2480,43 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             buildClassNodeMeta(c);
         }
     }
+
+    private List<MethodDescriptor> getImportedPluginMethod(String methodName) {
+        List<MethodDescriptor> results = new LinkedList<>();
+        Collection<MethodDescriptor> staticImportedMds = getStaticImportedMethods(methodName);
+        for(MethodDescriptor m:staticImportedMds) {
+            if (AnnotationUtil.has(m.getMethodNode().getAnnotations(), PluginMethod.class.getName())) {
+                results.add(m);
+            }
+        }
+        return results;
+    }
+
+    private List<MethodDescriptor> getStaticImportedMethods(String methodName) {
+        ClassNode classOfStaticImport = staticImportMembers.get(methodName);
+        if (classOfStaticImport!=null) {
+            return getStaticMethods(classOfStaticImport,methodName);
+        }
+        for (int i=staticImportPaths.size()-1;i>=0;i--) {
+            ClassNode sc = staticImportPaths.get(i);
+            List<MethodDescriptor> mds = getStaticMethods(sc, methodName);
+            if (!mds.isEmpty()) {
+                return mds;
+            }
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    private List<MethodDescriptor> getStaticMethods(ClassNode clazz,String methodName) {
+        ClassType scType = Types.getClassType(clazz);
+        MethodDescriptor[] scMethods = scType.getMethodDescriptors(thisClazz, methodName,true, true);
+        List<MethodDescriptor> scStaticMethods = new LinkedList<>();
+        for(MethodDescriptor m:scMethods) {
+            if (Modifier.isStatic(m.getModifier())) {
+                scStaticMethods.add(m);
+            }
+        }
+        return scStaticMethods;
+    }
+
 }
