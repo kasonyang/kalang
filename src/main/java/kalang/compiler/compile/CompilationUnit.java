@@ -8,6 +8,8 @@ import kalang.helper.ArrayPlugin;
 import kalang.helper.CollectionPlugin;
 import kalang.helper.PrintHelper;
 import kalang.helper.StringPlugin;
+import kalang.compiler.core.Types;
+import kalang.lang.DefaultStaticMembers;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import javax.annotation.Nonnull;

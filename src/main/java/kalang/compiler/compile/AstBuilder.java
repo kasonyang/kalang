@@ -50,6 +50,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
 
+    private Map<String,ClassNode> staticImportMembers = new HashMap<>();
+
+    private List<ClassNode> staticImportPaths = new LinkedList<>();
+
     //private Map<MethodNode,List<StatContext>> lambdaStatMap = new HashMap();
     
     private int anonymousClassCounter = 0;
@@ -272,7 +276,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public ClassNode getAst() {
         return this.topClass;
     }
-    
+
     @Override
     public ThrowStmt visitThrowStat(KalangParser.ThrowStatContext ctx) {
         ThrowStmt ts = new ThrowStmt(visitExpression(ctx.expression()));
@@ -842,7 +846,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return expr;
     }
-    
+
     @Nullable
     private ExprNode concatExpressionsToStringExpr(ExprNode[] expr,Token[] startTokens){
         ExprNode ret;
@@ -1490,7 +1494,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return expr;
     }
-    
+
     protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName,@Nullable ParserRuleContext rule){
         ExprNode ret;
         Type type = expr.getType();
@@ -1606,7 +1610,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return ms;
     }
-    
+
     @Nullable
     private ExprNode getOuterClassInstanceExpr(ExprNode expr){
         return this.getObjectFieldExpr(expr, "this$0", null);
@@ -1942,7 +1946,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             compilationUnit.staticImportPaths.add(classNode);
         }
     }
-    
+
     private boolean isInConstructor(){
         return "<init>".equals(this.methodCtx.method.getName());
     }
