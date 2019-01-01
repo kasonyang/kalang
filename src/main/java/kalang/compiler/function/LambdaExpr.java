@@ -43,6 +43,10 @@ public class LambdaExpr extends MultiStmtExpr {
         this.initExpr = initExpr;
     }
 
+    public ExprNode getInitExpr() {
+        return initExpr;
+    }
+
     public void putAccessibleVarObject(String name, VarObject var) {
         accessibleVarObjects.put(name, var);
     }
@@ -54,6 +58,13 @@ public class LambdaExpr extends MultiStmtExpr {
 
     public Map<String, VarObject> getAccessibleVarObjects() {
         return new HashMap(accessibleVarObjects);
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
+        List<AstNode> list = new LinkedList();
+        list.addAll(getStatements());
+        return list;
     }
 
     @Override

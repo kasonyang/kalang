@@ -19,7 +19,10 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -793,7 +796,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitInvocationExpr(InvocationExpr node) {
         int opc;
-        ExecutableDescriptor method = node.getMethod();
+        MethodDescriptor method = node.getMethod();
         String ownerClass;// = internalName(node.getMethod().classNode);
         if (node instanceof StaticInvokeExpr) {
             opc = INVOKESTATIC;
@@ -820,6 +823,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 ,method.getName()
                 ,getMethodDescriptor(method.getMethodNode())
         );
+        String expectedReturnType = internalName(method.getReturnType());
+        String actualReturnType = internalName(method.getMethodNode().getType());
+        if (!expectedReturnType.equals(actualReturnType)) {
+            md.visitTypeInsn(CHECKCAST,expectedReturnType);
+        }
         return null;
     }
 

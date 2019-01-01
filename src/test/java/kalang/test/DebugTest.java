@@ -1,7 +1,6 @@
 package kalang.test;
 
 import kalang.compiler.shell.Kalangsh;
-import kalang.compiler.tool.KalangShell;
 import org.junit.Assert;
 import org.junit.Test;
 

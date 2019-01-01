@@ -1,0 +1,13 @@
+int testFind(){
+    return find(<Integer>[5,6,7],{ it => return it == 6; } );
+}
+
+int testPluginFind() {
+    var list = <Integer>[3,4,5,6];
+    return list.find({ it => return it == 5; }) + 1;
+}
+
+int testMap() {
+    var lens = map(<Integer>[123456],{ it => return String.valueOf(it); });
+    return lens.get(0).length();
+}

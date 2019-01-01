@@ -2,8 +2,6 @@ package kalang.compiler.util;
 
 import kalang.compiler.ast.MethodNode;
 import kalang.compiler.ast.ParameterNode;
-import kalang.compiler.core.ConstructorDescriptor;
-import kalang.compiler.core.ExecutableDescriptor;
 import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.Type;
 
@@ -94,11 +92,11 @@ public class MethodUtil {
     }
     
     @Nullable
-    private static ExecutableDescriptor getExecutableDescriptor(ExecutableDescriptor[] methods,String name,@Nullable Type[] parameterTypes){
+    public static MethodDescriptor getMethodDescriptor(MethodDescriptor[] methods,String name,@Nullable Type[] parameterTypes){
         if(parameterTypes==null){
             parameterTypes = new Type[0];
         }
-        for(ExecutableDescriptor m:methods){
+        for(MethodDescriptor m:methods){
             if(!m.getName().equals(name)) continue;
             Type[] mParams = m.getParameterTypes();
             if(!Arrays.equals(mParams, parameterTypes)) continue;
@@ -108,23 +106,13 @@ public class MethodUtil {
     }
     
     @Nullable
-    public static ExecutableDescriptor getExecutableDescriptor(ExecutableDescriptor[] methods,String declarationkey) {
-        for (ExecutableDescriptor m:methods) {
+    public static MethodDescriptor getMethodDescriptor(MethodDescriptor[] methods,String declarationkey) {
+        for (MethodDescriptor m:methods) {
             if (declarationkey.equals(m.getDeclarationKey())) {
                 return m;
             }
         }
         return null;
-    }
-    
-    @Nullable
-    public static ConstructorDescriptor getConstructorDescriptor(ConstructorDescriptor[] constructors,@Nullable Type[] paramTypes){
-        return (ConstructorDescriptor) getExecutableDescriptor(constructors,"<init>", paramTypes);
-    }
-    
-    @Nullable
-    public static MethodDescriptor getMethodDescriptor(MethodDescriptor[] methods, String name,@Nullable Type[] paramTypes){
-        return (MethodDescriptor) getExecutableDescriptor(methods, name, paramTypes);
     }
 
 }

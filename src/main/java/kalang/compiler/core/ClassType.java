@@ -164,6 +164,9 @@ public class ClassType extends ObjectType {
         if(type instanceof ClassType){
             ClassType other = (ClassType) type;
             if(!nullable.isAssignableFrom(other.getNullable())) return false;
+            if (Types.getFunctionType().equals(type) && Types.getFunctionType().isAssignableFrom(this)) {//TODO optimize required
+                return true;
+            }
             ClassNode otherClazz = other.getClassNode();
             if(!clazz.equals(otherClazz)) return false;
             GenericType[] gts = clazz.getGenericTypes();
@@ -194,6 +197,16 @@ public class ClassType extends ObjectType {
             superType =(ObjectType) parseType(superType);
         }
         return superType;
-    }    
+    }
+
+    public ClassType toParameterized(Map<GenericType,Type> genericTypeTypeMap) {
+        GenericType[] gts = clazz.getGenericTypes();
+        Type[] typeArgs = new Type[gts.length];
+        for(int i=0;i<typeArgs.length;i++) {
+            Type aType = genericTypeTypeMap.get(gts[i]);
+            typeArgs[i] = aType==null ? gts[i] : aType;
+        }
+        return Types.getClassType(clazz,typeArgs);
+    }
 
 }

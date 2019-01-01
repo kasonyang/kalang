@@ -1,0 +1,15 @@
+void voidTypeTest() {
+    val cb = &Void(){
+        println("test");
+        return null;
+    };
+    cb();
+}
+
+void voidTypeTest2() {
+    val cb = &Void(){
+        println("test");
+        return;
+    };
+    cb();
+}

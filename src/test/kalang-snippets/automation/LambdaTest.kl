@@ -4,3 +4,10 @@ int lambdaExprTest() {
     };
     return Integer.parseInt(cb.call("3")) + Integer.parseInt(cb("3"));
 }
+
+int lambdaInvokeTest() {
+    val cb = &Integer() {
+        return lambdaExprTest();
+    };
+    return cb();
+}
