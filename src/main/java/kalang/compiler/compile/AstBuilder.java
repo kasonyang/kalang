@@ -171,7 +171,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if(targetPhase>=PARSING_PHASE_META
                 && parsingPhase < PARSING_PHASE_META){
             parsingPhase = PARSING_PHASE_META;
-            this.classNodeMetaBuilder = new ClassNodeMetaBuilder(this.compilationUnit, this);
+            this.classNodeMetaBuilder = new ClassNodeMetaBuilder(this.compilationUnit, parser);
             buildClassNodeMeta(topClass);
         }
         if(targetPhase>=PARSING_PHASE_ALL
