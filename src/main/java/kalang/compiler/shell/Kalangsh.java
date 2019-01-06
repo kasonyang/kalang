@@ -1,5 +1,6 @@
 package kalang.compiler.shell;
 
+import kalang.compiler.CompileException;
 import kalang.compiler.compile.Configuration;
 import kalang.compiler.tool.KalangShell;
 import kalang.compiler.util.ClassExecutor;
@@ -68,6 +69,9 @@ public class Kalangsh extends ShellBase {
                 }
             }
             return Constant.SUCCESS;
+        } catch (CompileException ex) {
+            System.err.println(ex.getMessage());
+            return Constant.ERR_COMPILE_ERROR;
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
             return Constant.ERR_UNKNOWN_EXCEPTION;
