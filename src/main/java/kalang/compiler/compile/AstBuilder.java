@@ -45,16 +45,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             PARSING_PHASE_META = 2,
             PARSING_PHASE_ALL = 3;
 
-    private ClassNodeBuilder classNodeBuilder;
-    private ClassNodeMetaBuilder classNodeMetaBuilder;
+    private ClassNodeInitializer classNodeInitializer;
+    private ClassNodeStructureBuilder classNodeStructureBuilder;
 
     private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
-
-    private Map<String,ClassNode> staticImportMembers = new HashMap<>();
-
-    private List<ClassNode> staticImportPaths = new LinkedList<>();
-
-    //private Map<MethodNode,List<StatContext>> lambdaStatMap = new HashMap();
     
     private int anonymousClassCounter = 0;
 
@@ -165,13 +159,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             for(ImportDeclContext ic:cunit.importDecl()){
                 this.visitImportDecl(ic);
             }
-            this.classNodeBuilder = new ClassNodeBuilder(this.compilationUnit);
-            topClass = classNodeBuilder.build(cunit);
+            this.classNodeInitializer = new ClassNodeInitializer(this.compilationUnit);
+            topClass = classNodeInitializer.build(cunit);
         }
         if(targetPhase>=PARSING_PHASE_META
                 && parsingPhase < PARSING_PHASE_META){
             parsingPhase = PARSING_PHASE_META;
-            this.classNodeMetaBuilder = new ClassNodeMetaBuilder(this.compilationUnit, parser);
+            this.classNodeStructureBuilder = new ClassNodeStructureBuilder(this.compilationUnit, parser);
             buildClassNodeMeta(topClass);
         }
         if(targetPhase>=PARSING_PHASE_ALL
@@ -187,7 +181,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         thisClazz = clazz;
         for(MethodNode m:thisClazz.getDeclaredMethodNodes()){
             BlockStmt mbody = m.getBody();
-            StatContext[] stats = classNodeMetaBuilder.getStatContexts(m);
+            StatContext[] stats = classNodeStructureBuilder.getStatContexts(m);
             if(stats!=null){
                 enterMethod(m);
                 visitBlockStmt(stats,mbody);
@@ -2179,9 +2173,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     private void buildClassNodeMeta(ClassNode cn) {
-        ParserRuleContext ctx = classNodeBuilder.getClassNodeDefContext(cn);
+        ParserRuleContext ctx = classNodeInitializer.getClassNodeDefContext(cn);
         if (ctx!=null) {
-            classNodeMetaBuilder.build(topClass,cn,ctx);
+            classNodeStructureBuilder.build(topClass,cn,ctx);
         }
         for(ClassNode c:cn.classes) {
             buildClassNodeMeta(c);
