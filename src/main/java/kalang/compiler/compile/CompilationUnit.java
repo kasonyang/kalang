@@ -4,16 +4,13 @@ import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.core.Types;
-import kalang.helper.ArrayPlugin;
 import kalang.helper.CollectionPlugin;
+import kalang.helper.FilePlugin;
 import kalang.helper.PrintHelper;
 import kalang.helper.StringPlugin;
-import kalang.compiler.core.Types;
-import kalang.lang.DefaultStaticMembers;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import javax.annotation.Nonnull;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +58,7 @@ public class CompilationUnit {
         astBuilder.importPackage("java.io");
         astBuilder.importPackage("java.nio");
         astBuilder.importPackage("kalang.io");
-        astBuilder.importStaticMember(Types.requireClassType(ArrayPlugin.class.getName()).getClassNode(),null);
+        astBuilder.importStaticMember(Types.requireClassType(FilePlugin.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(CollectionPlugin.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(PrintHelper.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(StringPlugin.class.getName()).getClassNode(),null);
