@@ -24,7 +24,7 @@ import java.util.Map;
  *
  * @author Kason Yang
  */
-public class ClassNodeMetaBuilder extends AstBuilder {
+public class ClassNodeStructureBuilder extends AstBuilder {
 
     //private AstBuilder astBuilder;
     private ClassNode thisClazz;
@@ -37,7 +37,7 @@ public class ClassNodeMetaBuilder extends AstBuilder {
     private final CompilationUnit compilationUnit;
     private DiagnosisReporter diagnosisReporter;
     
-    public ClassNodeMetaBuilder(CompilationUnit compilationUnit, KalangParser parser) {
+    public ClassNodeStructureBuilder(CompilationUnit compilationUnit, KalangParser parser) {
         super(compilationUnit,parser);
         this.compilationUnit = compilationUnit;
         //this.astBuilder = astBuilder;

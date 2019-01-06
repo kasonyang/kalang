@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author Kason Yang
  */
-public class ClassNodeBuilder extends AstBuilderBase {
+public class ClassNodeInitializer extends AstBuilderBase {
 
     private final String className;
 
@@ -30,7 +30,7 @@ public class ClassNodeBuilder extends AstBuilderBase {
     private final CompilationUnit compilationUnit;
     private final DiagnosisReporter diagnosisReporter;
 
-    public ClassNodeBuilder(CompilationUnit compilationUnit) {
+    public ClassNodeInitializer(CompilationUnit compilationUnit) {
         super(compilationUnit);
         className = compilationUnit.getSource().getClassName();
         this.compilationUnit = compilationUnit;
