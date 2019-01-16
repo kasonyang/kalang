@@ -54,7 +54,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     @Override
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
         thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
-        thisClazz.modifier = parseModifier(ctx.varModifier());
+        //thisClazz.modifier = parseModifier(ctx.varModifier());
         List<Token> gnrTypes = ctx.genericTypes;
         if (gnrTypes != null && !gnrTypes.isEmpty()) {
             for (Token g : gnrTypes) {
