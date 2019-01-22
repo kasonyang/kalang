@@ -69,14 +69,14 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             if (parentClass != null) {
                 superType = parentClass;
             }
-        } else {
-            superType = Types.getRootType();
         }
         if (Modifier.isInterface(thisClazz.modifier)) {
             //TODO update syntax to support:interface extends T1,T2...
-            thisClazz.addInterface(superType);
+            if (superType!=null) {
+                thisClazz.addInterface(superType);
+            }
         } else {
-            thisClazz.setSuperType(superType);
+            thisClazz.setSuperType(superType==null?Types.getRootType():superType);
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
