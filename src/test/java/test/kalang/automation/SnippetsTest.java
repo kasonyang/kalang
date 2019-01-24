@@ -37,6 +37,7 @@ public class SnippetsTest {
             return;
         }
         KalangShell shell = new KalangShell();
+        shell.addSourcePath(file.getParentFile());
         Class<?> hwCls = shell.parse(file);
         if(!checkReturnValue) {
             return;

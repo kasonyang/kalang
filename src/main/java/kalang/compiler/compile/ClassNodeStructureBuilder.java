@@ -144,7 +144,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     }
 
     private boolean isNonStaticInnerClass(ClassNode clazz) {
-        return clazz.enclosingClass != null && !Modifier.isStatic(clazz.modifier);
+        return clazz.enclosingClass != null && !Modifier.isStatic(clazz.modifier) && !Modifier.isInterface(clazz.modifier);
     }
 
     private boolean isDeclaringNonStaticInnerClass() {
