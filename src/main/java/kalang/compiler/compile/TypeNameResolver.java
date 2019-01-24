@@ -60,8 +60,8 @@ public class TypeNameResolver {
         if (simpleToFullNames.containsKey(id)) {
             return this.fixInnerClassName(simpleToFullNames.get(id));
         } else if (id.contains("$")){
-            String[] idParts = id.split("\\$",2);
-            String outerClassName = simpleToFullNames.get(idParts[0]);
+            String[] idParts = id.split("\\$");
+            String outerClassName = this.resolve(idParts[0],topClass,declaringClass);
             if (outerClassName==null){
                 return null;
             }
