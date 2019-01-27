@@ -116,4 +116,9 @@ public class CollectionPlugin {
         return sb.toString();
     }
 
+    @PluginMethod
+    public static <T> List<T> asList(T[] array) {
+        return Arrays.asList(array);
+    }
+
 }
