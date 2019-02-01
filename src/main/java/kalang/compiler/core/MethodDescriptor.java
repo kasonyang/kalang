@@ -69,10 +69,8 @@ public class MethodDescriptor extends ExecutableDescriptor {
             Type declComponentType = ((ArrayType) declaredType).getComponentType();
             Type actualComponentType = ((ArrayType) actualArgType).getComponentType();
             inferGeneric(declComponentType, actualComponentType, resultMap);
-        } else if (Types.NULL_TYPE.equals(actualArgType)){
+        } else{
             //do nothing
-        } else {
-            throw new InvalidParameterException();
         }
     }
 
