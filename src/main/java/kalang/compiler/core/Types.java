@@ -395,6 +395,7 @@ public class Types {
         HashMap<PrimitiveType, List> baseMap = new HashMap();
         baseMap.put(BYTE_TYPE,Arrays.asList(new PrimitiveType[]{INT_TYPE,LONG_TYPE,FLOAT_TYPE,DOUBLE_TYPE}));
         baseMap.put(INT_TYPE, Arrays.asList(new PrimitiveType[]{LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE}));
+        baseMap.put(CHAR_TYPE,Arrays.asList(new PrimitiveType[]{INT_TYPE,LONG_TYPE,FLOAT_TYPE,DOUBLE_TYPE}));
         baseMap.put(LONG_TYPE, Arrays.asList(new PrimitiveType[]{FLOAT_TYPE, DOUBLE_TYPE}));
         baseMap.put(FLOAT_TYPE, Arrays.asList(new PrimitiveType[]{DOUBLE_TYPE}));
         baseMap.put(DOUBLE_TYPE, new LinkedList());
