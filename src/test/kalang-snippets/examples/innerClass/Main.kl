@@ -1,0 +1,5 @@
+static class MyType implements Model::Type {
+
+}
+var type = new MyType();
+println(type);
