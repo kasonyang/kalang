@@ -159,10 +159,20 @@ public class Types {
     public static PrimitiveType getPrimitiveType(ObjectType classType){
         return primitive2class.getKey(classType.getName());
     }
-    
+
+    @Deprecated
     public static ObjectType requireClassType(String className){
         try {
             return Types.getClassType(className);
+        } catch (AstNotFoundException ex) {
+            Logger.getLogger(Types.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException("failed to load class type:"+className);
+        }
+    }
+
+    public static ObjectType requireClassType(String className,NullableKind nullableKind){
+        try {
+            return Types.getClassType(className,nullableKind);
         } catch (AstNotFoundException ex) {
             Logger.getLogger(Types.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException("failed to load class type:"+className);
@@ -374,6 +384,10 @@ public class Types {
 
     public static ObjectType getFunctionType() {
         return requireClassType(FUNCTION_CLASS_NAME);
+    }
+
+    public static ObjectType getFakeFunctionType() {
+        return Types.requireClassType(FakeFunction.class.getName(),NullableKind.UNKNOWN);
     }
 
     public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {

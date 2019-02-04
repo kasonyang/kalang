@@ -1578,7 +1578,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 functionType = (FunctionType) lambdaType;
             }
         }
-        Type type = functionType!=null ? functionType : Types.requireClassType(Types.FUNCTION_CLASS_NAME);
+        Type type = functionType!=null ? functionType : Types.getFakeFunctionType();
         LocalVarNode tmpVar = this.declareTempLocalVar(type);
         LambdaExpr ms = new LambdaExpr(tmpVar,functionType);
         Map<String,VarObject> accessibleVars = new HashMap();
