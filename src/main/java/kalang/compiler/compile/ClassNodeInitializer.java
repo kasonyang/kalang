@@ -56,10 +56,9 @@ public class ClassNodeInitializer extends AstBuilderBase {
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
         this.isScript = true;
         this.inScriptMode = true;
-        //FIXME fix fileName
-        //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         int modifier = Modifier.PUBLIC;
         topClass = thisClazz = new ClassNode(className, modifier);
+        thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         this.defContext.put(topClass, ctx);
         super.visitScriptDef(ctx);
         return null;
@@ -99,8 +98,7 @@ public class ClassNodeInitializer extends AstBuilderBase {
             oldClass.classes.add(thisClazz);
             thisClazz.enclosingClass = oldClass;
         }
-        //FIXME fix file name
-        //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
+        thisClazz.fileName = compilationUnit.getSource().getFileName();
         boolean oldScriptMode = this.inScriptMode;
         this.inScriptMode = false;
         visit(ctx.classBody());
