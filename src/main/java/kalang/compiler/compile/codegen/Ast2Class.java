@@ -229,7 +229,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             interfaces = internalName(node.getInterfaces());
         }
         int access = node.modifier;
-        classWriter.visit(V1_6, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);        String fileName = node.fileName;
+        classWriter.visit(V1_6, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);
+        String fileName = node.fileName;
         if(fileName!=null && !fileName.isEmpty()){
             classWriter.visitSource(fileName, null);
         }
