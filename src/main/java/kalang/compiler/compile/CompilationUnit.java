@@ -74,9 +74,6 @@ public class CompilationUnit {
             parseMeta(context.getDiagnosisHandler());
         }else if(phase == PHASE_BUILDAST){
             parseBody(context.getDiagnosisHandler());
-        }else if(phase==PHASE_SEMANTIC){
-            //TODO remove PHASE_SEMANTIC
-            //semanticAnalysis(context.getDiagnosisHandler());
         }else if(phase == PHASE_CLASSGEN){
             CodeGenerator codeGenerator = context.createCodeGenerator(this);
             if(codeGenerator==null){

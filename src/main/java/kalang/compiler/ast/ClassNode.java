@@ -111,5 +111,9 @@ public class ClassNode extends AstNode implements Annotationable{
     public void setSuperType(ObjectType superType) {
         this.superType = superType;
     }
-    
+
+    @Override
+    public String toString() {
+        return "ClassNode " + this.name;
+    }
 }
