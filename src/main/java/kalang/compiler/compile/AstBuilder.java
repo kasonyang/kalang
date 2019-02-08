@@ -2023,6 +2023,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ClassNode oldClass = thisClazz;
         MethodContext oldMethodCtx = this.methodCtx;
         ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
+        classNode.fileName = topClass.fileName;
         classNode.setSuperType(Types.getRootType());
         if (!Modifier.isStatic(methodCtx.method.getModifier())){
             FieldNode outerClassField = classNode.createField(Types.getClassType(oldClass), "this$0", Modifier.PUBLIC);

@@ -296,8 +296,6 @@ public class ClassNodeStructureBuilder extends AstBuilder {
 
     @Override
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
-        //FIXME fix filename
-        //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         thisClazz.setSuperType(this.getScriptType());
         List<MethodDeclContext> mds = ctx.methodDecl();
         if(mds!=null){
