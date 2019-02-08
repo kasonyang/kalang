@@ -39,7 +39,6 @@ public class AstUtil {
                     //TODO move check to where method declare
                     || !OverrideUtil.overridingCompatible(overridingMd.getModifier(), m.getModifier()) 
                     || !OverrideUtil.returnTypeCompatible(overridingMd.getReturnType(), m.getReturnType())
-                    || !OverrideUtil.exceptionTypeCompatible(overridingMd.getExceptionTypes(), m.getExceptionTypes())
                     ) {
                 list.add(m);
             }
