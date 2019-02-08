@@ -3,6 +3,7 @@ package kalang.compiler.core;
 
 import kalang.annotation.Nullable;
 import kalang.compiler.ast.MethodNode;
+import kalang.compiler.util.MethodUtil;
 
 import java.lang.reflect.Modifier;
 import java.security.InvalidParameterException;
@@ -12,12 +13,22 @@ import java.util.*;
  *
  * @author Kason Yang
  */
-public class MethodDescriptor extends ExecutableDescriptor {
+public class MethodDescriptor{
     
     
 
     public MethodDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors, Type returnType,Type[] exceptionTypes) {
-        super(method, parameterDescriptors,returnType,exceptionTypes);
+        this.modifier = method.getModifier();
+        this.methodNode = method;
+        this.name = method.getName();
+        this.parameterDescriptors = parameterDescriptors;
+        Type[] ptypes = new Type[parameterDescriptors.length];
+        for(int i=0;i<this.parameterDescriptors.length;i++){
+            ptypes[i] = parameterDescriptors[i].getType();
+        }
+        parameterTypes = ptypes;
+        this.returnType = returnType;
+        this.exceptionTypes = exceptionTypes;
     }
 
     @Override
@@ -41,6 +52,49 @@ public class MethodDescriptor extends ExecutableDescriptor {
             pds[i] = new ParameterDescriptor(originalPd.getName(),parseGenericType(originalPd.getType(),genericTypeMap),originalPd.getModifier());
         }
         return new MethodDescriptor(methodNode,pds,parseGenericType(returnType,genericTypeMap),parseGenericType(exceptionTypes,genericTypeMap));
+    }
+
+    protected final Type[] parameterTypes;
+    protected final int modifier;
+    protected final MethodNode methodNode;
+    protected final ParameterDescriptor[] parameterDescriptors;
+    protected final Type returnType;
+
+    protected final String name;
+
+    protected final Type[] exceptionTypes;
+
+    public Type[] getParameterTypes() {
+        return parameterTypes;
+    }
+
+    public int getModifier() {
+        return modifier;
+    }
+
+    public MethodNode getMethodNode() {
+        return methodNode;
+    }
+
+    public ParameterDescriptor[] getParameterDescriptors() {
+        return parameterDescriptors;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDeclarationKey(){
+        return MethodUtil.getDeclarationKey(name, parameterTypes);
+    }
+
+    public Type getReturnType() {
+        return returnType;
+    }
+
+    //TODO exception type should be object type
+    public Type[] getExceptionTypes() {
+        return exceptionTypes;
     }
 
     private static void inferGeneric(Type declaredType,Type actualArgType,Map<GenericType,Type> resultMap) {
