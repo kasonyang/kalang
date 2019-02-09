@@ -34,19 +34,6 @@ public class TypeNameResolver {
         this.importPackages.add(packageName);
     }
 
-    private String fixInnerClassName(String className) {
-        String name = "";
-        for (String n : className.split("\\.")) {
-            name += n;
-            if (astLoader !=null && astLoader.getAst(name) != null) {
-                name += "$";
-            } else {
-                name += ".";
-            }
-        }
-        return name.substring(0, name.length() - 1);
-    }
-
     /**
      * 
      * @param id
@@ -58,7 +45,7 @@ public class TypeNameResolver {
     public String resolve(String id,ClassNode topClass, ClassNode declaringClass) {
         if(id.contains(".")) return id;
         if (simpleToFullNames.containsKey(id)) {
-            return this.fixInnerClassName(simpleToFullNames.get(id));
+            return simpleToFullNames.get(id);
         } else if (id.contains("$")){
             String[] idParts = id.split("\\$");
             String outerClassName = this.resolve(idParts[0],topClass,declaringClass);
@@ -91,7 +78,7 @@ public class TypeNameResolver {
                 } else {
                     clsName = id;
                 }
-                if (astLoader!=null &&  astLoader.getAst(this.fixInnerClassName(clsName)) != null) {
+                if (astLoader!=null &&  astLoader.getAst(clsName) != null) {
                     return clsName;
                 }
             }
