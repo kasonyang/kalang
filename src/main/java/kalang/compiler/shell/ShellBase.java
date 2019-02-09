@@ -4,15 +4,15 @@ import kalang.compiler.compile.Configuration;
 import kalang.compiler.dependency.Artifact;
 import kalang.compiler.dependency.DependencyResolver;
 import kalang.compiler.dependency.ResolveResult;
+import kalang.compiler.profile.Profiler;
+import kalang.compiler.profile.Span;
+import kalang.compiler.profile.SpanFormatter;
 import kalang.compiler.tool.KalangShell;
 import kalang.lang.Runtime;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -41,6 +41,7 @@ public abstract class ShellBase {
         options.addOption(null,"classpath", true, "compile classpath");
         options.addOption("s","sourcepath", true, "source directory");
         options.addOption("v","version",false,"show version information");
+        options.addOption(null,"profile-out",true,"specify destination for profiler's output");
     }
     
     public int run(String[] args) {
@@ -60,7 +61,16 @@ public abstract class ShellBase {
             printVersion();
             return Constant.SUCCESS;
         } else {
-            return execute(cli);
+            String profileOut = cli.getOptionValue("profile-out","");
+            if (!profileOut.isEmpty()) {
+                Profiler.getInstance().startProfile();
+            }
+            int result = execute(cli);
+            if (!profileOut.isEmpty()) {
+                Profiler.getInstance().stopProfile();
+                outputProfileInfo(profileOut);
+            }
+            return result;
         }
     }
     
@@ -186,6 +196,23 @@ public abstract class ShellBase {
             shell.addSourcePath(sp);
         }
         return shell;
+    }
+
+    private void outputProfileInfo(String destination) {
+        Span rootSpan = Profiler.getInstance().getRootSpan();
+        PrintStream os;
+        if (destination.equals("@stderr")) {
+            os = new PrintStream(System.err);
+        } else if (destination.equals("@stdout")) {
+            os = new PrintStream(System.out);
+        } else {
+            try {
+                os = new PrintStream(new File(destination));
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        new SpanFormatter().format(rootSpan,os);
     }
 
     private ResolveResult resolveDependencies(List<String> dependencies,List<String> repositories) {

@@ -4,6 +4,8 @@ import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.core.Types;
+import kalang.compiler.profile.Profiler;
+import kalang.compiler.profile.Span;
 import kalang.helper.CollectionPlugin;
 import kalang.helper.FilePlugin;
 import kalang.helper.PrintHelper;
@@ -86,7 +88,9 @@ public class CompilationUnit {
     public void compile(int targetPhase){
         while(compilingPhase<targetPhase){
             compilingPhase++;
+            Span span = Profiler.getInstance().beginSpan("compilationPhase@" + compilingPhase);
             doCompilePhase(compilingPhase);
+            Profiler.getInstance().endSpan(span);
         }
     }
     

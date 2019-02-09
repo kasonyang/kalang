@@ -22,7 +22,7 @@ public class DebugTest {
     public void test() throws IOException {
         File debugFile = new File("debug/debug.kl");
         if (debugFile.exists()) {
-            int result = new Kalangsh().run(new String[]{debugFile.getCanonicalPath()});
+            int result = new Kalangsh().run(new String[]{"--profile-out","@stderr",debugFile.getCanonicalPath()});
             Assert.assertEquals(0,result);
         }
     }

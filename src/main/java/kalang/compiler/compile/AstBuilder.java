@@ -13,6 +13,8 @@ import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 import kalang.compiler.function.FunctionType;
 import kalang.compiler.function.LambdaExpr;
+import kalang.compiler.profile.Profiler;
+import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
 import kalang.runtime.dynamic.MethodDispatcher;
 import kalang.type.FunctionClasses;
@@ -154,7 +156,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         compilationUnit.getTypeNameResolver().setAstLoader(astLoader);
         if(targetPhase>=PARSING_PHASE_INIT && parsingPhase < PARSING_PHASE_INIT){
             parsingPhase = PARSING_PHASE_INIT;
+            Span span = Profiler.getInstance().beginSpan("parse");
             CompilationUnitContext cunit = parser.compilationUnit();
+            Profiler.getInstance().endSpan(span);
             this.compilationContext = cunit;
             for(ImportDeclContext ic:cunit.importDecl()){
                 this.visitImportDecl(ic);
