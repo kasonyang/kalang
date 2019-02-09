@@ -85,6 +85,7 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
     }
 
     public void compile(int targetPhase) {
+        compilingPhase = CompilePhase.PHASE_INITIALIZE;
         while (compilingPhase < targetPhase && compilingPhase < this.compileTargetPhase) {
             compilingPhase++;
             Span span = Profiler.getInstance().beginSpan("compilePhase@" + compilingPhase);

@@ -1,6 +1,7 @@
 package kalang.test;
 
 import kalang.compiler.antlr.KalangLexer;
+import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.CodeGenerator;
 import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.compile.KalangCompiler;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -42,6 +44,21 @@ public class KalangCompilerTest {
         List<Token> tokens = ts.getTokens();
         assertEquals(5, ts.size());
         testTokenNavigator(tokens.toArray(new Token[0]),unit.getAstBuilder().getParseTree());
+    }
+
+    @Test
+    public void testRecompile(){
+        KalangCompiler kc = new KalangCompiler(){
+            @Override
+            public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
+                return new Ast2JavaStub();
+            }
+        };
+        kc.addSource("Test", "class{  }","Test.kl");
+        kc.compile();
+        kc.compile();
+        ClassNode ast = kc.getAst("Test");
+        assertNotNull(ast);
     }
     
     private void testTokenNavigator(Token[] tokens,ParseTree tree){
