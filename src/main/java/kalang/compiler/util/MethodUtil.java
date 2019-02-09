@@ -35,7 +35,7 @@ public class MethodUtil {
     }
 
     public static String getDeclarationKey(String name, String... paramTypes) {
-        return String.format("%s(%s)", name, String.join(",", paramTypes));
+        return name + "(" + String.join(",", paramTypes) + ")";
     }
 
     public static String getDeclarationKey(String name, Type[] types) {
