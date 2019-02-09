@@ -19,6 +19,8 @@ public class TypeNameResolver {
 
     private AstLoader astLoader;
 
+    private Map<String,Optional<String>> resolvedIdMap = new HashMap<>();
+
     public TypeNameResolver() {
     }
 
@@ -43,6 +45,22 @@ public class TypeNameResolver {
      */
     @Nullable
     public String resolve(String id,ClassNode topClass, ClassNode declaringClass) {
+        String key = String.format("%s|%s|%s",id,topClass.name,declaringClass.name);
+        Optional<String> val = resolvedIdMap.get(key);
+        if (val==null) {
+            String className = doResolve(id, topClass, declaringClass);
+            val = className == null ? Optional.empty() : Optional.of(className);
+            resolvedIdMap.put(key,val);
+        }
+        return val.orElse(null);
+    }
+
+    public void setAstLoader(AstLoader astLoader) {
+        this.astLoader = astLoader;
+    }
+
+    @Nullable
+    public String doResolve(String id,ClassNode topClass,ClassNode declaringClass) {
         if(id.contains(".")) return id;
         if (simpleToFullNames.containsKey(id)) {
             return simpleToFullNames.get(id);
@@ -84,10 +102,6 @@ public class TypeNameResolver {
             }
         }
         return null;
-    }
-
-    public void setAstLoader(AstLoader astLoader) {
-        this.astLoader = astLoader;
     }
     
 }
