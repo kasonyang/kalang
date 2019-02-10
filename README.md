@@ -2,5 +2,24 @@
 [![Build Status](https://travis-ci.org/kasonyang/kalang.svg)](https://travis-ci.org/kasonyang/kalang)
 [![Codecov](https://img.shields.io/codecov/c/github/kasonyang/kalang.svg)](https://codecov.io/gh/kasonyang/kalang)
 
+# Overview
+
+Kalang is a static type-safe and null-safe language base on jvm with flexible syntax.
+
+# Features
+
+* Static type-safe
+* Null safe
+* Auto type
+* Flexible syntax
+* Compatible with other jvm-based languages like java,groovy and so on.
+
+# How to build
+
+    $ gradlew clean build
+
+# License
+
+MIT
 
 please visit [http://kalang.kason.site](http://kalang.kason.site) for more information.
