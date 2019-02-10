@@ -1209,7 +1209,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         String resolvedTypeName = compilationUnit.getTypeNameResolver().resolve(name, topClass, thisClazz);
         if (resolvedTypeName!=null) {
-            ClassReference clsRef = new ClassReference(requireAst(resolvedTypeName,token));
+            ClassReference clsRef = new ClassReference(requireAst(resolvedTypeName,token,true));
             if(token!=null) mapAst(clsRef, token);
             return clsRef;
         }
@@ -1243,7 +1243,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (name.equals("*")) {
             String location = prefix.substring(0, prefix.length() - 1);
             if (isStaticImport) {
-                ClassNode locationCls = requireAst(location, ctx.stop);
+                ClassNode locationCls = requireAst(location, ctx.stop,true);
                 if (locationCls==null) {
                     return null;
                 }
@@ -1260,7 +1260,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (isStaticImport) {
                 //TODO support alias
                 String location = prefix.substring(0,prefix.length()-1);
-                ClassNode locationCls = requireAst(location, ctx.stop);
+                ClassNode locationCls = requireAst(location, ctx.stop,true);
                 if (locationCls==null) return null;
                 importStaticMember(locationCls,name);
             }else{
@@ -1622,7 +1622,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     @Nullable
     public AnnotationNode visitAnnotation(KalangParser.AnnotationContext ctx) {
-        ClassNode anType = requireAst(ctx.annotationType);
+        ClassNode anType = requireAst(ctx.annotationType,false);
         if(anType==null) return null;
         List<Token> vk = ctx.annotationValueKey;
         LiteralContext dv = ctx.annotationDefaultValue;

@@ -78,9 +78,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     @Nullable
     protected ClassNode resolveNamedClass(String id,ClassNode topClass,ClassNode currentClass){
         TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
-        AstLoader astLoader = compilationUnit.getCompileContext().getAstLoader();
         String resolvedName = typeNameResolver.resolve(id, topClass, currentClass);
-        ClassNode ast = resolvedName==null ? null : astLoader.getAst(resolvedName);
+        ClassNode ast = resolvedName==null ? null : getAst(resolvedName);
         return ast;
     }
 
@@ -176,14 +175,14 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nullable
     protected ObjectType requireClassType(@Nonnull String id,@Nonnull Token token){
-        ClassNode ast = requireAst(id, token);
+        ClassNode ast = requireAst(id, token,false);
         if(ast==null) return null;
         return Types.getClassType(ast,new Type[0]);
     }
 
     @Nullable
-    protected ClassNode requireAst(Token token){
-        return requireAst(token.getText(),token);
+    protected ClassNode requireAst(Token token,boolean fullname){
+        return requireAst(token.getText(),token,fullname);
     }
 
     /**
@@ -193,8 +192,13 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
      * @return
      */
     @Nullable
-    protected ClassNode requireAst(String id,Token token) {
-        ClassNode ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
+    protected ClassNode requireAst(String id,Token token,boolean fullname) {
+        ClassNode ast;
+        if (fullname) {
+            ast = getAst(id);
+        } else {
+            ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
+        }
         if(ast==null){
             diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, token);
         }
@@ -268,7 +272,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nullable
     protected AnnotationNode parseAnnotation(KalangParser.AnnotationContext ctx) {
-        ClassNode anType = requireAst(ctx.annotationType);
+        ClassNode anType = requireAst(ctx.annotationType,false);
         if(anType==null) return null;
         List<Token> vk = ctx.annotationValueKey;
         KalangParser.LiteralContext dv = ctx.annotationDefaultValue;
@@ -384,9 +388,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nullable
     private ClassReference requireClassReference(@Nonnull Token token){
-        ClassNode ast = requireAst(token);
+        ClassNode ast = requireAst(token,false);
         if(ast==null) return null;
         return new ClassReference(ast);
+    }
+
+    @Nullable
+    private ClassNode getAst(String className) {
+        AstLoader astLoader = compilationUnit.getCompileContext().getAstLoader();
+        return astLoader.getAst(className);
     }
 
 }
