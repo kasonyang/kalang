@@ -27,7 +27,6 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
     
     private final HashMap<String,Class> loadedClasses = new HashMap<>();
     private final FileSystemSourceLoader sourceLoader;
-    private Configuration configuration;
     private ClassLoader parentClassLoader = KalangClassLoader.class.getClassLoader();
     final MemoryOutputManager outputManager = new MemoryOutputManager();
 
@@ -37,11 +36,12 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
 
     public KalangClassLoader(File[] sourceDir,@Nullable Configuration config,@Nullable ClassLoader parentClassLoader) {
         super(new URL[0],parentClassLoader==null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader);
-        this.configuration = config == null ? new Configuration() : config;
+        Configuration conf = config == null ? new Configuration() : Configuration.copy(config);
         this.parentClassLoader = parentClassLoader;
         sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});
         CodeGenerator cg = this;
-        compiler = new KalangCompiler(new JavaAstLoader(null, parentClassLoader)){
+        conf.setAstLoader(new JavaAstLoader(null, parentClassLoader));
+        compiler = new KalangCompiler(conf){
             @Override
             public SourceLoader getSourceLoader() {
                 return sourceLoader;
@@ -51,9 +51,8 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
                 return cg;
             }
-            
+
         };
-        compiler.setConfiguration(this.configuration);
         compiler.setDiagnosisHandler(this);
     }
     

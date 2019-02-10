@@ -39,7 +39,7 @@ public abstract class KalangCompiler implements CompileContext {
 
     private DiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
 
-    private Configuration configuration = new Configuration();
+    private final Configuration configuration;
 
     private final AstLoader astLoader;
 
@@ -51,11 +51,12 @@ public abstract class KalangCompiler implements CompileContext {
     };
 
     public KalangCompiler() {
-        this(new JavaAstLoader());
+        this(new Configuration());
     }
 
-    public KalangCompiler(AstLoader astLoader) {
-        this.astLoader = new AstLoader(astLoader){
+    public KalangCompiler(Configuration configuration) {
+        this.configuration = configuration;
+        this.astLoader = new AstLoader(configuration.getAstLoader()){
 
             private Set<String> notFoundAstSet = new HashSet<>();
 
@@ -284,10 +285,6 @@ public abstract class KalangCompiler implements CompileContext {
     @Override
     public Configuration getConfiguration() {
         return configuration;
-    }
-
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
     }
 
 }

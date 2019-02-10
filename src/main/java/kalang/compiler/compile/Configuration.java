@@ -12,6 +12,16 @@ public class Configuration {
 
     private String encoding = "utf8";
 
+    private AstLoader astLoader = new JavaAstLoader();
+
+    public static Configuration copy(Configuration other) {
+        Configuration conf = new Configuration();
+        conf.scriptBaseClass = other.scriptBaseClass;
+        conf.encoding = other.encoding;
+        conf.astLoader = other.astLoader;
+        return conf;
+    }
+
     public String getScriptBaseClass() {
         return scriptBaseClass;
     }
@@ -26,6 +36,14 @@ public class Configuration {
 
     public void setEncoding(String encoding) {
         this.encoding = encoding;
+    }
+
+    public AstLoader getAstLoader() {
+        return astLoader;
+    }
+
+    public void setAstLoader(AstLoader astLoader) {
+        this.astLoader = astLoader;
     }
 
 }
