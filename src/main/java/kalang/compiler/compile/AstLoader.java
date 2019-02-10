@@ -22,8 +22,8 @@ public class AstLoader {
 
     }
 
-    public AstLoader(@Nonnull AstLoader astLoader) {
-        parent = astLoader;
+    public AstLoader(@Nonnull AstLoader parent) {
+        this.parent = parent;
     }
 
     public void add(@Nonnull ClassNode clazz) {

@@ -57,8 +57,8 @@ public class KalangCompilerTest {
         kc.addSource("Test", "class{  }","Test.kl");
         kc.compile();
         kc.compile();
-        ClassNode ast = kc.getAst("Test");
-        assertNotNull(ast);
+        CompilationUnit unit = kc.getCompilationUnit("Test");
+        assertNotNull(unit);
     }
     
     private void testTokenNavigator(Token[] tokens,ParseTree tree){

@@ -26,9 +26,7 @@ import static kalang.compiler.compile.CompilePhase.PHASE_ALL;
  *
  * @author Kason Yang
  */
-public abstract class KalangCompiler extends AstLoader implements CompileContext {
-
-    private Set<String> notFoundAstSet = new HashSet<>();
+public abstract class KalangCompiler implements CompileContext {
 
     private int compileTargetPhase = PHASE_ALL;
 
@@ -43,6 +41,8 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
 
     private Configuration configuration = new Configuration();
 
+    private final AstLoader astLoader;
+
     private SourceLoader sourceLoader = new SourceLoader() {
         @Override
         public KalangSource loadSource(String className) {
@@ -55,7 +55,54 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
     }
 
     public KalangCompiler(AstLoader astLoader) {
-        super(astLoader);
+        this.astLoader = new AstLoader(astLoader){
+
+            private Set<String> notFoundAstSet = new HashSet<>();
+
+            @Override
+            protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
+                Profiler profiler = Profiler.getInstance();
+                Invocation invocation = profiler.beginInvocation(KalangCompiler.class.getName() + ":findAst");
+                try{
+                    return doFindAst(className);
+                }finally {
+                    profiler.endInvocation(invocation);
+                }
+            }
+
+            protected ClassNode doFindAst(@Nonnull String className) throws AstNotFoundException {
+                if (notFoundAstSet.contains(className)) {
+                    throw new AstNotFoundException(className);
+                }
+                String[] classNameInfo = className.split("\\$", 2);
+                String topClassName = classNameInfo[0];
+                if (compilationUnits.containsKey(topClassName)) {
+                    CompilationUnit compilationUnit = compilationUnits.get(topClassName);
+                    ClassNode clazz = compilationUnit.getAst();
+                    if (classNameInfo.length == 1) {
+                        return clazz;
+                    } else {
+                        ClassNode c = findInnerClass(clazz, className);
+                        if (c != null) {
+                            return c;
+                        }
+                    }
+                }
+                SourceLoader srcLoader = getSourceLoader();
+                if (srcLoader != null) {
+                    KalangSource source = srcLoader.loadSource(className);
+                    if (source != null) {
+                        return createCompilationUnit(source).getAst();
+                    }
+                }
+                try {
+                    return super.findAst(className);
+                }catch (AstNotFoundException ex) {
+                    notFoundAstSet.add(className);
+                    throw ex;
+                }
+            }
+        };
     }
 
     /**
@@ -114,50 +161,6 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
             }
         }
         return null;
-    }
-
-    @Override
-    protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
-        Profiler profiler = Profiler.getInstance();
-        Invocation invocation = profiler.beginInvocation(KalangCompiler.class.getName() + ":findAst");
-        try{
-            return doFindAst(className);
-        }finally {
-            profiler.endInvocation(invocation);
-        }
-    }
-
-    protected ClassNode doFindAst(@Nonnull String className) throws AstNotFoundException {
-        if (notFoundAstSet.contains(className)) {
-            throw new AstNotFoundException(className);
-        }
-        String[] classNameInfo = className.split("\\$", 2);
-        String topClassName = classNameInfo[0];
-        if (compilationUnits.containsKey(topClassName)) {
-            CompilationUnit compilationUnit = compilationUnits.get(topClassName);
-            ClassNode clazz = compilationUnit.getAst();
-            if (classNameInfo.length == 1) {
-                return clazz;
-            } else {
-                ClassNode c = findInnerClass(clazz, className);
-                if (c != null) {
-                    return c;
-                }
-            }
-        }
-        SourceLoader srcLoader = getSourceLoader();
-        if (srcLoader != null) {
-            KalangSource source = srcLoader.loadSource(className);
-            if (source != null) {
-                return createCompilationUnit(source).getAst();
-            }
-        }
-        try {
-            return super.findAst(className);
-        }catch (AstNotFoundException ex) {
-            notFoundAstSet.add(className);
-            throw ex;
-        }
     }
 
     @Nonnull
@@ -247,7 +250,7 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
 
     @Override
     public final AstLoader getAstLoader() {
-        return this;
+        return this.astLoader;
     }
 
     @Override
