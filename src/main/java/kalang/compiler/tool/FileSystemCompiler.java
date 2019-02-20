@@ -50,7 +50,7 @@ public class FileSystemCompiler {
         AstLoader astLoader = new JavaAstLoader(this.parentAstLoader, pathClassLoader);
         Configuration conf = Configuration.copy(configuration);
         conf.setAstLoader(astLoader);
-        KalangCompiler compiler = new KalangCompiler(configuration) {
+        KalangCompiler compiler = new KalangCompiler(conf) {
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
                 FileSystemOutputManager om = new FileSystemOutputManager(outputDir, extension);

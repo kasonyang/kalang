@@ -96,12 +96,8 @@ public abstract class KalangCompiler implements CompileContext {
                         return createCompilationUnit(source).getAst();
                     }
                 }
-                try {
-                    return super.findAst(className);
-                }catch (AstNotFoundException ex) {
-                    notFoundAstSet.add(className);
-                    throw ex;
-                }
+                notFoundAstSet.add(className);
+                throw new AstNotFoundException(className);
             }
         };
     }

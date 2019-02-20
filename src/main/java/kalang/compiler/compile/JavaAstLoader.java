@@ -35,6 +35,7 @@ public class JavaAstLoader extends AstLoader {
         this(null, JavaAstLoader.class.getClassLoader());
     }
 
+    @Nonnull
     @Override
     protected ClassNode findAst(String className) throws AstNotFoundException {
         if (className == null) {
@@ -46,15 +47,11 @@ public class JavaAstLoader extends AstLoader {
             return ast;
         }
         try {
-            return super.findAst(className);
-        } catch (AstNotFoundException e) {
-            try {
-                Class clz = javaClassLoader.loadClass(className);
-                ast = buildFromClass(clz);
-                return ast;
-            } catch (ClassNotFoundException ex) {
-                throw e;
-            }
+            Class clz = javaClassLoader.loadClass(className);
+            ast = buildFromClass(clz);
+            return ast;
+        } catch (ClassNotFoundException ex) {
+            throw new AstNotFoundException(className);
         }
     }
     
