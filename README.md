@@ -14,6 +14,11 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 * Flexible syntax
 * Compatible with other jvm-based languages like java,groovy and so on.
 
+# Projects writing in kalang
+
+* [Kailer](https://github.com/kasonyang/kailer)
+* [ColorConsole](https://github.com/kasonyang/color-console)
+
 # How to build
 
     $ gradlew clean build
