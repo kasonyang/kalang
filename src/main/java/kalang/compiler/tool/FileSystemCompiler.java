@@ -48,7 +48,9 @@ public class FileSystemCompiler {
         }
         URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[classPaths.size()]), this.classLoader);
         AstLoader astLoader = new JavaAstLoader(this.parentAstLoader, pathClassLoader);
-        KalangCompiler compiler = new KalangCompiler(astLoader) {
+        Configuration conf = Configuration.copy(configuration);
+        conf.setAstLoader(astLoader);
+        KalangCompiler compiler = new KalangCompiler(conf) {
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
                 FileSystemOutputManager om = new FileSystemOutputManager(outputDir, extension);
@@ -56,7 +58,6 @@ public class FileSystemCompiler {
             }
 
         };
-        compiler.setConfiguration(configuration);
         if (diagnosisHandler != null) {
             compiler.setDiagnosisHandler(diagnosisHandler);
         }

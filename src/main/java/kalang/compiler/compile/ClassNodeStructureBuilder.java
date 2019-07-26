@@ -24,9 +24,9 @@ import java.util.Map;
  *
  * @author Kason Yang
  */
-public class ClassNodeMetaBuilder extends AstBuilderBase {
+public class ClassNodeStructureBuilder extends AstBuilder {
 
-    private AstBuilder astBuilder;
+    //private AstBuilder astBuilder;
     private ClassNode thisClazz;
     private ClassNode topClass;
     
@@ -37,24 +37,24 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
     private final CompilationUnit compilationUnit;
     private DiagnosisReporter diagnosisReporter;
     
-    public ClassNodeMetaBuilder(CompilationUnit compilationUnit, AstBuilder astBuilder) {
-        super(compilationUnit);
+    public ClassNodeStructureBuilder(CompilationUnit compilationUnit, KalangParser parser) {
+        super(compilationUnit,parser);
         this.compilationUnit = compilationUnit;
-        this.astBuilder = astBuilder;
+        //this.astBuilder = astBuilder;
         this.diagnosisReporter = new DiagnosisReporter(this.compilationUnit);
     }
 
     public void build(ClassNode topClass, ClassNode cn,ParserRuleContext ctx) {
         this.thisClazz = cn;
         this.topClass = topClass;
-        astBuilder.thisClazz = cn;
+        thisClazz = cn;
         visit(ctx);
     }
 
     @Override
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
         thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
-        thisClazz.modifier = parseModifier(ctx.varModifier());
+        //thisClazz.modifier = parseModifier(ctx.varModifier());
         List<Token> gnrTypes = ctx.genericTypes;
         if (gnrTypes != null && !gnrTypes.isEmpty()) {
             for (Token g : gnrTypes) {
@@ -69,14 +69,14 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
             if (parentClass != null) {
                 superType = parentClass;
             }
-        } else {
-            superType = Types.getRootType();
         }
         if (Modifier.isInterface(thisClazz.modifier)) {
             //TODO update syntax to support:interface extends T1,T2...
-            thisClazz.addInterface(superType);
+            if (superType!=null) {
+                thisClazz.addInterface(superType);
+            }
         } else {
-            thisClazz.setSuperType(superType);
+            thisClazz.setSuperType(superType==null?Types.getRootType():superType);
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
@@ -93,7 +93,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
             }
             thisClazz.createField(Types.getClassType(parentClass), "this$0", Modifier.PRIVATE | ModifierConstant.SYNTHETIC);
         }
-        visit(ctx.classBody());
+        visitClassBody(ctx.classBody());
         if (!ModifierUtil.isInterface(thisClazz.modifier) 
                 && !AstUtil.containsConstructor(thisClazz) 
                 && !AstUtil.createEmptyConstructor(thisClazz)) {
@@ -144,7 +144,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
     }
 
     private boolean isNonStaticInnerClass(ClassNode clazz) {
-        return clazz.enclosingClass != null && !Modifier.isStatic(clazz.modifier);
+        return clazz.enclosingClass != null && !Modifier.isStatic(clazz.modifier) && !Modifier.isInterface(clazz.modifier);
     }
 
     private boolean isDeclaringNonStaticInnerClass() {
@@ -152,7 +152,7 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
     }
 
     @Override
-    public Object visitMethodDecl(KalangParser.MethodDeclContext ctx) {
+    public AstNode visitMethodDecl(MethodDeclContext ctx) {
         String name;
         Type type;
         boolean isOverriding = ctx.OVERRIDE() != null;
@@ -248,12 +248,12 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
     }
 
     @Override
-    public Object visitClassBody(KalangParser.ClassBodyContext ctx) {
+    public AstNode visitClassBody(KalangParser.ClassBodyContext ctx) {
         for(KalangParser.FieldDeclContext f:ctx.fieldDecl()){
-            visit(f);
+            visitFieldDecl(f);
         }
         for(KalangParser.MethodDeclContext m:ctx.methodDecl()){
-            visit(m);
+            visitMethodDecl(m);
         }
         return null;
     }
@@ -264,11 +264,11 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
         for(KalangParser.VarDeclContext vd:ctx.varDecl()){
             ExprNode initExpr;
             if(vd.expression()!=null){
-                initExpr = astBuilder.visitExpression(vd.expression());
+                initExpr = visitExpression(vd.expression());
             }else{
                 initExpr = null;
             }
-            AstBuilder.VarInfo varInfo = astBuilder.varDecl(vd,initExpr==null
+            AstBuilder.VarInfo varInfo = varDecl(vd,initExpr==null
                     ?Types.getRootType()
                     :initExpr.getType()
             );
@@ -296,13 +296,11 @@ public class ClassNodeMetaBuilder extends AstBuilderBase {
 
     @Override
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
-        //FIXME fix filename
-        //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         thisClazz.setSuperType(this.getScriptType());
         List<MethodDeclContext> mds = ctx.methodDecl();
         if(mds!=null){
             for(MethodDeclContext m:mds){
-                visit(m);
+                visitMethodDecl(m);
             }
         }
         MethodNode mm = thisClazz.createMethodNode(Types.INT_TYPE,"execute",Modifier.PUBLIC);

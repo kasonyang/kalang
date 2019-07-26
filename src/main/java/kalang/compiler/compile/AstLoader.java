@@ -22,8 +22,8 @@ public class AstLoader {
 
     }
 
-    public AstLoader(@Nonnull AstLoader astLoader) {
-        parent = astLoader;
+    public AstLoader(@Nonnull AstLoader parent) {
+        this.parent = parent;
     }
 
     public void add(@Nonnull ClassNode clazz) {
@@ -32,26 +32,21 @@ public class AstLoader {
 
     @Nonnull
     protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
-        ClassNode ast = null;
-        if(this!=BASE_AST_LOADER){
-            ast = BASE_AST_LOADER.findAst(className);
-        }
-        if (ast == null) {
-            throw new AstNotFoundException(className);
-        }
-        return ast;
+        throw new AstNotFoundException(className);
     }
 
     @Nonnull
     public ClassNode loadAst(@Nonnull String className) throws AstNotFoundException {
         ClassNode ast = cachedAsts.get(className);
         if(ast!=null) return ast;
-        if(parent!=null){
-            try{
+        try{
+            if(parent!=null) {
                 return parent.loadAst(className);
-            }catch(AstNotFoundException ex){
-                
+            }else if (this!=BASE_AST_LOADER) {
+                return BASE_AST_LOADER.loadAst(className);
             }
+        }catch(AstNotFoundException ex){
+
         }
         if(className.endsWith("[]")){
             String name = className;
@@ -59,7 +54,6 @@ public class AstLoader {
             ast = AstUtil.createArrayAst(loadAst(name).name);
         }else{
             ast = findAst(className);
-            if(ast==null) throw new AstNotFoundException(className);
         }
         cachedAsts.put(className, ast);
         return ast;

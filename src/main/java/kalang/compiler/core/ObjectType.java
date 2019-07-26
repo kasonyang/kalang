@@ -161,7 +161,7 @@ public abstract class ObjectType extends Type{
     protected boolean equalAndNullAssignChecked(Type type){
         if(type.equals(this)) return true;
         if(type.equals(Types.NULL_TYPE)){
-            return nullable== NullableKind.NULLABLE || nullable == NullableKind.UNKNOWN;
+            return nullable== NullableKind.NULLABLE || nullable == NullableKind.UNKNOWN || Types.getVoidClassType().equals(this);
         }
         return false;
     }

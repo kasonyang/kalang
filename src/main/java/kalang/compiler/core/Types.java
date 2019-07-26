@@ -159,10 +159,20 @@ public class Types {
     public static PrimitiveType getPrimitiveType(ObjectType classType){
         return primitive2class.getKey(classType.getName());
     }
-    
+
+    @Deprecated
     public static ObjectType requireClassType(String className){
         try {
             return Types.getClassType(className);
+        } catch (AstNotFoundException ex) {
+            Logger.getLogger(Types.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException("failed to load class type:"+className);
+        }
+    }
+
+    public static ObjectType requireClassType(String className,NullableKind nullableKind){
+        try {
+            return Types.getClassType(className,nullableKind);
         } catch (AstNotFoundException ex) {
             Logger.getLogger(Types.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException("failed to load class type:"+className);
@@ -376,6 +386,10 @@ public class Types {
         return requireClassType(FUNCTION_CLASS_NAME);
     }
 
+    public static ObjectType getFakeFunctionType() {
+        return Types.requireClassType(FakeFunction.class.getName(),NullableKind.UNKNOWN);
+    }
+
     public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {
         return Types.getClassType(clazzType.getClassNode(),clazzType.getTypeArguments(),nullable);
     }
@@ -395,6 +409,7 @@ public class Types {
         HashMap<PrimitiveType, List> baseMap = new HashMap();
         baseMap.put(BYTE_TYPE,Arrays.asList(new PrimitiveType[]{INT_TYPE,LONG_TYPE,FLOAT_TYPE,DOUBLE_TYPE}));
         baseMap.put(INT_TYPE, Arrays.asList(new PrimitiveType[]{LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE}));
+        baseMap.put(CHAR_TYPE,Arrays.asList(new PrimitiveType[]{INT_TYPE,LONG_TYPE,FLOAT_TYPE,DOUBLE_TYPE}));
         baseMap.put(LONG_TYPE, Arrays.asList(new PrimitiveType[]{FLOAT_TYPE, DOUBLE_TYPE}));
         baseMap.put(FLOAT_TYPE, Arrays.asList(new PrimitiveType[]{DOUBLE_TYPE}));
         baseMap.put(DOUBLE_TYPE, new LinkedList());

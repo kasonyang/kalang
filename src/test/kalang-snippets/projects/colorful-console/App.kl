@@ -1,0 +1,4 @@
+import org.fusesource.jansi.AnsiConsole;
+import org.fusesource.jansi.Ansi;
+
+println(Ansi.ansi().fg(Ansi$Color.YELLOW).a("hello"));

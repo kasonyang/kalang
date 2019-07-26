@@ -13,6 +13,8 @@ import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 import kalang.compiler.function.FunctionType;
 import kalang.compiler.function.LambdaExpr;
+import kalang.compiler.profile.Profiler;
+import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
 import kalang.runtime.dynamic.MethodDispatcher;
 import kalang.type.FunctionClasses;
@@ -45,16 +47,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             PARSING_PHASE_META = 2,
             PARSING_PHASE_ALL = 3;
 
-    private ClassNodeBuilder classNodeBuilder;
-    private ClassNodeMetaBuilder classNodeMetaBuilder;
+    private ClassNodeInitializer classNodeInitializer;
+    private ClassNodeStructureBuilder classNodeStructureBuilder;
 
     private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
-
-    private Map<String,ClassNode> staticImportMembers = new HashMap<>();
-
-    private List<ClassNode> staticImportPaths = new LinkedList<>();
-    
-    //private Map<MethodNode,List<StatContext>> lambdaStatMap = new HashMap();
     
     private int anonymousClassCounter = 0;
 
@@ -160,18 +156,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         compilationUnit.getTypeNameResolver().setAstLoader(astLoader);
         if(targetPhase>=PARSING_PHASE_INIT && parsingPhase < PARSING_PHASE_INIT){
             parsingPhase = PARSING_PHASE_INIT;
+            Span span = Profiler.getInstance().beginSpan("parse");
             CompilationUnitContext cunit = parser.compilationUnit();
+            Profiler.getInstance().endSpan(span);
             this.compilationContext = cunit;
             for(ImportDeclContext ic:cunit.importDecl()){
                 this.visitImportDecl(ic);
             }
-            this.classNodeBuilder = new ClassNodeBuilder(this.compilationUnit);
-            topClass = classNodeBuilder.build(cunit);
+            this.classNodeInitializer = new ClassNodeInitializer(this.compilationUnit);
+            topClass = classNodeInitializer.build(cunit);
         }
         if(targetPhase>=PARSING_PHASE_META
                 && parsingPhase < PARSING_PHASE_META){
             parsingPhase = PARSING_PHASE_META;
-            this.classNodeMetaBuilder = new ClassNodeMetaBuilder(this.compilationUnit, this);
+            this.classNodeStructureBuilder = new ClassNodeStructureBuilder(this.compilationUnit, parser);
             buildClassNodeMeta(topClass);
         }
         if(targetPhase>=PARSING_PHASE_ALL
@@ -187,7 +185,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         thisClazz = clazz;
         for(MethodNode m:thisClazz.getDeclaredMethodNodes()){
             BlockStmt mbody = m.getBody();
-            StatContext[] stats = classNodeMetaBuilder.getStatContexts(m);
+            StatContext[] stats = classNodeStructureBuilder.getStatContexts(m);
             if(stats!=null){
                 enterMethod(m);
                 visitBlockStmt(stats,mbody);
@@ -276,7 +274,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public ClassNode getAst() {
         return this.topClass;
     }
-    
+
     @Override
     public ThrowStmt visitThrowStat(KalangParser.ThrowStatContext ctx) {
         ThrowStmt ts = new ThrowStmt(visitExpression(ctx.expression()));
@@ -530,6 +528,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         mapAst(rs,ctx);
         if (ctx.expression() != null) {
             rs.expr = visitExpression(ctx.expression());
+        } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
+            rs.expr = new ConstExpr(null);
         }
         if(!semanticAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
         this.methodCtx.returned = true;
@@ -844,7 +844,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return expr;
     }
-    
+
     @Nullable
     private ExprNode concatExpressionsToStringExpr(ExprNode[] expr,Token[] startTokens){
         ExprNode ret;
@@ -952,13 +952,21 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         ExprNode expr;
         ObjectType clazzType = getThisType();
+        ExprNode invokeTarget = new ThisExpr(clazzType);
         MethodDescriptor[] namedMethods = clazzType.getMethodDescriptors(thisClazz, methodName ,true, true);
         if (namedMethods.length<=0 && namedNode instanceof FieldExpr) {
             return this.getLambdaCall(methodName,(FieldExpr)namedNode,args,ctx);
         }
         if (namedMethods.length<=0) {
+            ExprNode outerClassExpr = new ThisExpr(thisClazz);
+            while(namedMethods.length<=0 && (outerClassExpr = getOuterClassInstanceExpr(outerClassExpr))!=null) {
+                namedMethods = ((ObjectType)outerClassExpr.getType()).getMethodDescriptors(thisClazz,methodName,true,true);
+            }
+            invokeTarget = outerClassExpr;
+        }
+        if (namedMethods.length<=0) {
             namedMethods = getStaticImportedMethods(methodName).toArray(new MethodDescriptor[0]);
-            if (namedMethods.length>=0) {
+            if (namedMethods.length>0) {
                 clazzType = Types.getClassType(namedMethods[0].getMethodNode().getClassNode());
             }
         }
@@ -967,7 +975,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if(Modifier.isStatic(ms.selectedMethod.getModifier())){
                 expr = onInvocationExpr(new StaticInvokeExpr(new ClassReference(clazzType.getClassNode()), ms.selectedMethod, ms.appliedArguments));
             }else{
-                expr = onInvocationExpr(new ObjectInvokeExpr(new ThisExpr(clazzType), ms.selectedMethod, ms.appliedArguments));
+                expr = onInvocationExpr(new ObjectInvokeExpr(invokeTarget, ms.selectedMethod, ms.appliedArguments));
             }
         } catch (MethodNotFoundException ex) {
             this.methodNotFound(ctx.getStart(), clazzType, methodName, args);
@@ -1201,7 +1209,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         String resolvedTypeName = compilationUnit.getTypeNameResolver().resolve(name, topClass, thisClazz);
         if (resolvedTypeName!=null) {
-            ClassReference clsRef = new ClassReference(requireAst(resolvedTypeName,token));
+            ClassReference clsRef = new ClassReference(requireAst(resolvedTypeName,token,true));
             if(token!=null) mapAst(clsRef, token);
             return clsRef;
         }
@@ -1235,7 +1243,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (name.equals("*")) {
             String location = prefix.substring(0, prefix.length() - 1);
             if (isStaticImport) {
-                ClassNode locationCls = requireAst(location, ctx.stop);
+                ClassNode locationCls = requireAst(location, ctx.stop,true);
                 if (locationCls==null) {
                     return null;
                 }
@@ -1252,7 +1260,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (isStaticImport) {
                 //TODO support alias
                 String location = prefix.substring(0,prefix.length()-1);
-                ClassNode locationCls = requireAst(location, ctx.stop);
+                ClassNode locationCls = requireAst(location, ctx.stop,true);
                 if (locationCls==null) return null;
                 importStaticMember(locationCls,name);
             }else{
@@ -1484,7 +1492,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return expr;
     }
-    
+
     protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName,@Nullable ParserRuleContext rule){
         ExprNode ret;
         Type type = expr.getType();
@@ -1568,7 +1576,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 functionType = (FunctionType) lambdaType;
             }
         }
-        Type type = functionType!=null ? functionType : Types.requireClassType(Types.FUNCTION_CLASS_NAME);
+        Type type = functionType!=null ? functionType : Types.getFakeFunctionType();
         LocalVarNode tmpVar = this.declareTempLocalVar(type);
         LambdaExpr ms = new LambdaExpr(tmpVar,functionType);
         Map<String,VarObject> accessibleVars = new HashMap();
@@ -1600,7 +1608,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return ms;
     }
-    
+
     @Nullable
     private ExprNode getOuterClassInstanceExpr(ExprNode expr){
         return this.getObjectFieldExpr(expr, "this$0", null);
@@ -1614,7 +1622,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     @Nullable
     public AnnotationNode visitAnnotation(KalangParser.AnnotationContext ctx) {
-        ClassNode anType = requireAst(ctx.annotationType);
+        ClassNode anType = requireAst(ctx.annotationType,false);
         if(anType==null) return null;
         List<Token> vk = ctx.annotationValueKey;
         LiteralContext dv = ctx.annotationDefaultValue;
@@ -1931,12 +1939,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     public void importStaticMember(ClassNode classNode,@Nullable String name) {
         if (name!=null && !name.isEmpty()) {
-            this.staticImportMembers.put(name,classNode);
+            compilationUnit.staticImportMembers.put(name,classNode);
         } else {
-            this.staticImportPaths.add(classNode);
+            compilationUnit.staticImportPaths.add(classNode);
         }
     }
-    
+
     private boolean isInConstructor(){
         return "<init>".equals(this.methodCtx.method.getName());
     }
@@ -2019,7 +2027,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ClassNode oldClass = thisClazz;
         MethodContext oldMethodCtx = this.methodCtx;
         ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
+        classNode.fileName = topClass.fileName;
         classNode.setSuperType(Types.getRootType());
+        if (!Modifier.isStatic(methodCtx.method.getModifier())){
+            FieldNode outerClassField = classNode.createField(Types.getClassType(oldClass), "this$0", Modifier.PUBLIC);
+            ObjectFieldExpr outerFieldExpr = new ObjectFieldExpr(new VarExpr(lambdaExpr.getReferenceVar()), outerClassField);
+            lambdaExpr.addStatement(new ExprStmt(new AssignExpr(outerFieldExpr,new ThisExpr(oldClass))));
+        }
         Map<String, VarObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
         for( Map.Entry<String, VarObject> v:accessibleVars.entrySet()) {
             String name = v.getKey();
@@ -2164,9 +2178,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     private void buildClassNodeMeta(ClassNode cn) {
-        ParserRuleContext ctx = classNodeBuilder.getClassNodeDefContext(cn);
+        ParserRuleContext ctx = classNodeInitializer.getClassNodeDefContext(cn);
         if (ctx!=null) {
-            classNodeMetaBuilder.build(topClass,cn,ctx);
+            classNodeStructureBuilder.build(topClass,cn,ctx);
         }
         for(ClassNode c:cn.classes) {
             buildClassNodeMeta(c);
@@ -2184,32 +2198,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return results;
     }
 
-    private List<MethodDescriptor> getStaticImportedMethods(String methodName) {
-        ClassNode classOfStaticImport = staticImportMembers.get(methodName);
-        if (classOfStaticImport!=null) {
-            return getStaticMethods(classOfStaticImport,methodName);
-        }
-        for (int i=staticImportPaths.size()-1;i>=0;i--) {
-            ClassNode sc = staticImportPaths.get(i);
-            List<MethodDescriptor> mds = getStaticMethods(sc, methodName);
-            if (!mds.isEmpty()) {
-                return mds;
-            }
-        }
-        return Collections.EMPTY_LIST;
-    }
 
-    private List<MethodDescriptor> getStaticMethods(ClassNode clazz,String methodName) {
-        ClassType scType = Types.getClassType(clazz);
-        MethodDescriptor[] scMethods = scType.getMethodDescriptors(thisClazz, methodName,true, true);
-        List<MethodDescriptor> scStaticMethods = new LinkedList<>();
-        for(MethodDescriptor m:scMethods) {
-            if (Modifier.isStatic(m.getModifier())) {
-                scStaticMethods.add(m);
-            }
-        }
-        return scStaticMethods;
-    }
+
 
     private ClassNode createLambdaNode(ClassType inferredLambdaType,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
         ClassType functionType = lambdaExpr.getFunctionType();

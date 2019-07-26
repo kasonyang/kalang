@@ -1,0 +1,7 @@
+int charCompareToInt() {
+    return 'y' == 1 ? 0 : 6;
+}
+
+int charCompareToChar() {
+    return 'y' == 'x' ? 0 : 6;
+}

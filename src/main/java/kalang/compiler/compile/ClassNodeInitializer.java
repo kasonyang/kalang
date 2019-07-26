@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author Kason Yang
  */
-public class ClassNodeBuilder extends AstBuilderBase {
+public class ClassNodeInitializer extends AstBuilderBase {
 
     private final String className;
 
@@ -30,7 +30,7 @@ public class ClassNodeBuilder extends AstBuilderBase {
     private final CompilationUnit compilationUnit;
     private final DiagnosisReporter diagnosisReporter;
 
-    public ClassNodeBuilder(CompilationUnit compilationUnit) {
+    public ClassNodeInitializer(CompilationUnit compilationUnit) {
         super(compilationUnit);
         className = compilationUnit.getSource().getClassName();
         this.compilationUnit = compilationUnit;
@@ -56,10 +56,9 @@ public class ClassNodeBuilder extends AstBuilderBase {
     public Object visitScriptDef(KalangParser.ScriptDefContext ctx) {
         this.isScript = true;
         this.inScriptMode = true;
-        //FIXME fix fileName
-        //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         int modifier = Modifier.PUBLIC;
         topClass = thisClazz = new ClassNode(className, modifier);
+        thisClazz.fileName = this.compilationUnit.getSource().getFileName();
         this.defContext.put(topClass, ctx);
         super.visitScriptDef(ctx);
         return null;
@@ -99,8 +98,7 @@ public class ClassNodeBuilder extends AstBuilderBase {
             oldClass.classes.add(thisClazz);
             thisClazz.enclosingClass = oldClass;
         }
-        //FIXME fix file name
-        //thisClazz.fileName = this.compilationUnit.getSource().getFileName();
+        thisClazz.fileName = compilationUnit.getSource().getFileName();
         boolean oldScriptMode = this.inScriptMode;
         this.inScriptMode = false;
         visit(ctx.classBody());

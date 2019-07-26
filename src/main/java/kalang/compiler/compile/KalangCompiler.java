@@ -4,6 +4,9 @@ import kalang.compiler.AstNotFoundException;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
+import kalang.compiler.profile.Invocation;
+import kalang.compiler.profile.Profiler;
+import kalang.compiler.profile.Span;
 import kalang.compiler.util.AntlrErrorString;
 import kalang.compiler.util.LexerFactory;
 import kalang.compiler.util.OffsetRangeHelper;
@@ -13,6 +16,8 @@ import org.antlr.v4.runtime.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import static kalang.compiler.compile.CompilePhase.PHASE_ALL;
 
@@ -21,7 +26,7 @@ import static kalang.compiler.compile.CompilePhase.PHASE_ALL;
  *
  * @author Kason Yang
  */
-public abstract class KalangCompiler extends AstLoader implements CompileContext {
+public abstract class KalangCompiler implements CompileContext {
 
     private int compileTargetPhase = PHASE_ALL;
 
@@ -34,7 +39,9 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
 
     private DiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
 
-    private Configuration configuration = new Configuration();
+    private final Configuration configuration;
+
+    private final AstLoader astLoader;
 
     private SourceLoader sourceLoader = new SourceLoader() {
         @Override
@@ -44,11 +51,55 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
     };
 
     public KalangCompiler() {
-        this(new JavaAstLoader());
+        this(new Configuration());
     }
 
-    public KalangCompiler(AstLoader astLoader) {
-        super(astLoader);
+    public KalangCompiler(Configuration configuration) {
+        this.configuration = configuration;
+        this.astLoader = new AstLoader(configuration.getAstLoader()){
+
+            private Set<String> notFoundAstSet = new HashSet<>();
+
+            @Override
+            protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
+                Profiler profiler = Profiler.getInstance();
+                Invocation invocation = profiler.beginInvocation(KalangCompiler.class.getName() + ":findAst");
+                try{
+                    return doFindAst(className);
+                }finally {
+                    profiler.endInvocation(invocation);
+                }
+            }
+
+            protected ClassNode doFindAst(@Nonnull String className) throws AstNotFoundException {
+                if (notFoundAstSet.contains(className)) {
+                    throw new AstNotFoundException(className);
+                }
+                String[] classNameInfo = className.split("\\$", 2);
+                String topClassName = classNameInfo[0];
+                if (compilationUnits.containsKey(topClassName)) {
+                    CompilationUnit compilationUnit = compilationUnits.get(topClassName);
+                    ClassNode clazz = compilationUnit.getAst();
+                    if (classNameInfo.length == 1) {
+                        return clazz;
+                    } else {
+                        ClassNode c = findInnerClass(clazz, className);
+                        if (c != null) {
+                            return c;
+                        }
+                    }
+                }
+                SourceLoader srcLoader = getSourceLoader();
+                if (srcLoader != null) {
+                    KalangSource source = srcLoader.loadSource(className);
+                    if (source != null) {
+                        return createCompilationUnit(source).getAst();
+                    }
+                }
+                notFoundAstSet.add(className);
+                throw new AstNotFoundException(className);
+            }
+        };
     }
 
     /**
@@ -78,11 +129,14 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
     }
 
     public void compile(int targetPhase) {
+        compilingPhase = CompilePhase.PHASE_INITIALIZE;
         while (compilingPhase < targetPhase && compilingPhase < this.compileTargetPhase) {
             compilingPhase++;
+            Span span = Profiler.getInstance().beginSpan("compilePhase@" + compilingPhase);
             for (CompilationUnit unit : compilationUnits.values()) {
                 unit.compile(compilingPhase);
             }
+            Profiler.getInstance().endSpan(span);
         }
     }
 
@@ -104,32 +158,6 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
             }
         }
         return null;
-    }
-
-    @Override
-    protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
-        String[] classNameInfo = className.split("\\$", 2);
-        String topClassName = classNameInfo[0];
-        if (compilationUnits.containsKey(topClassName)) {
-            CompilationUnit compilationUnit = compilationUnits.get(topClassName);
-            ClassNode clazz = compilationUnit.getAst();
-            if (classNameInfo.length == 1) {
-                return clazz;
-            } else {
-                ClassNode c = findInnerClass(clazz, className);
-                if (c != null) {
-                    return c;
-                }
-            }
-        }
-        SourceLoader srcLoader = getSourceLoader();
-        if (srcLoader != null) {
-            KalangSource source = srcLoader.loadSource(className);
-            if (source != null) {
-                return createCompilationUnit(source).getAst();
-            }
-        }
-        return super.findAst(className);
     }
 
     @Nonnull
@@ -219,7 +247,7 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
 
     @Override
     public final AstLoader getAstLoader() {
-        return this;
+        return this.astLoader;
     }
 
     @Override
@@ -253,10 +281,6 @@ public abstract class KalangCompiler extends AstLoader implements CompileContext
     @Override
     public Configuration getConfiguration() {
         return configuration;
-    }
-
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
     }
 
 }
