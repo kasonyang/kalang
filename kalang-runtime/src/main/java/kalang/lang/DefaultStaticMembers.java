@@ -1,5 +1,6 @@
 package kalang.lang;
 
+@Deprecated
 public class DefaultStaticMembers {
 
     public static void println(Object msg) {
