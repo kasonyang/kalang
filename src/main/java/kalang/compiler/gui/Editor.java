@@ -1,10 +1,22 @@
 package kalang.compiler.gui;
 
 import kalang.compiler.shell.Kalangeditor;
+import org.apache.commons.io.FileUtils;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.Theme;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
+import javax.annotation.Nullable;
 import javax.swing.*;
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Date;
 
@@ -15,6 +27,7 @@ import java.util.Date;
 public class Editor extends javax.swing.JFrame {
 
     private final Kalangeditor controller;
+    private File editingFile = null;
 
     /**
      * Creates new form Editor
@@ -33,14 +46,41 @@ public class Editor extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = (int) screenSize.getWidth();
+        int screenHeight = (int) screenSize.getHeight();
+
         jSplitPane1 = new javax.swing.JSplitPane();
         jScrollPane1 = new javax.swing.JScrollPane();
-        codeArea = new javax.swing.JTextArea();
+        //codeArea = new javax.swing.JTextArea();
+        codeArea = new RSyntaxTextArea(20, 60);
+        codeArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
+        codeArea.setCodeFoldingEnabled(true);
+        RTextScrollPane sp = new RTextScrollPane(codeArea);
+
         jScrollPane2 = new javax.swing.JScrollPane();
         logArea = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
-        menuTopFIle = new javax.swing.JMenu();
+        menuTopFile = new javax.swing.JMenu();
         menuExit = new javax.swing.JMenuItem();
+
+        JMenuItem menuSave = new JMenuItem();
+        menuSave.setText("Save");
+        menuSave.addActionListener(this::menuSaveActionPerformed);
+        menuSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+        menuTopFile.add(menuSave);
+
+        JMenuItem menuSaveAs = new JMenuItem();
+        menuSaveAs.setText("Save as...");
+        menuSaveAs.addActionListener(this::menuSaveAsActionPerformed);
+        menuTopFile.add(menuSave);
+
+        JMenuItem menuOpen = new JMenuItem();
+        menuOpen.setText("Open");
+        menuOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+        menuOpen.addActionListener(this::menuOpenActionPerformed);
+        menuTopFile.add(menuOpen);
+
         menuTopRun = new javax.swing.JMenu();
         menuRun = new javax.swing.JMenuItem();
         menuTopView = new javax.swing.JMenu();
@@ -48,25 +88,48 @@ public class Editor extends javax.swing.JFrame {
         menuSmallerFont = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Kalang Editor");
+        updateTitle();
         setLocationByPlatform(true);
 
         jSplitPane1.setBorder(null);
-        jSplitPane1.setDividerLocation(420);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setResizeWeight(1);
+        jSplitPane1.setDividerLocation(0.8);
 
         codeArea.setColumns(20);
         codeArea.setRows(5);
-        codeArea.setCaretColor(new java.awt.Color(255, 255, 255));
-        codeArea.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
-        codeArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
-        jScrollPane1.setViewportView(codeArea);
-        codeArea.setBackground(Color.BLACK);
-        codeArea.setForeground(new Color(0xF9,0xF9,0xF9));
+        codeArea.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                char c = e.getKeyChar();
+                char[] keyChars = new char[]{' ','\n','\b',',','(',')','{','}'};
+                for(char k:keyChars) {
+                    if (c==k){
+                        codeArea.beginAtomicEdit();
+                        codeArea.endAtomicEdit();
+                        break;
+                    }
+                }
+            }
+
+        });
+        try{
+            Theme theme = Theme.load(getClass().getResourceAsStream("/org/fife/ui/rsyntaxtextarea/themes/monokai.xml"));
+            theme.apply(codeArea);
+        }catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        //codeArea.setCaretColor(new java.awt.Color(255, 255, 255));
+        //codeArea.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
+        //codeArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
+        jScrollPane1.setViewportView(sp);
+        //codeArea.setBackground(Color.BLACK);
+        //codeArea.setForeground(new Color(0xF9,0xF9,0xF9));
         logArea.setBackground(new Color(18,18,18));
         logArea.setForeground(new Color(0xF9,0xF9,0xF9));
 
-        setFontSize(18);
+        setFontSize(menuExit.getFont().getSize() * 1.2f);
 
         jSplitPane1.setTopComponent(jScrollPane1);
 
@@ -77,9 +140,7 @@ public class Editor extends javax.swing.JFrame {
 
         jSplitPane1.setRightComponent(jScrollPane2);
 
-        jMenuBar1.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
-
-        menuTopFIle.setText("File");
+        menuTopFile.setText("File");
 
         menuExit.setText("Exit");
         menuExit.addActionListener(new java.awt.event.ActionListener() {
@@ -87,19 +148,15 @@ public class Editor extends javax.swing.JFrame {
                 menuExitActionPerformed(evt);
             }
         });
-        menuTopFIle.add(menuExit);
+        menuTopFile.add(menuExit);
 
-        jMenuBar1.add(menuTopFIle);
+        jMenuBar1.add(menuTopFile);
 
         menuTopRun.setText("Run");
 
         menuRun.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         menuRun.setText("Run");
-        menuRun.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuRunActionPerformed(evt);
-            }
-        });
+        menuRun.addActionListener(this::menuRunActionPerformed);
         menuTopRun.add(menuRun);
 
         jMenuBar1.add(menuTopRun);
@@ -108,20 +165,12 @@ public class Editor extends javax.swing.JFrame {
 
         menuLargerFont.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         menuLargerFont.setText("Larger font");
-        menuLargerFont.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuLargerFontActionPerformed(evt);
-            }
-        });
+        menuLargerFont.addActionListener(this::menuLargerFontActionPerformed);
         menuTopView.add(menuLargerFont);
 
         menuSmallerFont.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         menuSmallerFont.setText("Smaller font");
-        menuSmallerFont.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuSmallerFontActionPerformed(evt);
-            }
-        });
+        menuSmallerFont.addActionListener(this::menuSmallerFontActionPerformed);
         menuTopView.add(menuSmallerFont);
 
         jMenuBar1.add(menuTopView);
@@ -130,13 +179,14 @@ public class Editor extends javax.swing.JFrame {
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
+        setPreferredSize(new Dimension((int)(screenWidth*0.85),(int)(screenHeight*0.85)));
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 876, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, (int)(screenHeight*0.8), Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 527, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, (int)(screenHeight*0.2), Short.MAX_VALUE)
         );
 
         pack();
@@ -149,6 +199,72 @@ public class Editor extends javax.swing.JFrame {
     private void menuSmallerFontActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuSmallerFontActionPerformed
         enlargeFontSize(-2);
     }//GEN-LAST:event_menuSmallerFontActionPerformed
+
+    private void menuOpenActionPerformed(ActionEvent evt) {
+        JFileChooser jFileChooser = new JFileChooser();
+        int result = jFileChooser.showOpenDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File selectedFile = jFileChooser.getSelectedFile();
+        try {
+            codeArea.setText(FileUtils.readFileToString(selectedFile,"utf-8"));
+            editingFile = selectedFile;
+            updateTitle();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void menuSaveActionPerformed(ActionEvent evt) {
+        try {
+            editingFile = save(editingFile);
+            updateTitle();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void menuSaveAsActionPerformed(ActionEvent evt) {
+        try {
+            File savedFile = save(null);
+            if (savedFile!=null) {
+                this.editingFile = savedFile;
+                updateTitle();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Nullable
+    private File save(@Nullable File destFile) throws IOException {
+        if ( destFile == null ){
+            JFileChooser jfc = new JFileChooser();
+            int ret = jfc.showSaveDialog(this);
+            if (ret != JFileChooser.APPROVE_OPTION) {
+                return null;
+            }
+            File selectedFile = jfc.getSelectedFile();
+            if (selectedFile.exists()) {
+                int confirmResult = JOptionPane.showConfirmDialog(this, selectedFile.getName() + " exists. overwrite?","Save",JOptionPane.YES_NO_OPTION);
+                if (confirmResult != JOptionPane.YES_OPTION) {
+                    return null;
+                }
+            }
+            destFile = selectedFile;
+        }
+        FileUtils.writeStringToFile(destFile,codeArea.getText(),"utf-8");
+        return destFile;
+    }
+
+    private void updateTitle() {
+        String title = "Kalang Editor";
+        if ( editingFile != null ) {
+            title += " - " + editingFile.getName();
+        }
+        setTitle(title);
+    }
 
     private void enlargeFontSize(int increment){
         enlargeFontSize(codeArea, increment);
@@ -178,7 +294,13 @@ public class Editor extends javax.swing.JFrame {
     }//GEN-LAST:event_menuLargerFontActionPerformed
     
     private void menuRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuRunActionPerformed
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        logArea.setText("");
+        OutputStream os = new OutputStream(){
+            @Override
+            public void write(int b) {
+                logArea.append(String.valueOf((char)b));
+            }
+        };
         PrintStream ps = new PrintStream(os);
         System.setErr(ps);
         System.setOut(ps);
@@ -187,10 +309,8 @@ public class Editor extends javax.swing.JFrame {
         try{
             controller.eval(className,code);
         } catch (Throwable ex) {
-            //System.out.println("compile " + className + " unsuccessfully.");
             ex.printStackTrace(ps);
         }
-        logArea.setText(os.toString());
     }//GEN-LAST:event_menuRunActionPerformed
 
     public static void main(Kalangeditor controller) {
@@ -227,7 +347,7 @@ public class Editor extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextArea codeArea;
+    private RSyntaxTextArea codeArea;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -237,7 +357,7 @@ public class Editor extends javax.swing.JFrame {
     private javax.swing.JMenuItem menuLargerFont;
     private javax.swing.JMenuItem menuRun;
     private javax.swing.JMenuItem menuSmallerFont;
-    private javax.swing.JMenu menuTopFIle;
+    private javax.swing.JMenu menuTopFile;
     private javax.swing.JMenu menuTopRun;
     private javax.swing.JMenu menuTopView;
     // End of variables declaration//GEN-END:variables
