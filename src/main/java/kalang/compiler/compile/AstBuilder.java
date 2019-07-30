@@ -464,10 +464,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             return null;
         }
         Type exprType = expr.getType();
-        expr = BoxUtil.assign(expr, expr.getType(), Types.BOOLEAN_TYPE);
+        expr = BoxUtil.assignToPrimitiveDataType(expr, expr.getType());
         if (expr == null) {
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, exprType + " cannot be converted to boolean", ctx.expression());
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, exprType + " cannot be converted to primitive data type", ctx.expression());
             return null;
+        }
+        if (!Types.isIntCompatibleType(expr.getType())) {
+            expr = createBinaryMathExpr(expr,new ConstExpr(0),BinaryExpr.OP_NE);
         }
         BlockStmt trueBody = null;
         BlockStmt falseBody = null;
@@ -1169,7 +1172,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             case UnaryExpr.OPERATION_NEG:
             case UnaryExpr.OPERATION_POS:
             case UnaryExpr.OPERATION_NOT:
-                expr = requireCastToPrimitive(expr,ctx.expression().start);
+                expr = requireCastToPrimitiveDataType(expr,ctx.expression().start);
                 break;
             default:
                 throw Exceptions.unexceptedValue(op);
@@ -1510,8 +1513,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Nullable
-    private ExprNode requireCastToPrimitive(ExprNode expr,Token token) {
-        expr = BoxUtil.assignToPrimitiveType(expr,expr.getType());
+    private ExprNode requireCastToPrimitiveDataType(ExprNode expr, Token token) {
+        expr = BoxUtil.assignToPrimitiveDataType(expr,expr.getType());
         if (expr == null) {
             diagnosisReporter.report(Diagnosis.Kind.ERROR
                     , "unable to cast " + expr.getType() + " to primitive type", token);

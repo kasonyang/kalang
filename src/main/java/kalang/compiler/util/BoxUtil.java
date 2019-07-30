@@ -28,7 +28,10 @@ public class BoxUtil {
             ;
 
     @Nullable
-    public static ExprNode assignToPrimitiveType(ExprNode expr,Type fromType) {
+    public static ExprNode assignToPrimitiveDataType(ExprNode expr, Type fromType) {
+        if (Types.VOID_TYPE.equals(fromType)) {
+            return null;
+        }
         if (fromType instanceof PrimitiveType) {
             return expr;
         }

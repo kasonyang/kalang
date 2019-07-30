@@ -201,6 +201,13 @@ public class Types {
          else return false;
     }
 
+    public static boolean isIntCompatibleType(Type type) {
+        Type[] intCompatibleType = new Type[] {
+                BOOLEAN_TYPE,BYTE_TYPE,SHORT_TYPE,INT_TYPE
+        };
+        return Arrays.asList(intCompatibleType).contains(type);
+    }
+
     public static boolean isNumberClass(Type type) {
         if(type instanceof ObjectType)
             return Arrays.asList(numberClass).contains(((ObjectType)type).getName());
