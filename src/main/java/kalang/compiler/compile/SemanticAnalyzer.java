@@ -107,21 +107,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
     public boolean validateElementExpr(ElementExpr node) {
         return requireArray(node, node.getArrayExpr().getType());
     }
-
-    public boolean validateUnaryExpr(UnaryExpr node) {
-        String op = node.getOperation();
-        Type et = node.getExpr().getType();
-        switch(op){
-            case UnaryExpr.OPERATION_LOGIC_NOT:
-                return requireBoolean(node, et);
-            case UnaryExpr.OPERATION_NEG:
-            case UnaryExpr.OPERATION_POS:
-            case UnaryExpr.OPERATION_NOT:
-                return requireNumber(node, et);
-            default:
-                throw Exceptions.unexceptedValue(op);
-        }
-    }
     
     public boolean validateAssign(AssignableExpr to,ExprNode from, OffsetRange offset,boolean isInitializationStmt){
         if (to instanceof VarExpr) {

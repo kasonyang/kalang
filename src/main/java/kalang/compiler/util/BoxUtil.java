@@ -5,10 +5,7 @@ import kalang.compiler.AstNotFoundException;
 import kalang.compiler.MethodNotFoundException;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.AstLoader;
-import kalang.compiler.core.ObjectType;
-import kalang.compiler.core.PrimitiveType;
-import kalang.compiler.core.Type;
-import kalang.compiler.core.Types;
+import kalang.compiler.core.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,6 +26,21 @@ public class BoxUtil {
             //CAST_OBJECT_TO_STRING = 5,
             //CAST_PRIMITIVE_TO_STRING = 6
             ;
+
+    @Nullable
+    public static ExprNode assignToPrimitiveType(ExprNode expr,Type fromType) {
+        if (fromType instanceof PrimitiveType) {
+            return expr;
+        }
+        if (!(fromType instanceof ObjectType)) {
+            return null;
+        }
+        PrimitiveType targetPrimitiveType = Types.getPrimitiveType((ObjectType) fromType);
+        if (targetPrimitiveType == null) {
+            return null;
+        }
+        return assign(expr,fromType,targetPrimitiveType);
+    }
 
     @Nullable
     public static ExprNode assign(@Nonnull ExprNode expr, @Nonnull Type fromType,@Nonnull Type toType) {
@@ -72,12 +84,6 @@ public class BoxUtil {
             if (Types.isRootObjectType((ObjectType)toType)){
                 return CAST_PRIMITIVE_TO_OBJECT;
             }
-//            if (fromType.equals(Types.NULL_TYPE)) {
-//                return CAST_NOTHING;
-//            }
-////            if (toType.equals(Types.STRING_CLASS_TYPE)) {
-////                return CAST_PRIMITIVE_TO_STRING;
-////            }
             PrimitiveType toPriType = Types.getPrimitiveType((ObjectType) toType);
             if (toPriType == null) {
                 return CAST_UNSUPPORTED;
@@ -87,7 +93,9 @@ public class BoxUtil {
             }
         } else if (fromType instanceof ObjectType
                 && toType instanceof PrimitiveType) {
-//            if() {
+            if (NullableKind.NULLABLE.equals(((ObjectType) fromType).getNullable())) {
+                return CAST_UNSUPPORTED;
+            }
             ObjectType fromClassType = (ObjectType) fromType;
             PrimitiveType fromPrimitive = Types.getPrimitiveType(fromClassType);
             if (fromPrimitive == null) {
@@ -96,16 +104,7 @@ public class BoxUtil {
             if (fromPrimitive.equals(toType)) {
                 return CAST_OBJECT_TO_PRIMITIVE;
             }
-        } 
-//        else if (
-//                (
-//                fromType instanceof ObjectType
-//                || fromType instanceof ArrayType
-//                )
-//                && toType.equals(Types.STRING_CLASS_TYPE)
-//                ) {
-//            return CAST_OBJECT_TO_STRING;
-//        }
+        }
         return CAST_UNSUPPORTED;
     }
 

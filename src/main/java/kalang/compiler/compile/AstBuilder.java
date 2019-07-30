@@ -1156,9 +1156,25 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public UnaryExpr visitUnaryExpr(UnaryExprContext ctx) {
-        String op = ctx.getChild(0).getText();   
-        UnaryExpr ue = new UnaryExpr( visitExpression( ctx.expression() ) , op );
-        if(!semanticAnalyzer.validateUnaryExpr(ue)) return null;
+        String op = ctx.getChild(0).getText();
+        ExprNode expr = visitExpression(ctx.expression());
+        if (expr == null) {
+            return null;
+        }
+        switch(op){
+            case UnaryExpr.OPERATION_LOGIC_NOT:
+                expr = requireCastable(expr,expr.getType(),Types.BOOLEAN_TYPE,ctx.expression().start);
+                //TODO create a new node for logic-not expression?
+                break;
+            case UnaryExpr.OPERATION_NEG:
+            case UnaryExpr.OPERATION_POS:
+            case UnaryExpr.OPERATION_NOT:
+                expr = requireCastToPrimitive(expr,ctx.expression().start);
+                break;
+            default:
+                throw Exceptions.unexceptedValue(op);
+        }
+        UnaryExpr ue = new UnaryExpr(expr, op);
         mapAst(ue, ctx);
         return ue;
     }
@@ -1483,12 +1499,22 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     
-    
+    @Nullable
     private ExprNode requireCastable(ExprNode expr1, Type fromType, Type toType,Token token) {
         ExprNode expr = BoxUtil.assign(expr1,fromType,toType);
         if(expr==null){
             diagnosisReporter.report(Diagnosis.Kind.ERROR
                     , "unable to cast " + fromType + " to " + toType, token);
+        }
+        return expr;
+    }
+
+    @Nullable
+    private ExprNode requireCastToPrimitive(ExprNode expr,Token token) {
+        expr = BoxUtil.assignToPrimitiveType(expr,expr.getType());
+        if (expr == null) {
+            diagnosisReporter.report(Diagnosis.Kind.ERROR
+                    , "unable to cast " + expr.getType() + " to primitive type", token);
         }
         return expr;
     }

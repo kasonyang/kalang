@@ -1,0 +1,7 @@
+int ifNotBoolean() {
+    val b = Boolean.valueOf(false);
+    if (!b) {
+        return 6;
+    }
+    return 1;
+}
