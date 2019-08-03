@@ -6,10 +6,7 @@ import kalang.compiler.antlr.KalangParserBaseVisitor;
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
-import kalang.compiler.util.InvalidModifierException;
-import kalang.compiler.util.ModifierUtil;
-import kalang.compiler.util.OffsetRangeHelper;
-import kalang.compiler.util.StringLiteralUtil;
+import kalang.compiler.util.*;
 import kalang.type.FunctionClasses;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -38,6 +35,16 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     abstract ClassNode getCurrentClass();
 
     abstract ClassNode getTopClass();
+
+    @Nullable
+    protected ExprNode requireCastToPrimitiveDataType(ExprNode expr, OffsetRange offsetRange) {
+        expr = BoxUtil.assignToPrimitiveDataType(expr,expr.getType());
+        if (expr == null) {
+            diagnosisReporter.report(Diagnosis.Kind.ERROR
+                    , "unable to cast " + expr.getType() + " to primitive type", offsetRange);
+        }
+        return expr;
+    }
 
     protected int parseModifier(KalangParser.VarModifierContext modifier) {
         int defaultModifier = Modifier.PUBLIC;

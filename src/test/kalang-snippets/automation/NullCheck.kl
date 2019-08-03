@@ -1,0 +1,7 @@
+int andExprCheck() {
+    val s as String? = "test";
+    if(s!=null && !s.isEmpty()) {
+        return 6;
+    }
+    return 1;
+}
