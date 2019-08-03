@@ -872,8 +872,23 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     
     private ExprNode createBinaryExpr(String op,ExpressionContext exprCtx1,ExpressionContext exprCtx2,ParserRuleContext ctx){
         ExprNode expr1 = visitExpression(exprCtx1);
-        ExprNode expr2 = visitExpression(exprCtx2);
-        if (expr1==null || expr2==null){
+        if (expr1 == null) {
+            return null;
+        }
+        ExprNode expr2;
+        if ("&&".equals(op) || "||".equals(op)) {
+            methodCtx.newOverrideTypeStack();
+            expr1 = requireCastToPrimitiveDataType(expr1,OffsetRangeHelper.getOffsetRange(exprCtx1));
+            if (expr1 == null) {
+                return null;
+            }
+            methodCtx.onIf(expr1,"&&".equals(op));
+            expr2 = visitExpression(exprCtx2);
+            methodCtx.popOverrideTypeStack();
+        } else {
+            expr2 = visitExpression(exprCtx2);
+        }
+        if (expr2 == null){
             return null;
         }
         Type type1 = expr1.getType();
@@ -925,7 +940,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 return null;
             }
         } else if ("&&".equals(op) || "||".equals(op)) {
-            if (!Types.isBoolean(type1) || !Types.isBoolean(type2)) {
+            expr2 = requireCastToPrimitiveDataType(expr2,OffsetRangeHelper.getOffsetRange(exprCtx2));
+            if (expr2 == null ){
                 this.diagnosisReporter.report(Diagnosis.Kind.ERROR, errMsg,ctx);
                 return null;
             }
@@ -1172,7 +1188,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             case UnaryExpr.OPERATION_NEG:
             case UnaryExpr.OPERATION_POS:
             case UnaryExpr.OPERATION_NOT:
-                expr = requireCastToPrimitiveDataType(expr,ctx.expression().start);
+                expr = requireCastToPrimitiveDataType(expr,OffsetRangeHelper.getOffsetRange(ctx.expression()));
                 break;
             default:
                 throw Exceptions.unexceptedValue(op);
@@ -1508,16 +1524,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if(expr==null){
             diagnosisReporter.report(Diagnosis.Kind.ERROR
                     , "unable to cast " + fromType + " to " + toType, token);
-        }
-        return expr;
-    }
-
-    @Nullable
-    private ExprNode requireCastToPrimitiveDataType(ExprNode expr, Token token) {
-        expr = BoxUtil.assignToPrimitiveDataType(expr,expr.getType());
-        if (expr == null) {
-            diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    , "unable to cast " + expr.getType() + " to primitive type", token);
         }
         return expr;
     }
@@ -1991,16 +1997,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return result;
     }
-    
+
     private ExprNode createBinaryBoolOperateExpr(ExprNode expr1,ExprNode expr2,String op) {
-        Type type1 = expr1.getType();
-        Type type2 = expr2.getType();
-        boolean isPrimitive1 = type1 instanceof PrimitiveType;
-        boolean isPrimitive2 = type2 instanceof PrimitiveType;
-        PrimitiveType numPriType1 = isPrimitive1 ? (PrimitiveType)type1 : Types.getPrimitiveType((ObjectType)type1);
-        PrimitiveType numPriType2 = isPrimitive2 ? (PrimitiveType)type2 : Types.getPrimitiveType((ObjectType)type2);
-        expr1 = requireImplicitCast(numPriType1, expr1, expr1.offset);
-        expr2 = requireImplicitCast(numPriType2, expr2, expr2.offset);
+        expr1 = requireCastToPrimitiveDataType(expr1,expr1.offset);
+        expr2 = requireCastToPrimitiveDataType(expr2,expr2.offset);
         if (expr1 == null || expr2 == null) {
             return null;
         }
