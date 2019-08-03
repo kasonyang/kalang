@@ -306,11 +306,13 @@ public class Editor extends javax.swing.JFrame {
         System.setOut(ps);
         String code = codeArea.getText();
         String className = "Code" + (new Date()).getTime();
-        try{
-            controller.eval(className,code);
-        } catch (Throwable ex) {
-            ex.printStackTrace(ps);
-        }
+        new Thread(()->{
+            try{
+                controller.eval(className,code);
+            } catch (Throwable ex) {
+                ex.printStackTrace(ps);
+            }
+        }).start();
     }//GEN-LAST:event_menuRunActionPerformed
 
     public static void main(Kalangeditor controller) {
