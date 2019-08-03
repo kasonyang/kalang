@@ -6,10 +6,7 @@ import kalang.compiler.ast.ClassNode;
 import kalang.compiler.core.Types;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
-import kalang.helper.CollectionPlugin;
-import kalang.helper.FilePlugin;
-import kalang.helper.PrintHelper;
-import kalang.helper.StringPlugin;
+import kalang.helper.*;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import javax.annotation.Nonnull;
@@ -64,7 +61,9 @@ public class CompilationUnit {
         astBuilder.importStaticMember(Types.requireClassType(CollectionPlugin.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(PrintHelper.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(StringPlugin.class.getName()).getClassNode(),null);
-
+        astBuilder.importStaticMember(Types.requireClassType(InputStreamPlugin.class.getName()).getClassNode(),null);
+        astBuilder.importStaticMember(Types.requireClassType(OutputStreamPlugin.class.getName()).getClassNode(),null);
+        astBuilder.importStaticMember(Types.requireClassType(DigestPlugin.class.getName()).getClassNode(),null);
         semanticAnalyzer = context.createSemanticAnalyzer(this,context.getAstLoader());
         compile(PHASE_INITIALIZE);
     }
