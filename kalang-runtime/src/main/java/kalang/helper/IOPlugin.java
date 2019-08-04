@@ -62,8 +62,8 @@ public class IOPlugin {
     }
 
     @PluginMethod
-    public static void readTo(InputStream is, File destFile) {
-        readTo(is, destFile);
+    public static void readTo(InputStream is, File destFile) throws IOException {
+        readTo(is, destFile,false);
     }
 
     @PluginMethod
