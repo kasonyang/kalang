@@ -57,12 +57,10 @@ public class CompilationUnit {
         astBuilder.importPackage("java.io");
         astBuilder.importPackage("java.nio");
         astBuilder.importPackage("kalang.io");
-        astBuilder.importStaticMember(Types.requireClassType(FilePlugin.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(CollectionPlugin.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(PrintHelper.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(StringPlugin.class.getName()).getClassNode(),null);
-        astBuilder.importStaticMember(Types.requireClassType(InputStreamPlugin.class.getName()).getClassNode(),null);
-        astBuilder.importStaticMember(Types.requireClassType(OutputStreamPlugin.class.getName()).getClassNode(),null);
+        astBuilder.importStaticMember(Types.requireClassType(IOPlugin.class.getName()).getClassNode(),null);
         astBuilder.importStaticMember(Types.requireClassType(DigestPlugin.class.getName()).getClassNode(),null);
         semanticAnalyzer = context.createSemanticAnalyzer(this,context.getAstLoader());
         compile(PHASE_INITIALIZE);
