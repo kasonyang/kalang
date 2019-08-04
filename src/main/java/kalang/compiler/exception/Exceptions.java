@@ -1,5 +1,7 @@
 package kalang.compiler.exception;
 
+import kalang.annotation.Nullable;
+
 import java.util.Objects;
 
 /**
@@ -36,7 +38,7 @@ public class Exceptions {
         return new RuntimeException(ex);
     }
     
-    public static RuntimeException unexceptedValue(Object obj) {
-        return new RuntimeException("unexcepted value:" + obj);
+    public static RuntimeException unexceptedValue(@Nullable Object obj) {
+        return new RuntimeException("unexpected value:" + obj);
     }
 }

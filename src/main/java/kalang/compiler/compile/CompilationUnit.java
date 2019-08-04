@@ -50,6 +50,8 @@ public class CompilationUnit {
         tokens = context.createTokenStream(this,lexer);
         parser = context.createParser(this,tokens);
         astBuilder = context.createAstBuilder(this,parser);
+        //TODO astBuilder.getAstLoader() != context.getAstLoader?
+        AstLoader astLoader = context.getAstLoader();
         //should move to configuration?
         astBuilder.importPackage("java.lang");
         astBuilder.importPackage("java.util");
@@ -57,12 +59,12 @@ public class CompilationUnit {
         astBuilder.importPackage("java.io");
         astBuilder.importPackage("java.nio");
         astBuilder.importPackage("kalang.io");
-        astBuilder.importStaticMember(Types.requireClassType(CollectionPlugin.class.getName()).getClassNode(),null);
-        astBuilder.importStaticMember(Types.requireClassType(PrintHelper.class.getName()).getClassNode(),null);
-        astBuilder.importStaticMember(Types.requireClassType(StringPlugin.class.getName()).getClassNode(),null);
-        astBuilder.importStaticMember(Types.requireClassType(IOPlugin.class.getName()).getClassNode(),null);
-        astBuilder.importStaticMember(Types.requireClassType(DigestPlugin.class.getName()).getClassNode(),null);
-        semanticAnalyzer = context.createSemanticAnalyzer(this,context.getAstLoader());
+        astBuilder.importStaticMember(astLoader.loadAst(CollectionPlugin.class.getName()),null);
+        astBuilder.importStaticMember(astLoader.loadAst(PrintHelper.class.getName()),null);
+        astBuilder.importStaticMember(astLoader.loadAst(StringPlugin.class.getName()),null);
+        astBuilder.importStaticMember(astLoader.loadAst(IOPlugin.class.getName()),null);
+        astBuilder.importStaticMember(astLoader.loadAst(DigestPlugin.class.getName()),null);
+        semanticAnalyzer = context.createSemanticAnalyzer(this,astLoader);
         compile(PHASE_INITIALIZE);
     }
     

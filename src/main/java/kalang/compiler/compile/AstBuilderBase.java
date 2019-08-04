@@ -1,6 +1,9 @@
 package kalang.compiler.compile;
 
+import kalang.annotation.PluginMethod;
+import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.FieldNotFoundException;
+import kalang.compiler.MethodNotFoundException;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.antlr.KalangParserBaseVisitor;
 import kalang.compiler.ast.*;
@@ -16,15 +19,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected final DiagnosisReporter diagnosisReporter;
     protected final SemanticAnalyzer semanticAnalyzer;
     private CompilationUnit compilationUnit;
+
+    protected MethodContext methodCtx;
 
     public AstBuilderBase(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
@@ -35,6 +38,228 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     abstract ClassNode getCurrentClass();
 
     abstract ClassNode getTopClass();
+
+    public void importPackage(@Nonnull String packageName) {
+        compilationUnit.getTypeNameResolver().importPackage(packageName);
+    }
+
+    public void importStaticMember(ClassNode classNode,@Nullable String name) {
+        if (name!=null && !name.isEmpty()) {
+            compilationUnit.staticImportMembers.put(name,classNode);
+        } else {
+            compilationUnit.staticImportPaths.add(classNode);
+        }
+    }
+
+    protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset){
+        ExprNode ret;
+        Type type = expr.getType();
+        if(!(type instanceof  ObjectType)){
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"unsupported type",offset);
+            return null;
+        }
+        ObjectType exprType = (ObjectType) type;
+        if ((exprType instanceof ArrayType)
+                && fieldName.equals("length")) {
+            ret = new ArrayLengthExpr(expr);
+        } else {
+            try {
+                ret = ObjectFieldExpr.create(expr, fieldName,getCurrentClass());
+            } catch (FieldNotFoundException ex) {
+                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,offset);
+                ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
+            }
+        }
+        mapAst(ret, offset);
+        return ret;
+    }
+
+    protected void processConstructor() {
+        ClassNode thisClazz = getCurrentClass();
+        MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
+        for(MethodNode m:methods) {
+            BlockStmt mbody = m.getBody();
+            if(AstUtil.isConstructor(m)){
+                @SuppressWarnings("null")
+                List<Statement> bodyStmts = mbody.statements;
+                if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
+                    try {
+                        bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
+                    } catch (MethodNotFoundException|AmbiguousMethodException ex) {
+                        diagnosisReporter.report(Diagnosis.Kind.ERROR
+                                ,"default constructor not found"
+                                ,m.offset
+                        );
+                    }
+                }
+                //check super()
+                int stmtsSize = mbody.statements.size();
+                assert stmtsSize > 0;
+                Statement firstStmt = mbody.statements.get(0);
+                if(!AstUtil.isConstructorCallStatement(firstStmt)){
+                    //TODO handle error
+                    throw new RuntimeException("missing constructor call");
+                }
+                mbody.statements.addAll(1, thisClazz.initStmts);
+            }
+        }
+    }
+
+    protected void checkMethod() {
+        MethodNode m = this.methodCtx.method;
+        boolean needReturn = (
+                m.getType() != null
+                        && !m.getType().equals(Types.VOID_TYPE)
+        );
+        BlockStmt mbody = m.getBody();
+        if (mbody != null && needReturn && !methodCtx.returned) {
+            ConstExpr defaultVal = m.getDefaultReturnValue();
+            if (defaultVal!=null) {
+                mbody.statements.add(new ReturnStmt(defaultVal));
+            } else {
+                this.diagnosisReporter.report(
+                        Diagnosis.Kind.ERROR
+                        , "Missing return statement in method:" + MethodUtil.toString(methodCtx.method)
+                        , m.offset
+                );
+            }
+        }
+        new InitializationAnalyzer(compilationUnit, compilationUnit.getCompileContext().getAstLoader()).check(getCurrentClass(), m);
+    }
+
+    @Nonnull
+    protected LocalVarNode declareTempLocalVar(Type type){
+        LocalVarNode var = declareLocalVar(null, type,0,OffsetRange.NONE);
+        if(var==null) throw Exceptions.unexceptedValue(var);
+        return var;
+    }
+
+    @Nullable
+    protected LocalVarNode declareLocalVar(String name,Type type,int modifier,OffsetRange offset){
+        LocalVarNode localVarNode = new LocalVarNode(type,name,modifier);
+        ParameterNode param = methodCtx.getNamedParameter(name);
+        LocalVarNode var = methodCtx.getNamedLocalVar(name);
+        if(param!=null || var!=null){
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"variable is defined",  offset);
+            return null;
+        }
+        if(name!=null){
+            this.methodCtx.varTables.put(name,localVarNode);
+        }
+        return localVarNode;
+    }
+
+    protected boolean isDefindedId(String id){
+        return methodCtx!=null &&
+                (methodCtx.getNamedLocalVar(id)!=null
+                        || methodCtx.getNamedParameter(id) != null);
+    }
+
+    protected void enterMethod(MethodNode method) {
+        methodCtx = new MethodContext(this.getCurrentClass(),method);
+        methodCtx.returned = false;
+    }
+
+    protected AssignableExpr getStaticFieldExpr(ClassReference clazz,String fieldName,OffsetRange offset){
+        AssignableExpr ret;
+        try {
+            ret = StaticFieldExpr.create(clazz,fieldName,getCurrentClass());
+        } catch (FieldNotFoundException ex) {
+            //ret = new UnknownFieldExpr(clazz, clazz.getReferencedClassNode(), fieldName);
+            return null;
+        }
+        mapAst(ret, offset);
+        return ret;
+    }
+
+    protected BinaryExpr constructBinaryExpr(ExprNode expr1,ExprNode expr2,String op){
+        BinaryExpr binExpr;
+        switch(op){
+            case "==":
+            case "!=":
+            case ">":
+            case ">=":
+            case "<":
+            case "<=":
+                binExpr = new CompareExpr(expr1, expr2, op);
+                break;
+            case "&&":
+            case "||":
+                binExpr = new LogicExpr(expr1, expr2, op);
+                break;
+            default:
+                binExpr = new MathExpr(expr1, expr2, op);
+                break;
+        }
+        semanticAnalyzer.validateBinaryExpr(binExpr);
+        return binExpr;
+    }
+
+    protected void methodIsAmbiguous(Token token , AmbiguousMethodException ex){
+        diagnosisReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), token);
+    }
+
+    protected void methodNotFound(Token token , Type type,String methodName,ExprNode[] params){
+        methodNotFound(token,type.getName(),methodName,params);
+    }
+
+    protected void methodNotFound(Token token , String className,String methodName,ExprNode[] params){
+        Type[] types = AstUtil.getExprTypes(params);
+        diagnosisReporter.report(Diagnosis.Kind.ERROR
+                , "method not found:" + MethodUtil.toString(className,methodName, types)
+                , token
+        );
+    }
+
+    @Nullable
+    protected ExprNode concatExpressionsToStringExpr(ExprNode[] expr){
+        ExprNode ret;
+        try {
+            ret = new NewObjectExpr(Types.requireClassType("java.lang.StringBuilder"),new ExprNode[0]);
+        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+            throw Exceptions.unexceptedException(ex);
+        }
+        for(int i=0;i<expr.length;i++){
+            ret = ObjectInvokeExpr.create(ret, "append",new ExprNode[]{expr[i]});
+        }
+        return ObjectInvokeExpr.create(ret,"toString",new ExprNode[0]);
+    }
+
+    @Nullable
+    protected ExprNode requireImplicitCast(Type resultType,@Nullable ExprNode expr,OffsetRange offset) {
+        if (expr==null) {
+            return null;
+        }
+        Type exprType = expr.getType();
+        ExprNode result = BoxUtil.assign(expr, exprType, resultType);
+        if (result == null) {
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s cannot be converted to %s", exprType,resultType), offset);
+            return null;
+        }
+        return result;
+    }
+
+    @Nullable
+    protected ExprNode requireCastable(ExprNode expr1, Type fromType, Type toType,OffsetRange offset) {
+        ExprNode expr = BoxUtil.assign(expr1,fromType,toType);
+        if(expr==null){
+            diagnosisReporter.report(Diagnosis.Kind.ERROR
+                    , "unable to cast " + fromType + " to " + toType, offset);
+        }
+        return expr;
+    }
+
+    @Nonnull
+    protected ObjectType getTypeForGeneric(Type type) {
+        if (Types.NULL_TYPE.equals(type)) {
+            return Types.getRootType();
+        } else if (type instanceof PrimitiveType) {
+            ObjectType objType = Types.getClassType((PrimitiveType) type);
+            Objects.requireNonNull(objType);
+            return objType;
+        }
+        return (ObjectType) type;
+    }
 
     @Nullable
     protected ExprNode requireCastToPrimitiveDataType(ExprNode expr, OffsetRange offsetRange) {
@@ -76,6 +301,10 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected void mapAst(@Nonnull AstNode node, @Nonnull ParserRuleContext tree) {
         node.offset = OffsetRangeHelper.getOffsetRange(tree);
+    }
+
+    protected void mapAst(AstNode node,OffsetRange offsetRange) {
+        node.offset = offsetRange;
     }
 
     protected void mapAst(@Nonnull AstNode node, @Nonnull Token token) {
@@ -344,6 +573,93 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             }
         }
         return scStaticMethods;
+    }
+
+    protected ExprNode createInitializedArray(Type type,ExprNode[] exprs){
+        NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(exprs.length));
+        if(exprs.length>0){
+            Statement[] initStmts = new Statement[exprs.length+2];
+            //TODO create a method for temp var creation
+            //TODO localVarNode should add a type parameter
+            LocalVarNode local = this.declareTempLocalVar(ae.getType());
+            initStmts[0] = new VarDeclStmt(local);
+            VarExpr arrVar = new VarExpr(local);
+            initStmts[1] = new ExprStmt(new AssignExpr(arrVar,ae));
+            for(int i=0;i<exprs.length;i++){
+                initStmts[i+2] =new ExprStmt(
+                        new AssignExpr(
+                                new ElementExpr(arrVar, new ConstExpr(i))
+                                , exprs[i]
+                        )
+                );
+            }
+            return new MultiStmtExpr(Arrays.asList(initStmts), arrVar);
+        }else{
+            return ae;
+        }
+    }
+
+    protected boolean isInConstructor(){
+        return "<init>".equals(this.methodCtx.method.getName());
+    }
+
+    protected ExprNode createBinaryBoolOperateExpr(ExprNode expr1,ExprNode expr2,String op) {
+        expr1 = requireCastToPrimitiveDataType(expr1,expr1.offset);
+        expr2 = requireCastToPrimitiveDataType(expr2,expr2.offset);
+        if (expr1 == null || expr2 == null) {
+            return null;
+        }
+        return constructBinaryExpr(expr1, expr2, op);
+    }
+
+
+    protected ExprNode createBinaryMathExpr(ExprNode expr1,ExprNode expr2,String op){
+        Type type1 = expr1.getType();
+        Type type2 = expr2.getType();
+        boolean isPrimitive1 = type1 instanceof PrimitiveType;
+        boolean isPrimitive2 = type2 instanceof PrimitiveType;
+        PrimitiveType numPriType1 = isPrimitive1 ? (PrimitiveType)type1 : Types.getPrimitiveType((ObjectType)type1);
+        PrimitiveType numPriType2 = isPrimitive2 ? (PrimitiveType)type2 : Types.getPrimitiveType((ObjectType)type2);
+        PrimitiveType resultType = MathType.getType(numPriType1, numPriType2);
+        expr1 = requireImplicitCast(resultType,requireImplicitCast(numPriType1, expr1, expr1.offset),expr1.offset);
+        expr2 = requireImplicitCast(resultType, requireImplicitCast(numPriType2, expr2, expr2.offset), expr2.offset);
+        if (expr1 == null || expr2 == null) {
+            return null;
+        }
+        return constructBinaryExpr(expr1, expr2, op);
+    }
+
+    protected void checkAndBuildInterfaceMethods(ClassNode clazz) {
+        for(ClassNode c:clazz.classes) {
+            checkAndBuildInterfaceMethods(c);
+        }
+        if (Modifier.isAbstract(clazz.modifier)) {
+            return;
+        }
+        Map<MethodDescriptor, MethodNode> implementationMap = InterfaceUtil.getImplementationMap(clazz);
+        for(Map.Entry<MethodDescriptor,MethodNode> e:implementationMap.entrySet()) {
+            MethodDescriptor interfaceMethod = e.getKey();
+            MethodNode implementedMethod = e.getValue();
+            if (implementedMethod == null && Modifier.isAbstract(interfaceMethod.getModifier())) {
+                String msg = String.format(
+                        "please override abstract method %s in %s",
+                        interfaceMethod.toString()
+                        ,interfaceMethod.getMethodNode().getClassNode().name
+                );
+                diagnosisReporter.report(Diagnosis.Kind.ERROR,msg, clazz.offset);
+            }
+        }
+    }
+
+    protected List<MethodDescriptor> getImportedPluginMethod(String methodName) {
+        List<MethodDescriptor> results = new LinkedList<>();
+        Collection<MethodDescriptor> staticImportedMds = getStaticImportedMethods(methodName);
+        for(MethodDescriptor m:staticImportedMds) {
+            if (AnnotationUtil.has(m.getMethodNode().getAnnotations(), PluginMethod.class.getName())) {
+                results.add(m);
+            }
+        }
+        return results;
     }
 
     protected List<MethodDescriptor> getStaticImportedMethods(String methodName) {

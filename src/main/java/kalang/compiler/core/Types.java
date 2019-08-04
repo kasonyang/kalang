@@ -162,12 +162,7 @@ public class Types {
 
     @Deprecated
     public static ObjectType requireClassType(String className){
-        try {
-            return Types.getClassType(className);
-        } catch (AstNotFoundException ex) {
-            Logger.getLogger(Types.class.getName()).log(Level.SEVERE, null, ex);
-            throw new RuntimeException("failed to load class type:"+className);
-        }
+        return Types.getClassType(className);
     }
 
     public static ObjectType requireClassType(String className,NullableKind nullableKind){
