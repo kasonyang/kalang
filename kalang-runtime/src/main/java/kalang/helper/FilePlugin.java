@@ -5,6 +5,7 @@ import kalang.annotation.PluginMethod;
 import java.io.*;
 import java.nio.charset.Charset;
 
+@Deprecated
 public class FilePlugin {
 
     @PluginMethod
