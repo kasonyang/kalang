@@ -40,7 +40,7 @@ public class LambdaUtil {
         try {
             invokeExpr = ObjectInvokeExpr.create(new ThisExpr(classNode), "call", argExprs, classNode);
         } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-            throw Exceptions.unexceptedException(ex);
+            throw Exceptions.unexpectedException(ex);
         }
         pmethod.getBody().statements.add(new ReturnStmt(invokeExpr));
     }

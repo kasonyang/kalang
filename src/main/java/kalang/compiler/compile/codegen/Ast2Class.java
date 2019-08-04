@@ -345,7 +345,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         int vid = varIdCounter;
         int vSize = asmType(vo.getType()).getSize();
         if(vSize==0){
-            throw Exceptions.unexceptedException("");
+            throw Exceptions.unexpectedException("");
         }
         varIdCounter+= vSize;
         varIds.put(vo, vid);          
@@ -361,7 +361,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Integer vid = this.varIds.get(var);
         //TODO why vid==null
 //        if(vid==null){
-//            throw Exceptions.unexceptedValue(vid);
+//            throw Exceptions.unexpectedValue(vid);
 //        }
         Label endLabel = new Label();
         md.visitLabel(endLabel);
@@ -1092,7 +1092,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             else if(tt.equals(FLOAT_TYPE)) return I2F;
             else if(tt.equals(DOUBLE_TYPE)) return I2D;
         }
-        throw Exceptions.unexceptedException("It is unable to cast " + fromType + " to " + toType);
+        throw Exceptions.unexpectedException("It is unable to cast " + fromType + " to " + toType);
     }
 
     @Override

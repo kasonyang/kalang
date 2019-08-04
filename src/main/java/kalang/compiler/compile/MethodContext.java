@@ -59,7 +59,7 @@ public class MethodContext {
                 }else if(type instanceof ObjectType){
                     ns = getNullState(((ObjectType) type).getNullable());
                 }else{
-                    throw Exceptions.unexceptedValue(type);
+                    throw Exceptions.unexpectedValue(type);
                 }
                 nullState.put(key, ns);
             }
@@ -134,7 +134,7 @@ public class MethodContext {
             }else if(ns==NULLSTATE_MUST_NULL|| ns== NULLSTATE_NULLABLE){
                 nullable = NullableKind.NULLABLE;
             }else{
-                throw Exceptions.unexceptedValue(ns);
+                throw Exceptions.unexpectedValue(ns);
             }
             return Types.getClassType((ClassType)type,nullable);
         }else{
@@ -239,7 +239,7 @@ public class MethodContext {
         }else if(nullable==NullableKind.UNKNOWN){
             ns = NULLSTATE_UNKNOWN;
         }else{
-            throw Exceptions.unexceptedValue(nullable);
+            throw Exceptions.unexpectedValue(nullable);
         }
         return ns;
     }

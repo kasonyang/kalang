@@ -130,7 +130,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     @Nonnull
     protected LocalVarNode declareTempLocalVar(Type type){
         LocalVarNode var = declareLocalVar(null, type,0,OffsetRange.NONE);
-        if(var==null) throw Exceptions.unexceptedValue(var);
+        if(var==null) throw Exceptions.unexpectedValue(var);
         return var;
     }
 
@@ -149,7 +149,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return localVarNode;
     }
 
-    protected boolean isDefindedId(String id){
+    protected boolean isDefinedId(String id){
         return methodCtx!=null &&
                 (methodCtx.getNamedLocalVar(id)!=null
                         || methodCtx.getNamedParameter(id) != null);
@@ -217,7 +217,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         try {
             ret = new NewObjectExpr(Types.requireClassType("java.lang.StringBuilder"),new ExprNode[0]);
         } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-            throw Exceptions.unexceptedException(ex);
+            throw Exceptions.unexpectedException(ex);
         }
         for(int i=0;i<expr.length;i++){
             ret = ObjectInvokeExpr.create(ret, "append",new ExprNode[]{expr[i]});
@@ -498,7 +498,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         } else if(ctx.getText().equals("null")) {
             v = null;
         }else{
-            throw Exceptions.unexceptedValue(ctx.getText());
+            throw Exceptions.unexpectedValue(ctx.getText());
         }
         ConstExpr ce = new ConstExpr(v);
         mapAst(ce,ctx);

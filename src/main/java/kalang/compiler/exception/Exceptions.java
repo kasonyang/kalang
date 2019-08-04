@@ -30,15 +30,15 @@ public class Exceptions {
         throw new IllegalArgumentException(Objects.toString(obj));
     }
     
-     public static RuntimeException unexceptedException(String msg){
+     public static RuntimeException unexpectedException(String msg){
          throw new RuntimeException(msg);
      }
 
-    public static RuntimeException unexceptedException(java.lang.Exception ex) {
+    public static RuntimeException unexpectedException(java.lang.Exception ex) {
         return new RuntimeException(ex);
     }
     
-    public static RuntimeException unexceptedValue(@Nullable Object obj) {
+    public static RuntimeException unexpectedValue(@Nullable Object obj) {
         return new RuntimeException("unexpected value:" + obj);
     }
 }

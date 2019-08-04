@@ -106,7 +106,7 @@ public class JvmClassNode extends ClassNode {
                     mType = Types.VOID_TYPE;// getType(clz);
                     mModifier = m.getModifiers();// | Modifier.STATIC;
                 } else {
-                    throw Exceptions.unexceptedValue(m);
+                    throw Exceptions.unexpectedValue(m);
                 }
                 MethodNode methodNode = createMethodNode(mType, mName, mModifier);
                 for (Parameter p : m.getParameters()) {
