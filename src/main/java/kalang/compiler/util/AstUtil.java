@@ -300,7 +300,7 @@ public class AstUtil {
                 ObjectInvokeExpr invokeExpr = ObjectInvokeExpr.create(newScriptExpr, "run", new ExprNode[]{new ParameterExpr(p)});
                 body.statements.add(new ExprStmt(invokeExpr));
             } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-                throw Exceptions.unexceptedException(ex);
+                throw Exceptions.unexpectedException(ex);
             }
         }
     }

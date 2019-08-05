@@ -5,7 +5,7 @@ import kalang.compiler.core.ObjectType;
  *
  * @author Kason Yang 
  */
-public class MethodNotFoundException extends Exception{
+public class MethodNotFoundException extends RuntimeException{
 
     public MethodNotFoundException(String message) {
         super(message);

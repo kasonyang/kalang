@@ -89,7 +89,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         if (this.isDeclaringNonStaticInnerClass()) {
             ClassNode parentClass = thisClazz.enclosingClass;
             if (parentClass == null) {
-                throw Exceptions.unexceptedValue(parentClass);
+                throw Exceptions.unexpectedValue(parentClass);
             }
             thisClazz.createField(Types.getClassType(parentClass), "this$0", Modifier.PRIVATE | ModifierConstant.SYNTHETIC);
         }
@@ -110,14 +110,14 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                     if (this.isDeclaringNonStaticInnerClass()) {
                         ClassNode enclosingClass = thisClazz.enclosingClass;
                         if (enclosingClass == null) {
-                            throw Exceptions.unexceptedValue(enclosingClass);
+                            throw Exceptions.unexpectedValue(enclosingClass);
                         }
                         ParameterNode outerInstanceParam = node.createParameter(0, Types.getClassType(enclosingClass), "this$0");
                         ExprNode parentFieldExpr = getObjectFieldExpr(
                                 new ThisExpr(Types.getClassType(thisClazz)), "this$0", ParserRuleContext.EMPTY
                         );
                         if (parentFieldExpr == null) {
-                            throw Exceptions.unexceptedValue(parentFieldExpr);
+                            throw Exceptions.unexpectedValue(parentFieldExpr);
                         }
                         body.statements.add(1, new ExprStmt(new AssignExpr((AssignableExpr) parentFieldExpr, new ParameterExpr(outerInstanceParam))));
                     }

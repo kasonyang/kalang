@@ -9,6 +9,7 @@ import java.util.List;
  *
  * @author Kason Yang
  */
+@Deprecated
 public class FileIO {
     
     public final static Charset DEFAULT_CHARSET = Charset.forName("utf-8");

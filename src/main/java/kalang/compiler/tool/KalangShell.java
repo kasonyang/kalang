@@ -73,7 +73,7 @@ public class KalangShell {
             try {
                 return (Script) scriptClass.newInstance();
             } catch (InstantiationException | IllegalAccessException ex) {
-                throw Exceptions.unexceptedException(ex);
+                throw Exceptions.unexpectedException(ex);
             }
         } else {
             throw new NonScriptFileException();

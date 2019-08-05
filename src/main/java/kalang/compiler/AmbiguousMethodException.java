@@ -9,7 +9,7 @@ import java.util.Collection;
  *
  * @author Kason Yang 
  */
-public class AmbiguousMethodException extends Exception{
+public class AmbiguousMethodException extends RuntimeException{
 
     public AmbiguousMethodException(Collection<? extends MethodDescriptor> methods){
         this(methods.toArray(new MethodDescriptor[methods.size()]));

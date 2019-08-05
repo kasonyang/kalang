@@ -1,5 +1,7 @@
 package kalang.compiler.exception;
 
+import kalang.annotation.Nullable;
+
 import java.util.Objects;
 
 /**
@@ -28,15 +30,15 @@ public class Exceptions {
         throw new IllegalArgumentException(Objects.toString(obj));
     }
     
-     public static RuntimeException unexceptedException(String msg){
+     public static RuntimeException unexpectedException(String msg){
          throw new RuntimeException(msg);
      }
 
-    public static RuntimeException unexceptedException(java.lang.Exception ex) {
+    public static RuntimeException unexpectedException(java.lang.Exception ex) {
         return new RuntimeException(ex);
     }
     
-    public static RuntimeException unexceptedValue(Object obj) {
-        return new RuntimeException("unexcepted value:" + obj);
+    public static RuntimeException unexpectedValue(@Nullable Object obj) {
+        return new RuntimeException("unexpected value:" + obj);
     }
 }
