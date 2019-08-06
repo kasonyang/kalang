@@ -76,6 +76,9 @@ public class BoxUtil {
         if (toType.isAssignableFrom(fromType)) {
             return CAST_NOTHING;
         }
+        if (Types.NULL_TYPE.equals(fromType)) {
+            return CAST_UNSUPPORTED;
+        }
         if (fromType instanceof PrimitiveType
                 && toType instanceof PrimitiveType) {
             //if ((toType) instanceof PrimitiveType) {

@@ -13,3 +13,8 @@ void voidTypeTest2() {
     };
     cb();
 }
+
+void consumerTest() {
+    val list = Arrays.asList(<Integer>[1,2,3]);
+    list.forEach({ it => println(it); });
+}

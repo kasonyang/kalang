@@ -319,7 +319,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return ast;
     }
 
-    protected ObjectType parseLambdaType(KalangParser.LambdaTypeContext ctx) {
+    protected ClassType parseLambdaType(KalangParser.LambdaTypeContext ctx) {
         NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
         KalangParser.TypeContext returnTypeCtx = ctx.returnType;
         Type returnType = this.parseType(returnTypeCtx);
