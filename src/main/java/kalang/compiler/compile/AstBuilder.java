@@ -1852,9 +1852,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             this.diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
             return null;
         }
-        for (int i=0;i<lambdaParamsCount;i++) {
+        for (int i=0;i<paramTypes.length;i++) {
             Type pt = paramTypes[i];
-            methodNode.createParameter(pt,ctx.lambdaParams.get(i).getText());
+            String name = null;
+            if (i<ctx.lambdaParams.size()) {
+                name = ctx.lambdaParams.get(i).getText();
+            }
+            methodNode.createParameter(pt,name);
         }
         classNode.addInterface(interfaceType);
 //        for(int i=lambdaParamsCount+1;i<=FunctionClasses.CLASSES.length-1;i++) {

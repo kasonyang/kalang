@@ -28,11 +28,7 @@ public class LambdaType extends ObjectType {
         return funcMethod.getParameterTypes().length == parameterCount;
     }
 
-    @Override
-    public boolean isAssignableFrom(Type type) {
-        if (super.isAssignableFrom(type)) {
-            return true;
-        }
+    public boolean isAssignableTo(Type type) {
         if (!(type instanceof ClassType)) {
             return false;
         }
