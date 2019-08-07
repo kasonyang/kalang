@@ -189,7 +189,7 @@ public class MethodContext {
     @Nullable
     public ParameterNode getNamedParameter(String name){
         for (ParameterNode p : method.getParameters()) {
-            if (p.getName().equals(name)) {
+            if (name.equals(p.getName())) {
                 return p;
             }
         }
