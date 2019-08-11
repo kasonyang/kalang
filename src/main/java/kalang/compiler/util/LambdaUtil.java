@@ -1,21 +1,39 @@
 package kalang.compiler.util;
 
+import kalang.annotation.Nullable;
 import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.MethodNotFoundException;
 import kalang.compiler.ast.*;
-import kalang.compiler.core.ClassType;
-import kalang.compiler.core.NullableKind;
-import kalang.compiler.core.Type;
-import kalang.compiler.core.Types;
+import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 
 import java.lang.reflect.Modifier;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
  * @author Kason Yang
  */
 public class LambdaUtil {
+
+    @Nullable
+    public static MethodDescriptor getFunctionalMethod(ClassType classType) {
+        if (!ModifierUtil.isInterface(classType.getModifier())) {
+            return null;
+        }
+        List<MethodDescriptor> mustImplMethods = new LinkedList<>();
+        MethodDescriptor[] methods = classType.getMethodDescriptors(null, true, true);
+        for(MethodDescriptor m:methods) {
+            if (!ModifierUtil.isDefault(m.getModifier())) {
+                mustImplMethods.add(m);
+            }
+        }
+        if (mustImplMethods.size()!=1) {
+            return null;
+        }
+        return mustImplMethods.get(0);
+    }
 
     public static void createBridgeRunMethod(ClassNode classNode,MethodNode targetMethod,Type[] expectedTypes, int paramCount) {
         Type returnType = targetMethod.getType();

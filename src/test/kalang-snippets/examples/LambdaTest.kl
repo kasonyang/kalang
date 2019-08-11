@@ -13,3 +13,14 @@ void voidTypeTest2() {
     };
     cb();
 }
+
+void consumerTest() {
+    val list = Arrays.asList(<Integer>[1,2,3]);
+    list.forEach({ it => println(it); });
+}
+
+void mapConsumerTest() {
+    val map = ["a":1,"b":2];
+    map.forEach({ k => println(k); });
+    map.forEach({ k,v => println(k);println(v);});
+}

@@ -4,7 +4,6 @@ package kalang.compiler.core;
 import kalang.compiler.AstNotFoundException;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.AstLoader;
-import kalang.compiler.function.FunctionType;
 import kalang.type.Function;
 import kalang.type.FunctionClasses;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -26,9 +25,7 @@ public class Types {
     //private static Map<List,ObjectType> classTypes  = new HashMap<>();
             
     private static final Map<List,ClassType> classTypes = new HashMap();
-    
-    private static final Map<List,FunctionType> functionTypes = new HashMap();
-    
+
     private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();;
     
     public static final PrimitiveType 
@@ -161,11 +158,11 @@ public class Types {
     }
 
     @Deprecated
-    public static ObjectType requireClassType(String className){
+    public static ClassType requireClassType(String className){
         return Types.getClassType(className);
     }
 
-    public static ObjectType requireClassType(String className,NullableKind nullableKind){
+    public static ClassType requireClassType(String className,NullableKind nullableKind){
         try {
             return Types.getClassType(className,nullableKind);
         } catch (AstNotFoundException ex) {
@@ -187,7 +184,11 @@ public class Types {
     
     @Nullable
     public static ObjectType getClassType(PrimitiveType primitiveType){
-        return requireClassType(primitive2class.get(primitiveType));
+        String classTypeName = primitive2class.get(primitiveType);
+        if (classTypeName == null) {
+            return null;
+        }
+        return requireClassType(classTypeName);
     }
     
      public static boolean isNumberPrimitive(Type type) {
@@ -365,7 +366,7 @@ public class Types {
      * @return the non-null rootType
      * @deprecated
      */
-    public static ObjectType getRootType() {
+    public static ClassType getRootType() {
         return requireClassType(ROOT_CLASS_NAME);
     }
 
@@ -386,10 +387,6 @@ public class Types {
 
     public static ObjectType getFunctionType() {
         return requireClassType(FUNCTION_CLASS_NAME);
-    }
-
-    public static ObjectType getFakeFunctionType() {
-        return Types.requireClassType(FakeFunction.class.getName(),NullableKind.UNKNOWN);
     }
 
     public static ClassType getClassType(ClassType clazzType, NullableKind nullable) {
@@ -432,18 +429,15 @@ public class Types {
         List<Type> types = new ArrayList(paramCount + 1);
         types.add(returnType);
         types.addAll(Arrays.asList(parameterTypes));
-        FunctionType t = functionTypes.get(types);
-        if (t==null) {
-            t = new FunctionType(returnType, parameterTypes, nullableKind);
-            functionTypes.put(types, t);
+        int pcount = parameterTypes.length;
+        if (pcount > FunctionClasses.CLASSES.length - 1) {
+            throw new IllegalArgumentException("");
         }
-        return t;
+        ClassNode classNode = Types.requireClassType(FunctionClasses.CLASSES[pcount].getName(), NullableKind.NONNULL).getClassNode();
+        return Types.getClassType(classNode,types.toArray(new Type[0]),nullableKind);
     }
 
     public static boolean isFunctionType(Type type) {
-        if (type instanceof FunctionType) {
-            return true;
-        }
         if (!(type instanceof ClassType)) {
             return false;
         }

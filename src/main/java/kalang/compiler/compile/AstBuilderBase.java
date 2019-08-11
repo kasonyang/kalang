@@ -135,15 +135,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     @Nullable
-    protected LocalVarNode declareLocalVar(String name,Type type,int modifier,OffsetRange offset){
+    protected LocalVarNode declareLocalVar(@Nullable String name,Type type,int modifier,OffsetRange offset){
         LocalVarNode localVarNode = new LocalVarNode(type,name,modifier);
-        ParameterNode param = methodCtx.getNamedParameter(name);
-        LocalVarNode var = methodCtx.getNamedLocalVar(name);
-        if(param!=null || var!=null){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"variable is defined",  offset);
-            return null;
-        }
         if(name!=null){
+            ParameterNode param = methodCtx.getNamedParameter(name);
+            LocalVarNode var = methodCtx.getNamedLocalVar(name);
+            if (param != null || var != null){
+                diagnosisReporter.report(Diagnosis.Kind.ERROR,"variable is defined",  offset);
+                return null;
+            }
             this.methodCtx.varTables.put(name,localVarNode);
         }
         return localVarNode;
@@ -319,7 +319,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return ast;
     }
 
-    protected ObjectType parseLambdaType(KalangParser.LambdaTypeContext ctx) {
+    protected ClassType parseLambdaType(KalangParser.LambdaTypeContext ctx) {
         NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
         KalangParser.TypeContext returnTypeCtx = ctx.returnType;
         Type returnType = this.parseType(returnTypeCtx);

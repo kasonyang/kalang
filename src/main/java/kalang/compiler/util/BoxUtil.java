@@ -73,8 +73,16 @@ public class BoxUtil {
     }
 
     private static int getCastMethod(Type fromType, Type toType) {
+        if (fromType instanceof LambdaType) {
+            if (((LambdaType) fromType).isAssignableTo(toType)) {
+                return CAST_NOTHING;
+            }
+        }
         if (toType.isAssignableFrom(fromType)) {
             return CAST_NOTHING;
+        }
+        if (Types.NULL_TYPE.equals(fromType)) {
+            return CAST_UNSUPPORTED;
         }
         if (fromType instanceof PrimitiveType
                 && toType instanceof PrimitiveType) {

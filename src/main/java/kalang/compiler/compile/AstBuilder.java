@@ -9,13 +9,11 @@ import kalang.compiler.antlr.KalangParserVisitor;
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
-import kalang.compiler.function.FunctionType;
 import kalang.compiler.function.LambdaExpr;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
 import kalang.runtime.dynamic.MethodDispatcher;
-import kalang.type.FunctionClasses;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -231,7 +229,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public ObjectType visitLambdaType(KalangParser.LambdaTypeContext ctx) {
+    public ClassType visitLambdaType(KalangParser.LambdaTypeContext ctx) {
         return parseLambdaType(ctx);
     }
 
@@ -1485,16 +1483,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public Object visitLambdaExpr(KalangParser.LambdaExprContext ctx) {
         KalangParser.LambdaTypeContext lambdaTypeCtx = ctx.lambdaType();
-        FunctionType functionType = null;
+        ClassType functionType = null;
         if (lambdaTypeCtx!=null) {
-            ObjectType lambdaType = this.visitLambdaType(lambdaTypeCtx);
-            if (lambdaType instanceof FunctionType) {
-                functionType = (FunctionType) lambdaType;
+            ClassType lambdaType = this.visitLambdaType(lambdaTypeCtx);
+            //TODO handle unexpected type?
+            if (Types.isFunctionType(lambdaType)) {
+                functionType = lambdaType;
             }
         }
-        Type type = functionType!=null ? functionType : Types.getFakeFunctionType();
-        LocalVarNode tmpVar = this.declareTempLocalVar(type);
-        LambdaExpr ms = new LambdaExpr(tmpVar,functionType);
+        List<Token> lambdaParams = ctx.lambdaParams;
+        int lambdaParamsCount = lambdaParams == null ? 0 : lambdaParams.size();
+        Type type = functionType!=null ? functionType : new LambdaType(lambdaParamsCount);
+        LocalVarNode tmpVar = this.declareTempLocalVar(Types.getRootType());
+        LambdaExpr ms = new LambdaExpr(tmpVar);
+        ms.getReferenceExpr().overrideType(type);
         Map<String,VarObject> accessibleVars = new HashMap();
         VarTable<String, LocalVarNode> vtb = this.methodCtx.varTables;
         while(vtb!=null) {
@@ -1518,7 +1520,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ms.putAccessibleVarObject(e.getKey(), e.getValue());
         }
         if (functionType!=null){
-            createLambdaNode(functionType,ms,ctx);
+            MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(functionType);
+            Objects.requireNonNull(funcMethod);
+            createLambdaNode(functionType,funcMethod,ms,ctx);
         } else {
             lambdaExprCtxMap.put(ms, ctx);
         }
@@ -1809,13 +1813,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return diagnosisReporter;
     }
 
-    private ClassNode createFunctionClassNode(ClassType type,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
-        Type[] typeArguments = type.getTypeArguments();
-        Type returnType = typeArguments[0];
-        Type[] paramTypes = new Type[typeArguments.length-1];
-        if (paramTypes.length>0){
-            System.arraycopy(typeArguments,1,paramTypes,0,paramTypes.length);
-        }
+    private ClassNode createFunctionClassNode(ClassType interfaceType,MethodDescriptor funcMethod,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
+        Type returnType = funcMethod.getReturnType();
+        Type[] paramTypes = funcMethod.getParameterTypes();
         String lambdaName = this.thisClazz.name + "$" + ++anonymousClassCounter;
         ClassNode oldClass = thisClazz;
         MethodContext oldMethodCtx = this.methodCtx;
@@ -1824,7 +1824,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         classNode.setSuperType(Types.getRootType());
         if (!Modifier.isStatic(methodCtx.method.getModifier())){
             FieldNode outerClassField = classNode.createField(Types.getClassType(oldClass), "this$0", Modifier.PUBLIC);
-            ObjectFieldExpr outerFieldExpr = new ObjectFieldExpr(new VarExpr(lambdaExpr.getReferenceVar()), outerClassField);
+            ObjectFieldExpr outerFieldExpr = new ObjectFieldExpr(lambdaExpr.getReferenceExpr(), outerClassField);
             lambdaExpr.addStatement(new ExprStmt(new AssignExpr(outerFieldExpr,new ThisExpr(oldClass))));
         }
         Map<String, VarObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
@@ -1833,7 +1833,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             VarObject var = v.getValue();
             FieldNode f = classNode.createField(var.getType(),name, Modifier.PUBLIC&Modifier.FINAL);
             AssignExpr assignExpr;
-            ObjectFieldExpr fieldExpr = new ObjectFieldExpr(new VarExpr(lambdaExpr.getReferenceVar()), f);
+            ObjectFieldExpr fieldExpr = new ObjectFieldExpr(lambdaExpr.getReferenceExpr(), f);
             if (var instanceof LocalVarNode) {
                 assignExpr = new AssignExpr(fieldExpr,new VarExpr((LocalVarNode)var));
             } else if (var instanceof ParameterNode) {
@@ -1843,7 +1843,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
             lambdaExpr.addStatement(new ExprStmt(assignExpr));
         }
-        MethodNode methodNode = classNode.createMethodNode(returnType, "call", Modifier.PUBLIC);
+        MethodNode methodNode = classNode.createMethodNode(returnType, funcMethod.getName(), Modifier.PUBLIC);
         enterMethod(methodNode);
         List<Token> lambdaParams = ctx.lambdaParams;
         int lambdaParamsCount = ctx.lambdaParams.size();
@@ -1852,15 +1852,18 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             this.diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
             return null;
         }
-        for (int i=0;i<lambdaParamsCount;i++) {
+        for (int i=0;i<paramTypes.length;i++) {
             Type pt = paramTypes[i];
-            methodNode.createParameter(pt,ctx.lambdaParams.get(i).getText());
+            String name = null;
+            if (i<ctx.lambdaParams.size()) {
+                name = ctx.lambdaParams.get(i).getText();
+            }
+            methodNode.createParameter(pt,name);
         }
-        ClassType interfaceType = Types.getFunctionType(returnType, MethodUtil.getParameterTypes(methodNode), NullableKind.NONNULL);
         classNode.addInterface(interfaceType);
-        for(int i=lambdaParamsCount+1;i<=FunctionClasses.CLASSES.length-1;i++) {
-            LambdaUtil.createBridgeRunMethod(classNode, methodNode,paramTypes, i);
-        }
+//        for(int i=lambdaParamsCount+1;i<=FunctionClasses.CLASSES.length-1;i++) {
+//            LambdaUtil.createBridgeRunMethod(classNode, methodNode,paramTypes, i);
+//        }
         AstUtil.createEmptyConstructor(classNode);
         List<StatContext> stats = ctx.stat();
         BlockStmt bs = this.newBlock();
@@ -1911,16 +1914,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
     }
 
-    private ClassNode createLambdaNode(ClassType inferredLambdaType,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
-        ClassType functionType = lambdaExpr.getFunctionType();
-        if (functionType==null) {
-            functionType = inferredLambdaType;
-        }
-        if (functionType==null) {
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR,"missing type",lambdaExpr.offset);
-            return null;
-        }
-        ClassNode lambdaClassNode = this.createFunctionClassNode(functionType,lambdaExpr,ctx);
+    private ClassNode createLambdaNode(ClassType interfaceClass,MethodDescriptor funcMethod,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
+        ClassNode lambdaClassNode = this.createFunctionClassNode(interfaceClass,funcMethod,lambdaExpr,ctx);
         ClassType lambdaType = Types.getClassType(lambdaClassNode);
         //lambdaExpr.getReferenceExpr()
         NewObjectExpr newExpr;
@@ -1930,6 +1925,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             throw Exceptions.unexpectedException(ex);
         }
         lambdaExpr.setInitExpr(newExpr);
+        lambdaExpr.getReferenceExpr().overrideType(lambdaType);
         thisClazz.classes.add(lambdaClassNode);
         return lambdaClassNode;
     }
@@ -1945,8 +1941,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 if (!isInit) {
                     ClassType lambdaType = (ClassType) paramTypes[i];
                     LambdaExprContext ctx = lambdaExprCtxMap.get(arg);
-                    ClassNode lambaClassNode = createLambdaNode(lambdaType, (LambdaExpr) arg, ctx);
-                    Map<GenericType, Type> iTypes = lambaClassNode.inferredGenericTypes;
+                    MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(lambdaType);
+                    Objects.requireNonNull(funcMethod);
+                    ClassNode lambdaClassNode = createLambdaNode(lambdaType, funcMethod,(LambdaExpr) arg, ctx);
+                    Map<GenericType, Type> iTypes = lambdaClassNode.inferredGenericTypes;
                     if (!iTypes.isEmpty()) {
                         inferredTypes.putAll(iTypes);
                     }
