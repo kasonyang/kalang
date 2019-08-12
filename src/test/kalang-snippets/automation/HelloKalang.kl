@@ -206,6 +206,10 @@ class<T>{
         return ints[2];
     }
 
+    int iteratingDynamicInvoke() {
+        var ints = (<Integer>[4,5,6])*->intValue();
+        return (Integer)ints[2];
+    }
 
     int questionExpr(){
         return false ? 0 : 6;

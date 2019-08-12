@@ -263,10 +263,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nullable
     protected ExprNode requireCastToPrimitiveDataType(ExprNode expr, OffsetRange offsetRange) {
-        expr = BoxUtil.assignToPrimitiveDataType(expr,expr.getType());
+        Type oldType = expr.getType();
+        expr = BoxUtil.assignToPrimitiveDataType(expr,oldType);
         if (expr == null) {
             diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    , "unable to cast " + expr.getType() + " to primitive type", offsetRange);
+                    , "unable to cast " + oldType + " to primitive type", offsetRange);
         }
         return expr;
     }
@@ -298,6 +299,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     protected void handleSyntaxError(String desc, ParserRuleContext rule, Token start, Token stop) {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, desc, start, stop);
     }
+
+    protected void handleSyntaxError(String desc, OffsetRange offsetRange) {
+        diagnosisReporter.report(Diagnosis.Kind.ERROR, desc, offsetRange);
+    }
+
 
     protected void mapAst(@Nonnull AstNode node, @Nonnull ParserRuleContext tree) {
         node.offset = OffsetRangeHelper.getOffsetRange(tree);

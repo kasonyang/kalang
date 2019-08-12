@@ -1,0 +1,3 @@
+int classConst(){
+    return String.class.getSimpleName().length();
+}

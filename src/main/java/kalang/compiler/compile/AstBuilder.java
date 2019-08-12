@@ -14,6 +14,7 @@ import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
 import kalang.runtime.dynamic.MethodDispatcher;
+import kalang.type.Function2;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -1027,11 +1028,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitInvokeExpr(InvokeExprContext ctx) {
-        Object target = visit(ctx.target);
-        if(target==null) return null;
-        String mdName = ctx.Identifier().getText();
-        String refKey = ctx.refKey.getText();
-        if(refKey.equals(".")){
+        Function2<ExprNode,AstNode,String> createDotInvoke = (target, mdName) -> {
             if(target instanceof ClassReference){
                 return getStaticInvokeExpr((ClassReference) target, mdName,ctx.params, ctx);
             }else if(target instanceof ExprNode){
@@ -1039,14 +1036,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }else{
                 throw Exceptions.unexpectedValue(target);
             }
-        }else if(refKey.equals("->")){
+        };
+        Function2<ExprNode,ExprNode,String> createDynamicInvoke = (target,mdName) -> {
             ExprNode[] invokeArgs = new ExprNode[3];
             ExprNode[] params = new ExprNode[ctx.params.size()];
-            if(target instanceof ClassReference){
-                invokeArgs[0] = new ConstExpr(null);
-            }else if(target instanceof ExprNode){
-                invokeArgs[0] = ((ExprNode) target);
-            }
+            invokeArgs[0] = target;
             invokeArgs[1] = new ConstExpr(mdName);
             for(int i=0;i<params.length;i++){
                 params[i] = visitExpression(ctx.params.get(i));
@@ -1054,10 +1048,23 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             invokeArgs[2] = createInitializedArray(Types.getRootType(), params);
             ClassNode dispatcherAst = astLoader.getAst(MethodDispatcher.class.getName());
             if(dispatcherAst==null){
-                throw Exceptions.unexpectedException("Runtime library is required!");
+                throw Exceptions.unexpectedValue("Runtime library is required!");
             }
             return getStaticInvokeExpr(new ClassReference(dispatcherAst), "invokeMethod", invokeArgs, ctx);
-        }else if(refKey.equals("*.")){
+        };
+        Object target = visit(ctx.target);
+        if(target==null) return null;
+        String mdName = ctx.Identifier().getText();
+        String refKey = ctx.refKey.getText();
+        if(refKey.equals(".")){
+            return createDotInvoke.call((AstNode)target,mdName);
+        }else if(refKey.equals("->")){
+            if(!(target instanceof ExprNode)){
+                handleSyntaxError("expression required", ctx.expression);
+                return null;
+            }
+            return createDynamicInvoke.call((ExprNode)target,mdName);
+        }else if(refKey.equals("*.") || refKey.equals("*->")){
             if(!(target instanceof ExprNode)){
                 handleSyntaxError("expression required", ctx.expression);
                 return null;
@@ -1068,7 +1075,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 handleSyntaxError("array required",ctx.expression);
                 return null;
             }
-            List<Statement> stats = new LinkedList();
+            List<Statement> stats = new LinkedList<>();
             LocalVarNode varArrLen = this.declareTempLocalVar(Types.INT_TYPE);
             LocalVarNode varCounter = this.declareTempLocalVar(Types.INT_TYPE);
             stats.add(new VarDeclStmt(Arrays.asList(varArrLen,varCounter)));
@@ -1078,7 +1085,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             stats.add(new ExprStmt(new AssignExpr(varCounterExpr,new ConstExpr(0))));
             CompareExpr conditionExpr = new CompareExpr(varCounterExpr,varArrLenExpr,CompareExpr.OP_LT);
             ExprNode targetEleExpr = new ElementExpr(targetExpr, varCounterExpr);
-            ExprNode invokeExpr = getObjectInvokeExpr(targetEleExpr, mdName, ctx.params, ctx);
+            ExprNode invokeExpr = refKey.equals("*.")
+                    ? createDotInvoke.call(targetEleExpr,mdName) : createDynamicInvoke.call(targetEleExpr,mdName);
             if(invokeExpr==null) return null;
             LocalVarNode varRet = this.declareTempLocalVar(Types.getArrayType(invokeExpr.getType()));
             VarExpr varRetExpr = new VarExpr(varRet);
@@ -1092,9 +1100,50 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             this.popBlock();
             LoopStmt loopStmt = new LoopStmt(conditionExpr,null, loopBody , updateBs);
             stats.add(loopStmt);
-            return new MultiStmtExpr(stats,varRetExpr);
+            MultiStmtExpr expr = new MultiStmtExpr(stats, varRetExpr);
+            mapAst(expr,ctx);
+            return expr;
+        } else if (refKey.equals("?.") || refKey.equals("?->")) {
+            if(!(target instanceof ExprNode)){
+                handleSyntaxError("expression required", ctx.expression);
+                return null;
+            }
+            ExprNode targetExpr = (ExprNode) target;
+            List<Statement> stmts = new LinkedList<>();
+            LocalVarNode targetTmpVar = declareTempLocalVar(targetExpr.getType());
+            stmts.add(new VarDeclStmt(targetTmpVar));
+            stmts.add(new ExprStmt(new AssignExpr(new VarExpr(targetTmpVar),targetExpr)));
+            ExprNode conditionExpr = new CompareExpr(new VarExpr(targetTmpVar), new ConstExpr(null),"==");
+            methodCtx.newOverrideTypeStack();
+            methodCtx.onIf(conditionExpr,true);
+            ExprNode trueExpr = new ConstExpr(null);
+            methodCtx.popOverrideTypeStack();
+            methodCtx.newOverrideTypeStack();
+            methodCtx.onIf(conditionExpr,false);
+            ExprNode targetTmpExpr = new VarExpr(targetTmpVar,methodCtx.getVarObjectType(targetTmpVar));
+            ExprNode invokeExpr = refKey.equals("?.") ? createDotInvoke.call(targetTmpExpr,mdName) : createDynamicInvoke.call(targetTmpExpr, mdName);
+            if (invokeExpr == null) {
+                return null;
+            }
+            ExprNode falseExpr = BoxUtil.assignToObjectType(invokeExpr);
+            if (falseExpr == null) {
+                handleSyntaxError("unable cast " + invokeExpr.getType() + " to object type",invokeExpr.offset);
+                return null;
+            }
+            methodCtx.popOverrideTypeStack();
+            LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
+            VarDeclStmt vds = new VarDeclStmt(vo);
+            stmts.add(vds);
+            VarExpr ve = new VarExpr(vo);
+            IfStmt is = new IfStmt(conditionExpr);
+            is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(ve, trueExpr)));
+            is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve,falseExpr)));
+            stmts.add(is);
+            MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
+            mapAst(ve, ctx);
+            return mse;
         }else{
-            throw Exceptions.unexpectedException(refKey);
+            throw Exceptions.unexpectedValue(refKey);
         }
     }
 
