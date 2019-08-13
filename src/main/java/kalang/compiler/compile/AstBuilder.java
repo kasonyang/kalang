@@ -13,7 +13,9 @@ import kalang.compiler.function.LambdaExpr;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
+import kalang.runtime.dynamic.FieldVisitor;
 import kalang.runtime.dynamic.MethodDispatcher;
+import kalang.type.Function1;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
@@ -708,59 +710,77 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         return ie;
     }
-    
-    protected ExprNode createFieldExpr(GetFieldExprContext to,@Nullable ExpressionContext fromCtx,OffsetRange offsetRange){
+
+    protected ExprNode createFieldExpr(GetFieldExprContext to, @Nullable ExpressionContext fromCtx, OffsetRange offsetRange) {
         //TODO support iterating syntax
+        OffsetRange toOffset = offset(to);
         String refKey = to.refKey.getText();
         ExpressionContext exp = to.expression();
         String fname = to.Identifier().getText();
         AssignableExpr toExpr;
-        Object expr = visit(exp);
-        if (expr==null) return null;
-        if(refKey.equals(".")){
+        AstNode expr = (AstNode) visit(exp);
+        if (expr == null) return null;
+        Function1<ExprNode, ExprNode> createField = (target) -> getObjectFieldLikeExpr(target, fname, offset(to));
+        Function1<ExprNode, ExprNode> createDynamicField = (target) -> {
+            ExprNode[] params;
+            String methodName;
+            ClassReference fieldVisitorClsRef = new ClassReference(Types.requireClassType(FieldVisitor.class.getName(), NullableKind.NONNULL).getClassNode());
+            if (fromCtx == null) {
+                params = new ExprNode[2];
+                params[0] = target;
+                params[1] = new ConstExpr(fname);
+                methodName = "get";
+            } else {
+                params = new ExprNode[3];
+                params[0] = target;
+                params[1] = new ConstExpr(fname);
+                params[2] = visitExpression(fromCtx);
+                if (params[2] == null) {
+                    return null;
+                }
+                methodName = "set";
+            }
+            return getStaticInvokeExpr(fieldVisitorClsRef, methodName, params, to);
+        };
+        if (refKey.equals(".")) {
             ExprNode fieldExpr;
-            if(expr instanceof ExprNode){
-                ExprNode exprNode = (ExprNode) expr;
-                fieldExpr = getObjectFieldLikeExpr(exprNode,fname,offset(to));
-            }else if(expr instanceof ClassReference){
-                fieldExpr = getStaticFieldExpr((ClassReference)expr, fname, offset(to));
-            }else{
+            if (expr instanceof ExprNode) {
+                fieldExpr = createField.call((ExprNode) expr);
+            } else if (expr instanceof ClassReference) {
+                fieldExpr = getStaticFieldExpr((ClassReference) expr, fname, offset(to));
+            } else {
                 throw new UnknownError("unknown node:" + expr);
             }
-            if(fromCtx==null){
+            if (fromCtx == null) { // get field
                 return fieldExpr;
-            }else{
-                if(fieldExpr instanceof AssignableExpr){
+            } else { // set field
+                if (fieldExpr instanceof AssignableExpr) {
                     toExpr = (AssignableExpr) fieldExpr;
-                }else{
+                } else {
                     AstBuilder.this.handleSyntaxError("unsupported", to);
                     return null;
                 }
                 ExprNode fromExpr = visitExpression(fromCtx);
-                if(!this.semanticAnalyzer.validateAssign(toExpr, fromExpr,offsetRange,isInConstructor())){
-                  return null;
+                if (!this.semanticAnalyzer.validateAssign(toExpr, fromExpr, offsetRange, isInConstructor())) {
+                    return null;
                 }
-                return new AssignExpr(toExpr,fromExpr);
+                return new AssignExpr(toExpr, fromExpr);
             }
-        }else if(refKey.equals("->")){
-            ExprNode[] params;
-            String methodName;
-            if(fromCtx==null){
-                params = new ExprNode[0];
-                methodName = "get" + NameUtil.firstCharToUpperCase(fname);
-            }else{
-                params = new ExprNode[1];
-                methodName = "set" + NameUtil.firstCharToUpperCase(fname);
-            }
-            if(expr instanceof ExprNode){
-                if(fromCtx!=null) params[0] = visitExpression(fromCtx);
-                return getObjectInvokeExpr((ExprNode)expr, methodName, params, to);
-            }else{
-                //don't support static property
-                handleSyntaxError("object expression required.", to);
+        } else if (refKey.equals("->")) {
+            if (!(expr instanceof ExprNode)) {
+                handleSyntaxError("not an expression", expr.offset);
                 return null;
             }
-        }else{
+            return createDynamicField.call((ExprNode) expr);
+        } else if (refKey.equals("*.")) {
+            return createStarNavigateExpr(expr, createField, toOffset);
+        } else if (refKey.equals("*->")) {
+            return createStarNavigateExpr(expr, createDynamicField, toOffset);
+        } else if (refKey.equals("?.")) {
+            return createSafeNavigateExpr(expr, createField, toOffset);
+        } else if (refKey.equals("?->")) {
+            return createSafeNavigateExpr(expr, createDynamicField, toOffset);
+        } else {
             throw Exceptions.unknownValue(refKey);
         }
     }
@@ -1027,74 +1047,51 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitInvokeExpr(InvokeExprContext ctx) {
-        Object target = visit(ctx.target);
-        if(target==null) return null;
+        OffsetRange offsetRange = offset(ctx);
         String mdName = ctx.Identifier().getText();
-        String refKey = ctx.refKey.getText();
-        if(refKey.equals(".")){
-            if(target instanceof ClassReference){
-                return getStaticInvokeExpr((ClassReference) target, mdName,ctx.params, ctx);
-            }else if(target instanceof ExprNode){
-                return getObjectInvokeExpr((ExprNode) target, mdName, ctx.params,ctx);
-            }else{
-                throw Exceptions.unexpectedValue(target);
-            }
-        }else if(refKey.equals("->")){
+        Function1<ExprNode, ExprNode> createDotInvoke = (target) -> getObjectInvokeExpr(target, mdName, ctx.params, ctx);
+        Function1<ExprNode, ExprNode> createDynamicInvoke = (target) -> {
             ExprNode[] invokeArgs = new ExprNode[3];
             ExprNode[] params = new ExprNode[ctx.params.size()];
-            if(target instanceof ClassReference){
-                invokeArgs[0] = new ConstExpr(null);
-            }else if(target instanceof ExprNode){
-                invokeArgs[0] = ((ExprNode) target);
-            }
+            invokeArgs[0] = target;
             invokeArgs[1] = new ConstExpr(mdName);
-            for(int i=0;i<params.length;i++){
+            for (int i = 0; i < params.length; i++) {
                 params[i] = visitExpression(ctx.params.get(i));
             }
             invokeArgs[2] = createInitializedArray(Types.getRootType(), params);
             ClassNode dispatcherAst = astLoader.getAst(MethodDispatcher.class.getName());
-            if(dispatcherAst==null){
-                throw Exceptions.unexpectedException("Runtime library is required!");
+            if (dispatcherAst == null) {
+                throw Exceptions.unexpectedValue("Runtime library is required!");
             }
             return getStaticInvokeExpr(new ClassReference(dispatcherAst), "invokeMethod", invokeArgs, ctx);
-        }else if(refKey.equals("*.")){
-            if(!(target instanceof ExprNode)){
+        };
+        AstNode target = (AstNode) visit(ctx.target);
+        if (target == null) return null;
+        String refKey = ctx.refKey.getText();
+        if (refKey.equals(".")) {
+            if (target instanceof ClassReference) {
+                return getStaticInvokeExpr((ClassReference) target, mdName, ctx.params, ctx);
+            } else if (target instanceof ExprNode) {
+                return createDotInvoke.call((ExprNode) target);
+            } else {
+                throw Exceptions.unexpectedValue(target);
+            }
+        } else if (refKey.equals("->")) {
+            if (!(target instanceof ExprNode)) {
                 handleSyntaxError("expression required", ctx.expression);
                 return null;
             }
-            ExprNode targetExpr = (ExprNode) target;
-            Type targetType = targetExpr.getType();
-            if(!(targetType instanceof ArrayType)){
-                handleSyntaxError("array required",ctx.expression);
-                return null;
-            }
-            List<Statement> stats = new LinkedList();
-            LocalVarNode varArrLen = this.declareTempLocalVar(Types.INT_TYPE);
-            LocalVarNode varCounter = this.declareTempLocalVar(Types.INT_TYPE);
-            stats.add(new VarDeclStmt(Arrays.asList(varArrLen,varCounter)));
-            VarExpr varArrLenExpr = new VarExpr(varArrLen);
-            VarExpr varCounterExpr = new VarExpr(varCounter);
-            stats.add(new ExprStmt(new AssignExpr(varArrLenExpr,new ArrayLengthExpr(targetExpr))));
-            stats.add(new ExprStmt(new AssignExpr(varCounterExpr,new ConstExpr(0))));
-            CompareExpr conditionExpr = new CompareExpr(varCounterExpr,varArrLenExpr,CompareExpr.OP_LT);
-            ExprNode targetEleExpr = new ElementExpr(targetExpr, varCounterExpr);
-            ExprNode invokeExpr = getObjectInvokeExpr(targetEleExpr, mdName, ctx.params, ctx);
-            if(invokeExpr==null) return null;
-            LocalVarNode varRet = this.declareTempLocalVar(Types.getArrayType(invokeExpr.getType()));
-            VarExpr varRetExpr = new VarExpr(varRet);
-            stats.add(new VarDeclStmt(varRet));
-            stats.add(new ExprStmt(new AssignExpr(varRetExpr,new NewArrayExpr(invokeExpr.getType(),varArrLenExpr))));
-            BlockStmt loopBody = this.newBlock();
-            loopBody.statements.add(new ExprStmt(new AssignExpr(new ElementExpr(varRetExpr,varCounterExpr),invokeExpr)));
-            popBlock();
-            BlockStmt updateBs = newBlock();
-            updateBs.statements.add(new ExprStmt(new AssignExpr(varCounterExpr,new MathExpr(varCounterExpr,new ConstExpr(1),MathExpr.OP_ADD))));
-            this.popBlock();
-            LoopStmt loopStmt = new LoopStmt(conditionExpr,null, loopBody , updateBs);
-            stats.add(loopStmt);
-            return new MultiStmtExpr(stats,varRetExpr);
-        }else{
-            throw Exceptions.unexpectedException(refKey);
+            return createDynamicInvoke.call((ExprNode) target);
+        } else if (refKey.equals("*.")) {
+            return createStarNavigateExpr(target, createDotInvoke, offsetRange);
+        } else if (refKey.equals("*->")) {
+            return createStarNavigateExpr(target, createDynamicInvoke, offsetRange);
+        } else if (refKey.equals("?.")) {
+            return createSafeNavigateExpr(target, createDotInvoke, offsetRange);
+        } else if (refKey.equals("?->")) {
+            return createSafeNavigateExpr(target, createDynamicInvoke, offsetRange);
+        } else {
+            throw Exceptions.unexpectedValue(refKey);
         }
     }
 
@@ -1970,6 +1967,87 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     private OffsetRange offset(ParserRuleContext ctx) {
         return OffsetRangeHelper.getOffsetRange(ctx);
+    }
+
+    private ExprNode createStarNavigateExpr(AstNode target, Function1<ExprNode, ExprNode> navigateExprMaker, OffsetRange offset) {
+        if (!(target instanceof ExprNode)) {
+            handleSyntaxError("expression required", target.offset);
+            return null;
+        }
+        ExprNode targetExpr = (ExprNode) target;
+        Type targetType = targetExpr.getType();
+        if (!(targetType instanceof ArrayType)) {
+            handleSyntaxError("array required", target.offset);
+            return null;
+        }
+        List<Statement> stats = new LinkedList<>();
+        LocalVarNode varArrLen = this.declareTempLocalVar(Types.INT_TYPE);
+        LocalVarNode varCounter = this.declareTempLocalVar(Types.INT_TYPE);
+        stats.add(new VarDeclStmt(Arrays.asList(varArrLen, varCounter)));
+        VarExpr varArrLenExpr = new VarExpr(varArrLen);
+        VarExpr varCounterExpr = new VarExpr(varCounter);
+        stats.add(new ExprStmt(new AssignExpr(varArrLenExpr, new ArrayLengthExpr(targetExpr))));
+        stats.add(new ExprStmt(new AssignExpr(varCounterExpr, new ConstExpr(0))));
+        CompareExpr conditionExpr = new CompareExpr(varCounterExpr, varArrLenExpr, CompareExpr.OP_LT);
+        ExprNode targetEleExpr = new ElementExpr(targetExpr, varCounterExpr);
+        ExprNode invokeExpr = navigateExprMaker.call(targetEleExpr);
+        if (invokeExpr == null) return null;
+        LocalVarNode varRet = this.declareTempLocalVar(Types.getArrayType(invokeExpr.getType()));
+        VarExpr varRetExpr = new VarExpr(varRet);
+        stats.add(new VarDeclStmt(varRet));
+        stats.add(new ExprStmt(new AssignExpr(varRetExpr, new NewArrayExpr(invokeExpr.getType(), varArrLenExpr))));
+        BlockStmt loopBody = this.newBlock();
+        loopBody.statements.add(new ExprStmt(new AssignExpr(new ElementExpr(varRetExpr, varCounterExpr), invokeExpr)));
+        popBlock();
+        BlockStmt updateBs = newBlock();
+        updateBs.statements.add(new ExprStmt(new AssignExpr(varCounterExpr, new MathExpr(varCounterExpr, new ConstExpr(1), MathExpr.OP_ADD))));
+        this.popBlock();
+        LoopStmt loopStmt = new LoopStmt(conditionExpr, null, loopBody, updateBs);
+        stats.add(loopStmt);
+        MultiStmtExpr expr = new MultiStmtExpr(stats, varRetExpr);
+        mapAst(expr, offset);
+        return expr;
+    }
+
+    private ExprNode createSafeNavigateExpr(AstNode target, Function1<ExprNode, ExprNode> navigateExprMaker, OffsetRange offsetRange) {
+        if (!(target instanceof ExprNode)) {
+            handleSyntaxError("expression required", target.offset);
+            return null;
+        }
+        ExprNode targetExpr = (ExprNode) target;
+        List<Statement> stmts = new LinkedList<>();
+        LocalVarNode targetTmpVar = declareTempLocalVar(targetExpr.getType());
+        stmts.add(new VarDeclStmt(targetTmpVar));
+        stmts.add(new ExprStmt(new AssignExpr(new VarExpr(targetTmpVar), targetExpr)));
+        ExprNode conditionExpr = new CompareExpr(new VarExpr(targetTmpVar), new ConstExpr(null), "==");
+        methodCtx.newOverrideTypeStack();
+        methodCtx.onIf(conditionExpr, true);
+        ExprNode trueExpr = new ConstExpr(null);
+        methodCtx.popOverrideTypeStack();
+        methodCtx.newOverrideTypeStack();
+        methodCtx.onIf(conditionExpr, false);
+        ExprNode targetTmpExpr = new VarExpr(targetTmpVar, methodCtx.getVarObjectType(targetTmpVar));
+        ExprNode invokeExpr = navigateExprMaker.call(targetTmpExpr);
+        if (invokeExpr == null) {
+            return null;
+        }
+        ExprNode falseExpr = BoxUtil.assignToObjectType(invokeExpr);
+        if (falseExpr == null) {
+            handleSyntaxError("unable cast " + invokeExpr.getType() + " to object type", invokeExpr.offset);
+            return null;
+        }
+        methodCtx.popOverrideTypeStack();
+        LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
+        VarDeclStmt vds = new VarDeclStmt(vo);
+        stmts.add(vds);
+        VarExpr ve = new VarExpr(vo);
+        IfStmt is = new IfStmt(conditionExpr);
+        is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(ve, trueExpr)));
+        is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve, falseExpr)));
+        stmts.add(is);
+        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
+        mapAst(ve, offsetRange);
+        return mse;
     }
 
 }

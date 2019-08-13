@@ -28,6 +28,25 @@ public class BoxUtil {
             ;
 
     @Nullable
+    public static ExprNode assignToObjectType(@Nonnull ExprNode expr) {
+        Type fromType = expr.getType();
+        if (Types.VOID_TYPE.equals(fromType)) {
+            return null;
+        }
+        if (fromType instanceof ObjectType) {
+            return expr;
+        }
+        if (!(fromType instanceof PrimitiveType)) {
+            return null;
+        }
+        ObjectType targetType = Types.getClassType((PrimitiveType) fromType);
+        if (targetType == null) {
+            return null;
+        }
+        return assign(expr, fromType, targetType);
+    }
+
+    @Nullable
     public static ExprNode assignToPrimitiveDataType(ExprNode expr, Type fromType) {
         if (Types.VOID_TYPE.equals(fromType)) {
             return null;
