@@ -13,6 +13,8 @@ import static org.junit.Assert.fail;
 
 public class SnippetsTest {
 
+    public int testField = 1;
+
     @Test
     public void testExamples() throws Exception {
         File examplesSrcDir = new File("src/test/kalang-snippets/examples");

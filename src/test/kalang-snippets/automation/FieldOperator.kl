@@ -1,0 +1,56 @@
+import test.kalang.automation.SnippetsTest as ST;
+class {
+
+    static class InnerClass{
+        int field = 6;
+    }
+
+    int myField = 6;
+
+    static int myStaticField = 6;
+
+    int dynamicField(){
+        val that as Object = new ST();
+        that->testField = 6;
+        return (Integer)that->testField;
+    }
+
+    int fieldTest(){
+        return myField;
+    }
+
+    int fieldStaticTest(){
+        return myStaticField;
+    }
+
+    int fieldGetterTest(){
+        return this.getMyField();
+    }
+
+    int innerFieldTest(){
+        return new InnerClass().getField();
+    }
+
+    int iteratingField() {
+        val arr = [new ST(), new ST()];
+        val fields = arr*.testField;
+        return ( fields[0] + fields[1] ) + 4 ;
+    }
+
+    int iteratingDynamicField() {
+        val arr = [new ST(), new ST()];
+        val fields = arr*->testField;
+        return ( (Integer)fields[0] + (Integer)fields[1] ) + 4 ;
+    }
+
+    int safeFieldNav() {
+        val st as ST = null;
+        return st?.testField == null ? 6 : 1;
+    }
+
+    int safeDynamicNav() {
+        val st as ST = null;
+        return st?->testField == null ? 6 : 1;
+    }
+
+}

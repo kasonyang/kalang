@@ -19,19 +19,3 @@ int incrementExpr2() {
     int i=5;
     return ++i;
 }
-
-int safeInvoke(){
-    val s as String? = null;
-    if ( s?.length() == null) {
-        return 6;
-    }
-    return 1;
-}
-
-int saveDynamicInvoke() {
-    val s as Object? = null;
-    if ( s?->length() == null) {
-        return 6;
-    }
-    return 1;
-}
