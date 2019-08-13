@@ -8,17 +8,29 @@ import java.nio.charset.Charset;
 public class IOPlugin {
 
     @PluginMethod
+    public static byte[] readToBytes(InputStream is) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        readTo(is, bos);
+        return bos.toByteArray();
+    }
+
+    @PluginMethod
     public static byte[] readToBytes(File file) throws IOException {
+        long fileLen = file.length();
+        if (fileLen > Integer.MAX_VALUE) {
+            throw new OutOfMemoryError("file is too large");
+        }
         try (InputStream isr = new FileInputStream(file)) {
-            long fileLen = file.length();
-            if (fileLen > Integer.MAX_VALUE) {
-                throw new OutOfMemoryError("file is too large");
-            }
             int len = (int) fileLen;
             byte[] data = new byte[len];
             isr.read(data);
             return data;
         }
+    }
+
+    @PluginMethod
+    public static String readToString(InputStream is, String charset) throws IOException {
+        return new String(readToBytes(is), charset);
     }
 
     @PluginMethod
