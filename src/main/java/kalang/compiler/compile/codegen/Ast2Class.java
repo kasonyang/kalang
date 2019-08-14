@@ -716,6 +716,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             case BinaryExpr.OP_XOR: op = IXOR;break;
             case BinaryExpr.OP_SHIFT_LEFT:op = ISHL;break;
             case BinaryExpr.OP_SHIFT_RIGHT:op = ISHR;break;
+            case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT: op = IUSHR;break;
             default://logic expression
                 Label trueLabel = new Label();
                 Label stopLabel = new Label();

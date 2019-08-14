@@ -1,0 +1,7 @@
+int unsignedRightShift() {
+    return 0xCFFFFFFF>>>29;
+}
+
+int signedRightShift() {
+    return (0xCFFFFFFF>>29) + 8;
+}
