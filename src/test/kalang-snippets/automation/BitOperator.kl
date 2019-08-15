@@ -5,3 +5,13 @@ int unsignedRightShift() {
 int signedRightShift() {
     return (0xCFFFFFFF>>29) + 8;
 }
+
+boolean longLeftShift() {
+    val x = 6L;
+    return x << 1 == 12;
+}
+
+boolean byteLeftShift() {
+    byte b = 1;
+    return (b << 10) == 1024;
+}
