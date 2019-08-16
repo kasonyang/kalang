@@ -1,0 +1,11 @@
+boolean bytePlusByte() {
+    byte b1 = 127;
+    byte b2 = 10;
+    return b1 + b2 == 137;
+}
+
+boolean shortPlusShort() {
+    short s1 = 32767;
+    short s2 = 100;
+    return s1 + s2 == 32867;
+}

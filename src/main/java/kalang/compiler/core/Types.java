@@ -26,19 +26,32 @@ public class Types {
             
     private static final Map<List,ClassType> classTypes = new HashMap();
 
-    private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();;
-    
+    private final static DualHashBidiMap<PrimitiveType,String> primitive2class = new DualHashBidiMap<>();
+
+    public static final String NULL_NAME = "null";
+    public static final String VOID_NAME = "void";
+    public static final String BOOLEAN_NAME = "boolean";
+    public static final String BYTE_NAME = "byte";
+    public static final String CHAR_NAME = "char";
+    public static final String SHORT_NAME = "short";
+    public static final String INT_NAME = "int";
+    public static final String FLOAT_NAME = "float";
+    public static final String LONG_NAME = "long";
+    public static final String DOUBLE_NAME = "double";
+
+
+
     public static final PrimitiveType 
-            BOOLEAN_TYPE = getPrimitiveType("boolean")
-            ,BYTE_TYPE = getPrimitiveType("byte")
-            ,CHAR_TYPE = getPrimitiveType("char")
-            ,SHORT_TYPE = getPrimitiveType("short")
-            ,INT_TYPE = getPrimitiveType("int")
-           , LONG_TYPE = getPrimitiveType("long")
-            ,FLOAT_TYPE = getPrimitiveType("float")
-            ,DOUBLE_TYPE = getPrimitiveType("double")
-            ,NULL_TYPE = getPrimitiveType("null")
-            ,VOID_TYPE = getPrimitiveType("void")
+            BOOLEAN_TYPE = getPrimitiveType(BOOLEAN_NAME)
+            ,BYTE_TYPE = getPrimitiveType(BYTE_NAME)
+            ,CHAR_TYPE = getPrimitiveType(CHAR_NAME)
+            ,SHORT_TYPE = getPrimitiveType(SHORT_NAME)
+            ,INT_TYPE = getPrimitiveType(INT_NAME)
+           , LONG_TYPE = getPrimitiveType(LONG_NAME)
+            ,FLOAT_TYPE = getPrimitiveType(FLOAT_NAME)
+            ,DOUBLE_TYPE = getPrimitiveType(DOUBLE_NAME)
+            ,NULL_TYPE = getPrimitiveType(NULL_NAME)
+            ,VOID_TYPE = getPrimitiveType(VOID_NAME)
     ;
 
     public static final String FLOAT_CLASS_NAME = "java.lang.Float";
@@ -405,12 +418,13 @@ public class Types {
         if (fromType.equals(toType)) {
             return true;
         }
-        HashMap<PrimitiveType, List> baseMap = new HashMap();
-        baseMap.put(BYTE_TYPE,Arrays.asList(new PrimitiveType[]{INT_TYPE,LONG_TYPE,FLOAT_TYPE,DOUBLE_TYPE}));
-        baseMap.put(INT_TYPE, Arrays.asList(new PrimitiveType[]{LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE}));
-        baseMap.put(CHAR_TYPE,Arrays.asList(new PrimitiveType[]{INT_TYPE,LONG_TYPE,FLOAT_TYPE,DOUBLE_TYPE}));
-        baseMap.put(LONG_TYPE, Arrays.asList(new PrimitiveType[]{FLOAT_TYPE, DOUBLE_TYPE}));
-        baseMap.put(FLOAT_TYPE, Arrays.asList(new PrimitiveType[]{DOUBLE_TYPE}));
+        HashMap<PrimitiveType, List> baseMap = new HashMap<>();
+        baseMap.put(BYTE_TYPE, Arrays.asList(SHORT_TYPE, INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE));
+        baseMap.put(CHAR_TYPE, Arrays.asList(INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE));
+        baseMap.put(SHORT_TYPE, Arrays.asList(INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE));
+        baseMap.put(INT_TYPE, Arrays.asList(LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE));
+        baseMap.put(LONG_TYPE, Arrays.asList(FLOAT_TYPE, DOUBLE_TYPE));
+        baseMap.put(FLOAT_TYPE, Arrays.asList(DOUBLE_TYPE));
         baseMap.put(DOUBLE_TYPE, new LinkedList());
         if (baseMap.containsKey(fromType)) {
             return baseMap.get(fromType).contains(toType);

@@ -1073,40 +1073,108 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return visitChildren(node);
     }
     
-    private int getPrimitiveCastOpc(Type fromType,Type toType){
-        
-        Type f = fromType;
-        Type tt = toType;
-        if(f.equals(INT_TYPE)){
-            if(tt.equals(LONG_TYPE)) return I2L;
-            else if(tt.equals(FLOAT_TYPE)) return I2F;
-            else if(tt.equals(DOUBLE_TYPE)) return I2D;
-            else if(tt.equals(SHORT_TYPE)) return I2S;
-            else if(tt.equals(BYTE_TYPE)) return I2B;
-            else if(tt.equals(CHAR_TYPE)) return I2C;
-        }else if(f.equals(FLOAT_TYPE)){
-            if(tt.equals(INT_TYPE)) return F2I;
-            else if(tt.equals(LONG_TYPE)) return F2L;
-            else if(tt.equals(DOUBLE_TYPE)) return F2D;
-        }else if(f.equals(LONG_TYPE)){
-            if(tt.equals(INT_TYPE)) return L2I;
-            else if(tt.equals(FLOAT_TYPE)) return L2F;
-            else if(tt.equals(DOUBLE_TYPE)) return L2D;
-        }else if(f.equals(DOUBLE_TYPE)){
-            if(tt.equals(INT_TYPE)) return D2I;
-            else if(tt.equals(LONG_TYPE)) return D2L;
-            else if(tt.equals(FLOAT_TYPE)) return D2F;
-        }else if(f.equals(BYTE_TYPE)){
-            if(tt.equals(SHORT_TYPE)) return 0;
-            else if(tt.equals(INT_TYPE)) return 0;
-            else if(tt.equals(LONG_TYPE)) return I2L;
-            else if(tt.equals(FLOAT_TYPE)) return I2F;
-            else if(tt.equals(DOUBLE_TYPE)) return I2D;
-        }else if(f.equals(CHAR_TYPE) || f.equals(SHORT_TYPE)){
-            if(tt.equals(INT_TYPE)) return 0;
-            else if(tt.equals(LONG_TYPE)) return I2L;
-            else if(tt.equals(FLOAT_TYPE)) return I2F;
-            else if(tt.equals(DOUBLE_TYPE)) return I2D;
+    private void primitiveCast(Type fromType,Type toType){
+        if ((fromType instanceof PrimitiveType) && (toType instanceof PrimitiveType)) {
+            String fn = fromType.getName();
+            String tn = toType.getName();
+            if (BYTE_NAME.equals(tn)) {
+                switch (fn){
+                    case DOUBLE_NAME:
+                    case LONG_NAME:
+                    case FLOAT_NAME:
+                        primitiveCast(fromType,INT_TYPE);
+                    case INT_NAME:
+                    case SHORT_NAME:
+                    case CHAR_NAME:
+                        md.visitInsn(I2B);
+                        return;
+                }
+            } else if (CHAR_NAME.equals(tn)) {
+                switch (fn){
+                    case DOUBLE_NAME:
+                    case LONG_NAME:
+                    case FLOAT_NAME:
+                        primitiveCast(fromType,INT_TYPE);
+                    case INT_NAME:
+                    case SHORT_NAME:
+                    case BYTE_NAME:
+                        md.visitInsn(I2C);
+                        return;
+                }
+            } else if (SHORT_NAME.equals(tn)) {
+                switch (fn) {
+                    case LONG_NAME:
+                    case FLOAT_NAME:
+                    case DOUBLE_NAME:
+                        primitiveCast(fromType,INT_TYPE);
+                    case INT_NAME:
+                    case CHAR_NAME:
+                    case BYTE_NAME:
+                        md.visitInsn(I2S);
+                        return;
+                }
+            } else if (INT_NAME.equals(tn)) {
+                switch (fn) {
+                    case BYTE_NAME:
+                    case CHAR_NAME:
+                    case SHORT_NAME:
+                        return;
+                    case FLOAT_NAME:
+                        md.visitInsn(F2I);
+                        return;
+                    case LONG_NAME:
+                        md.visitInsn(L2I);
+                        return;
+                    case DOUBLE_NAME:
+                        md.visitInsn(D2I);
+                        return;
+                }
+            } else if (FLOAT_NAME.equals(tn)) {
+                switch (fn) {
+                    case BYTE_NAME:
+                    case CHAR_NAME:
+                    case SHORT_NAME:
+                    case INT_NAME:
+                        md.visitInsn(I2F);
+                        return;
+                    case LONG_NAME:
+                        md.visitInsn(L2F);
+                        return;
+                    case DOUBLE_NAME:
+                        md.visitInsn(D2F);
+                        return;
+                }
+            } else if (LONG_NAME.equals(tn)) {
+                switch (fn) {
+                    case BYTE_NAME:
+                    case CHAR_NAME:
+                    case SHORT_NAME:
+                    case INT_NAME:
+                        md.visitInsn(I2L);
+                        return;
+                    case FLOAT_NAME:
+                        md.visitInsn(F2L);
+                        return;
+                    case DOUBLE_NAME:
+                        md.visitInsn(D2L);
+                        return;
+                }
+            } else if (DOUBLE_NAME.equals(tn)) {
+                switch (fn) {
+                    case BYTE_NAME:
+                    case CHAR_NAME:
+                    case SHORT_NAME:
+                    case INT_NAME:
+                        md.visitInsn(I2D);
+                        return;
+                    case LONG_NAME:
+                        md.visitInsn(L2D);
+                        return;
+                    case FLOAT_NAME:
+                        md.visitInsn(F2D);
+                        return;
+                    }
+            }
         }
         throw Exceptions.unexpectedException("It is unable to cast " + fromType + " to " + toType);
     }
@@ -1115,13 +1183,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitPrimitiveCastExpr(PrimitiveCastExpr node) {
         ExprNode expr = node.getExpr();
         visit(expr);
-        int opc;
         Type ft = expr.getType();
         Type tt = node.getToType();
-        opc = getPrimitiveCastOpc(ft, tt);
-        if(opc>0){
-            md.visitInsn(opc);
-        }
+        primitiveCast(ft, tt);
         return null;
     }
 
