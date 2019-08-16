@@ -884,6 +884,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             expr = constructBinaryExpr(expr1,expr2,op.substring(0,2));
         } else if (">>>".equals(op) || "<<".equals(op) || ">>".equals(op)) {
             if (Types.isExactNumber(type1) && Types.INT_TYPE.equals(type2)) {
+                expr1 = BoxUtil.assignToPrimitiveDataType(expr1, type1);
+                Objects.requireNonNull(expr1);
+                expr1 = BoxUtil.assign(expr1, type1, MathType.getType((PrimitiveType) expr1.getType(), Types.INT_TYPE));
                 expr = constructBinaryExpr(expr1, expr2, op);
             } else {
                 this.diagnosisReporter.report(Diagnosis.Kind.ERROR, errMsg,ctx);
