@@ -1,0 +1,46 @@
+int incrementExpr() {
+    int i=6;
+    return i++;
+}
+
+int incrementExpr2() {
+    int i=5;
+    return ++i;
+}
+
+int decrementExpr() {
+    int i = 7;
+    return --i;
+}
+
+int decrementExpr2() {
+    int i = 6;
+    return i--;
+}
+
+int incrValue() {
+    var i = 1;
+    var sum = 0;
+    sum += i++;
+    sum += i++;
+    sum += i++;
+    return sum;
+}
+
+int decrValue() {
+    var i = 3;
+    var sum = 0;
+    sum += i--;
+    sum += i--;
+    sum += i--;
+    return sum;
+}
+
+boolean incrIndex() {
+    var buff = new int[3];
+    var i = 0;
+    buff[i++] = 0;
+    buff[i++] = 1;
+    buff[i++] = 2;
+    return i == 3;
+}

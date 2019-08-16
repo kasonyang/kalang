@@ -94,12 +94,13 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
             case "^":
             case BinaryExpr.OP_SHIFT_LEFT:
             case BinaryExpr.OP_SHIFT_RIGHT:
+            case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT:
                 return this.requireNumber(expr1, t1) && this.requireNumber(expr2, t2);
             case "&&":
             case "||":
                 return requireBoolean(expr1, t1) && requireBoolean(expr2, t2);
             default:
-                diagnosisReporter.report(Diagnosis.Kind.ERROR, "unsupport operation:" + op, node.offset);
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, "unsupported operation:" + op, node.offset);
                 return false;
         }
     }

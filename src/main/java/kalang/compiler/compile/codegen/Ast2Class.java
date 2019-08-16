@@ -626,30 +626,31 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
     
-    private void assignVarObject(VarObject to,ExprNode from){
+    private void assignVarObject(VarObject to,int valueVarIndex){
         org.objectweb.asm.Type type = asmType(to.getType());
-        visit(from);
+        md.visitVarInsn(type.getOpcode(ILOAD),valueVarIndex);
         int vid = getVarId(to);
         md.visitVarInsn(type.getOpcode(ISTORE), vid);
     }
     
-    private void assignField(FieldNode fn,ExprNode target,ExprNode expr){
+    private void assignField(FieldNode fn,ExprNode target,int valueVarIndex){
         int opc = PUTFIELD;
         if (AstUtil.isStatic(fn.modifier)) {
             opc = PUTSTATIC;
         } else {
             visit(target);
         }
-        visit(expr);
+        org.objectweb.asm.Type type = asmType(fn.getType());
+        md.visitVarInsn(type.getOpcode(ILOAD),valueVarIndex);
         md.visitFieldInsn(opc,
                 asmType(Types.getClassType(fn.getClassNode())).getInternalName(), fn.getName(), getTypeDescriptor(fn.getType()));
     }
     
-    private void assignField(FieldExpr fieldExpr,ExprNode expr){
+    private void assignField(FieldExpr fieldExpr,int valueVar){
         if(fieldExpr instanceof StaticFieldExpr){
-            assignField(fieldExpr.getField().getFieldNode(), null, expr);
+            assignField(fieldExpr.getField().getFieldNode(), null, valueVar);
         }else if(fieldExpr instanceof ObjectFieldExpr){
-            assignField(fieldExpr.getField().getFieldNode(), ((ObjectFieldExpr) fieldExpr).getTarget(), expr);
+            assignField(fieldExpr.getField().getFieldNode(), ((ObjectFieldExpr) fieldExpr).getTarget(), valueVar);
         }else{
             throw new UnsupportedOperationException();
         }
@@ -661,26 +662,28 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitInsn(type.getOpcode(IASTORE));
     }
     
-    private void assignArrayElement(ExprNode array,ExprNode key,ExprNode value){
+    private void assignArrayElement(ExprNode array,ExprNode key,int valueVarIndex){
         Parameters.requireNonNull(array);
         Parameters.requireNonNull(key);
-        Parameters.requireNonNull(value);
         visit(array);
         visit(key);
-        astore(value);
+        ArrayType arrayType = (ArrayType) array.getType();
+        org.objectweb.asm.Type type = asmType(arrayType.getComponentType());
+        md.visitVarInsn(type.getOpcode(ILOAD),valueVarIndex);
+        md.visitInsn(type.getOpcode(IASTORE));
     }
     
-    private void assign(ExprNode to,ExprNode from){
+    private void assign(ExprNode to,int valueVar){
         if(to instanceof FieldExpr){
             FieldExpr toField = (FieldExpr) to;
-            assignField(toField, from);
+            assignField(toField, valueVar);
         }else if(to instanceof VarExpr){
-            assignVarObject(((VarExpr) to).getVar(), from);
+            assignVarObject(((VarExpr) to).getVar(), valueVar);
         }else if(to instanceof ElementExpr){
             ElementExpr elementExpr = (ElementExpr) to;
-            assignArrayElement(elementExpr.getArrayExpr(), elementExpr.getIndex(), from);
+            assignArrayElement(elementExpr.getArrayExpr(), elementExpr.getIndex(), valueVar);
         }else if(to instanceof ParameterExpr){
-            assignVarObject(((ParameterExpr) to).getParameter(), from);
+            assignVarObject(((ParameterExpr) to).getParameter(), valueVar);
         }else{
             throw new UnknownError("unknown expression:" + to);
         }
@@ -688,8 +691,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitAssignExpr(AssignExpr node) {
-        assign(node.getTo(), node.getFrom());
-        visit(node.getTo());
+        ExprNode from = node.getFrom();
+        org.objectweb.asm.Type fromType = asmType(from.getType());
+        visit(from);
+        int tmpVar = declareNewVar(from.getType());
+        md.visitVarInsn(fromType.getOpcode(ISTORE),tmpVar);
+        assign(node.getTo(), tmpVar);
+        md.visitVarInsn(fromType.getOpcode(ILOAD),tmpVar);
         return null;
     }
 
@@ -697,10 +705,17 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitBinaryExpr(BinaryExpr node) {
         ExprNode e1 = node.getExpr1();
         ExprNode e2 = node.getExpr2();
-        Type type1 = e1.getType();
-        Type type2 = e2.getType();
-        if (!type1.equals(type2)) {
-            throw new IllegalArgumentException(String.format("invalid types:%s and %s",type1,type2));
+        switch (node.getOperation()){
+            case BinaryExpr.OP_SHIFT_LEFT:
+            case BinaryExpr.OP_SHIFT_RIGHT:
+            case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT:
+                break;
+            default:
+                Type type1 = e1.getType();
+                Type type2 = e2.getType();
+                if (!type1.equals(type2)) {
+                    throw new IllegalArgumentException(String.format("invalid types:%s and %s",type1,type2));
+                }
         }
         int op;
         org.objectweb.asm.Type at = asmType(node.getExpr1().getType());
@@ -716,6 +731,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             case BinaryExpr.OP_XOR: op = IXOR;break;
             case BinaryExpr.OP_SHIFT_LEFT:op = ISHL;break;
             case BinaryExpr.OP_SHIFT_RIGHT:op = ISHR;break;
+            case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT: op = IUSHR;break;
             default://logic expression
                 Label trueLabel = new Label();
                 Label stopLabel = new Label();

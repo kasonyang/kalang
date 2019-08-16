@@ -8,8 +8,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class SnippetsTest {
 
@@ -52,6 +51,7 @@ public class SnippetsTest {
             if ((inst instanceof Script) && "execute".equals(methodName)) {
                 continue;
             }
+            String fullMethodName = inst.getClass().getName() + ":" + methodName;
             Object ret;
             try {
                 if (m.getParameterCount() > 0) continue;
@@ -65,7 +65,13 @@ public class SnippetsTest {
                 fail("Exception in method:" + m.getName());
                 continue;
             }
-            assertEquals("result of method[" + methodName + "] should be 6", 6, ret);
+            System.out.println("result of method[" + fullMethodName + "]:" + ret );
+            if (ret instanceof Boolean) {
+                assertTrue("result of method[" + fullMethodName + "] should be true",(Boolean) ret);
+            } else {
+                assertEquals("result of method[" + fullMethodName + "] should be 6", 6, ret);
+            }
+
         }
 
     }

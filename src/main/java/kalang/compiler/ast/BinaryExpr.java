@@ -26,6 +26,7 @@ public abstract class BinaryExpr extends ExprNode{
             OP_XOR = "^",
             OP_SHIFT_LEFT = "<<",
             OP_SHIFT_RIGHT = ">>",
+            OP_UNSIGNED_SHIFT_RIGHT = ">>>",
             //Compare
             OP_LE = "<=",
             OP_GE = ">=",

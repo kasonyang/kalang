@@ -83,11 +83,11 @@ public class StringLiteralUtil {
 
     private static Number parseIntergerInternal(String value, int radix) {
         if (value.endsWith("L") || value.endsWith("l")) {
-            return Long.parseLong(value.substring(0, value.length() - 1), radix);
+            return Long.parseUnsignedLong(value.substring(0, value.length() - 1), radix);
         } else if (value.endsWith("i") || value.endsWith("I")) {
-            return Integer.parseInt(value.substring(0, value.length() - 1), radix);
+            return Integer.parseUnsignedInt(value.substring(0, value.length() - 1), radix);
         } else {
-            return Integer.parseInt(value, radix);
+            return Integer.parseUnsignedInt(value, radix);
         }
     }
 
