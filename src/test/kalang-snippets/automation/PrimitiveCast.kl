@@ -1,0 +1,5 @@
+boolean l2b() {
+    val l = 0x6L;
+    val b as byte = (byte) l;
+    return b == 6;
+}

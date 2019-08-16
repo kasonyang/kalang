@@ -136,7 +136,7 @@ wildcardType:
     '?' boundKind=('extends'|'super') classType
 ;
 primitiveType:
-  DOUBLE|LONG|FLOAT|INT|CHAR|BOOLEAN|BYTE|VOID
+  DOUBLE|LONG|FLOAT|INT|SHORT|CHAR|BOOLEAN|BYTE|VOID
 ;
 
 localVarDecl:
