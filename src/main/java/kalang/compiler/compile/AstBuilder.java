@@ -1427,23 +1427,36 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public IncrementExpr visitIncExpr(KalangParser.IncExprContext ctx) {
+    public ExprNode visitIncExpr(KalangParser.IncExprContext ctx) {
         return getIncrementExpr(ctx.expression(), ctx.op.getText(), false);
     }
 
     @Override
-    public IncrementExpr visitPreIncExpr(KalangParser.PreIncExprContext ctx) {
+    public ExprNode visitPreIncExpr(KalangParser.PreIncExprContext ctx) {
         return getIncrementExpr(ctx.expression(), ctx.op.getText(), true);
     }
     
-    public IncrementExpr getIncrementExpr(ExpressionContext expressionContext,String op,boolean isPrefix){
+    public ExprNode getIncrementExpr(ExpressionContext expressionContext,String op,boolean isOperatorFirst){
         ExprNode expr = visitExpression(expressionContext);
         if(!(expr instanceof AssignableExpr)){
             AstBuilder.this.handleSyntaxError("require assignable expression", expressionContext);
             return null;
         }
         boolean isDesc = op.equals("--");
-        return new IncrementExpr((AssignableExpr) expr, isDesc, isPrefix);
+        ExprNode reference;
+        List<Statement> initStmts = new LinkedList<>();
+        AssignableExpr safeTo = getSafeAccessibleAssignableExpr((AssignableExpr) expr, initStmts);
+        if (!isOperatorFirst) {
+            LocalVarNode tmpVar = declareTempLocalVar(safeTo.getType());
+            initStmts.add(new VarDeclStmt(tmpVar));
+            initStmts.add(new ExprStmt(new AssignExpr(new VarExpr(tmpVar), safeTo)));
+            reference = new VarExpr(tmpVar);
+        } else {
+            reference = safeTo;
+        }
+        ExprNode addOneExpr = createBinaryMathExpr(safeTo, new ConstExpr(1), isDesc ? "-" : "+");
+        initStmts.add(new ExprStmt(new AssignExpr(safeTo, addOneExpr)));
+        return new  MultiStmtExpr(initStmts, reference);
     }
 
     @Override
