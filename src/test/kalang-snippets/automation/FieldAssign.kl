@@ -4,11 +4,21 @@ class {
 
     private int value = 0;
 
+
     boolean run() {
+        value = 0;
+        index = 0;
         getObj().value = index ++;
-        //println(value);
-        return value == 1;
+        return value == 1 && index == 2;
     }
+
+    boolean compoundAssign() {
+        value = 1;
+        index = 1;
+        getObj().value  += index++ ;
+        return value == 3 && index == 3;
+    }
+
 
     private FieldAssign getObj() {
         index ++ ;

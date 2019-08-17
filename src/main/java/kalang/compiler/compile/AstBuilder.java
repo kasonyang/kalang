@@ -791,38 +791,41 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         String assignOp = ctx.getChild(1).getText();
         ExpressionContext toCtx = ctx.expression(0);
         ExpressionContext fromCtx = ctx.expression(1);
+        List<Statement> initStmts = new LinkedList<>();
+        ExprNode toExpr;
         if (toCtx instanceof GetFieldExprContext) {
             //TODO check readonly
-            //TODO fix compound and increment expr
-            return createFieldExpr((GetFieldExprContext) toCtx, fromCtx, offset(ctx));
+            if ("=".equals(assignOp)) {
+                return createFieldExpr((GetFieldExprContext) toCtx, fromCtx, offset(ctx));
+            }
+            toExpr = createFieldExpr((GetFieldExprContext)toCtx, null, offset(ctx));
         } else {
-            List<Statement> initStmts = new LinkedList<>();
-            ExprNode toExpr = visitExpression(toCtx);
-            if (!(toExpr instanceof AssignableExpr)) {
-                handleSyntaxError("expression is not assignable", offset(toCtx));
-                return null;
-            }
-            AssignableExpr to = (AssignableExpr) toExpr;
-            ExprNode from;
-            if (assignOp.length() > 1) {
-                String op = assignOp.substring(0, assignOp.length() - 1);
-                to = getSafeAccessibleAssignableExpr(to, initStmts);
-                from = createBinaryExpr(op, to, () -> visitExpression(fromCtx), offset(ctx));
-            } else {
-                from = visitExpression(fromCtx);
-            }
-            if (from == null) {
-                return null;
-            }
-            if (!this.semanticAnalyzer.validateAssign(to, from, offset(ctx), isInConstructor())) {
-                return null;
-            }
-            AssignExpr assignExpr = new AssignExpr(to, from);
-            mapAst(assignExpr, ctx);
-            //TODO remove override information before assign
-            methodCtx.onAssign(toExpr, from);
-            return initStmts.isEmpty() ? assignExpr : new MultiStmtExpr(initStmts, assignExpr);
+            toExpr = visitExpression(toCtx);
         }
+        if (!(toExpr instanceof AssignableExpr)) {
+            handleSyntaxError("expression is not assignable", offset(toCtx));
+            return null;
+        }
+        AssignableExpr to = (AssignableExpr) toExpr;
+        ExprNode from;
+        if (assignOp.length() > 1) {
+            String op = assignOp.substring(0, assignOp.length() - 1);
+            to = getSafeAccessibleAssignableExpr(to, initStmts);
+            from = createBinaryExpr(op, to, () -> visitExpression(fromCtx), offset(ctx));
+        } else {
+            from = visitExpression(fromCtx);
+        }
+        if (from == null) {
+            return null;
+        }
+        if (!this.semanticAnalyzer.validateAssign(to, from, offset(ctx), isInConstructor())) {
+            return null;
+        }
+        AssignExpr assignExpr = new AssignExpr(to, from);
+        mapAst(assignExpr, ctx);
+        //TODO remove override information before assign
+        methodCtx.onAssign(toExpr, from);
+        return initStmts.isEmpty() ? assignExpr : new MultiStmtExpr(initStmts, assignExpr);
     }
     
     private ExprNode createBinaryExpr(String op, ExprNode expr1, ExprCreator expr2Creator, OffsetRange offset){
