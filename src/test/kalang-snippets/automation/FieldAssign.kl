@@ -1,0 +1,18 @@
+class {
+
+    private int index = 0;
+
+    private int value = 0;
+
+    boolean run() {
+        getObj().value = index ++;
+        //println(value);
+        return value == 1;
+    }
+
+    private FieldAssign getObj() {
+        index ++ ;
+        return this;
+    }
+    
+}

@@ -1,0 +1,18 @@
+class {
+
+    private int index = 0;
+
+    private int[] getBuff(int[] buff) {
+        index ++ ;
+        return buff;
+    }
+
+    boolean run() {
+        int[] buff = new int[4];
+        getBuff(buff)[index++] = index ++;
+        //println(buff);
+        return Arrays.equals([0, 2, 0, 0], buff);
+    }
+
+
+}
