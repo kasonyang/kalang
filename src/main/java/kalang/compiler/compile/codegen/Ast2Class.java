@@ -1230,23 +1230,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         else throw new UnsupportedOperationException("unsupported type:" + type);
     }
     
-    @Override
-    public Object visitIncrementExpr(IncrementExpr node) {
-        if(!node.isIsPrefix()){
-            visit(node.getExpr());
-        }
-        Type exprType = node.getExpr().getType();
-        ConstExpr ce = getConstX(exprType, node.isIsDesc() ? -1 : 1);
-        BinaryExpr be = new MathExpr(node.getExpr(),ce, "+");
-        AssignExpr addOne = new AssignExpr(node.getExpr(),be);
-        visit(addOne);
-        pop(exprType);
-        if(node.isIsPrefix()){
-            visit(node.getExpr());
-        }        
-        return null;
-    }
-    
     private ConstExpr getConstX(Type type, int i) {
         Object obj;
         int t = getT(type);
@@ -1403,14 +1386,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMultiStmt(MultiStmt node) {
         visitAll(node.statements);
-        return null;
-    }
-
-    @Override
-    public Object visitStoreArrayElementExpr(StoreArrayElementExpr node) {
-        md.visitVarInsn(ALOAD, this.getVarId(node.getArray()));
-        visit(node.getIndex());
-        astore(node.getValueExpr());
         return null;
     }
 
