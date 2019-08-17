@@ -28,9 +28,8 @@ public class ObjectFieldExpr extends FieldExpr{
     }
     
     /**
-     * @return the target,null if the field is static
+     * @return the target
      */
-    @Nullable
     public ExprNode getTarget() {
         return target;
     }
