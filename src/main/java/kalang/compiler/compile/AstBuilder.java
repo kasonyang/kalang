@@ -1618,7 +1618,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         LoopStmt loopStmt;
         if(exprType instanceof ArrayType){
-            LocalVarNode localVarNode = this.declareLocalVar(varId.getText(),  ((ArrayType) exprType).getComponentType(),Modifier.FINAL,offset(ctx));
+            LocalVarNode localVarNode = this.declareLocalVar(varId.getText(),  ((ArrayType) exprType).getComponentType(), 0, offset(ctx));
             if(localVarNode==null) return null;
             VarExpr localVariable = new VarExpr(localVarNode);
             block.statements.add(new VarDeclStmt(localVarNode));
@@ -1689,7 +1689,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                     throw Exceptions.unexpectedException(ex);
                 }
-                LocalVarNode localVarNode = this.declareLocalVar(varId.getText(), nextInvokeExpr.getType(),Modifier.FINAL,offset(ctx));
+                LocalVarNode localVarNode = this.declareLocalVar(varId.getText(), nextInvokeExpr.getType(),0, offset(ctx));
                 if(localVarNode==null) return null;
                 VarExpr localVariable = new VarExpr(localVarNode);
                 loopBody.statements.add(new VarDeclStmt(localVarNode));
