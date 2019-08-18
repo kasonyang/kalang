@@ -15,14 +15,6 @@ public class MethodDispatcher {
     
     private final static JavaMethodSelector methodSelector = new JavaMethodSelector();
     
-    public static Class[] getObjectTypes(Object... objects){
-        Class[] types = new Class[objects.length];
-        for(int i=0;i<objects.length;i++){
-            types[i] = objects[i].getClass();
-        }
-        return types;
-    }
-    
     public static Object invokeMethodExactly(Object obj,String method,Object[] args,String[] types) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
         Class<? extends Object> clazz = obj.getClass();
         Class[] typeClasses = new Class[types.length];
@@ -34,7 +26,7 @@ public class MethodDispatcher {
     }
     
     public static Object invokeMethod(Object object,String method,Object... args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, MethodAmbiguousException{
-        List<Method> mds = methodSelector.select(object.getClass().getMethods(), method, getObjectTypes(args));
+        List<Method> mds = methodSelector.select(object.getClass().getMethods(), method, args);
         if(mds.isEmpty()){
             throw new NoSuchMethodException(method);
         }else if(mds.size()==1){
@@ -46,7 +38,7 @@ public class MethodDispatcher {
    
 }
 
-class JavaMethodSelector extends MethodSelector<Method,Class>{
+class JavaMethodSelector extends MethodSelector<Method,Class<?>,Object>{
 
     @Override
     protected String getMethodName(Method m) {
@@ -60,22 +52,32 @@ class JavaMethodSelector extends MethodSelector<Method,Class>{
     
 
     @Override
-    protected boolean isMorePreciseType(Class actualType,Class candidate1, Class candidate2) {
-        if(candidate1.equals(candidate2)) return false;
-        if(candidate2.isAssignableFrom(candidate1)) return true;
+    protected boolean isMorePreciseType(Object arg,Class<?> candidate1, Class<?> candidate2) {
+        if(candidate1.equals(candidate2)) {
+            return false;
+        }
+        if(candidate2.isAssignableFrom(candidate1)) {
+            return true;
+        }
         //TODO handle primitive and class type
         return false;
-    }
-
-    @Override
-    protected boolean isAssignableFrom(Class to, Class from) {
-        //TODO handle boxing and unboxing
-        return to.isAssignableFrom(from);
     }
 
     @Override
     protected boolean equalsType(Class type1, Class type2) {
         return type1.equals(type2);
     }
-    
+
+    @Override
+    protected int getMatchScore(Object arg, Class<?> type) {
+        //TODO handle sugar
+        Class<? extends Object> argClass = arg.getClass();
+        if (argClass.equals(type)) {
+            return 0;
+        } else if (type.isAssignableFrom(argClass)) {
+            return 1;
+        }
+        return -1;
+    }
+
 }

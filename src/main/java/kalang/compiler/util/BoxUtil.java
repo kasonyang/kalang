@@ -17,12 +17,13 @@ import javax.annotation.Nullable;
  */
 public class BoxUtil {
 
-    final static int 
+    public final static int
             CAST_UNSUPPORTED = -1,
             CAST_PRIMITIVE = 1,
             CAST_PRIMITIVE_TO_OBJECT = 2,
             CAST_OBJECT_TO_PRIMITIVE = 3,
-            CAST_NOTHING = 4
+            CAST_NOTHING = 4,
+            CAST_CONST   = 5
             //CAST_OBJECT_TO_STRING = 5,
             //CAST_PRIMITIVE_TO_STRING = 6
             ;
@@ -66,7 +67,7 @@ public class BoxUtil {
 
     @Nullable
     public static ExprNode assign(@Nonnull ExprNode expr, @Nonnull Type fromType,@Nonnull Type toType) {
-        int t = getCastMethod(fromType, toType);
+        int t = getCastMethod(expr, toType);
         switch (t) {
             case CAST_NOTHING:
                 return expr;
@@ -87,11 +88,12 @@ public class BoxUtil {
         }
     }
 
-    public static boolean assignable(Type fromType, Type toType) {
+    public static boolean assignable(ExprNode fromType, Type toType) {
         return getCastMethod(fromType, toType) > 0;
     }
 
-    private static int getCastMethod(Type fromType, Type toType) {
+    public static int getCastMethod(ExprNode from, Type toType) {
+        Type fromType = from.getType();
         if (fromType instanceof LambdaType) {
             if (((LambdaType) fromType).isAssignableTo(toType)) {
                 return CAST_NOTHING;

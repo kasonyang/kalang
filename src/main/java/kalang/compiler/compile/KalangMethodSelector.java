@@ -1,6 +1,8 @@
 package kalang.compiler.compile;
 
+import kalang.compiler.ast.ExprNode;
 import kalang.compiler.core.*;
+import kalang.compiler.exception.Exceptions;
 import kalang.compiler.util.BoxUtil;
 import kalang.runtime.util.MethodSelector;
 
@@ -8,7 +10,7 @@ import kalang.runtime.util.MethodSelector;
  *
  * @author Kason Yang
  */
-public class KalangMethodSelector extends MethodSelector<MethodDescriptor,Type> {
+public class KalangMethodSelector extends MethodSelector<MethodDescriptor,Type, ExprNode> {
 
     @Override
     protected String getMethodName(MethodDescriptor m) {
@@ -21,7 +23,8 @@ public class KalangMethodSelector extends MethodSelector<MethodDescriptor,Type> 
     }
 
     @Override
-    protected boolean isMorePreciseType(Type actualType, Type t1, Type t2) {
+    protected boolean isMorePreciseType(ExprNode arg, Type t1, Type t2) {
+        Type actualType = arg.getType();
         if(t1.isAssignableFrom(t2)) return false;
         if(t2.isAssignableFrom(t1)) return true;
         if(actualType instanceof ClassType){
@@ -37,13 +40,31 @@ public class KalangMethodSelector extends MethodSelector<MethodDescriptor,Type> 
     }
 
     @Override
-    protected boolean isAssignableFrom(Type t, Type t1) {
-        return BoxUtil.assignable(t1, t);
+    protected boolean equalsType(Type type1, Type type2) {
+        return type1.equals(type2);
     }
 
     @Override
-    protected boolean equalsType(Type type1, Type type2) {
-        return type1.equals(type2);
+    protected int getMatchScore(ExprNode arg, Type type) {
+        if (type.equals(arg.getType())) {
+            return 0;
+        }
+        int castMethod = BoxUtil.getCastMethod(arg, type);
+        switch (castMethod) {
+            case BoxUtil.CAST_CONST:
+                return 0;
+            case BoxUtil.CAST_UNSUPPORTED:
+                return -1;
+            case BoxUtil.CAST_NOTHING:
+                return 1;
+            case BoxUtil.CAST_PRIMITIVE_TO_OBJECT:
+            case BoxUtil.CAST_OBJECT_TO_PRIMITIVE:
+            case BoxUtil.CAST_PRIMITIVE:
+                return 2;
+            default:
+                throw Exceptions.unknownValue(castMethod);
+
+        }
     }
 
 }

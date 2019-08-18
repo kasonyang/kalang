@@ -22,7 +22,7 @@ public class Exceptions {
         return new RuntimeException("missing runtime class:" + className);
     }
 
-    public static RuntimeException unknownValue(String value) {
+    public static RuntimeException unknownValue(Object value) {
         throw new UnsupportedOperationException("unknown value:" + value);
     }
 
