@@ -462,7 +462,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected ConstExpr parseLiteral(KalangParser.LiteralContext ctx, @Nullable Type exceptedType){
         String t = ctx.getText();
-        Object v;
+        ConstExpr ce;
         if (ctx.IntegerLiteral() != null) {
             //NOTE should show tip for autocast?
             if(t.toUpperCase().endsWith("L")){
@@ -471,55 +471,60 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             }else if(t.toLowerCase().endsWith("i")){
                 t = t.substring(0,t.length()-1);
                 exceptedType = Types.INT_TYPE;
+            } else {
+                exceptedType = Types.INT_TYPE;
             }
-            Number intValue;
+            long intValue;
             try{
-                intValue = StringLiteralUtil.parseInteger(t);
+                intValue = StringLiteralUtil.parseLong(t);
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid number", ctx);
                 return null;
             }
-            if(Types.BYTE_TYPE.equals(exceptedType)){
-                //TODO check range
-                v = intValue.byteValue();
-            }else if(Types.LONG_TYPE.equals(exceptedType)){
-                v =  intValue.longValue();
-            }else{
-                //TODO check range
-                v = intValue;
+            if (exceptedType.equals(Types.INT_TYPE)) {
+                intValue = (int) intValue;
             }
+            //TODO check range
+            ce = new ConstExpr(exceptedType,String.valueOf(intValue));
         } else if (ctx.FloatingPointLiteral() != null) {
-            Number floatPointValue;
+            double floatPointValue;
+            if(t.toUpperCase().endsWith("D")){
+                t = t.substring(0,t.length()-1);
+                exceptedType = Types.DOUBLE_TYPE;
+            }else if(t.toUpperCase().endsWith("F")){
+                t = t.substring(0,t.length()-1);
+                exceptedType = Types.FLOAT_TYPE;
+            } else {
+                exceptedType = Types.DOUBLE_TYPE;
+            }
             try{
-                floatPointValue = StringLiteralUtil.parseFloatPoint(t);
+                floatPointValue = Double.parseDouble(t);
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid float value", ctx);
                 return null;
             }
-            if(Types.FLOAT_TYPE.equals(exceptedType)){
-                v = floatPointValue.floatValue();
-            }else{
-                v = floatPointValue;
-            }
+            //TODO check range
+            ce = new ConstExpr(exceptedType, String.valueOf(floatPointValue));
         } else if (ctx.BooleanLiteral() != null) {
-            v = ( Boolean.parseBoolean(t));
+            ce = new ConstExpr(Types.BOOLEAN_TYPE, t);
         } else if (ctx.CharacterLiteral() != null) {
-            String strValue = StringLiteralUtil.parse(t);
-            char[] chars = strValue.toCharArray();
-            v = ( chars[1]);
+            ce = new ConstExpr(Types.CHAR_TYPE, StringLiteralUtil.parse(t));
         } else if (ctx.StringLiteral() != null) {
-            v = (StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
-        } else if(ctx.MultiLineStringLiteral()!=null){
-            v = StringLiteralUtil.parse(t.substring(3,t.length()-3));
-        }else if(ctx.Identifier()!=null){
-            ClassReference cr = requireClassReference(ctx.Identifier().getSymbol());
-            v = (cr);
-        } else if(ctx.getText().equals("null")) {
-            v = null;
-        }else{
+            ce = new ConstExpr(Types.getStringClassType(), StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
+        } else if (ctx.MultiLineStringLiteral()!=null){
+            ce = new ConstExpr(Types.getStringClassType(), StringLiteralUtil.parse(t.substring(3,t.length()-3)));
+        } else if (ctx.Identifier()!=null){
+            ClassReference clsRef = requireClassReference(ctx.Identifier().getSymbol());
+            if (clsRef == null) {
+                return null;
+            }
+            //TODO fix type parameter
+            ce = new ConstExpr(Types.getClassClassType(), clsRef.getReferencedClassNode().name);
+        } else if (ctx.getText().equals("null")) {
+            ce = new ConstExpr(Types.NULL_TYPE,"null");
+        } else {
             throw Exceptions.unexpectedValue(ctx.getText());
         }
-        ConstExpr ce = new ConstExpr(v);
         mapAst(ce,ctx);
         return ce;
     }

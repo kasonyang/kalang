@@ -524,7 +524,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (ctx.expression() != null) {
             rs.expr = visitExpression(ctx.expression());
         } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
-            rs.expr = new ConstExpr(null);
+            rs.expr = new ConstExpr(Types.NULL_TYPE);
         }
         if(!semanticAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
         this.methodCtx.returned = true;
@@ -1891,7 +1891,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         }
         if (returnType.equals(Types.getVoidClassType())) {
-            bs.statements.add(new ReturnStmt(new ConstExpr(null)));
+            bs.statements.add(new ReturnStmt(new ConstExpr(Types.NULL_TYPE)));
             methodCtx.returned = true;
         }
         methodNode.getBody().statements.add(bs);
@@ -2039,10 +2039,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         LocalVarNode targetTmpVar = declareTempLocalVar(targetExpr.getType());
         stmts.add(new VarDeclStmt(targetTmpVar));
         stmts.add(new ExprStmt(new AssignExpr(new VarExpr(targetTmpVar), targetExpr)));
-        ExprNode conditionExpr = new CompareExpr(new VarExpr(targetTmpVar), new ConstExpr(null), "==");
+        ExprNode conditionExpr = new CompareExpr(new VarExpr(targetTmpVar), new ConstExpr(Types.NULL_TYPE), "==");
         methodCtx.newOverrideTypeStack();
         methodCtx.onIf(conditionExpr, true);
-        ExprNode trueExpr = new ConstExpr(null);
+        ExprNode trueExpr = new ConstExpr(Types.NULL_TYPE);
         methodCtx.popOverrideTypeStack();
         methodCtx.newOverrideTypeStack();
         methodCtx.onIf(conditionExpr, false);

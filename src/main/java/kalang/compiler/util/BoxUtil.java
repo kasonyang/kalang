@@ -9,6 +9,7 @@ import kalang.compiler.core.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * Helper for data conversion between primitive type and object type
@@ -153,10 +154,12 @@ public class BoxUtil {
         if (originConst.getType().equals(toType)) {
             return originConst;
         }
-        Object value = originConst.getValue();
-        if (!(value instanceof Integer)) {
+        String value = originConst.getValue();
+        Type constType = originConst.getType();
+        if (!Types.INT_TYPE.equals(constType)) {
             return null;
         }
+        Objects.requireNonNull(value);
         if (toType instanceof ClassType) {
             PrimitiveType primitiveType = Types.getPrimitiveType((ClassType)toType);
             if (primitiveType == null) {
@@ -168,28 +171,25 @@ public class BoxUtil {
             }
             return assign(newConst, newConst.getType(), toType);
         }
-        Integer num = (Integer) value;
+        int num = Integer.parseInt(value);
         ConstExpr newConstExpr;
         if (toType.equals(Types.BYTE_TYPE)) {
             if (num > Byte.MAX_VALUE || num < Byte.MIN_VALUE) {
                 return null;
             }
-            newConstExpr = new ConstExpr(num.byteValue());
         } else if (toType.equals(Types.CHAR_TYPE)) {
             if (num > Character.MAX_VALUE || num < Character.MIN_VALUE) {
                 return null;
             }
-            newConstExpr = new ConstExpr((char)num.intValue());
         } else if (toType.equals(Types.SHORT_TYPE)) {
             if (num > Short.MAX_VALUE || num < Short.MIN_VALUE) {
                 return null;
             }
-            newConstExpr = new ConstExpr(num.shortValue());
         } else if (toType.equals(Types.LONG_TYPE)) {
-            newConstExpr = new ConstExpr(num.longValue());
         } else {
             return null;
         }
+        newConstExpr = new ConstExpr(toType, value);
         newConstExpr.offset = originConst.offset;
         return newConstExpr;
     }

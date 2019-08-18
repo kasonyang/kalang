@@ -750,22 +750,33 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     protected Object getJavaConst(ConstExpr ce){
-        Object v = ce.getValue();
+        String v = ce.getValue();
+        Type ct = ce.getType();
         if(v==null){
             return null;
-        }else if(v instanceof ClassReference){
-            return asmType(Types.getClassType(((ClassReference) v).getReferencedClassNode()));
-        }else{
-            Type ct = ce.getType();
-            if(
-                    Types.isNumber(ct)
-                    || Types.isBoolean(ct)
-                    || Types.isCharType(ct)
-                    || ct.equals(Types.getCharClassType())
-                    || ct.equals(Types.getStringClassType())
-                    ){
-                return ce.getValue();
-            }
+        } else if (ct.equals(Types.getClassClassType())) {
+            return org.objectweb.asm.Type.getType("L" + internalName(v) + ";");
+        } else if (ct.equals(BOOLEAN_TYPE)) {
+            return Boolean.valueOf(v);
+        } else if (ct.equals(BYTE_TYPE)) {
+            return Byte.valueOf(v);
+        } else if (ct.equals(SHORT_TYPE)) {
+            return Short.valueOf(v);
+        } else if (ct.equals(CHAR_TYPE)) {
+            return v.toCharArray()[1];
+        } else if (ct.equals(INT_TYPE)) {
+            return Integer.parseInt(v);
+        } else if (ct.equals(LONG_TYPE)) {
+            return Long.parseLong(v);
+        } else if (ct.equals(FLOAT_TYPE)) {
+            return Float.parseFloat(v);
+        } else if (ct.equals(DOUBLE_TYPE)) {
+            return Double.parseDouble(v);
+        } else if (ct.equals(Types.getStringClassType())) {
+            return v;
+        } else if (ct.equals(NULL_TYPE)) {
+            return null;
+        } else {
             throw Exceptions.unsupportedTypeException(ct);
         }
     }
@@ -1231,32 +1242,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private ConstExpr getConstX(Type type, int i) {
-        Object obj;
-        int t = getT(type);
-        switch (t) {
-            case T_I:
-                obj = new Integer(i);
-                break;
-            case T_L:
-                obj = new Long(i);
-                break;
-            case T_F:
-                obj = new Float(i);
-                break;
-            case T_D:
-                obj = new Double(i);
-                break;
-            default:
-                throw new UnsupportedOperationException("unsupported type:" + type);
-        }
-        return new ConstExpr(obj);
+        return new ConstExpr(type, String.valueOf(i));
     }
     private void constX(Object x){
         md.visitLdcInsn(x);
     }
 
     private void constX(Type type,int i) {
-        constX(getConstX(type, i).getValue());
+        visitConstExpr(getConstX(type, i));
     }
 
     @Override
