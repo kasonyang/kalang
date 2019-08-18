@@ -1112,7 +1112,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public UnaryExpr visitUnaryExpr(UnaryExprContext ctx) {
+    public ExprNode visitUnaryExpr(UnaryExprContext ctx) {
         String op = ctx.getChild(0).getText();
         ExpressionContext exprCtx = ctx.expression();
         ExprNode expr = visitExpression(exprCtx);
@@ -1131,6 +1131,21 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 break;
             default:
                 throw Exceptions.unexpectedValue(op);
+        }
+        if (expr == null) {
+            return null;
+        }
+        if (expr instanceof ConstExpr) {
+            ConstExpr ce = (ConstExpr) expr;
+            if (op.equals(UnaryExpr.OPERATION_LOGIC_NOT)) {
+                ce = new ConstExpr(ce.getType(), String.valueOf(!Boolean.parseBoolean(ce.getValue())));
+                mapAst(ce, ctx);
+                return ce;
+            } else if (op.equals(UnaryExpr.OPERATION_NEG)) {
+                ce = new ConstExpr(ce.getType(), "-" + ce.getValue());
+                mapAst(ce, ctx);
+                return ce;
+            }
         }
         UnaryExpr ue = new UnaryExpr(expr, op);
         mapAst(ue, ctx);

@@ -16,8 +16,8 @@ class {
 
     boolean byteConstAssign() {
         val bytes  = new byte[1];
-        bytes[0] = 1;
-        return bytes[0] == 1;
+        bytes[0] = - 0x80;
+        return bytes[0] == -128;
     }
 
     boolean shortConstAssign() {
