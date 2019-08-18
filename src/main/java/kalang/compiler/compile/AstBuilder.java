@@ -818,6 +818,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (from == null) {
             return null;
         }
+        from = requireImplicitCast(to.getType(), from, offset(ctx));
+        if (from == null) {
+            return null;
+        }
         if (!this.semanticAnalyzer.validateAssign(to, from, offset(ctx), isInConstructor())) {
             return null;
         }

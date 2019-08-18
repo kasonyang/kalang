@@ -14,5 +14,17 @@ class {
         return Arrays.equals([0, 2, 0, 0], buff);
     }
 
+    boolean byteConstAssign() {
+        val bytes  = new byte[1];
+        bytes[0] = 1;
+        return bytes[0] == 1;
+    }
+
+    boolean shortConstAssign() {
+        val arr = new short[1];
+        arr[0] = 1;
+        return arr[0] == 1;
+    }
+
 
 }

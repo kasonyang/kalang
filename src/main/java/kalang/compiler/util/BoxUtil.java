@@ -77,6 +77,8 @@ public class BoxUtil {
                 return castPrimitive(expr,(PrimitiveType) fromType, (PrimitiveType)toType);
             case CAST_PRIMITIVE_TO_OBJECT:
                 return castPrimitive2Object(expr, (PrimitiveType) fromType);
+            case CAST_CONST:
+                return castConst((ConstExpr) expr,toType);
             //case CAST_PRIMITIVE_TO_STRING:
             //    return castPrimitive2String(expr, (PrimitiveType) fromType);
             //case CAST_OBJECT_TO_STRING:
@@ -137,7 +139,59 @@ public class BoxUtil {
                 return CAST_OBJECT_TO_PRIMITIVE;
             }
         }
+        if (from instanceof ConstExpr) {
+            ExprNode newConst = castConst((ConstExpr) from, toType);
+            if (newConst != null) {
+                return CAST_CONST;
+            }
+        }
         return CAST_UNSUPPORTED;
+    }
+
+    @Nullable
+    private static ExprNode castConst(ConstExpr originConst, Type toType) {
+        if (originConst.getType().equals(toType)) {
+            return originConst;
+        }
+        Object value = originConst.getValue();
+        if (!(value instanceof Integer)) {
+            return null;
+        }
+        if (toType instanceof ClassType) {
+            PrimitiveType primitiveType = Types.getPrimitiveType((ClassType)toType);
+            if (primitiveType == null) {
+                return null;
+            }
+            ExprNode newConst = castConst(originConst, primitiveType);
+            if (newConst == null) {
+                return null;
+            }
+            return assign(newConst, newConst.getType(), toType);
+        }
+        Integer num = (Integer) value;
+        ConstExpr newConstExpr;
+        if (toType.equals(Types.BYTE_TYPE)) {
+            if (num > Byte.MAX_VALUE || num < Byte.MIN_VALUE) {
+                return null;
+            }
+            newConstExpr = new ConstExpr(num.byteValue());
+        } else if (toType.equals(Types.CHAR_TYPE)) {
+            if (num > Character.MAX_VALUE || num < Character.MIN_VALUE) {
+                return null;
+            }
+            newConstExpr = new ConstExpr((char)num.intValue());
+        } else if (toType.equals(Types.SHORT_TYPE)) {
+            if (num > Short.MAX_VALUE || num < Short.MIN_VALUE) {
+                return null;
+            }
+            newConstExpr = new ConstExpr(num.shortValue());
+        } else if (toType.equals(Types.LONG_TYPE)) {
+            newConstExpr = new ConstExpr(num.longValue());
+        } else {
+            return null;
+        }
+        newConstExpr.offset = originConst.offset;
+        return newConstExpr;
     }
 
     private static ExprNode castPrimitive(ExprNode expr,PrimitiveType fromType,PrimitiveType toType) {
