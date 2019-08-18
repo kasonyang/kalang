@@ -460,51 +460,51 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return ast;
     }
 
-    protected ConstExpr parseLiteral(KalangParser.LiteralContext ctx, @Nullable Type exceptedType){
+    protected ConstExpr parseLiteral(KalangParser.LiteralContext ctx){
         String t = ctx.getText();
         ConstExpr ce;
         if (ctx.IntegerLiteral() != null) {
             //NOTE should show tip for autocast?
-            if(t.toUpperCase().endsWith("L")){
+            Type constType = Types.INT_TYPE;
+            if (t.toUpperCase().endsWith("L")){
                 t = t.substring(0,t.length()-1);
-                exceptedType = Types.LONG_TYPE;
-            }else if(t.toLowerCase().endsWith("i")){
+                constType = Types.LONG_TYPE;
+            } else if (t.toUpperCase().endsWith("I")){
                 t = t.substring(0,t.length()-1);
-                exceptedType = Types.INT_TYPE;
-            } else {
-                exceptedType = Types.INT_TYPE;
+                constType = Types.INT_TYPE;
             }
-            long intValue;
+            String constValue;
             try{
-                intValue = StringLiteralUtil.parseLong(t);
+                if (Types.INT_TYPE.equals(constType)) {
+                    constValue = String.valueOf(StringLiteralUtil.parseInteger(t));
+                } else  {
+                    constValue = String.valueOf(StringLiteralUtil.parseLong(t));
+                }
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid number", ctx);
                 return null;
             }
-            if (exceptedType.equals(Types.INT_TYPE)) {
-                intValue = (int) intValue;
-            }
-            //TODO check range
-            ce = new ConstExpr(exceptedType,String.valueOf(intValue));
+            ce = new ConstExpr(constType, constValue);
         } else if (ctx.FloatingPointLiteral() != null) {
-            double floatPointValue;
+            Type constType = Types.DOUBLE_TYPE;
             if(t.toUpperCase().endsWith("D")){
                 t = t.substring(0,t.length()-1);
-                exceptedType = Types.DOUBLE_TYPE;
+                constType = Types.DOUBLE_TYPE;
             }else if(t.toUpperCase().endsWith("F")){
                 t = t.substring(0,t.length()-1);
-                exceptedType = Types.FLOAT_TYPE;
-            } else {
-                exceptedType = Types.DOUBLE_TYPE;
+                constType = Types.FLOAT_TYPE;
             }
             try{
-                floatPointValue = Double.parseDouble(t);
+                if (Types.FLOAT_TYPE.equals(constType)) {
+                    Float.parseFloat(t);
+                } else {
+                    Double.parseDouble(t);
+                }
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid float value", ctx);
                 return null;
             }
-            //TODO check range
-            ce = new ConstExpr(exceptedType, String.valueOf(floatPointValue));
+            ce = new ConstExpr(constType, t);
         } else if (ctx.BooleanLiteral() != null) {
             ce = new ConstExpr(Types.BOOLEAN_TYPE, t);
         } else if (ctx.CharacterLiteral() != null) {
@@ -542,11 +542,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             int ksize = vk.size();
             for(int i=0;i<ksize;i++){
                 String kname = vk.get(i).getText();
-                ConstExpr value = parseLiteral(anValues.get(i),null);
+                ConstExpr value = parseLiteral(anValues.get(i));
                 anNode.values.put(kname, value);
             }
         }else if(dv!=null){
-            ConstExpr defaultValue = parseLiteral(dv,null);
+            ConstExpr defaultValue = parseLiteral(dv);
             anNode.values.put("value", defaultValue);
         }
         if(!semanticAnalyzer.validateAnnotation(anNode)) return null;

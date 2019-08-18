@@ -1201,7 +1201,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public ConstExpr visitLiteral(LiteralContext ctx) {
-        return this.parseLiteral(ctx, null);
+        return this.parseLiteral(ctx);
     }
 
     @Override
@@ -1346,13 +1346,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public Statement visitLocalVarDecl(LocalVarDeclContext ctx) {
         MultiStmt ms = new MultiStmt();
         for (VarDeclContext v : ctx.varDecl()) {
-            TypeContext varType = v.varType;
-            Type exceptedType =varType==null ? null :  parseType(varType);
             ExprNode initExpr = null;
             ExpressionContext initExprContext = v.expression();
             if(initExprContext!=null){
                 if(initExprContext instanceof LiteralExprContext){
-                    initExpr = this.parseLiteral(((LiteralExprContext) initExprContext).literal(), exceptedType);
+                    initExpr = this.parseLiteral(((LiteralExprContext) initExprContext).literal());
                 }else{
                     initExpr = visitExpression(initExprContext);
                 }
