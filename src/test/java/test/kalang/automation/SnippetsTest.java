@@ -47,6 +47,9 @@ public class SnippetsTest {
         Method[] mds = hwCls.getDeclaredMethods();
         for (int i = 0; i < mds.length; i++) {
             Method m = mds[i];
+            if (!Modifier.isPublic(m.getModifiers())) {
+                continue;
+            }
             String methodName = m.getName();
             if ((inst instanceof Script) && "execute".equals(methodName)) {
                 continue;

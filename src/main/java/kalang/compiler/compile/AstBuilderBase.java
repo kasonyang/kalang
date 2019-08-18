@@ -199,6 +199,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), token);
     }
 
+    protected void methodIsAmbiguous(OffsetRange offset , AmbiguousMethodException ex){
+        diagnosisReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), offset);
+    }
+
+
     protected void methodNotFound(Token token , Type type,String methodName,ExprNode[] params){
         methodNotFound(token,type.getName(),methodName,params);
     }
@@ -208,6 +213,14 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         diagnosisReporter.report(Diagnosis.Kind.ERROR
                 , "method not found:" + MethodUtil.toString(className,methodName, types)
                 , token
+        );
+    }
+
+    protected void methodNotFound(OffsetRange offset, String className,String methodName,ExprNode[] params){
+        Type[] types = AstUtil.getExprTypes(params);
+        diagnosisReporter.report(Diagnosis.Kind.ERROR
+                , "method not found:" + MethodUtil.toString(className,methodName, types)
+                ,offset
         );
     }
 
@@ -681,6 +694,50 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             }
         }
         return Collections.EMPTY_LIST;
+    }
+
+    protected AssignableExpr getSafeAccessibleAssignableExpr(AssignableExpr expr,List<Statement> initStmtsHolder) {
+        if (expr instanceof ObjectFieldExpr) {
+            ObjectFieldExpr fe = (ObjectFieldExpr) expr;
+            ExprNode originTarget = fe.getTarget();
+            if (isSafeAccessibleExpr(originTarget)) {
+                return expr;
+            }
+            ExprNode safeTarget = createSafeAccessibleExpr(originTarget, initStmtsHolder);
+            return new ObjectFieldExpr(safeTarget, fe.getField());
+        } else if (expr instanceof ElementExpr) {
+            //element execute order:array -> index
+            ElementExpr eleExpr = (ElementExpr) expr;
+            ExprNode arrayExpr = eleExpr.getArrayExpr();
+            ExprNode indexExpr = eleExpr.getIndex();
+            boolean isArraySafeAccessible = isSafeAccessibleExpr(arrayExpr);
+            boolean isIndexSafeAccessible = isSafeAccessibleExpr(indexExpr);
+            if (isArraySafeAccessible && isIndexSafeAccessible) {
+                return expr;
+            }
+            ExprNode safeArrayExpr = isArraySafeAccessible ? arrayExpr : createSafeAccessibleExpr(arrayExpr, initStmtsHolder);
+            ExprNode safeIndexExpr = isIndexSafeAccessible ? indexExpr : createSafeAccessibleExpr(indexExpr, initStmtsHolder);
+            return new ElementExpr(safeArrayExpr, safeIndexExpr);
+        } else if (isSafeAccessibleExpr(expr)) {
+            return expr;
+        } else {
+            throw Exceptions.unexpectedValue(expr);
+        }
+    }
+
+    private VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
+        LocalVarNode tmpTarget = declareTempLocalVar(target.getType());
+        initStmtsHolder.add(new VarDeclStmt(tmpTarget));
+        initStmtsHolder.add(new ExprStmt(new AssignExpr(new VarExpr(tmpTarget),target)));
+        return new VarExpr(tmpTarget);
+    }
+
+    private boolean isSafeAccessibleExpr(ExprNode expr) {
+        return expr instanceof VarExpr
+                || expr instanceof ParameterExpr
+                || expr instanceof StaticFieldExpr
+                || expr instanceof ConstExpr
+                ;
     }
 
     private String parseTreeToText(ParseTree ctx) {

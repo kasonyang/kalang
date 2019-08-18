@@ -1,0 +1,24 @@
+class {
+    private int index = 0;
+
+    private int[] getBuff(int[] buff) {
+        index ++ ;
+        return buff;
+    }
+
+    boolean compoundPlusAssignOfCalculatedArray() {
+        int[] buff = new int[5];
+        getBuff(buff)[index++] += index ++;
+        getBuff(buff)[index++] += index ++;
+        return Arrays.equals([0, 2, 0, 0, 5], buff);
+    }
+
+    boolean compoundPlusAssign() {
+        var arr = new int[2];
+        var i = 0;
+        arr[i++] += i++;
+        return Arrays.equals([1, 0], arr) && i == 2;
+    }
+
+
+}

@@ -1,0 +1,35 @@
+class {
+
+    private int index = 0;
+
+    private int value = 0;
+
+
+    boolean run() {
+        value = 0;
+        index = 0;
+        getObj().value = index ++;
+        return value == 1 && index == 2;
+    }
+
+    boolean compoundAssign() {
+        value = 1;
+        index = 1;
+        getObj().value  += index++ ;
+        return value == 3 && index == 3;
+    }
+
+    boolean fieldIncr() {
+        value = 1;
+        index = 1;
+        getObj().value ++ ;
+        return index == 2 && value == 2;
+    }
+
+
+    private FieldAssign getObj() {
+        index ++ ;
+        return this;
+    }
+    
+}

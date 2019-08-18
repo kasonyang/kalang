@@ -1,9 +1,7 @@
 package kalang.compiler.ast;
 import java.util.*;
 public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
-    
-    //abstract public T visitVarObject(VarObject node);
-    
+
     public T visit(AstNode node){
         
         if(node==null) return null;
@@ -38,10 +36,6 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         
         if(node instanceof ArrayLengthExpr){
             return visitArrayLengthExpr((ArrayLengthExpr) node);
-        }
-        
-        if(node instanceof IncrementExpr){
-            return visitIncrementExpr((IncrementExpr) node);
         }
         
         if(node instanceof NewObjectExpr){
@@ -170,13 +164,13 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     }
     
     public List<T> visitAll(AstNode[] nodes){
-        if(nodes==null) return Collections.EMPTY_LIST;
+        if(nodes==null) return Collections.emptyList();
         return visitAll(Arrays.asList(nodes));
     }
     
     public List<T> visitAll(List<?  extends AstNode> nodes){
         if(nodes==null) return null;
-        List<T> result = new LinkedList();
+        List<T> result = new LinkedList<>();
         for(AstNode n:nodes){
             result.add(visit(n));
         }
@@ -184,7 +178,7 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
     }
     
     public Map<AstNode,T> visitChildren(AstNode node){
-        Map<AstNode,T> result = new HashMap();
+        Map<AstNode,T> result = new HashMap<>();
         List<AstNode> children = node.getChildren();
         for(AstNode c:children){
             result.put(c,visit(c));

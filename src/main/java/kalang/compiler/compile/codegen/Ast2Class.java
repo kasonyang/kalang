@@ -626,31 +626,31 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
     
-    private void assignVarObject(VarObject to,int valueVarIndex){
-        org.objectweb.asm.Type type = asmType(to.getType());
-        md.visitVarInsn(type.getOpcode(ILOAD),valueVarIndex);
+    private void assignVarObject(VarObject to,ExprNode from){
+        visit(from);
         int vid = getVarId(to);
-        md.visitVarInsn(type.getOpcode(ISTORE), vid);
+        md.visitVarInsn(getOpcode(to.getType(),ISTORE), vid);
     }
     
-    private void assignField(FieldNode fn,ExprNode target,int valueVarIndex){
+    private void assignField(FieldNode fn,ExprNode target, ExprNode from, int valueVar){
         int opc = PUTFIELD;
         if (AstUtil.isStatic(fn.modifier)) {
             opc = PUTSTATIC;
         } else {
             visit(target);
         }
-        org.objectweb.asm.Type type = asmType(fn.getType());
-        md.visitVarInsn(type.getOpcode(ILOAD),valueVarIndex);
+        visit(from);
+        dupX(from.getType());
+        md.visitVarInsn(getOpcode(from.getType(),ISTORE), valueVar);
         md.visitFieldInsn(opc,
                 asmType(Types.getClassType(fn.getClassNode())).getInternalName(), fn.getName(), getTypeDescriptor(fn.getType()));
     }
     
-    private void assignField(FieldExpr fieldExpr,int valueVar){
+    private void assignField(FieldExpr fieldExpr,ExprNode from, int valueVar){
         if(fieldExpr instanceof StaticFieldExpr){
-            assignField(fieldExpr.getField().getFieldNode(), null, valueVar);
+            assignField(fieldExpr.getField().getFieldNode(), null, from, valueVar);
         }else if(fieldExpr instanceof ObjectFieldExpr){
-            assignField(fieldExpr.getField().getFieldNode(), ((ObjectFieldExpr) fieldExpr).getTarget(), valueVar);
+            assignField(fieldExpr.getField().getFieldNode(), ((ObjectFieldExpr) fieldExpr).getTarget(), from, valueVar);
         }else{
             throw new UnsupportedOperationException();
         }
@@ -662,42 +662,42 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         md.visitInsn(type.getOpcode(IASTORE));
     }
     
-    private void assignArrayElement(ExprNode array,ExprNode key,int valueVarIndex){
+    private void assignArrayElement(ExprNode array,ExprNode key,ExprNode from, int valueVar){
         Parameters.requireNonNull(array);
         Parameters.requireNonNull(key);
         visit(array);
         visit(key);
+        visit(from);
+        dupX(from.getType());
+        md.visitVarInsn(getOpcode(from.getType(), ISTORE), valueVar);
         ArrayType arrayType = (ArrayType) array.getType();
-        org.objectweb.asm.Type type = asmType(arrayType.getComponentType());
-        md.visitVarInsn(type.getOpcode(ILOAD),valueVarIndex);
-        md.visitInsn(type.getOpcode(IASTORE));
-    }
-    
-    private void assign(ExprNode to,int valueVar){
-        if(to instanceof FieldExpr){
-            FieldExpr toField = (FieldExpr) to;
-            assignField(toField, valueVar);
-        }else if(to instanceof VarExpr){
-            assignVarObject(((VarExpr) to).getVar(), valueVar);
-        }else if(to instanceof ElementExpr){
-            ElementExpr elementExpr = (ElementExpr) to;
-            assignArrayElement(elementExpr.getArrayExpr(), elementExpr.getIndex(), valueVar);
-        }else if(to instanceof ParameterExpr){
-            assignVarObject(((ParameterExpr) to).getParameter(), valueVar);
-        }else{
-            throw new UnknownError("unknown expression:" + to);
-        }
+        md.visitInsn(getOpcode(arrayType.getComponentType(),IASTORE));
     }
 
     @Override
     public Object visitAssignExpr(AssignExpr node) {
         ExprNode from = node.getFrom();
-        org.objectweb.asm.Type fromType = asmType(from.getType());
-        visit(from);
-        int tmpVar = declareNewVar(from.getType());
-        md.visitVarInsn(fromType.getOpcode(ISTORE),tmpVar);
-        assign(node.getTo(), tmpVar);
-        md.visitVarInsn(fromType.getOpcode(ILOAD),tmpVar);
+        AssignableExpr to = node.getTo();
+        int valueVar;
+        if (to instanceof FieldExpr) {
+            valueVar = declareNewVar(from.getType());
+            assignField((FieldExpr) to, from, valueVar);
+        } else if (to instanceof VarExpr) {
+            LocalVarNode toVar = ((VarExpr) to).getVar();
+            assignVarObject(toVar, from);
+            valueVar = getVarId(toVar);
+        } else if (to instanceof ElementExpr) {
+            ElementExpr elementExpr = (ElementExpr) to;
+            valueVar = declareNewVar(from.getType());
+            assignArrayElement(elementExpr.getArrayExpr(), elementExpr.getIndex(), from, valueVar);
+        } else if (to instanceof ParameterExpr) {
+            ParameterNode toParam = ((ParameterExpr) to).getParameter();
+            assignVarObject(toParam, from);
+            valueVar = getVarId(toParam);
+        } else {
+            throw new UnknownError("unknown expression:" + to);
+        }
+        md.visitVarInsn(getOpcode(from.getType(),ILOAD), valueVar);
         return null;
     }
 
@@ -1230,23 +1230,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         else throw new UnsupportedOperationException("unsupported type:" + type);
     }
     
-    @Override
-    public Object visitIncrementExpr(IncrementExpr node) {
-        if(!node.isIsPrefix()){
-            visit(node.getExpr());
-        }
-        Type exprType = node.getExpr().getType();
-        ConstExpr ce = getConstX(exprType, node.isIsDesc() ? -1 : 1);
-        BinaryExpr be = new MathExpr(node.getExpr(),ce, "+");
-        AssignExpr addOne = new AssignExpr(node.getExpr(),be);
-        visit(addOne);
-        pop(exprType);
-        if(node.isIsPrefix()){
-            visit(node.getExpr());
-        }        
-        return null;
-    }
-    
     private ConstExpr getConstX(Type type, int i) {
         Object obj;
         int t = getT(type);
@@ -1406,14 +1389,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
 
-    @Override
-    public Object visitStoreArrayElementExpr(StoreArrayElementExpr node) {
-        md.visitVarInsn(ALOAD, this.getVarId(node.getArray()));
-        visit(node.getIndex());
-        astore(node.getValueExpr());
-        return null;
-    }
-
     private void createInterfaceBridgeMethodIfNeed(MethodNode interfaceMethod,MethodNode implementMethod) {
         String desc = getMethodDescriptor(interfaceMethod);
         String implementDesc = getMethodDescriptor(implementMethod);
@@ -1450,12 +1425,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         methodVisitor.visitEnd();
     }
 
-    private String methodSignature(MethodDescriptor m){
-        String ptype = "";
-        for(Type p:m.getParameterTypes()){
-            ptype += typeSignature(p);
-        }
-        return "(" + ptype + ")" + typeSignature(m.getReturnType());
+    private int getOpcode(Type type, int opcode) {
+        return asmType(type).getOpcode(opcode);
     }
+
+
 
 }

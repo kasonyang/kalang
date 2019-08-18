@@ -1,86 +1,83 @@
 package kalang.compiler.ast;
-public interface IAstVisitor<T>{
-    
-    public T visitInstanceOfExpr(InstanceOfExpr node);
-    
-    public T visitErrorousExpr(ErrorousExpr node);
-    
-    public T visitSuperExpr(SuperExpr node);
-    
-    public T visitClassReference(ClassReference node);
-    
-    public T visitArrayLengthExpr(ArrayLengthExpr node);
-    
-    public T visitIncrementExpr(IncrementExpr node);
-    
-    public T visitUnknownFieldExpr(UnknownFieldExpr node);
-    
-    public T visitUnknownInvocationExpr(UnknownInvocationExpr node);
-    
-    public T visitClassNode(ClassNode node);
-    
-    public T visitMethodNode(MethodNode node);
-    
-    public T visitBlockStmt(BlockStmt node);
-    
-    public T visitBreakStmt(BreakStmt node);
-    
-    public T visitContinueStmt(ContinueStmt node);
-    
-    public T visitExprStmt(ExprStmt node);
-    
-    public T visitIfStmt(IfStmt node);
-    
-    public T visitLoopStmt(LoopStmt node);
-    
-    public T visitReturnStmt(ReturnStmt node);
-    
-    public T visitVarDeclStmt(VarDeclStmt node);
-    
-    public T visitTryStmt(TryStmt node);
-    
-    public T visitCatchBlock(CatchBlock node);
-    
-    public T visitThrowStmt(ThrowStmt node);
-    
-    public T visitAssignExpr(AssignExpr node);
-    
-    public T visitBinaryExpr(BinaryExpr node);
-    
-    public T visitConstExpr(ConstExpr node);
-    
-    public T visitElementExpr(ElementExpr node);
-    
-    public T visitFieldExpr(FieldExpr node);
-    
-    public T visitInvocationExpr(InvocationExpr node);
-    
-    public T visitUnaryExpr(UnaryExpr node);
-    
-    public T visitVarExpr(VarExpr node);
-    
-    public T visitParameterExpr(ParameterExpr node);
-    
-    public T visitCastExpr(CastExpr node);
-    
-    public T visitPrimitiveCastExpr(PrimitiveCastExpr node);
-    
-    public T visitNewArrayExpr(NewArrayExpr node);
-    
-    public T visitThisExpr(ThisExpr node);
-    
-    public T visitMultiStmtExpr(MultiStmtExpr node);
-    
-    public T visitLocalVarNode(LocalVarNode localVarNode);
 
-    public T visitParameterNode(ParameterNode node);
+public interface IAstVisitor<T> {
 
-    public T visitFieldNode(FieldNode fieldNode);
-    
-    public T visitNewObjectExpr(NewObjectExpr node);
-    
-    public T visitMultiStmt(MultiStmt node);
-    
-    public T visitStoreArrayElementExpr(StoreArrayElementExpr node);
-    
+    T visitInstanceOfExpr(InstanceOfExpr node);
+
+    T visitErrorousExpr(ErrorousExpr node);
+
+    T visitSuperExpr(SuperExpr node);
+
+    T visitClassReference(ClassReference node);
+
+    T visitArrayLengthExpr(ArrayLengthExpr node);
+
+    T visitUnknownFieldExpr(UnknownFieldExpr node);
+
+    T visitUnknownInvocationExpr(UnknownInvocationExpr node);
+
+    T visitClassNode(ClassNode node);
+
+    T visitMethodNode(MethodNode node);
+
+    T visitBlockStmt(BlockStmt node);
+
+    T visitBreakStmt(BreakStmt node);
+
+    T visitContinueStmt(ContinueStmt node);
+
+    T visitExprStmt(ExprStmt node);
+
+    T visitIfStmt(IfStmt node);
+
+    T visitLoopStmt(LoopStmt node);
+
+    T visitReturnStmt(ReturnStmt node);
+
+    T visitVarDeclStmt(VarDeclStmt node);
+
+    T visitTryStmt(TryStmt node);
+
+    T visitCatchBlock(CatchBlock node);
+
+    T visitThrowStmt(ThrowStmt node);
+
+    T visitAssignExpr(AssignExpr node);
+
+    T visitBinaryExpr(BinaryExpr node);
+
+    T visitConstExpr(ConstExpr node);
+
+    T visitElementExpr(ElementExpr node);
+
+    T visitFieldExpr(FieldExpr node);
+
+    T visitInvocationExpr(InvocationExpr node);
+
+    T visitUnaryExpr(UnaryExpr node);
+
+    T visitVarExpr(VarExpr node);
+
+    T visitParameterExpr(ParameterExpr node);
+
+    T visitCastExpr(CastExpr node);
+
+    T visitPrimitiveCastExpr(PrimitiveCastExpr node);
+
+    T visitNewArrayExpr(NewArrayExpr node);
+
+    T visitThisExpr(ThisExpr node);
+
+    T visitMultiStmtExpr(MultiStmtExpr node);
+
+    T visitLocalVarNode(LocalVarNode localVarNode);
+
+    T visitParameterNode(ParameterNode node);
+
+    T visitFieldNode(FieldNode fieldNode);
+
+    T visitNewObjectExpr(NewObjectExpr node);
+
+    T visitMultiStmt(MultiStmt node);
+
 }

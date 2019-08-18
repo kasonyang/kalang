@@ -18,9 +18,9 @@ public class ElementExpr extends AssignableExpr{
     
     protected ExprNode index;
     
-    public ElementExpr(ExprNode target,ExprNode key){
-            this.arrayExpr = target;
-            this.index = key;
+    public ElementExpr(ExprNode arrayExpr,ExprNode indexExpr){
+            this.arrayExpr = arrayExpr;
+            this.index = indexExpr;
     }
     
     @Override
