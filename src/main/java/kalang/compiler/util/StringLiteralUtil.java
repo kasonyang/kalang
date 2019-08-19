@@ -53,41 +53,21 @@ public class StringLiteralUtil {
 
     public static long parseLong(String longLiteral) throws NumberFormatException {
         if (longLiteral.startsWith("0x") || longLiteral.startsWith("0X")) {
-            return Long.parseLong(longLiteral.substring(2).replace("_", ""), 16);
+            return Long.parseUnsignedLong(longLiteral.substring(2).replace("_", ""), 16);
         } else if (longLiteral.length() > 1 && longLiteral.startsWith("0")) {
-            return Long.parseLong(longLiteral.substring(1).replace("_", ""), 8);
+            return Long.parseUnsignedLong(longLiteral.substring(1).replace("_", ""), 8);
         } else {
-            return Long.parseLong(longLiteral);
+            return Long.parseUnsignedLong(longLiteral);
         }
     }
 
-    public static Number parseInteger(String longLiteral) {
+    public static int parseInteger(String longLiteral) {
         if (longLiteral.startsWith("0x") || longLiteral.startsWith("0X")) {
-            return parseIntergerInternal(longLiteral.substring(2).replace("_", ""), 16);
+            return Integer.parseUnsignedInt(longLiteral.substring(2).replace("_", ""), 16);
         } else if (longLiteral.length() > 1 && longLiteral.startsWith("0")) {
-            return parseIntergerInternal(longLiteral.substring(1).replace("_", ""), 8);
+            return Integer.parseUnsignedInt(longLiteral.substring(1).replace("_", ""), 8);
         } else {
-            return parseIntergerInternal(longLiteral, 10);
-        }
-    }
-
-    public static Number parseFloatPoint(String value) {
-        if (value.endsWith("f") || value.endsWith("F")) {
-            return Float.parseFloat(value.substring(0, value.length() - 1));
-        } else if (value.endsWith("d") || value.endsWith("D")) {
-            return Double.parseDouble(value.substring(0, value.length() - 1));
-        } else {
-            return Double.parseDouble(value);
-        }
-    }
-
-    private static Number parseIntergerInternal(String value, int radix) {
-        if (value.endsWith("L") || value.endsWith("l")) {
-            return Long.parseUnsignedLong(value.substring(0, value.length() - 1), radix);
-        } else if (value.endsWith("i") || value.endsWith("I")) {
-            return Integer.parseUnsignedInt(value.substring(0, value.length() - 1), radix);
-        } else {
-            return Integer.parseUnsignedInt(value, radix);
+            return Integer.parseUnsignedInt(longLiteral, 10);
         }
     }
 

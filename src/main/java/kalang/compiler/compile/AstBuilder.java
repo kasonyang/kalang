@@ -524,7 +524,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (ctx.expression() != null) {
             rs.expr = visitExpression(ctx.expression());
         } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
-            rs.expr = new ConstExpr(null);
+            rs.expr = new ConstExpr(Types.NULL_TYPE);
         }
         if(!semanticAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
         this.methodCtx.returned = true;
@@ -818,6 +818,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (from == null) {
             return null;
         }
+        from = requireImplicitCast(to.getType(), from, offset(ctx));
+        if (from == null) {
+            return null;
+        }
         if (!this.semanticAnalyzer.validateAssign(to, from, offset(ctx), isInConstructor())) {
             return null;
         }
@@ -1108,7 +1112,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public UnaryExpr visitUnaryExpr(UnaryExprContext ctx) {
+    public ExprNode visitUnaryExpr(UnaryExprContext ctx) {
         String op = ctx.getChild(0).getText();
         ExpressionContext exprCtx = ctx.expression();
         ExprNode expr = visitExpression(exprCtx);
@@ -1127,6 +1131,21 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 break;
             default:
                 throw Exceptions.unexpectedValue(op);
+        }
+        if (expr == null) {
+            return null;
+        }
+        if (expr instanceof ConstExpr) {
+            ConstExpr ce = (ConstExpr) expr;
+            if (op.equals(UnaryExpr.OPERATION_LOGIC_NOT)) {
+                ce = new ConstExpr(ce.getType(), String.valueOf(!Boolean.parseBoolean(ce.getValue())));
+                mapAst(ce, ctx);
+                return ce;
+            } else if (op.equals(UnaryExpr.OPERATION_NEG)) {
+                ce = new ConstExpr(ce.getType(), "-" + ce.getValue());
+                mapAst(ce, ctx);
+                return ce;
+            }
         }
         UnaryExpr ue = new UnaryExpr(expr, op);
         mapAst(ue, ctx);
@@ -1182,7 +1201,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public ConstExpr visitLiteral(LiteralContext ctx) {
-        return this.parseLiteral(ctx, null);
+        return this.parseLiteral(ctx);
     }
 
     @Override
@@ -1327,13 +1346,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public Statement visitLocalVarDecl(LocalVarDeclContext ctx) {
         MultiStmt ms = new MultiStmt();
         for (VarDeclContext v : ctx.varDecl()) {
-            TypeContext varType = v.varType;
-            Type exceptedType =varType==null ? null :  parseType(varType);
             ExprNode initExpr = null;
             ExpressionContext initExprContext = v.expression();
             if(initExprContext!=null){
                 if(initExprContext instanceof LiteralExprContext){
-                    initExpr = this.parseLiteral(((LiteralExprContext) initExprContext).literal(), exceptedType);
+                    initExpr = this.parseLiteral(((LiteralExprContext) initExprContext).literal());
                 }else{
                     initExpr = visitExpression(initExprContext);
                 }
@@ -1887,7 +1904,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         }
         if (returnType.equals(Types.getVoidClassType())) {
-            bs.statements.add(new ReturnStmt(new ConstExpr(null)));
+            bs.statements.add(new ReturnStmt(new ConstExpr(Types.NULL_TYPE)));
             methodCtx.returned = true;
         }
         methodNode.getBody().statements.add(bs);
@@ -2035,10 +2052,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         LocalVarNode targetTmpVar = declareTempLocalVar(targetExpr.getType());
         stmts.add(new VarDeclStmt(targetTmpVar));
         stmts.add(new ExprStmt(new AssignExpr(new VarExpr(targetTmpVar), targetExpr)));
-        ExprNode conditionExpr = new CompareExpr(new VarExpr(targetTmpVar), new ConstExpr(null), "==");
+        ExprNode conditionExpr = new CompareExpr(new VarExpr(targetTmpVar), new ConstExpr(Types.NULL_TYPE), "==");
         methodCtx.newOverrideTypeStack();
         methodCtx.onIf(conditionExpr, true);
-        ExprNode trueExpr = new ConstExpr(null);
+        ExprNode trueExpr = new ConstExpr(Types.NULL_TYPE);
         methodCtx.popOverrideTypeStack();
         methodCtx.newOverrideTypeStack();
         methodCtx.onIf(conditionExpr, false);

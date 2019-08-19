@@ -460,66 +460,71 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return ast;
     }
 
-    protected ConstExpr parseLiteral(KalangParser.LiteralContext ctx, @Nullable Type exceptedType){
+    protected ConstExpr parseLiteral(KalangParser.LiteralContext ctx){
         String t = ctx.getText();
-        Object v;
+        ConstExpr ce;
         if (ctx.IntegerLiteral() != null) {
             //NOTE should show tip for autocast?
-            if(t.toUpperCase().endsWith("L")){
+            Type constType = Types.INT_TYPE;
+            if (t.toUpperCase().endsWith("L")){
                 t = t.substring(0,t.length()-1);
-                exceptedType = Types.LONG_TYPE;
-            }else if(t.toLowerCase().endsWith("i")){
+                constType = Types.LONG_TYPE;
+            } else if (t.toUpperCase().endsWith("I")){
                 t = t.substring(0,t.length()-1);
-                exceptedType = Types.INT_TYPE;
+                constType = Types.INT_TYPE;
             }
-            Number intValue;
+            String constValue;
             try{
-                intValue = StringLiteralUtil.parseInteger(t);
+                if (Types.INT_TYPE.equals(constType)) {
+                    constValue = String.valueOf(StringLiteralUtil.parseInteger(t));
+                } else  {
+                    constValue = String.valueOf(StringLiteralUtil.parseLong(t));
+                }
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid number", ctx);
                 return null;
             }
-            if(Types.BYTE_TYPE.equals(exceptedType)){
-                //TODO check range
-                v = intValue.byteValue();
-            }else if(Types.LONG_TYPE.equals(exceptedType)){
-                v =  intValue.longValue();
-            }else{
-                //TODO check range
-                v = intValue;
-            }
+            ce = new ConstExpr(constType, constValue);
         } else if (ctx.FloatingPointLiteral() != null) {
-            Number floatPointValue;
+            Type constType = Types.DOUBLE_TYPE;
+            if(t.toUpperCase().endsWith("D")){
+                t = t.substring(0,t.length()-1);
+                constType = Types.DOUBLE_TYPE;
+            }else if(t.toUpperCase().endsWith("F")){
+                t = t.substring(0,t.length()-1);
+                constType = Types.FLOAT_TYPE;
+            }
             try{
-                floatPointValue = StringLiteralUtil.parseFloatPoint(t);
+                if (Types.FLOAT_TYPE.equals(constType)) {
+                    Float.parseFloat(t);
+                } else {
+                    Double.parseDouble(t);
+                }
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid float value", ctx);
                 return null;
             }
-            if(Types.FLOAT_TYPE.equals(exceptedType)){
-                v = floatPointValue.floatValue();
-            }else{
-                v = floatPointValue;
-            }
+            ce = new ConstExpr(constType, t);
         } else if (ctx.BooleanLiteral() != null) {
-            v = ( Boolean.parseBoolean(t));
+            ce = new ConstExpr(Types.BOOLEAN_TYPE, t);
         } else if (ctx.CharacterLiteral() != null) {
-            String strValue = StringLiteralUtil.parse(t);
-            char[] chars = strValue.toCharArray();
-            v = ( chars[1]);
+            ce = new ConstExpr(Types.CHAR_TYPE, StringLiteralUtil.parse(t));
         } else if (ctx.StringLiteral() != null) {
-            v = (StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
-        } else if(ctx.MultiLineStringLiteral()!=null){
-            v = StringLiteralUtil.parse(t.substring(3,t.length()-3));
-        }else if(ctx.Identifier()!=null){
-            ClassReference cr = requireClassReference(ctx.Identifier().getSymbol());
-            v = (cr);
-        } else if(ctx.getText().equals("null")) {
-            v = null;
-        }else{
+            ce = new ConstExpr(Types.getStringClassType(), StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
+        } else if (ctx.MultiLineStringLiteral()!=null){
+            ce = new ConstExpr(Types.getStringClassType(), StringLiteralUtil.parse(t.substring(3,t.length()-3)));
+        } else if (ctx.Identifier()!=null){
+            ClassReference clsRef = requireClassReference(ctx.Identifier().getSymbol());
+            if (clsRef == null) {
+                return null;
+            }
+            //TODO fix type parameter
+            ce = new ConstExpr(Types.getClassClassType(), clsRef.getReferencedClassNode().name);
+        } else if (ctx.getText().equals("null")) {
+            ce = new ConstExpr(Types.NULL_TYPE,"null");
+        } else {
             throw Exceptions.unexpectedValue(ctx.getText());
         }
-        ConstExpr ce = new ConstExpr(v);
         mapAst(ce,ctx);
         return ce;
     }
@@ -537,11 +542,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             int ksize = vk.size();
             for(int i=0;i<ksize;i++){
                 String kname = vk.get(i).getText();
-                ConstExpr value = parseLiteral(anValues.get(i),null);
+                ConstExpr value = parseLiteral(anValues.get(i));
                 anNode.values.put(kname, value);
             }
         }else if(dv!=null){
-            ConstExpr defaultValue = parseLiteral(dv,null);
+            ConstExpr defaultValue = parseLiteral(dv);
             anNode.values.put("value", defaultValue);
         }
         if(!semanticAnalyzer.validateAnnotation(anNode)) return null;

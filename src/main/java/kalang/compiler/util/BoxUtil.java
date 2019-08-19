@@ -9,6 +9,7 @@ import kalang.compiler.core.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * Helper for data conversion between primitive type and object type
@@ -17,12 +18,13 @@ import javax.annotation.Nullable;
  */
 public class BoxUtil {
 
-    final static int 
+    public final static int
             CAST_UNSUPPORTED = -1,
             CAST_PRIMITIVE = 1,
             CAST_PRIMITIVE_TO_OBJECT = 2,
             CAST_OBJECT_TO_PRIMITIVE = 3,
-            CAST_NOTHING = 4
+            CAST_NOTHING = 4,
+            CAST_CONST   = 5
             //CAST_OBJECT_TO_STRING = 5,
             //CAST_PRIMITIVE_TO_STRING = 6
             ;
@@ -66,7 +68,7 @@ public class BoxUtil {
 
     @Nullable
     public static ExprNode assign(@Nonnull ExprNode expr, @Nonnull Type fromType,@Nonnull Type toType) {
-        int t = getCastMethod(fromType, toType);
+        int t = getCastMethod(expr, toType);
         switch (t) {
             case CAST_NOTHING:
                 return expr;
@@ -76,6 +78,8 @@ public class BoxUtil {
                 return castPrimitive(expr,(PrimitiveType) fromType, (PrimitiveType)toType);
             case CAST_PRIMITIVE_TO_OBJECT:
                 return castPrimitive2Object(expr, (PrimitiveType) fromType);
+            case CAST_CONST:
+                return castConst((ConstExpr) expr,toType);
             //case CAST_PRIMITIVE_TO_STRING:
             //    return castPrimitive2String(expr, (PrimitiveType) fromType);
             //case CAST_OBJECT_TO_STRING:
@@ -87,11 +91,12 @@ public class BoxUtil {
         }
     }
 
-    public static boolean assignable(Type fromType, Type toType) {
+    public static boolean assignable(ExprNode fromType, Type toType) {
         return getCastMethod(fromType, toType) > 0;
     }
 
-    private static int getCastMethod(Type fromType, Type toType) {
+    public static int getCastMethod(ExprNode from, Type toType) {
+        Type fromType = from.getType();
         if (fromType instanceof LambdaType) {
             if (((LambdaType) fromType).isAssignableTo(toType)) {
                 return CAST_NOTHING;
@@ -135,7 +140,58 @@ public class BoxUtil {
                 return CAST_OBJECT_TO_PRIMITIVE;
             }
         }
+        if (from instanceof ConstExpr) {
+            ExprNode newConst = castConst((ConstExpr) from, toType);
+            if (newConst != null) {
+                return CAST_CONST;
+            }
+        }
         return CAST_UNSUPPORTED;
+    }
+
+    @Nullable
+    private static ExprNode castConst(ConstExpr originConst, Type toType) {
+        if (originConst.getType().equals(toType)) {
+            return originConst;
+        }
+        String value = originConst.getValue();
+        Type constType = originConst.getType();
+        if (!Types.INT_TYPE.equals(constType)) {
+            return null;
+        }
+        Objects.requireNonNull(value);
+        if (toType instanceof ClassType) {
+            PrimitiveType primitiveType = Types.getPrimitiveType((ClassType)toType);
+            if (primitiveType == null) {
+                return null;
+            }
+            ExprNode newConst = castConst(originConst, primitiveType);
+            if (newConst == null) {
+                return null;
+            }
+            return assign(newConst, newConst.getType(), toType);
+        }
+        int num = Integer.parseInt(value);
+        ConstExpr newConstExpr;
+        if (toType.equals(Types.BYTE_TYPE)) {
+            if (num > Byte.MAX_VALUE || num < Byte.MIN_VALUE) {
+                return null;
+            }
+        } else if (toType.equals(Types.CHAR_TYPE)) {
+            if (num > Character.MAX_VALUE || num < Character.MIN_VALUE) {
+                return null;
+            }
+        } else if (toType.equals(Types.SHORT_TYPE)) {
+            if (num > Short.MAX_VALUE || num < Short.MIN_VALUE) {
+                return null;
+            }
+        } else if (toType.equals(Types.LONG_TYPE)) {
+        } else {
+            return null;
+        }
+        newConstExpr = new ConstExpr(toType, value);
+        newConstExpr.offset = originConst.offset;
+        return newConstExpr;
     }
 
     private static ExprNode castPrimitive(ExprNode expr,PrimitiveType fromType,PrimitiveType toType) {
