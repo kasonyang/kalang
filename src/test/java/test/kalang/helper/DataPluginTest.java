@@ -4,6 +4,8 @@ import kalang.helper.DataPlugin;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Random;
+
 /**
  * @author lbqh
  */
@@ -11,23 +13,36 @@ public class DataPluginTest {
 
     @Test
     public void test() {
-        byte[] buffer = new byte[8];
-        Long value = 0x1234567890ABCDEFL;
-        DataPlugin.writeLongB(buffer, 0, value);
-        Assert.assertEquals(value.longValue(), DataPlugin.readLongB(buffer, 0));
-        DataPlugin.writeLongL(buffer, 0, value);
-        Assert.assertEquals(value.longValue(), DataPlugin.readLongL(buffer, 0));
+        Random random = new Random();
+        for (int i = 0; i < 1000; i++) {
+            testLong(random.nextLong());
+            testInt(random.nextInt());
+            testShort((short) random.nextInt());
+        }
+    }
 
-        DataPlugin.writeIntB(buffer, 0, value.intValue());
-        Assert.assertEquals(value.intValue(), DataPlugin.readIntB(buffer, 0));
-        DataPlugin.writeIntL(buffer, 0, value.intValue());
-        Assert.assertEquals(value.intValue(), DataPlugin.readIntL(buffer, 0));
+    private void testShort(short value) {
+        byte[] shortBuffer = new byte[2];
+        DataPlugin.writeShortB(shortBuffer, 0, value);
+        Assert.assertEquals(value, DataPlugin.readShortB(shortBuffer, 0));
+        DataPlugin.writeShortL(shortBuffer, 0, value);
+        Assert.assertEquals(value, DataPlugin.readShortL(shortBuffer, 0));
+    }
 
-        DataPlugin.writeShortB(buffer, 0, value.shortValue());
-        Assert.assertEquals(value.shortValue(), DataPlugin.readShortB(buffer, 0));
-        DataPlugin.writeShortL(buffer, 0, value.shortValue());
-        Assert.assertEquals(value.shortValue(), DataPlugin.readShortL(buffer, 0));
+    private void testInt(int value) {
+        byte[] intBuffer = new byte[4];
+        DataPlugin.writeIntB(intBuffer, 0, value);
+        Assert.assertEquals(value, DataPlugin.readIntB(intBuffer, 0));
+        DataPlugin.writeIntL(intBuffer, 0, value);
+        Assert.assertEquals(value, DataPlugin.readIntL(intBuffer, 0));
+    }
 
+    private void testLong(long value) {
+        byte[] longBuffer = new byte[8];
+        DataPlugin.writeLongB(longBuffer, 0, value);
+        Assert.assertEquals(value, DataPlugin.readLongB(longBuffer, 0));
+        DataPlugin.writeLongL(longBuffer, 0, value);
+        Assert.assertEquals(value, DataPlugin.readLongL(longBuffer, 0));
     }
 
 }
