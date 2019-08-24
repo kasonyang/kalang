@@ -1,6 +1,6 @@
-package kalang.helper;
+package kalang.mixin;
 
-import kalang.annotation.PluginMethod;
+import kalang.annotation.MixinMethod;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,9 +8,9 @@ import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
 
-public class StringPlugin {
+public class StringMixin {
 
-    @PluginMethod
+    @MixinMethod
     public static String[] lines(String str) {
         List<String> list = new LinkedList<>();
         BufferedReader r = new BufferedReader(new StringReader(str));

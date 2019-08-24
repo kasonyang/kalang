@@ -60,7 +60,7 @@ classDef:
 
 importDecl:
    (
-        'import' (importMode='static')? (root='\\')?
+        'import' (importMode='static' | 'mixin' )? (root='\\')?
         path+=Identifier ('\\' path+=Identifier)*
         delim='\\' ( 
             (name=Identifier ('as' alias=Identifier)? )

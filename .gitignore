@@ -4,3 +4,6 @@
 /nbproject/
 /.idea/
 /.nb-gradle/
+/out/
+/kalang-runtime/build/
+/kalang-runtime/out/

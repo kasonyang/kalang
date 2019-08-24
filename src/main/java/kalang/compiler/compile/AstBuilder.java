@@ -994,10 +994,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         MethodDescriptor[] methods = targetClassType.getMethodDescriptors(thisClazz, methodName, true, true);
         ExprNode expr;
         try {
-            if (methods.length<=0) {//find plugin method
-                List<MethodDescriptor> pluginMethods = getImportedPluginMethod(methodName);
-                if (!pluginMethods.isEmpty()) {
-                    ClassNode pluginClass = pluginMethods.get(0).getMethodNode().getClassNode();
+            if (methods.length<=0) {//find mixin method
+                List<MethodDescriptor> mixinMethods = getImportedMixinMethod(methodName);
+                if (!mixinMethods.isEmpty()) {
+                    ClassNode pluginClass = mixinMethods.get(0).getMethodNode().getClassNode();
                     LinkedList<ExprNode> newArgs = new LinkedList();
                     newArgs.add(target);
                     newArgs.addAll(Arrays.asList(args));
@@ -1209,7 +1209,16 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         String name = ctx.name.getText();
         String delim = ctx.delim.getText();
         String prefix = "";
-        boolean isStaticImport = ctx.importMode != null;
+        String importMode = ctx.importMode != null ? ctx.importMode.getText() : "";
+        boolean isImportStatic = false;
+        boolean isImportMixin = false;
+        if (importMode.equals("static")) {
+            isImportStatic = true;
+        } else if (importMode.equals("mixin")) {
+            isImportMixin = true;
+        } else if (!importMode.isEmpty()) {
+            throw Exceptions.unexpectedValue(importMode);
+        }
         if("\\".equals(delim)){
             boolean relative = ctx.root == null || ctx.root.getText().length() == 0;
             String packageName = this.getPackageName();
@@ -1225,12 +1234,16 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
         if (name.equals("*")) {
             String location = prefix.substring(0, prefix.length() - 1);
-            if (isStaticImport) {
+            if (isImportStatic || isImportMixin) {
                 ClassNode locationCls = requireAst(location, ctx.stop,true);
                 if (locationCls==null) {
                     return null;
                 }
-                importStaticMember(locationCls,null);
+                if (isImportStatic) {
+                    importStaticMember(locationCls,null);
+                } else {
+                    importMixinMethod(locationCls, null);
+                }
             } else {
                 typeNameResolver.importPackage(location);
             }
@@ -1240,12 +1253,16 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (ctx.alias != null) {
                 key = ctx.alias.getText();
             }
-            if (isStaticImport) {
+            if (isImportStatic || isImportMixin) {
                 //TODO support alias
                 String location = prefix.substring(0,prefix.length()-1);
                 ClassNode locationCls = requireAst(location, ctx.stop,true);
                 if (locationCls==null) return null;
-                importStaticMember(locationCls,name);
+                if (isImportStatic) {
+                    importStaticMember(locationCls,name);
+                } else {
+                    importMixinMethod(locationCls, name);
+                }
             }else{
                 typeNameResolver.importClass(prefix + name,key);
             }
