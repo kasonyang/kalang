@@ -380,18 +380,6 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitNewExpr(KalangParser.NewExprContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code invokeExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterInvokeExpr(KalangParser.InvokeExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code invokeExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitInvokeExpr(KalangParser.InvokeExprContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code instanceofExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -416,18 +404,6 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitInterpolationExpr(KalangParser.InterpolationExprContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code arrayExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterArrayExpr(KalangParser.ArrayExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code arrayExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitArrayExpr(KalangParser.ArrayExprContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code incExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -451,30 +427,6 @@ public interface KalangParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCastExpr(KalangParser.CastExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code mapExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterMapExpr(KalangParser.MapExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code mapExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitMapExpr(KalangParser.MapExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code binaryExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterBinaryExpr(KalangParser.BinaryExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code binaryExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitBinaryExpr(KalangParser.BinaryExprContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code getFieldExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
@@ -523,42 +475,6 @@ public interface KalangParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParenExpr(KalangParser.ParenExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code getArrayElementExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterGetArrayElementExpr(KalangParser.GetArrayElementExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code getArrayElementExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitGetArrayElementExpr(KalangParser.GetArrayElementExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code preIncExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterPreIncExpr(KalangParser.PreIncExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code preIncExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitPreIncExpr(KalangParser.PreIncExprContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code errorousMemberExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code errorousMemberExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code unaryExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
@@ -643,6 +559,102 @@ public interface KalangParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSelfRefExpr(KalangParser.SelfRefExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code invokeExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterInvokeExpr(KalangParser.InvokeExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code invokeExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitInvokeExpr(KalangParser.InvokeExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code arrayExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayExpr(KalangParser.ArrayExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code arrayExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayExpr(KalangParser.ArrayExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code mapExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterMapExpr(KalangParser.MapExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code mapExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitMapExpr(KalangParser.MapExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code binaryExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterBinaryExpr(KalangParser.BinaryExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code binaryExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitBinaryExpr(KalangParser.BinaryExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code getArrayElementExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterGetArrayElementExpr(KalangParser.GetArrayElementExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code getArrayElementExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitGetArrayElementExpr(KalangParser.GetArrayElementExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code preIncExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterPreIncExpr(KalangParser.PreIncExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code preIncExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitPreIncExpr(KalangParser.PreIncExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code errorousMemberExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code errorousMemberExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code withExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterWithExpr(KalangParser.WithExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code withExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitWithExpr(KalangParser.WithExprContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code identifierExpr}
 	 * labeled alternative in {@link KalangParser#expression}.

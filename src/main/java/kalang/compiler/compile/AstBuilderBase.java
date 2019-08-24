@@ -63,7 +63,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         ExprNode ret;
         Type type = expr.getType();
         if(!(type instanceof  ObjectType)){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"unsupported type",offset);
             return null;
         }
         ObjectType exprType = (ObjectType) type;
@@ -74,12 +73,20 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             try {
                 ret = ObjectFieldExpr.create(expr, fieldName,getCurrentClass());
             } catch (FieldNotFoundException ex) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,offset);
-                ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
+                return null;
             }
         }
         mapAst(ret, offset);
         return ret;
+    }
+
+    protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset){
+        ExprNode fe = getObjectFieldLikeExpr(expr, fieldName, offset);
+        if (fe == null) {
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,offset);
+            return null;
+        }
+        return fe;
     }
 
     protected void processConstructor() {
@@ -464,6 +471,25 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
         if(ast==null){
             diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, token);
+        }
+        return ast;
+    }
+
+    /**
+     * checks whether a class is available
+     * @param id
+     * @return
+     */
+    @Nullable
+    protected ClassNode requireAst(String id,boolean fullName, OffsetRange offset) {
+        ClassNode ast;
+        if (fullName) {
+            ast = getAst(id);
+        } else {
+            ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
+        }
+        if(ast==null){
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, offset);
         }
         return ast;
     }

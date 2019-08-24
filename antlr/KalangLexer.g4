@@ -70,6 +70,7 @@ VOID          : 'void';
 VOLATILE      : 'volatile';
 WHILE         : 'while';
 MIXIN         : 'mixin';
+WITH          : 'with';
 
 // §3.10.1 Integer Literals
 
