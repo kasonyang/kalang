@@ -1,0 +1,7 @@
+boolean withExpr() {
+    val arr = with(new byte[8]) {
+        writeIntB(0,0x1234);
+        writeIntB(4,length);
+    };
+    return arr.readIntB(0) == 0x1234 && arr.readIntB(4) == arr.length;
+}

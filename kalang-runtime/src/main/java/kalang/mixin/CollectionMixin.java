@@ -1,8 +1,8 @@
-package kalang.helper;
+package kalang.mixin;
 
 import kalang.annotation.Nonnull;
 import kalang.annotation.Nullable;
-import kalang.annotation.PluginMethod;
+import kalang.annotation.MixinMethod;
 import kalang.type.Function1;
 
 import java.lang.reflect.Array;
@@ -11,10 +11,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-public class CollectionPlugin {
+public class CollectionMixin {
 
     @Nullable
-    @PluginMethod
+    @MixinMethod
     public static <T> T find(Collection<T> list, Function1<Boolean, T> handler) {
         for (T it : list) {
             Boolean ret = handler.call(it);
@@ -26,13 +26,13 @@ public class CollectionPlugin {
     }
 
     @Nullable
-    @PluginMethod
+    @MixinMethod
     public static <T> T find(T[] list, Function1<Boolean, T> handler) {
         return find(Arrays.asList(list), handler);
     }
 
     @Nonnull
-    @PluginMethod
+    @MixinMethod
     public static <T> List<T> findAll(Collection<T> list, Function1<Boolean, T> handler) {
         List<T> result = new LinkedList<>();
         for (T it : list) {
@@ -45,13 +45,13 @@ public class CollectionPlugin {
     }
 
     @Nonnull
-    @PluginMethod
+    @MixinMethod
     public static <T> List<T> findAll(T[] list, Function1<Boolean, T> handler) {
         return findAll(Arrays.asList(list), handler);
     }
 
     @Nonnull
-    @PluginMethod
+    @MixinMethod
     public static <R, E> List<R> map(Collection<E> list, Function1<R, E> handler) {
         List<R> result = new LinkedList<>();
         for (E it : list) {
@@ -61,12 +61,12 @@ public class CollectionPlugin {
     }
 
     @Nonnull
-    @PluginMethod
+    @MixinMethod
     public static <R, E> List<R> map(E[] list, Function1<R, E> handler) {
         return map(Arrays.asList(list), handler);
     }
 
-    @PluginMethod
+    @MixinMethod
     public static <T> T[] slice(T[] array, int beginIndex, int endIndex) throws IndexOutOfBoundsException {
         int length = endIndex - beginIndex;
         T[] res = (T[]) Array.newInstance(array.getClass().getComponentType(), length);
@@ -74,12 +74,12 @@ public class CollectionPlugin {
         return res;
     }
 
-    @PluginMethod
+    @MixinMethod
     public static <T> T[] slice(T[] array, int offset) {
         return slice(array, offset, array.length);
     }
 
-    @PluginMethod
+    @MixinMethod
     public static <T> T[] concat(T[] array, T[] newEles) {
         int len = array.length + newEles.length;
         T[] res = (T[]) Array.newInstance(array.getClass().getComponentType(), len);
@@ -92,7 +92,7 @@ public class CollectionPlugin {
         return res;
     }
 
-    @PluginMethod
+    @MixinMethod
     public static <T> T[] reverse(T[] array) {
         int len = array.length;
         T[] res = (T[]) Array.newInstance(array.getClass().getComponentType(), len);
@@ -102,7 +102,7 @@ public class CollectionPlugin {
         return res;
     }
 
-    @PluginMethod
+    @MixinMethod
     public static String join(Object[] list, String delimiter) {
         StringBuilder sb = new StringBuilder();
         int len = list.length;
@@ -116,7 +116,7 @@ public class CollectionPlugin {
         return sb.toString();
     }
 
-    @PluginMethod
+    @MixinMethod
     public static <T> List<T> asList(T[] array) {
         return Arrays.asList(array);
     }

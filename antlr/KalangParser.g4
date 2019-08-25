@@ -60,7 +60,7 @@ classDef:
 
 importDecl:
    (
-        'import' (importMode='static')? (root='\\')?
+        'import' (importMode='static' | 'mixin' )? (root='\\')?
         path+=Identifier ('\\' path+=Identifier)*
         delim='\\' ( 
             (name=Identifier ('as' alias=Identifier)? )
@@ -277,7 +277,8 @@ expression
     |   expression '?' expression ':' expression #questionExpr
     |   Identifier #identifierExpr 
     |   expression '.' #errorousMemberExpr
-    |   InterpolationPreffixString expression ( '}' INTERPOLATION_STRING? INTERPOLATION_INTERUPT expression)* '}' INTERPOLATION_STRING? INTERPOLATION_END #interpolationExpr 
+    |   InterpolationPreffixString expression ( '}' INTERPOLATION_STRING? INTERPOLATION_INTERUPT expression)* '}' INTERPOLATION_STRING? INTERPOLATION_END #interpolationExpr
+    |   WITH '(' expression ')' '{' stat* '}' #withExpr
     |   <assoc=right> expression
          ( '=' 
         |   '+='

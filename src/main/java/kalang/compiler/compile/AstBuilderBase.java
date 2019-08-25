@@ -1,6 +1,6 @@
 package kalang.compiler.compile;
 
-import kalang.annotation.PluginMethod;
+import kalang.annotation.MixinMethod;
 import kalang.compiler.AmbiguousMethodException;
 import kalang.compiler.FieldNotFoundException;
 import kalang.compiler.MethodNotFoundException;
@@ -51,11 +51,18 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
+    public void importMixinMethod(ClassNode classNode, @Nullable String name) {
+        if (name != null && !name.isEmpty()) {
+            compilationUnit.importedMixinMethods.put(name, classNode);
+        } else {
+            compilationUnit.importedMixinPaths.add(classNode);
+        }
+    }
+
     protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset){
         ExprNode ret;
         Type type = expr.getType();
         if(!(type instanceof  ObjectType)){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"unsupported type",offset);
             return null;
         }
         ObjectType exprType = (ObjectType) type;
@@ -66,12 +73,20 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             try {
                 ret = ObjectFieldExpr.create(expr, fieldName,getCurrentClass());
             } catch (FieldNotFoundException ex) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,offset);
-                ret = new UnknownFieldExpr(expr,exprType.getClassNode(),fieldName);
+                return null;
             }
         }
         mapAst(ret, offset);
         return ret;
+    }
+
+    protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset){
+        ExprNode fe = getObjectFieldLikeExpr(expr, fieldName, offset);
+        if (fe == null) {
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,offset);
+            return null;
+        }
+        return fe;
     }
 
     protected void processConstructor() {
@@ -460,6 +475,25 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return ast;
     }
 
+    /**
+     * checks whether a class is available
+     * @param id
+     * @return
+     */
+    @Nullable
+    protected ClassNode requireAst(String id,boolean fullName, OffsetRange offset) {
+        ClassNode ast;
+        if (fullName) {
+            ast = getAst(id);
+        } else {
+            ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
+        }
+        if(ast==null){
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, offset);
+        }
+        return ast;
+    }
+
     protected ConstExpr parseLiteral(KalangParser.LiteralContext ctx){
         String t = ctx.getText();
         ConstExpr ce;
@@ -675,11 +709,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
-    protected List<MethodDescriptor> getImportedPluginMethod(String methodName) {
+    protected List<MethodDescriptor> getImportedMixinMethod(String methodName) {
         List<MethodDescriptor> results = new LinkedList<>();
-        Collection<MethodDescriptor> staticImportedMds = getStaticImportedMethods(methodName);
+        Collection<MethodDescriptor> staticImportedMds = getImportedMethods(
+                compilationUnit.importedMixinMethods
+                , compilationUnit.importedMixinPaths
+                , methodName
+        );
         for(MethodDescriptor m:staticImportedMds) {
-            if (AnnotationUtil.has(m.getMethodNode().getAnnotations(), PluginMethod.class.getName())) {
+            if (AnnotationUtil.has(m.getMethodNode().getAnnotations(), MixinMethod.class.getName())) {
                 results.add(m);
             }
         }
@@ -687,18 +725,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     protected List<MethodDescriptor> getStaticImportedMethods(String methodName) {
-        ClassNode classOfStaticImport = compilationUnit.staticImportMembers.get(methodName);
-        if (classOfStaticImport!=null) {
-            return getStaticMethods(classOfStaticImport,methodName);
-        }
-        for (int i=compilationUnit.staticImportPaths.size()-1;i>=0;i--) {
-            ClassNode sc = compilationUnit.staticImportPaths.get(i);
-            List<MethodDescriptor> mds = getStaticMethods(sc, methodName);
-            if (!mds.isEmpty()) {
-                return mds;
-            }
-        }
-        return Collections.EMPTY_LIST;
+        return getImportedMethods(compilationUnit.staticImportMembers, compilationUnit.staticImportPaths, methodName);
     }
 
     protected AssignableExpr getSafeAccessibleAssignableExpr(AssignableExpr expr,List<Statement> initStmtsHolder) {
@@ -788,6 +815,21 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     private ClassNode getAst(String className) {
         AstLoader astLoader = compilationUnit.getCompileContext().getAstLoader();
         return astLoader.getAst(className);
+    }
+
+    protected List<MethodDescriptor> getImportedMethods(Map<String, ClassNode> importedMethods, List<ClassNode> importedPaths, String methodName) {
+        ClassNode classOfStaticImport = importedMethods.get(methodName);
+        if (classOfStaticImport != null) {
+            return getStaticMethods(classOfStaticImport, methodName);
+        }
+        for (int i = importedPaths.size() - 1; i >= 0; i--) {
+            ClassNode sc = importedPaths.get(i);
+            List<MethodDescriptor> mds = getStaticMethods(sc, methodName);
+            if (!mds.isEmpty()) {
+                return mds;
+            }
+        }
+        return Collections.emptyList();
     }
 
 }

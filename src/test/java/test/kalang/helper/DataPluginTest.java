@@ -1,6 +1,6 @@
 package test.kalang.helper;
 
-import kalang.helper.DataPlugin;
+import kalang.mixin.DataMixin;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,26 +23,26 @@ public class DataPluginTest {
 
     private void testShort(short value) {
         byte[] shortBuffer = new byte[2];
-        DataPlugin.writeShortB(shortBuffer, 0, value);
-        Assert.assertEquals(value, DataPlugin.readShortB(shortBuffer, 0));
-        DataPlugin.writeShortL(shortBuffer, 0, value);
-        Assert.assertEquals(value, DataPlugin.readShortL(shortBuffer, 0));
+        DataMixin.writeShortB(shortBuffer, 0, value);
+        Assert.assertEquals(value, DataMixin.readShortB(shortBuffer, 0));
+        DataMixin.writeShortL(shortBuffer, 0, value);
+        Assert.assertEquals(value, DataMixin.readShortL(shortBuffer, 0));
     }
 
     private void testInt(int value) {
         byte[] intBuffer = new byte[4];
-        DataPlugin.writeIntB(intBuffer, 0, value);
-        Assert.assertEquals(value, DataPlugin.readIntB(intBuffer, 0));
-        DataPlugin.writeIntL(intBuffer, 0, value);
-        Assert.assertEquals(value, DataPlugin.readIntL(intBuffer, 0));
+        DataMixin.writeIntB(intBuffer, 0, value);
+        Assert.assertEquals(value, DataMixin.readIntB(intBuffer, 0));
+        DataMixin.writeIntL(intBuffer, 0, value);
+        Assert.assertEquals(value, DataMixin.readIntL(intBuffer, 0));
     }
 
     private void testLong(long value) {
         byte[] longBuffer = new byte[8];
-        DataPlugin.writeLongB(longBuffer, 0, value);
-        Assert.assertEquals(value, DataPlugin.readLongB(longBuffer, 0));
-        DataPlugin.writeLongL(longBuffer, 0, value);
-        Assert.assertEquals(value, DataPlugin.readLongL(longBuffer, 0));
+        DataMixin.writeLongB(longBuffer, 0, value);
+        Assert.assertEquals(value, DataMixin.readLongB(longBuffer, 0));
+        DataMixin.writeLongL(longBuffer, 0, value);
+        Assert.assertEquals(value, DataMixin.readLongL(longBuffer, 0));
     }
 
 }

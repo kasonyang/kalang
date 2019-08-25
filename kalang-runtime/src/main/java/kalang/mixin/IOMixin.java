@@ -1,20 +1,20 @@
-package kalang.helper;
+package kalang.mixin;
 
-import kalang.annotation.PluginMethod;
+import kalang.annotation.MixinMethod;
 
 import java.io.*;
 import java.nio.charset.Charset;
 
-public class IOPlugin {
+public class IOMixin {
 
-    @PluginMethod
+    @MixinMethod
     public static byte[] readToBytes(InputStream is) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         readTo(is, bos);
         return bos.toByteArray();
     }
 
-    @PluginMethod
+    @MixinMethod
     public static byte[] readToBytes(File file) throws IOException {
         long fileLen = file.length();
         if (fileLen > Integer.MAX_VALUE) {
@@ -28,36 +28,36 @@ public class IOPlugin {
         }
     }
 
-    @PluginMethod
+    @MixinMethod
     public static String readToString(InputStream is, String charset) throws IOException {
         return new String(readToBytes(is), charset);
     }
 
-    @PluginMethod
+    @MixinMethod
     public static String readToString(File file, String charset) throws IOException {
         return new String(readToBytes(file), charset);
     }
 
-    @PluginMethod
+    @MixinMethod
     public static String readToString(File file) throws IOException {
         return readToString(file, Charset.defaultCharset().name());
     }
 
-    @PluginMethod
+    @MixinMethod
     public static void write(File file, byte[] data) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(data);
         }
     }
 
-    @PluginMethod
+    @MixinMethod
     public static void append(File file, byte[] data) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(file, true)) {
             fos.write(data);
         }
     }
 
-    @PluginMethod
+    @MixinMethod
     public static void readTo(InputStream is, OutputStream os) throws IOException {
         byte[] bs = new byte[4096];
         int len = 0;
@@ -66,24 +66,24 @@ public class IOPlugin {
         }
     }
 
-    @PluginMethod
+    @MixinMethod
     public static void readTo(InputStream is, File destFile, boolean append) throws IOException {
         try (FileOutputStream os = new FileOutputStream(destFile, append)) {
             readTo(is, os);
         }
     }
 
-    @PluginMethod
+    @MixinMethod
     public static void readTo(InputStream is, File destFile) throws IOException {
         readTo(is, destFile,false);
     }
 
-    @PluginMethod
+    @MixinMethod
     public static void writeFrom(OutputStream os, InputStream is) throws IOException {
         readTo(is, os);
     }
 
-    @PluginMethod
+    @MixinMethod
     public static void writeFrom(OutputStream os, File file) throws IOException {
         try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(file))) {
             writeFrom(os, is);

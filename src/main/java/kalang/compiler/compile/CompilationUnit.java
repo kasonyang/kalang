@@ -3,10 +3,10 @@ package kalang.compiler.compile;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.core.Types;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.helper.*;
+import kalang.mixin.*;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import javax.annotation.Nonnull;
@@ -43,6 +43,10 @@ public class CompilationUnit {
 
     public List<ClassNode> staticImportPaths = new LinkedList<>();
 
+    public Map<String,ClassNode> importedMixinMethods = new HashMap<>();
+
+    public List<ClassNode> importedMixinPaths = new LinkedList<>();
+
     public CompilationUnit(@Nonnull KalangSource source,CompileContext context) {
         this.source = source;
         this.context = context;
@@ -59,12 +63,12 @@ public class CompilationUnit {
         astBuilder.importPackage("java.io");
         astBuilder.importPackage("java.nio");
         astBuilder.importPackage("kalang.io");
-        astBuilder.importStaticMember(astLoader.loadAst(CollectionPlugin.class.getName()),null);
         astBuilder.importStaticMember(astLoader.loadAst(PrintHelper.class.getName()),null);
-        astBuilder.importStaticMember(astLoader.loadAst(StringPlugin.class.getName()),null);
-        astBuilder.importStaticMember(astLoader.loadAst(IOPlugin.class.getName()),null);
-        astBuilder.importStaticMember(astLoader.loadAst(DigestPlugin.class.getName()),null);
-        astBuilder.importStaticMember(astLoader.loadAst(DataPlugin.class.getName()),null);
+        astBuilder.importMixinMethod(astLoader.loadAst(CollectionMixin.class.getName()),null);
+        astBuilder.importMixinMethod(astLoader.loadAst(StringMixin.class.getName()),null);
+        astBuilder.importMixinMethod(astLoader.loadAst(IOMixin.class.getName()),null);
+        astBuilder.importMixinMethod(astLoader.loadAst(DigestMixin.class.getName()),null);
+        astBuilder.importMixinMethod(astLoader.loadAst(DataMixin.class.getName()),null);
         semanticAnalyzer = context.createSemanticAnalyzer(this,astLoader);
         compile(PHASE_INITIALIZE);
     }

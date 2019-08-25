@@ -234,13 +234,6 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNewExpr(KalangParser.NewExprContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code invokeExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitInvokeExpr(KalangParser.InvokeExprContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code instanceofExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -255,13 +248,6 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitInterpolationExpr(KalangParser.InterpolationExprContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code arrayExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitArrayExpr(KalangParser.ArrayExprContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code incExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -275,20 +261,6 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitCastExpr(KalangParser.CastExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code mapExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitMapExpr(KalangParser.MapExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code binaryExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBinaryExpr(KalangParser.BinaryExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code getFieldExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
@@ -317,27 +289,6 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitParenExpr(KalangParser.ParenExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code getArrayElementExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGetArrayElementExpr(KalangParser.GetArrayElementExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code preIncExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitPreIncExpr(KalangParser.PreIncExprContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code errorousMemberExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code unaryExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
@@ -387,6 +338,62 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitSelfRefExpr(KalangParser.SelfRefExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code invokeExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInvokeExpr(KalangParser.InvokeExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code arrayExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayExpr(KalangParser.ArrayExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code mapExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMapExpr(KalangParser.MapExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code binaryExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBinaryExpr(KalangParser.BinaryExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code getArrayElementExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGetArrayElementExpr(KalangParser.GetArrayElementExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code preIncExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPreIncExpr(KalangParser.PreIncExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code errorousMemberExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code withExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWithExpr(KalangParser.WithExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code identifierExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
