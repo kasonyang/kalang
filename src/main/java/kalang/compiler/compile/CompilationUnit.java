@@ -64,6 +64,7 @@ public class CompilationUnit {
         astBuilder.importStaticMember(astLoader.loadAst(StringPlugin.class.getName()),null);
         astBuilder.importStaticMember(astLoader.loadAst(IOPlugin.class.getName()),null);
         astBuilder.importStaticMember(astLoader.loadAst(DigestPlugin.class.getName()),null);
+        astBuilder.importStaticMember(astLoader.loadAst(DataPlugin.class.getName()),null);
         semanticAnalyzer = context.createSemanticAnalyzer(this,astLoader);
         compile(PHASE_INITIALIZE);
     }
