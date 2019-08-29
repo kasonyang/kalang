@@ -63,6 +63,8 @@ public class CompilationUnit {
         astBuilder.importPackage("java.io");
         astBuilder.importPackage("java.nio");
         astBuilder.importPackage("kalang.io");
+        astBuilder.importPackage("kalang.util");
+        astBuilder.importPackage("kalang.lang");
         astBuilder.importStaticMember(astLoader.loadAst(PrintHelper.class.getName()),null);
         astBuilder.importMixinMethod(astLoader.loadAst(CollectionMixin.class.getName()),null);
         astBuilder.importMixinMethod(astLoader.loadAst(StringMixin.class.getName()),null);
