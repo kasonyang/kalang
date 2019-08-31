@@ -757,6 +757,44 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
+    Type inferLambdaType(Type type) {
+        if (type instanceof WildcardType) {
+            WildcardType wt = (WildcardType) type;
+            //TODO handle two lower bounds or more
+            Type[] lbs = wt.getLowerBounds();
+            if (lbs.length > 1) {
+                return type;
+            }
+            if (lbs.length == 1) {
+                return lbs[0];
+            }
+            Type[] ubs = wt.getUpperBounds();
+            if (ubs.length > 1) {
+                return type;
+            }
+            if (ubs.length == 1) {
+                return ubs[1];
+            }
+            return type;
+        } else if (type instanceof ClassType) {
+            ClassType ct = (ClassType) type;
+            Type[] typeArgs = ct.getTypeArguments();
+            if (typeArgs.length > 0) {
+                Type[] newTypeArgs = new Type[typeArgs.length];
+                for(int i = 0; i < newTypeArgs.length; i++) {
+                    newTypeArgs[i] = inferLambdaType(typeArgs[i]);
+                }
+                return Types.getClassType(ct.getClassNode(), newTypeArgs);
+            }
+            return ct;
+        } else if (type instanceof ArrayType) {
+            ArrayType at = (ArrayType) type;
+            return Types.getArrayType(inferLambdaType(at.getComponentType()));
+        } else {
+            return type;
+        }
+    }
+
     private VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
         LocalVarNode tmpTarget = declareTempLocalVar(target.getType());
         initStmtsHolder.add(new VarDeclStmt(tmpTarget));

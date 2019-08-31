@@ -11,3 +11,9 @@ int lambdaInvokeTest() {
     };
     return cb();
 }
+
+boolean consumerTest() {
+    val list = Arrays.asList(<Integer>[1,2,3]);
+    list.forEach({ it => it.intValue(); });
+    return true;
+}

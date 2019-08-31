@@ -1929,7 +1929,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         MethodNode methodNode = classNode.createMethodNode(returnType, funcMethod.getName(), Modifier.PUBLIC);
         enterMethod(methodNode);
         List<Token> lambdaParams = ctx.lambdaParams;
-        int lambdaParamsCount = ctx.lambdaParams.size();
         if (paramTypes.length < lambdaParams.size()) {
             String msg = String.format("expected %d parameters but got %d",paramTypes.length,lambdaParams.size());
             this.diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
@@ -2022,7 +2021,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (arg instanceof LambdaExpr) {
                 boolean isInit = ((LambdaExpr) arg).getInitExpr() != null;
                 if (!isInit) {
-                    ClassType lambdaType = (ClassType) paramTypes[i];
+                    ClassType lambdaType = (ClassType) inferLambdaType(paramTypes[i]);
                     LambdaExprContext ctx = lambdaExprCtxMap.get(arg);
                     MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(lambdaType);
                     Objects.requireNonNull(funcMethod);
