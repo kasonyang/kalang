@@ -58,13 +58,22 @@ public class ClassType extends ObjectType {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
         }
-        if (obj == null) {
+        if (other == null) {
             return false;
         }
+        if (!(other instanceof ObjectType)) {
+            return false;
+        }
+        ObjectType objOther = (ObjectType) other;
+        return nullable.equals(objOther.getNullable()) && equalsIgnoreNullable(objOther);
+    }
+
+    @Override
+    public boolean equalsIgnoreNullable(ObjectType obj) {
         if (getClass() != obj.getClass()) {
             return false;
         }
@@ -77,7 +86,7 @@ public class ClassType extends ObjectType {
         if (!Arrays.deepEquals(thisPts,otherPts)) {
             return false;
         }
-        return nullable.equals(other.getNullable());
+        return true;
     }
 
     @Override

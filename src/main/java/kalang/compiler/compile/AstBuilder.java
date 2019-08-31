@@ -1389,6 +1389,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     initExpr = visitExpression(initExprContext);
                 }
             }
+            if (initExpr != null) {
+                Type initType = initExpr.getType();
+                if (Types.isVoid(initType)) {
+                    handleSyntaxError("could not create variable for " + initType.getName() + " type", offset(ctx));
+                    return null;
+                }
+            }
             VarInfo varInfo = varDecl(v,initExpr==null
                     ?Types.getRootType()
                     :initExpr.getType()
@@ -1398,7 +1405,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             VarDeclStmt vds = new VarDeclStmt(localVar);
             ms.statements.add(vds);
             if(initExpr!=null){
-               AssignExpr assignExpr = new AssignExpr(new VarExpr(localVar), initExpr);
+                AssignExpr assignExpr = new AssignExpr(new VarExpr(localVar), initExpr);
                 mapAst(assignExpr, v);
                 ms.statements.add(new ExprStmt(assignExpr));
             }

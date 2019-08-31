@@ -25,6 +25,12 @@ public class GenericType extends ObjectType{
     }
 
     @Override
+    public boolean equalsIgnoreNullable(ObjectType other) {
+        //TODO fix equalsIgnoreNullable
+        return equals(other);
+    }
+
+    @Override
     public String getName() {
         return name;
     }

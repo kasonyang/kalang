@@ -251,6 +251,17 @@ public class Types {
     public static boolean isBoolean(Type type) {
         return type.equals(getBooleanClassType()) || type.equals(BOOLEAN_TYPE);
     }
+
+    public static boolean isVoid(Type type) {
+        if (VOID_TYPE.equals(type)) {
+            return true;
+        }
+        if (!(type instanceof ObjectType)) {
+            return false;
+        }
+        ObjectType objType = (ObjectType) type;
+        return getVoidClassType().equalsIgnoreNullable(objType);
+    }
     
     public static boolean isNullType(Type type) {
         return NULL_TYPE.equals(type);

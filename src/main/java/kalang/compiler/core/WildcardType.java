@@ -48,6 +48,21 @@ public class WildcardType extends ObjectType {
     }
 
     @Override
+    public boolean equalsIgnoreNullable(ObjectType obj) {
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WildcardType other = (WildcardType) obj;
+        if (!Arrays.deepEquals(this.upperBounds, other.upperBounds)) {
+            return false;
+        }
+        if (!Arrays.deepEquals(this.lowerBounds, other.lowerBounds)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public String getName() {
         if(lowerBounds.length>0){
             return "? super " + TypeUtil.toString(lowerBounds, "&");
@@ -83,17 +98,11 @@ public class WildcardType extends ObjectType {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof WildcardType)) {
             return false;
         }
-        final WildcardType other = (WildcardType) obj;
-        if (!Arrays.deepEquals(this.upperBounds, other.upperBounds)) {
-            return false;
-        }
-        if (!Arrays.deepEquals(this.lowerBounds, other.lowerBounds)) {
-            return false;
-        }
-        return true;
+        WildcardType other = (WildcardType) obj;
+        return nullable.equals(other.getNullable()) && equalsIgnoreNullable(other);
     }
 
     @Override

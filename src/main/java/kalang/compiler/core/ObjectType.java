@@ -27,6 +27,8 @@ public abstract class ObjectType extends Type{
         this.nullable = nullable;
     }
 
+    public abstract boolean equalsIgnoreNullable(ObjectType other);
+
     @Override
     public String getName() {
         return clazz.name;

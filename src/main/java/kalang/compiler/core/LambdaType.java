@@ -15,17 +15,10 @@ public class LambdaType extends ObjectType {
 
     @Override
     public boolean equals(Object type) {
-        if (super.equals(type)) {
-            return true;
-        }
-        if (!(type instanceof ClassType)) {
+        if (!(type instanceof ObjectType)){
             return false;
         }
-        MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod((ClassType) type);
-        if (funcMethod == null) {
-            return false;
-        }
-        return funcMethod.getParameterTypes().length == parameterCount;
+        return nullable.equals(type) && equalsIgnoreNullable((ObjectType) type);
     }
 
     public boolean isAssignableTo(Type type) {
@@ -46,4 +39,18 @@ public class LambdaType extends ObjectType {
         return cn;
     }
 
+    @Override
+    public boolean equalsIgnoreNullable(ObjectType type) {
+        if (super.equals(type)) {
+            return true;
+        }
+        if (!(type instanceof ClassType)) {
+            return false;
+        }
+        MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod((ClassType) type);
+        if (funcMethod == null) {
+            return false;
+        }
+        return funcMethod.getParameterTypes().length == parameterCount;
+    }
 }

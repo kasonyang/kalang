@@ -24,6 +24,26 @@ public class ArrayType extends ObjectType{
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ArrayType)) {
+            return false;
+        }
+        return nullable.equals(obj) && equalsIgnoreNullable((ArrayType) obj);
+    }
+
+    @Override
+    public boolean equalsIgnoreNullable(ObjectType other) {
+        if (!(other instanceof ArrayType)) {
+            return false;
+        }
+        Type otherComponentType = ((ArrayType) other).getComponentType();
+        if (componentType instanceof ObjectType && otherComponentType instanceof ObjectType) {
+            return ((ObjectType) componentType).equalsIgnoreNullable((ObjectType) otherComponentType);
+        }
+        return componentType.equals(otherComponentType);
+    }
+
+    @Override
     public boolean isAssignableFrom(Type type) {
         if(equalAndNullAssignChecked(type)) return true;
         if(!(type instanceof ArrayType)) return false;
