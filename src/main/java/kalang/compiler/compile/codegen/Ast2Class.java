@@ -1411,7 +1411,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         String owner = internalName(implementMethod.getClassNode());
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,owner,implementMethod.getName(),implementDesc,false);
         Type returnType = interfaceMethod.getType();
-        if (!Types.VOID_TYPE.equals(returnType)) {
+        if (VOID_TYPE.equals(returnType)) {
+            methodVisitor.visitInsn(RETURN);
+        } else {
             methodVisitor.visitInsn(asmType(returnType).getOpcode(IRETURN));
         }
         methodVisitor.visitMaxs(0,0);
