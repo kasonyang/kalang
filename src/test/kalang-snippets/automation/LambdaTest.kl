@@ -17,3 +17,11 @@ boolean consumerTest() {
     list.forEach({ it => it.intValue(); });
     return true;
 }
+
+boolean compareTest() {
+    val list = <Integer>[1,3,2].asList();
+    list.sort({ e1,e2 =>
+        return e1.compareTo(e2);
+    });
+    return list.equals(<Integer>[1,2,3].asList());
+}

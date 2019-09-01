@@ -18,7 +18,7 @@ public class LambdaType extends ObjectType {
         if (!(type instanceof ObjectType)){
             return false;
         }
-        return nullable.equals(type) && equalsIgnoreNullable((ObjectType) type);
+        return nullable.equals(((ObjectType) type).getNullable()) && equalsIgnoreNullable((ObjectType) type);
     }
 
     public boolean isAssignableTo(Type type) {

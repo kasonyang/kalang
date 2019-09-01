@@ -85,12 +85,11 @@ public abstract class ObjectType extends Type{
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,@Nullable String name,boolean includeSuperType,boolean includeInterfaces){
         Map<String,MethodDescriptor> descs = new HashMap();
         List<ObjectType> superList = new LinkedList();
-        if(includeSuperType){
+        if (!ModifierUtil.isInterface(getModifier()) && includeSuperType){
             ObjectType superType = getSuperType();
-            if(superType==null && ModifierUtil.isInterface(getModifier())){
-                superType = Types.getRootType();
+            if (superType!=null) {
+                superList.add(superType);
             }
-            if(superType!=null) superList.add(superType);
         }
         if(includeInterfaces){
             ObjectType[] itfs = getInterfaces();
@@ -102,19 +101,26 @@ public abstract class ObjectType extends Type{
                 descs.put(m.getDeclarationKey(),m);
             }
         }
-        MethodNode[] mds = clazz.getDeclaredMethodNodes();
-        for(int i=0;i<mds.length;i++){
-            if (!AccessUtil.isAccessible(mds[i].getModifier(), clazz, caller)){
+        List<MethodNode> mds = Arrays.asList(clazz.getDeclaredMethodNodes());
+        if (ModifierUtil.isInterface(getModifier()) && includeSuperType) {
+            List<MethodNode> objectMds = Arrays.asList(Types.getRootType().getClassNode().getDeclaredMethodNodes());
+            ArrayList<MethodNode> newMds = new ArrayList<>(mds.size() + objectMds.size());
+            newMds.addAll(mds);
+            newMds.addAll(objectMds);
+            mds = newMds;
+        }
+        for(MethodNode m: mds){
+            if (!AccessUtil.isAccessible(m.getModifier(), clazz, caller)){
                 continue;
             }
-            if (name!=null && !name.isEmpty() && !name.equals(mds[i].getName())) {
+            if (name!=null && !name.isEmpty() && !name.equals(m.getName())) {
                 continue;
             }
             MethodDescriptor md = new MethodDescriptor(
-                    mds[i]
-                    ,getParameterDescriptors(mds[i])
-                    ,parseType(mds[i].getType())
-                    ,parseTypes(mds[i].getExceptionTypes())
+                    m
+                    ,getParameterDescriptors(m)
+                    ,parseType(m.getType())
+                    ,parseTypes(m.getExceptionTypes())
             );
             descs.put(md.getDeclarationKey(), md);
         }
