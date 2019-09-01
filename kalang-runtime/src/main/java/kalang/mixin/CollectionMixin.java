@@ -6,10 +6,7 @@ import kalang.annotation.MixinMethod;
 import kalang.type.Function1;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class CollectionMixin {
 
@@ -64,6 +61,29 @@ public class CollectionMixin {
     @MixinMethod
     public static <R, E> List<R> map(E[] list, Function1<R, E> handler) {
         return map(Arrays.asList(list), handler);
+    }
+
+    @Nonnull
+    @MixinMethod
+    public static <K,E> Map<K,List<E>> group(Collection<E> list, Function1<K,E> keyGenerator) {
+        Map<K,List<E>> result = new HashMap<>();
+        for (E it: list) {
+            K key = keyGenerator.call(it);
+            List<E> eleList = result.computeIfAbsent(key, k -> new LinkedList<>());
+            eleList.add(it);
+        }
+        return result;
+    }
+
+    @Nonnull
+    @MixinMethod
+    public static <K,E> Map<K,E[]> group(E[] array, Function1<K,E> keyGenerator) {
+        Map<K,E[]> result = new HashMap<>();
+        Class<?> eleType = array.getClass().getComponentType();
+        group(Arrays.asList(array), keyGenerator).forEach((k,e) -> {
+            result.put(k, e.toArray((E[])Array.newInstance(eleType, e.size())));
+        });
+        return result;
     }
 
     @MixinMethod
