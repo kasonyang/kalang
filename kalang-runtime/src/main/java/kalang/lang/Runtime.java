@@ -2,16 +2,21 @@ package kalang.lang;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 
 public class Runtime {
 
     private static Version version;
 
+    public static URL getRuntimeClassPath() {
+        return Runtime.class.getProtectionDomain().getCodeSource().getLocation();
+    }
+
     public static synchronized Version getVersion() {
         if (version == null) {
             Properties prop = new Properties();
-            InputStream is = Runtime.class.getResourceAsStream("/default.properties");
+            InputStream is = Runtime.class.getResourceAsStream("runtime.properties");
             if (is != null) {
                 try {
                     prop.load(is);
