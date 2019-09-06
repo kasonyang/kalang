@@ -14,6 +14,7 @@ import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.plugins.resolver.AbstractResolver;
 import org.apache.ivy.plugins.resolver.IBiblioResolver;
 import org.apache.ivy.util.Message;
+import org.apache.ivy.util.url.URLHandlerRegistry;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -47,6 +48,7 @@ public class DependencyResolver {
 
     private ResolveResult doResolve(Artifact[] artifacts) throws IOException, ParseException {
         Message.setDefaultLogger(new NoMessageLogger());
+        URLHandlerRegistry.setDefault(new ExtendURLHandler());
         IvySettings settings = new IvySettings();
         if (!this.repositories.isEmpty()) {
             int repoSize = repositories.size();
