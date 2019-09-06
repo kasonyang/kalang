@@ -97,6 +97,7 @@ public abstract class ShellBase {
     protected ClassLoader createClassLoader(CommandLine cli) {
         boolean verbose = cli.hasOption("verbose");
         List<URL> urls = new LinkedList();
+        urls.add(Runtime.getRuntimeClassPath());
         String[] libPaths = cli.getOptionValue("libpath", "").split(";");
         for (String l : libPaths) {
             if (l.isEmpty()) {
@@ -118,7 +119,7 @@ public abstract class ShellBase {
                 System.out.println("Add class path:" + u);
             }
         }
-        return new URLClassLoader(urls.toArray(new URL[0]));
+        return new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader().getParent());
     }
 
     protected File[] parseClassPath(CommandLine cli) {
