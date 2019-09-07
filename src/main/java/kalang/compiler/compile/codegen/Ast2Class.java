@@ -41,6 +41,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private MethodVisitor md;
     
     private OutputManager outputManager;
+
+    private final AstLoader astLoader;
     
     private Map<Integer,Label> lineLabels = new HashMap();
     
@@ -68,8 +70,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private ClassNode clazz;
     private String classInternalName;
 
-    public Ast2Class(OutputManager outputManager) {
+    public Ast2Class(OutputManager outputManager, AstLoader astLoader) {
         this.outputManager = outputManager;
+        this.astLoader = astLoader;
     }
     
     private int getT(Type type){
@@ -217,7 +220,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         String oldClassInternalName = this.classInternalName;
         this.classInternalName = internalName(clazz);
         ClassWriter oldClassWriter = this.classWriter;
-        this.classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        this.classWriter = new  KlClassWriter(ClassWriter.COMPUTE_FRAMES, astLoader);
         annotation(classWriter, clazz.getAnnotations());
         String parentName = "java.lang.Object";
         ObjectType superType = node.getSuperType();
@@ -1425,5 +1428,46 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
 
 
+    private static class KlClassWriter extends ClassWriter {
+
+        private AstLoader astLoader;
+
+        public KlClassWriter(int flags, AstLoader astLoader) {
+            super(flags);
+            this.astLoader = astLoader;
+        }
+
+        @Override
+        protected String getCommonSuperClass(String type1, String type2) {
+            ClassNode cn1;
+            try {
+                cn1 = astLoader.loadAst(type1.replace('/', '.'));
+            } catch (AstNotFoundException e) {
+                throw new TypeNotPresentException(type1, e);
+            }
+            ClassNode cn2;
+            try {
+                cn2 = astLoader.loadAst(type2.replace('/', '.'));
+            } catch (AstNotFoundException e) {
+                throw new TypeNotPresentException(type2, e);
+            }
+            ObjectType t1 = getClassType(cn1);
+            ObjectType t2 = getClassType(cn2);
+            if (t1.isAssignableFrom(t2)) {
+                return type1;
+            }
+            if (t2.isAssignableFrom(t1)) {
+                return type2;
+            }
+            if (ModifierUtil.isInterface(cn1.modifier) || ModifierUtil.isInterface(cn2.modifier)) {
+                return "java/lang/Object";
+            } else {
+                do {
+                    t1 = t1.getSuperType();
+                } while (!t1.isAssignableFrom(t2));
+                return t1.getName().replace('.', '/');
+            }
+        }
+    }
 
 }

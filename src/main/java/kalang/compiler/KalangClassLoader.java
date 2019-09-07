@@ -80,7 +80,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
 
     @Override
     public void generate(ClassNode classNode) {
-        Ast2Class ast2Class = new Ast2Class(outputManager);
+        Ast2Class ast2Class = new Ast2Class(outputManager, compiler.getAstLoader());
         ast2Class.generate(classNode);
     }
 
