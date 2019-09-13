@@ -1709,7 +1709,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                         new AssignExpr(counterVarExpr,new ConstExpr(0))
                     )
             );//i=0
-            ExprNode cnd = new CompareExpr(counterVarExpr, lenVarExpr, CompareExpr.OP_LT);
+            ExprNode cnd = new CompareBinaryExpr(counterVarExpr, lenVarExpr, CompareBinaryExpr.OP_LT);
             BlockStmt loopBody = this.newBlock();
             loopBody.statements.add(new ExprStmt(
                     new AssignExpr(localVariable,new ElementExpr(expr, counterVarExpr))
@@ -1725,7 +1725,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             //increment counter
             updateBs.statements.add(new ExprStmt(
                     new AssignExpr(
-                        counterVarExpr,new MathExpr(counterVarExpr, new ConstExpr(1), MathExpr.OP_ADD)
+                        counterVarExpr,new ArithmeticBinaryExpr(counterVarExpr, new ConstExpr(1), ArithmeticBinaryExpr.OP_ADD)
                     )
             ));
             popBlock();
@@ -1777,7 +1777,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     updateBs.statements.add(new ExprStmt(
                             new AssignExpr(
                                     indexVarExpr
-                                    ,new MathExpr(indexVarExpr,new ConstExpr(1),BinaryExpr.OP_ADD)
+                                    ,new ArithmeticBinaryExpr(indexVarExpr,new ConstExpr(1),BinaryExpr.OP_ADD)
                             )
                     ));
                 }
@@ -2084,7 +2084,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         VarExpr varCounterExpr = new VarExpr(varCounter);
         stats.add(new ExprStmt(new AssignExpr(varArrLenExpr, new ArrayLengthExpr(targetExpr))));
         stats.add(new ExprStmt(new AssignExpr(varCounterExpr, new ConstExpr(0))));
-        CompareExpr conditionExpr = new CompareExpr(varCounterExpr, varArrLenExpr, CompareExpr.OP_LT);
+        CompareBinaryExpr conditionExpr = new CompareBinaryExpr(varCounterExpr, varArrLenExpr, CompareBinaryExpr.OP_LT);
         ExprNode targetEleExpr = new ElementExpr(targetExpr, varCounterExpr);
         ExprNode invokeExpr = navigateExprMaker.call(targetEleExpr);
         if (invokeExpr == null) return null;
@@ -2096,7 +2096,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         loopBody.statements.add(new ExprStmt(new AssignExpr(new ElementExpr(varRetExpr, varCounterExpr), invokeExpr)));
         popBlock();
         BlockStmt updateBs = newBlock();
-        updateBs.statements.add(new ExprStmt(new AssignExpr(varCounterExpr, new MathExpr(varCounterExpr, new ConstExpr(1), MathExpr.OP_ADD))));
+        updateBs.statements.add(new ExprStmt(new AssignExpr(varCounterExpr, new ArithmeticBinaryExpr(varCounterExpr, new ConstExpr(1), ArithmeticBinaryExpr.OP_ADD))));
         this.popBlock();
         LoopStmt loopStmt = new LoopStmt(conditionExpr, null, loopBody, updateBs);
         stats.add(loopStmt);
@@ -2115,7 +2115,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         LocalVarNode targetTmpVar = declareTempLocalVar(targetExpr.getType());
         stmts.add(new VarDeclStmt(targetTmpVar));
         stmts.add(new ExprStmt(new AssignExpr(new VarExpr(targetTmpVar), targetExpr)));
-        ExprNode conditionExpr = new CompareExpr(new VarExpr(targetTmpVar), new ConstExpr(Types.NULL_TYPE), "==");
+        ExprNode conditionExpr = new CompareBinaryExpr(new VarExpr(targetTmpVar), new ConstExpr(Types.NULL_TYPE), "==");
         methodCtx.newOverrideTypeStack();
         methodCtx.onIf(conditionExpr, true);
         ExprNode trueExpr = new ConstExpr(Types.NULL_TYPE);

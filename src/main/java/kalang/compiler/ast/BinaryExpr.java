@@ -1,6 +1,3 @@
-/*
-
-*/
 package kalang.compiler.ast;
 
 import javax.annotation.Nonnull;

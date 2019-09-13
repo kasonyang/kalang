@@ -421,8 +421,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private void ifExpr(boolean jumpOnTrue,ExprNode condition,Label label){
-        if(condition instanceof LogicExpr){
-            LogicExpr be = (LogicExpr) condition;
+        if(condition instanceof LogicBinaryExpr){
+            LogicBinaryExpr be = (LogicBinaryExpr) condition;
             ExprNode e1 = be.getExpr1();
             ExprNode e2 = be.getExpr2();
             String op = be.getOperation();
@@ -454,8 +454,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 default:
                     throw  new UnsupportedOperationException("Unsupported operation:" + op);
             }
-        }else if(condition instanceof CompareExpr){
-            ifCompare(jumpOnTrue,((CompareExpr) condition).getExpr1(), ((CompareExpr) condition).getExpr2(), ((CompareExpr) condition).getOperation(), label);
+        }else if(condition instanceof CompareBinaryExpr){
+            ifCompare(jumpOnTrue,((CompareBinaryExpr) condition).getExpr1(), ((CompareBinaryExpr) condition).getExpr2(), ((CompareBinaryExpr) condition).getOperation(), label);
         }else if(condition instanceof UnaryExpr && ((UnaryExpr)condition).getOperation().equals("!")){
             ifExpr(!jumpOnTrue, ((UnaryExpr)condition).getExpr(), label);
         }else{

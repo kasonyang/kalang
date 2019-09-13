@@ -70,11 +70,11 @@ public class MethodContext {
         if(expr instanceof InstanceOfExpr && onTrue){
             InstanceOfExpr ie = (InstanceOfExpr) expr;
             changeTypeTemporarilyIfCould(ie.getExpr(), Types.getClassType(ie.getTarget().getReferencedClassNode()));
-        } else if(expr instanceof CompareExpr) {
-            CompareExpr ce = (CompareExpr) expr;
+        } else if(expr instanceof CompareBinaryExpr) {
+            CompareBinaryExpr ce = (CompareBinaryExpr) expr;
             ExprNode e1 = ce.getExpr1();
             ExprNode e2 = ce.getExpr2();
-            boolean isEQ = ce.getOperation().equals(CompareExpr.OP_EQ);
+            boolean isEQ = ce.getOperation().equals(CompareBinaryExpr.OP_EQ);
             if (e1.getType().equals(Types.NULL_TYPE)) {
                 onNull(e2, onTrue, isEQ);
             } else if (e2.getType().equals(Types.NULL_TYPE)) {
@@ -101,14 +101,14 @@ public class MethodContext {
             }
         } else if(expr instanceof UnaryExpr){
             onIf(((UnaryExpr) expr).getExpr(),!onTrue);
-        } else if(expr instanceof LogicExpr){
-            LogicExpr le = (LogicExpr) expr;
-            if(le.getOperation().equals(LogicExpr.OP_LOGIC_AND)){
+        } else if(expr instanceof LogicBinaryExpr){
+            LogicBinaryExpr le = (LogicBinaryExpr) expr;
+            if(le.getOperation().equals(LogicBinaryExpr.OP_LOGIC_AND)){
                 if(onTrue){
                     onIf(le.getExpr1(),true);
                     onIf(le.getExpr2(),true);
                 }
-            }else if(le.getOperation().equals(LogicExpr.OP_LOGIC_OR)){
+            }else if(le.getOperation().equals(LogicBinaryExpr.OP_LOGIC_OR)){
                 if(!onTrue){
                     onIf(le.getExpr1(),false);
                     onIf(le.getExpr2(),false);
