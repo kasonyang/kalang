@@ -149,8 +149,9 @@ public class MethodContext {
         HashMap<VarObject,Integer> ret = new HashMap();
         ret.putAll(assignedTable[0]);
         for(int i=1;i<assignedTable.length;i++){
+            Map<VarObject,Integer> current = new HashMap(ret);
             Map<VarObject,Integer> other = assignedTable[i];
-            for(Map.Entry<VarObject,Integer> e:ret.entrySet()){
+            for(Map.Entry<VarObject,Integer> e: current.entrySet()){
                 Integer oneNullable = e.getValue();
                 Integer otherNullable = other.get(e.getKey());
                 if(oneNullable.equals(otherNullable)) continue;
