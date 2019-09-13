@@ -757,8 +757,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Type ct = ce.getType();
         if(v==null){
             return null;
-        } else if (ct.equals(Types.getClassClassType())) {
-            return org.objectweb.asm.Type.getType("L" + internalName(v) + ";");
         } else if (ct.equals(BOOLEAN_TYPE)) {
             return Boolean.valueOf(v);
         } else if (ct.equals(BYTE_TYPE)) {
@@ -779,6 +777,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             return v;
         } else if (ct.equals(NULL_TYPE)) {
             return null;
+        } else if (ct instanceof ClassType) {
+            ClassType clsType = (ClassType) ct;
+            ClassNode expectedClassNode = astLoader.loadAst(CLASS_CLASS_NAME);
+            if (!clsType.getClassNode().equals(expectedClassNode)) {
+                throw Exceptions.unsupportedTypeException(clsType);
+            }
+            return org.objectweb.asm.Type.getType("L" + internalName(v) + ";");
         } else {
             throw Exceptions.unsupportedTypeException(ct);
         }

@@ -1,0 +1,4 @@
+boolean classLiteral() {
+    val str = String.class.newInstance();
+    return str.length() == 0;
+}
