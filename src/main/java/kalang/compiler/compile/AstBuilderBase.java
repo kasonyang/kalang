@@ -566,8 +566,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             if (clsRef == null) {
                 return null;
             }
-            //TODO fix type parameter
-            ce = new ConstExpr(Types.getClassClassType(), clsRef.getReferencedClassNode().name);
+            ClassNode nodeOfClassClass = loadAst(Types.CLASS_CLASS_NAME);
+            ClassType[] ptTypes = new ClassType[] { Types.getClassType(clsRef.getReferencedClassNode()) };
+            ce = new ConstExpr(Types.getClassType(nodeOfClassClass, ptTypes), clsRef.getReferencedClassNode().name);
         } else if (ctx.getText().equals("null")) {
             ce = new ConstExpr(Types.NULL_TYPE,"null");
         } else {
@@ -867,6 +868,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     private ClassNode getAst(String className) {
         AstLoader astLoader = compilationUnit.getCompileContext().getAstLoader();
         return astLoader.getAst(className);
+    }
+
+    protected ClassNode loadAst(String className) {
+        AstLoader astLoader = compilationUnit.getCompileContext().getAstLoader();
+        return astLoader.loadAst(className);
     }
 
     protected List<MethodDescriptor> getImportedMethods(Map<String, ClassNode> importedMethods, List<ClassNode> importedPaths, String methodName) {
