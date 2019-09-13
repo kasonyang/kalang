@@ -11,7 +11,8 @@ public class ExprStmt extends Statement{
     protected ExprNode expr;
     
     public ExprStmt(ExprNode expr){
-            this.expr = expr;
+        this.expr = expr;
+        offset = expr.offset;
     }
     
     @Override

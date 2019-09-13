@@ -375,6 +375,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }else{
             type = TypeUtil.getCommonType(trueType,falseType);
         }
+        trueExpr = requireImplicitCast(type, trueExpr, trueExpr.offset);
+        falseExpr = requireImplicitCast(type, falseExpr, falseExpr.offset);
         LocalVarNode vo = this.declareTempLocalVar(type);
         VarDeclStmt vds = new VarDeclStmt(vo);
         stmts.add(vds);
@@ -384,7 +386,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve,falseExpr)));
         stmts.add(is);
         MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
-        mapAst(ve, ctx);
+        mapAst(ve, offset(ctx), true);
         return mse;
     }
 
