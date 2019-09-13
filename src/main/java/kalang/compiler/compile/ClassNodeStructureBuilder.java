@@ -6,10 +6,7 @@ import kalang.compiler.antlr.KalangParser.MethodDeclContext;
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
-import kalang.compiler.util.AstUtil;
-import kalang.compiler.util.ClassTypeUtil;
-import kalang.compiler.util.MethodUtil;
-import kalang.compiler.util.ModifierUtil;
+import kalang.compiler.util.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
@@ -274,20 +271,28 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             );
             varInfo.modifier |= fieldModifier;
             FieldNode fieldNode = thisClazz.createField(varInfo.type, varInfo.name,varInfo.modifier);
+            mapAst(fieldNode, offset(ctx));
             //TODO simplify it
             if(initExpr!=null){
+                initExpr = requireImplicitCast(fieldNode.getType(), initExpr, offset(ctx));
+                if (initExpr == null) {
+                    continue;
+                }
                 if(AstUtil.isStatic(fieldNode.modifier)){
-                    thisClazz.staticInitStmts.add(new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(thisClazz), fieldNode), initExpr)));
+                    ExprStmt initExprStmt = new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(thisClazz), fieldNode), initExpr));
+                    mapAst(initExpr, offset(ctx), true);
+                    thisClazz.staticInitStmts.add(initExprStmt);
                 }else{
-                    thisClazz.initStmts.add(new ExprStmt(
+                    ExprStmt initExprStmt = new ExprStmt(
                             new AssignExpr(
                                     new ObjectFieldExpr(
                                             new ThisExpr(Types.getClassType(thisClazz)), fieldNode
                                     )
                                     , initExpr
                             )
-                        )
                     );
+                    mapAst(initExprStmt, offset(ctx), true);
+                    thisClazz.initStmts.add(initExprStmt);
                 }
             }
         }

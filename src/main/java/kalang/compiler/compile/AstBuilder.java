@@ -405,30 +405,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public Void visitFieldDecl(FieldDeclContext ctx) {
-        int fieldModifier = this.parseModifier(ctx.varModifier());
-        for(VarDeclContext vd:ctx.varDecl()){
-            ExprNode initExpr;
-            if(vd.expression()!=null){
-                initExpr = visitExpression(vd.expression());
-            }else{
-                initExpr = null;
-            }
-            VarInfo varInfo = varDecl(vd,initExpr==null
-                    ?Types.getRootType()
-                    :initExpr.getType()
-            );
-            varInfo.modifier |= fieldModifier;
-            FieldNode fieldNode = thisClazz.createField(varInfo.type, varInfo.name,varInfo.modifier);
-            //TODO simplify it
-            if(initExpr!=null){
-                if(AstUtil.isStatic(fieldNode.modifier)){
-                    thisClazz.staticInitStmts.add(new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(thisClazz), fieldNode), initExpr)));
-                }else{
-                    thisClazz.initStmts.add(new ExprStmt(new AssignExpr(new ObjectFieldExpr(new ThisExpr(getThisType()), fieldNode), initExpr)));
-                }
-            }
-        }
-        return null;
+        throw Exceptions.unexpectedException("please create nodes in class node structure builder");
     }
     
     private boolean isNonStaticInnerClass(ClassNode clazz){
@@ -1407,11 +1384,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             VarDeclStmt vds = new VarDeclStmt(localVar);
             ms.statements.add(vds);
             if(initExpr!=null){
-                Type originInitExprType = initExpr.getType();
-                initExpr = BoxUtil.assign(initExpr, varInfo.type);
+                initExpr = requireImplicitCast(localVar.getType(), initExpr, offset(ctx));
                 if (initExpr == null) {
-                    handleSyntaxError(originInitExprType + " is not assignable to " + varInfo.type, offset(ctx));
-                    return null;
+                    continue;
                 }
                 AssignExpr assignExpr = new AssignExpr(new VarExpr(localVar), initExpr);
                 mapAst(assignExpr, v);
@@ -2065,7 +2040,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return invocationExpr;
     }
 
-    private OffsetRange offset(ParserRuleContext ctx) {
+    protected OffsetRange offset(ParserRuleContext ctx) {
         return OffsetRangeHelper.getOffsetRange(ctx);
     }
 
