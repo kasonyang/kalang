@@ -438,13 +438,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             return null;
         }
         Type exprType = expr.getType();
-        expr = BoxUtil.assignToPrimitiveDataType(expr, expr.getType());
+        expr = BoxUtil.assign(expr, Types.BOOLEAN_TYPE);
         if (expr == null) {
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, exprType + " cannot be converted to primitive data type", ctx.expression());
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, exprType + " cannot be converted to boolean type", ctx.expression());
             return null;
-        }
-        if (!Types.isIntCompatibleType(expr.getType())) {
-            expr = createBinaryMathExpr(expr,new ConstExpr(0),BinaryExpr.OP_NE);
         }
         BlockStmt trueBody = null;
         BlockStmt falseBody = null;
