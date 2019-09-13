@@ -67,6 +67,11 @@ public class BoxUtil {
     }
 
     @Nullable
+    public static ExprNode assign(ExprNode expr, Type toType) {
+        return assign(expr, expr.getType(), toType);
+    }
+
+    @Nullable
     public static ExprNode assign(@Nonnull ExprNode expr, @Nonnull Type fromType,@Nonnull Type toType) {
         int t = getCastMethod(expr, toType);
         switch (t) {
