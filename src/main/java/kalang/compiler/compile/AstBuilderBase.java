@@ -190,21 +190,35 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     protected BinaryExpr constructBinaryExpr(ExprNode expr1,ExprNode expr2,String op){
         BinaryExpr binExpr;
         switch(op){
-            case "==":
-            case "!=":
-            case ">":
-            case ">=":
-            case "<":
-            case "<=":
-                binExpr = new CompareExpr(expr1, expr2, op);
+            case BinaryExpr.OP_EQ:
+            case BinaryExpr.OP_NE:
+            case BinaryExpr.OP_GT:
+            case BinaryExpr.OP_GE:
+            case BinaryExpr.OP_LT:
+            case BinaryExpr.OP_LE:
+                binExpr = new CompareBinaryExpr(expr1, expr2, op);
                 break;
-            case "&&":
-            case "||":
-                binExpr = new LogicExpr(expr1, expr2, op);
+            case BinaryExpr.OP_LOGIC_AND:
+            case BinaryExpr.OP_LOGIC_OR:
+                binExpr = new LogicBinaryExpr(expr1, expr2, op);
+                break;
+            case BinaryExpr.OP_ADD:
+            case BinaryExpr.OP_SUB:
+            case BinaryExpr.OP_MUL:
+            case BinaryExpr.OP_DIV:
+            case BinaryExpr.OP_REM:
+                binExpr = new ArithmeticBinaryExpr(expr1, expr2, op);
+                break;
+            case BinaryExpr.OP_SHIFT_LEFT:
+            case BinaryExpr.OP_SHIFT_RIGHT:
+            case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT:
+            case BinaryExpr.OP_AND:
+            case BinaryExpr.OP_OR:
+            case BinaryExpr.OP_XOR:
+                binExpr = new BitwiseBinaryExpr(expr1, expr2, op);
                 break;
             default:
-                binExpr = new MathExpr(expr1, expr2, op);
-                break;
+                throw Exceptions.unexpectedValue(op);
         }
         semanticAnalyzer.validateBinaryExpr(binExpr);
         return binExpr;
