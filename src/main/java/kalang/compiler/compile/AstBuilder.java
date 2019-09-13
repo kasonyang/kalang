@@ -1405,6 +1405,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             VarDeclStmt vds = new VarDeclStmt(localVar);
             ms.statements.add(vds);
             if(initExpr!=null){
+                Type originInitExprType = initExpr.getType();
+                initExpr = BoxUtil.assign(initExpr, varInfo.type);
+                if (initExpr == null) {
+                    handleSyntaxError(originInitExprType + " is not assignable to " + varInfo.type, offset(ctx));
+                    return null;
+                }
                 AssignExpr assignExpr = new AssignExpr(new VarExpr(localVar), initExpr);
                 mapAst(assignExpr, v);
                 ms.statements.add(new ExprStmt(assignExpr));

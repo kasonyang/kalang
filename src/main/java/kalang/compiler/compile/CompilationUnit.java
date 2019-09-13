@@ -1,5 +1,6 @@
 package kalang.compiler.compile;
 
+import kalang.compiler.MalformedAstException;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
@@ -80,8 +81,15 @@ public class CompilationUnit {
             parseInit(context.getDiagnosisHandler());
         }else if(phase==PHASE_PARSING){
             parseMeta(context.getDiagnosisHandler());
-        }else if(phase == PHASE_BUILDAST){
+        }else if(phase == PHASE_BUILDAST) {
             parseBody(context.getDiagnosisHandler());
+        }else if(phase == PHASE_SEMANTIC) {
+            AstVerifier astVerifier = new AstVerifier();
+            try {
+                astVerifier.visit(getAst());
+            } catch (MalformedAstException ex) {
+                this.astBuilder.handleSyntaxError(ex.getMessage(), ex.getMalformedNode().offset);
+            }
         }else if(phase == PHASE_CLASSGEN){
             CodeGenerator codeGenerator = context.createCodeGenerator(this);
             if(codeGenerator==null){

@@ -2,6 +2,6 @@ int i = 1;
 long l = 2;
 var s = i + l;
 
-float f = 1.0;
+float f = 1.0f;
 double d = 2.0;
 var ds = f+d; 
