@@ -671,13 +671,18 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
 
-    protected ExprNode createBinaryMathExpr(ExprNode expr1,ExprNode expr2,String op){
+    @Nullable
+    protected ExprNode createBinaryMathExpr(ExprNode expr1,ExprNode expr2,String op, OffsetRange offset){
         Type type1 = expr1.getType();
         Type type2 = expr2.getType();
         boolean isPrimitive1 = type1 instanceof PrimitiveType;
         boolean isPrimitive2 = type2 instanceof PrimitiveType;
         PrimitiveType numPriType1 = isPrimitive1 ? (PrimitiveType)type1 : Types.getPrimitiveType((ObjectType)type1);
         PrimitiveType numPriType2 = isPrimitive2 ? (PrimitiveType)type2 : Types.getPrimitiveType((ObjectType)type2);
+        if (!MathType.isSupportedType(numPriType1) || !MathType.isSupportedType(numPriType2)) {
+            handleSyntaxError("Operator \"" + op + "\" could not be applied to " + type1.getName() + " and " + type2.getName(), offset);
+            return null;
+        }
         PrimitiveType resultType = MathType.getType(numPriType1, numPriType2);
         expr1 = requireImplicitCast(resultType,requireImplicitCast(numPriType1, expr1, expr1.offset),expr1.offset);
         expr2 = requireImplicitCast(resultType, requireImplicitCast(numPriType2, expr2, expr2.offset), expr2.offset);
