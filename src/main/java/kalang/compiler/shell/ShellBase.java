@@ -17,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -82,7 +83,8 @@ public abstract class ShellBase {
     }
     
     protected void printVersion() {
-        System.out.println(String.format("%s v%s", appName, Runtime.getVersion()));
+        Runtime.BuildInfo bi = Runtime.getBuildInfo();
+        System.out.println(String.format("%s v%s\nBuild time: %s", appName, Runtime.getVersion(), new Date(bi.getBuildTime())));
     }
 
     protected Configuration createConfiguration(CommandLine cli) {
