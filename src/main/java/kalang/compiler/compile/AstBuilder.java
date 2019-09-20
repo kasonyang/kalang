@@ -465,7 +465,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             return null;
         }
         if (!Types.isIntCompatibleType(expr.getType())) {
-            expr = createBinaryMathExpr(expr,new ConstExpr(0),BinaryExpr.OP_NE);
+            expr = createBinaryMathExpr(expr,new ConstExpr(0),BinaryExpr.OP_NE, expr.offset);
         }
         BlockStmt trueBody = null;
         BlockStmt falseBody = null;
@@ -865,7 +865,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         
         if ("+".equals(op)) {
             if (Types.isNumber(type1) && Types.isNumber(type2)) {
-                expr = this.createBinaryMathExpr(expr1, expr2, op);
+                expr = this.createBinaryMathExpr(expr1, expr2, op, offset);
             } else if (Types.isStringType(type1)||Types.isStringType(type2)) {
                 expr = this.concatExpressionsToStringExpr(new ExprNode[]{expr1,expr2});
             } else {
@@ -880,7 +880,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     expr = new UnaryExpr(expr, "!");
                 }
             } else if (Types.isNumber(type1) && Types.isNumber(type2) && (isPrimitive1 || isPrimitive2)) {
-                expr = this.createBinaryMathExpr(expr1, expr2, op);
+                expr = this.createBinaryMathExpr(expr1, expr2, op, offset);
             } else if (Types.isBoolean(type1) && Types.isBoolean(type2) && (isPrimitive1 || isPrimitive2)) {
                 expr = this.createBinaryBoolOperateExpr(expr1, expr2, op);
             } else {
@@ -911,7 +911,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
             expr = this.createBinaryBoolOperateExpr(expr1, expr2, op);
         } else {
-            expr = this.createBinaryMathExpr(expr1, expr2, op);
+            expr = this.createBinaryMathExpr(expr1, expr2, op, offset);
         }
         if (expr == null) {
             return null;
@@ -1511,7 +1511,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         } else {
             reference = safeTo;
         }
-        ExprNode addOneExpr = createBinaryMathExpr(safeTo, new ConstExpr(1), isDesc ? "-" : "+");
+        ExprNode addOneExpr = createBinaryMathExpr(safeTo, new ConstExpr(1), isDesc ? "-" : "+", safeTo.offset);
         initStmts.add(new ExprStmt(new AssignExpr(safeTo, addOneExpr)));
         return new  MultiStmtExpr(initStmts, reference);
     }
