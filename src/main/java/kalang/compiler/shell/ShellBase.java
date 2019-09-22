@@ -100,7 +100,7 @@ public abstract class ShellBase {
         boolean verbose = cli.hasOption("verbose");
         Set<URL> urls = new HashSet<>();
         urls.add(Runtime.getRuntimeClassPath());
-        String[] libPaths = cli.getOptionValue("libpath", "").split(";");
+        String[] libPaths = cli.getOptionValue("libpath", "").split(File.pathSeparator);
         for (String l : libPaths) {
             if (l.isEmpty()) {
                 continue;
@@ -126,7 +126,7 @@ public abstract class ShellBase {
 
     protected File[] parseClassPath(CommandLine cli) {
         if (cli.hasOption("classpath")) {
-            String[] cps = cli.getOptionValue("classpath").split(";");
+            String[] cps = cli.getOptionValue("classpath").split(File.pathSeparator);
             File[] file = new File[cps.length];
             for (int i = 0; i < cps.length; i++) {
                 file[i] = new File(cps[i]);
