@@ -41,7 +41,7 @@ public class Kalangeditor extends ShellBase {
     public void eval(String className,String code) throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         ClassLoader classLoader = this.createClassLoader(cli);
         Configuration config = this.createConfiguration(cli);
-        KalangShell kalangshell = this.createKalangShell(config, classLoader, new StringReader(code));
+        KalangShell kalangshell = this.createKalangShell(config, classLoader, new StringReader(code), null);
         Class clazz = kalangshell.parse(className, code, className + ".kl");
         ClassExecutor.executeMain(clazz,new String[0]);
     }
