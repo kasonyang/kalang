@@ -41,7 +41,7 @@ public class Kalangsh extends ShellBase {
             String[] scriptArgs;
             if (cli.hasOption("code")) {
                 String code = cli.getOptionValue("code");
-                KalangShell sh = this.createKalangShell(config, classLoader,new StringReader(code));
+                KalangShell sh = this.createKalangShell(config, classLoader,new StringReader(code), null);
                 scriptArgs = new String[0];
                 clazz = sh.parse("Temp",code, "Tmp.kl");
             } else {
@@ -54,9 +54,15 @@ public class Kalangsh extends ShellBase {
                 if (args.length > 1) {
                     System.arraycopy(args, 1, scriptArgs, 0, scriptArgs.length);
                 }
+                File sourceDir = file.getAbsoluteFile().getParentFile();
+                File optionsFile = new File(sourceDir, "kalangsh.options");
                 FileReader fileReader = new FileReader(file);
-                KalangShell sh = this.createKalangShell(config, classLoader, fileReader);
+                FileReader optionsReader = optionsFile.exists() ? new FileReader(optionsFile) : null;
+                KalangShell sh = this.createKalangShell(config, classLoader, fileReader, optionsReader);
                 fileReader.close();
+                if (optionsReader != null) {
+                    optionsReader.close();
+                }
                 sh.addSourcePath(file.getAbsoluteFile().getParentFile());
                 clazz = sh.parse(file);
             }

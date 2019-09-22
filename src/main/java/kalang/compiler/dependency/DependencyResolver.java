@@ -28,7 +28,7 @@ public class DependencyResolver {
         this.repositories = Collections.EMPTY_LIST;
     }
 
-    public DependencyResolver(List<String> repositories){
+    public DependencyResolver(Set<String> repositories){
         this.repositories = new LinkedList<>(repositories);
     }
 
