@@ -2,6 +2,7 @@ package kalang.compiler.shell;
 
 import kalang.compiler.compile.Configuration;
 import kalang.compiler.dependency.Artifact;
+import kalang.compiler.dependency.DependenciesCache;
 import kalang.compiler.dependency.DependencyResolver;
 import kalang.compiler.dependency.ResolveResult;
 import kalang.compiler.profile.Profiler;
@@ -220,6 +221,17 @@ public abstract class ShellBase {
         return shell;
     }
 
+    public File getAppHomeDir(@Nullable  String subDir, boolean autoCreate) throws IOException {
+        File file = new File(FileUtils.getUserDirectory(),".kalang");
+        if (subDir != null && !subDir.isEmpty()) {
+            file = new File(file, subDir);
+        }
+        if (!file.exists() && autoCreate && !file.mkdirs()) {
+            throw new IOException("failed to create directory:" + file);
+        }
+        return file;
+    }
+
     private void outputProfileInfo(String destination) {
         Span rootSpan = Profiler.getInstance().getRootSpan();
         PrintStream os;
@@ -237,19 +249,25 @@ public abstract class ShellBase {
         new SpanFormatter().format(rootSpan,os);
     }
 
-    private ResolveResult resolveDependencies(Set<String> dependencies,Set<String> repositories) {
-        List<Artifact> artifacts = new LinkedList<>();
-        for(String d:dependencies){
-            d = d.trim();
-            String[] dParts = d.split(":");
-            if (dParts.length!=3) {
-                System.err.println("illeage artifact:" + d);
-                continue;
+
+
+    private ResolveResult resolveDependencies(Set<String> dependencies,Set<String> repositories) throws IOException {
+        File cacheFile = new File(getAppHomeDir("cache", true), "dependencies.cache");
+        DependenciesCache dc = new DependenciesCache(cacheFile);
+        return dc.get(dependencies,() -> {
+            List<Artifact> artifacts = new LinkedList<>();
+            for(String d:dependencies){
+                d = d.trim();
+                String[] dParts = d.split(":");
+                if (dParts.length!=3) {
+                    System.err.println("illegal artifact:" + d);
+                    continue;
+                }
+                artifacts.add(new Artifact(dParts[0],dParts[1],dParts[2]));
             }
-            artifacts.add(new Artifact(dParts[0],dParts[1],dParts[2]));
-        }
-        DependencyResolver resolver =new DependencyResolver(repositories);
-        return resolver.resolve(artifacts.toArray(new Artifact[0]));
+            DependencyResolver resolver =new DependencyResolver(repositories);
+            return resolver.resolve(artifacts.toArray(new Artifact[0]));
+        });
     }
 
     private void addClasspathFromLibPath(Set<URL> list,File libpath) {

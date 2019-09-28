@@ -28,6 +28,24 @@ public class CollectionMixin {
         return find(Arrays.asList(list), handler);
     }
 
+    @MixinMethod
+    public static <T> int findIndex(Collection<T> list, Function1<Boolean,T> handler) {
+        int index = 0;
+        for (T it : list) {
+            Boolean ret = handler.call(it);
+            if (ret != null && ret) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
+    @MixinMethod
+    public static <T> int findIndex(T[] list, Function1<Boolean,T> handler) {
+        return findIndex(Arrays.asList(list), handler);
+    }
+
     @Nonnull
     @MixinMethod
     public static <T> List<T> findAll(Collection<T> list, Function1<Boolean, T> handler) {
