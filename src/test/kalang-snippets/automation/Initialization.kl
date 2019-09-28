@@ -1,0 +1,10 @@
+boolean initializeInIfStmt() {
+    var text as String;
+    val num = 2;
+    if (num == 0) {
+        text = "zero";
+    } else {
+        text = "noneZero";
+    }
+    return text == "noneZero";
+}
