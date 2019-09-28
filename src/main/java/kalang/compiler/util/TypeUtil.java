@@ -1,9 +1,7 @@
 package kalang.compiler.util;
 
-import kalang.compiler.core.GenericType;
-import kalang.compiler.core.PrimitiveType;
-import kalang.compiler.core.Type;
-import kalang.compiler.core.Types;
+import kalang.compiler.core.*;
+import kalang.mixin.CollectionMixin;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -53,11 +51,20 @@ public class TypeUtil {
     public static Type getCommonType(Type... types){
         if(types.length==0) return Types.getRootType();
         if(types.length==1) return types[0];
-        Type ret = types[0];
-        for(int i=1;i<types.length;i++){
+        Type ret = CollectionMixin.find(types, it -> !Types.NULL_TYPE.equals(it));
+        if (ret == null) {
+            return Types.NULL_TYPE;
+        }
+        boolean requireNullable = isNullable(ret);
+        for(int i=0;i<types.length;i++){
             Type t = types[i];
+            requireNullable = requireNullable || isNullable(ret);
             if(!t.equals(ret)){
-                if((ret instanceof PrimitiveType) && (t instanceof PrimitiveType)){
+                if (Types.NULL_TYPE.equals(t)) {
+                    requireNullable = true;
+                    continue;
+                }
+                if((Types.isPrimitiveDataType(ret)) && (Types.isPrimitiveDataType(t))){
                     ret = Types.getHigherType(ret, t);
                 }else{
                     if(t.isAssignableFrom(ret)){
@@ -68,7 +75,21 @@ public class TypeUtil {
                 }
             }
         }
+        if (requireNullable) {
+            if (ret instanceof PrimitiveType) {
+                ret = Types.getClassType((PrimitiveType) ret);
+            }
+            ret = Types.getObjectType((ObjectType)ret, NullableKind.NULLABLE);
+        }
         return ret;
+    }
+
+    private static boolean isNullable(Type type) {
+        if (type instanceof ObjectType) {
+            NullableKind nullableKind = ((ObjectType) type).getNullable();
+            return NullableKind.NULLABLE.equals(nullableKind);
+        }
+        return false;
     }
     
 }

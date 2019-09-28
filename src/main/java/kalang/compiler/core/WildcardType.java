@@ -41,8 +41,13 @@ public class WildcardType extends ObjectType {
         }
     }
 
-    public WildcardType(@Nullable Type[] upperBounds,@Nullable Type[] lowerBounds) {
-        super(getClassNode(upperBounds, lowerBounds),NullableKind.NONNULL);
+    @Deprecated
+    public WildcardType(@Nullable Type[] upperBounds,@Nullable Type[] lowerBounds){
+        this(upperBounds, lowerBounds, NullableKind.NONNULL);
+    }
+
+    public WildcardType(@Nullable Type[] upperBounds,@Nullable Type[] lowerBounds, NullableKind nullableKind) {
+        super(getClassNode(upperBounds, lowerBounds), nullableKind);
         this.upperBounds = upperBounds == null ? new Type[0] : upperBounds;
         this.lowerBounds = lowerBounds == null ? new Type[0] : lowerBounds;
     }
