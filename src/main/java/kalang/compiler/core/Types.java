@@ -4,6 +4,7 @@ package kalang.compiler.core;
 import kalang.compiler.AstNotFoundException;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.AstLoader;
+import kalang.compiler.exception.Exceptions;
 import kalang.type.Function;
 import kalang.type.FunctionClasses;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -107,6 +108,17 @@ public class Types {
     private static PrimitiveType[] numberPrimitive = new PrimitiveType[]{
         BYTE_TYPE, CHAR_TYPE,SHORT_TYPE, INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE
     };
+
+    private static PrimitiveType[] primitiveDataType = new PrimitiveType[]{
+            BOOLEAN_TYPE
+            , BYTE_TYPE
+            , CHAR_TYPE
+            , SHORT_TYPE
+            , INT_TYPE
+            , LONG_TYPE
+            , FLOAT_TYPE
+            , DOUBLE_TYPE
+    };
     
     @Nonnull
     public static PrimitiveType getPrimitiveType(String name){
@@ -164,9 +176,30 @@ public class Types {
     public static ClassType getClassType(@Nonnull ClassNode clazz,NullableKind nullable){
         return getClassType(clazz, new Type[0],nullable);
     }
+
+    @Nonnull
+    public static ObjectType getObjectType(ObjectType type, NullableKind nullableKind) {
+        if (type instanceof ArrayType) {
+            return getArrayType(((ArrayType) type).getComponentType(), nullableKind);
+        } else if (type instanceof ClassType) {
+            ClassType ct = (ClassType) type;
+            return getClassType(ct.getClassNode(), ct.getTypeArguments(), nullableKind);
+        } else if (type instanceof GenericType) {
+            GenericType gt = (GenericType) type;
+            return new GenericType(gt.name, gt.getSuperType(), gt.getInterfaces(), nullableKind);
+        } else if (type instanceof LambdaType) {
+            return type;
+        } else if (type instanceof WildcardType) {
+            WildcardType wt = (WildcardType) type;
+            return new WildcardType(wt.getUpperBounds(), wt.getLowerBounds(), nullableKind);
+        } else {
+            throw Exceptions.unexpectedValue(type);
+        }
+    }
     
     @Nullable
     public static PrimitiveType getPrimitiveType(ObjectType classType){
+        classType = Types.getObjectType(classType, NullableKind.NONNULL);
         return primitive2class.getKey(classType.getName());
     }
 
@@ -206,8 +239,15 @@ public class Types {
     
      public static boolean isNumberPrimitive(Type type) {
          if(type instanceof PrimitiveType)
-            return Arrays.asList(numberPrimitive).contains((PrimitiveType)type);
+            return Arrays.asList(numberPrimitive).contains(type);
          else return false;
+    }
+
+    public static boolean isPrimitiveDataType(Type type) {
+        if (type instanceof PrimitiveType) {
+            return Arrays.asList(primitiveDataType).contains(type);
+        }
+        return false;
     }
 
     public static boolean isIntCompatibleType(Type type) {
