@@ -203,7 +203,9 @@ public abstract class ShellBase {
 //            config.setScriptBaseClass(scriptBase);
 //        }
         if (!dependencies.isEmpty()) {
+            Span rdSpan = Profiler.getInstance().beginSpan("resolving dependencies");
             ResolveResult resolveResult = resolveDependencies(dependencies,repositories);
+            Profiler.getInstance().endSpan(rdSpan);
             for(File localFile:resolveResult.getLocalFiles()) {
                 classpaths.add(localFile.toURI().toURL());
             }
