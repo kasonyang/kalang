@@ -115,8 +115,8 @@ public class IOMixin {
 
     private static boolean doWithLock(File file,boolean shared, boolean wait,Consumer<FileLock> fileLockConsumer) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(file)) {
-            FileLock lock = null;
             try (FileChannel chn = fos.getChannel()) {
+                FileLock lock;
                 if (wait) {
                     lock = chn.lock(0, Long.MAX_VALUE, shared);
                 } else {
@@ -124,13 +124,10 @@ public class IOMixin {
                 }
                 if (lock != null) {
                     fileLockConsumer.accept(lock);
+                    lock.release();
                     return true;
                 }
                 return false;
-            } finally {
-                if (lock != null) {
-                    lock.release();
-                }
             }
         }
     }
