@@ -25,3 +25,11 @@ boolean compareTest() {
     });
     return list.equals(<Integer>[1,2,3].asList());
 }
+
+boolean nullCheck() {
+    val str as String? = "test";
+    val toStr = &String() {
+        return str == null ? "null" : str.toString();
+    };
+    return toStr() == "test";
+}

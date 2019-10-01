@@ -625,7 +625,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     @Nullable
-    protected ExprNode getObjectFieldExpr(ExprNode expr,String fieldName,@Nullable ParserRuleContext rule){
+    protected ExprNode getObjectFieldExpr(ExprNode expr,String fieldName,OffsetRange offset){
         ExprNode ret;
         Type type = expr.getType();
         if(!(type instanceof  ObjectType)){
@@ -642,7 +642,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 return null;
             }
         }
-        if(rule!=null) mapAst(ret, rule);
+        mapAst(ret, offset, true);
         return ret;
     }
 

@@ -5,6 +5,7 @@ import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -118,6 +119,18 @@ public class MethodContext {
 
     }
 
+    @Nullable
+    public Type getOverrideType(ExprNode expr) {
+        VarObject key = getOverrideTypeKey(expr);
+        if (key != null) {
+            Type type = getVarObjectType(key);
+            if (!expr.getType().equals(type)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
     public Type getVarObjectType(VarObject p) {
         Type type = overrideTypes.get(p);
         if(type==null) type = p.getType();
@@ -214,16 +227,19 @@ public class MethodContext {
 
     @Nullable
     private VarObject getOverrideTypeKey(ExprNode expr){
-        VarObject key ;
-        //It isn't supported to override type of field because it is not safe
         if(expr instanceof VarExpr){
-            key = ((VarExpr) expr).getVar();
-        }else if(expr instanceof ParameterExpr){
-            key = ((ParameterExpr) expr).getParameter();
-        }else{
-            key = null;
+            return ((VarExpr) expr).getVar();
+        }else if(expr instanceof ParameterExpr) {
+            return ((ParameterExpr) expr).getParameter();
+        } else if (expr instanceof FieldExpr) {
+            FieldExpr fe = (FieldExpr) expr;
+            FieldDescriptor fd = fe.getField();
+            if (!Modifier.isFinal(fd.getModifier())) {//It isn't supported to override type of non-final field because it is not safe
+                return null;
+            }
+            return fd.getFieldNode();
         }
-        return key;
+        return null;
     }
 
     private void removeOverrideType(ExprNode expr){

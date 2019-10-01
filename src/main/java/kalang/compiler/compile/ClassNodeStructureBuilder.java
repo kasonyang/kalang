@@ -111,7 +111,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                         }
                         ParameterNode outerInstanceParam = node.createParameter(0, Types.getClassType(enclosingClass), "this$0");
                         ExprNode parentFieldExpr = getObjectFieldExpr(
-                                new ThisExpr(Types.getClassType(thisClazz)), "this$0", ParserRuleContext.EMPTY
+                                new ThisExpr(Types.getClassType(thisClazz)), "this$0", OffsetRange.NONE
                         );
                         if (parentFieldExpr == null) {
                             throw Exceptions.unexpectedValue(parentFieldExpr);

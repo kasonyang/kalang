@@ -7,12 +7,14 @@ import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.antlr.KalangParser.*;
 import kalang.compiler.antlr.KalangParserVisitor;
 import kalang.compiler.ast.*;
+import kalang.compiler.compile.analyzer.FieldUsageAnalyzer;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 import kalang.compiler.function.LambdaExpr;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
+import kalang.mixin.CollectionMixin;
 import kalang.runtime.dynamic.FieldVisitor;
 import kalang.runtime.dynamic.MethodDispatcher;
 import kalang.type.Function1;
@@ -1156,12 +1158,24 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return ee;
     }
 
-    @Nullable
     private AstNode getNodeById(@Nonnull String name, OffsetRange offset) {
+        AstNode node = getOriginalNodeById(name, offset);
+        if (node instanceof ExprNode) {
+            ExprNode en = (ExprNode) node;
+            Type overrideType = methodCtx.getOverrideType(en);
+            if (overrideType != null) {
+                node = new CastExpr(overrideType, en);
+            }
+        }
+        return node;
+    }
+
+    @Nullable
+    private AstNode getOriginalNodeById(@Nonnull String name, OffsetRange offset) {
         //find local var
         LocalVarNode var = methodCtx!=null ? methodCtx.getNamedLocalVar(name) : null;
         if(var!=null){
-            VarExpr ve = new VarExpr(var,methodCtx.getVarObjectType(var));
+            VarExpr ve = new VarExpr(var);
             mapAst(ve, offset);
             return ve;
         }
@@ -1173,14 +1187,15 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             return ve;
         }
         //find field
-        ExprNode fieldExpr = this.getObjectFieldLikeExpr(createThisExpr(OffsetRange.NONE), name, offset);
-        if(fieldExpr==null) fieldExpr = this.getStaticFieldExpr(new ClassReference(thisClazz), name, OffsetRange.NONE);
-        if(fieldExpr!=null) return fieldExpr;
-        ExprNode outerClassInstanceExpr = this.getOuterClassInstanceExpr(new ThisExpr(this.getThisType()));
-        while(outerClassInstanceExpr!=null){
-            ExprNode fe = this.getObjectFieldExpr(outerClassInstanceExpr, name, ParserRuleContext.EMPTY);
-            if(fe==null) fe = this.getStaticFieldExpr(new ClassReference(thisClazz), name, OffsetRange.NONE);
-            if(fe!=null) return fe;
+        ExprNode outerClassInstanceExpr = createThisExpr(offset);
+        while(outerClassInstanceExpr != null){
+            ExprNode fe = this.getObjectFieldExpr(outerClassInstanceExpr, name, offset);
+            ClassType outerClassType = (ClassType) outerClassInstanceExpr.getType();
+            if (fe == null) fe = this.getStaticFieldExpr(new ClassReference(outerClassType.getClassNode()), name, offset);
+            if (fe == null) fe = this.getObjectFieldExpr(outerClassInstanceExpr, "this$0$" + name, offset);
+            if (fe != null){
+                return fe;
+            }
             outerClassInstanceExpr = this.getOuterClassInstanceExpr(outerClassInstanceExpr);
         }
         String resolvedTypeName = compilationUnit.getTypeNameResolver().resolve(name, topClass, thisClazz);
@@ -1901,17 +1916,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         for( Map.Entry<String, VarObject> v:accessibleVars.entrySet()) {
             String name = v.getKey();
             VarObject var = v.getValue();
-            FieldNode f = classNode.createField(var.getType(),name, Modifier.PUBLIC&Modifier.FINAL);
-            AssignExpr assignExpr;
-            ObjectFieldExpr fieldExpr = new ObjectFieldExpr(lambdaExpr.getReferenceExpr(), f);
-            if (var instanceof LocalVarNode) {
-                assignExpr = new AssignExpr(fieldExpr,new VarExpr((LocalVarNode)var));
-            } else if (var instanceof ParameterNode) {
-                assignExpr = new AssignExpr(fieldExpr,new ParameterExpr((ParameterNode)var));
-            } else {
-                throw Exceptions.unexpectedValue(var);
-            }
-            lambdaExpr.addStatement(new ExprStmt(assignExpr));
+            classNode.createField(var.getType(),"this$0$" + name, Modifier.PUBLIC | Modifier.FINAL);
         }
         MethodNode methodNode = classNode.createMethodNode(returnType, funcMethod.getName(), Modifier.PUBLIC);
         enterMethod(methodNode);
@@ -1933,7 +1938,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 //        for(int i=lambdaParamsCount+1;i<=FunctionClasses.CLASSES.length-1;i++) {
 //            LambdaUtil.createBridgeRunMethod(classNode, methodNode,paramTypes, i);
 //        }
-        AstUtil.createEmptyConstructor(classNode);
         List<StatContext> stats = ctx.stat();
         BlockStmt bs = this.newBlock();
         for(StatContext s:stats) {
@@ -1948,6 +1952,29 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         methodNode.getBody().statements.add(bs);
         checkMethod();
+        FieldUsageAnalyzer fieldUsageAnalyzer = new FieldUsageAnalyzer();
+        fieldUsageAnalyzer.analyzer(classNode);
+        Set<FieldNode> usedFields = fieldUsageAnalyzer.getUsedFields();
+        if (usedFields.isEmpty()) {
+            AstUtil.createEmptyConstructor(classNode);
+        } else {
+            MethodNode constructor = classNode.createMethodNode(Types.VOID_TYPE, "<init>", Modifier.PUBLIC);
+            List<Statement> constructorStmts = new LinkedList<>();
+            SuperExpr superExpr = new SuperExpr(classNode);
+            constructorStmts.add(new ExprStmt(ObjectInvokeExpr.create(superExpr,"<init>",new ExprNode[0])));
+            ThisExpr thisExpr = new ThisExpr(classNode);
+            for (FieldNode f: usedFields) {
+                String paramName = f.getName().substring("this$0$".length());
+                ParameterNode p = constructor.createParameter(f.getType(), paramName);
+                constructorStmts.add(new ExprStmt(
+                        new AssignExpr(
+                                ObjectFieldExpr.create(thisExpr, f.getName(), classNode),
+                                new ParameterExpr(p)
+                        )
+                ));
+            }
+            constructor.getBody().statements.addAll(constructorStmts);
+        }
         //TODO check return
         thisClazz = oldClass;
         methodCtx = oldMethodCtx;
@@ -1989,7 +2016,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         //lambdaExpr.getReferenceExpr()
         NewObjectExpr newExpr;
         try {
-            newExpr = new NewObjectExpr(lambdaType, new ExprNode[0],thisClazz);
+            MethodNode initMethod = CollectionMixin.find(lambdaClassNode.getDeclaredMethodNodes(), it -> "<init>".equals(it.getName()));
+            ParameterNode[] initParamNodes = initMethod.getParameters();
+            ExprNode[] initParams = new ExprNode[initParamNodes.length];
+            for (int i = 0; i < initParams.length; i++) {
+                VarObject var = lambdaExpr.getAccessibleVarObjects().get(initParamNodes[i].getName());
+                    if (var instanceof LocalVarNode) {
+                    initParams[i] = new VarExpr((LocalVarNode)var);
+                } else if (var instanceof ParameterNode) {
+                    initParams[i] = new ParameterExpr((ParameterNode)var);
+                } else {
+                    throw Exceptions.unexpectedValue(var);
+                }
+            }
+            newExpr = new NewObjectExpr(lambdaType, initParams, thisClazz);
         } catch (MethodNotFoundException | AmbiguousMethodException ex) {
             throw Exceptions.unexpectedException(ex);
         }
