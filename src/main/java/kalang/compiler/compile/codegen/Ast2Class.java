@@ -225,7 +225,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         String parentName = "java.lang.Object";
         ObjectType superType = node.getSuperType();
         if(superType!=null){
-            parentName = superType.getName();
+            parentName = internalName(superType);
         }
         String[] interfaces = null;
         if(node.getInterfaces().length>0){

@@ -121,7 +121,7 @@ public class BoxUtil {
             }
         } else if (fromType instanceof PrimitiveType
                 && toType instanceof ObjectType) {
-            if (Types.isRootObjectType((ObjectType)toType)){
+            if (toType.isAssignableFrom(Types.getRootType())) {
                 return CAST_PRIMITIVE_TO_OBJECT;
             }
             PrimitiveType toPriType = Types.getPrimitiveType((ObjectType) toType);
