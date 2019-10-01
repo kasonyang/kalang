@@ -3,7 +3,10 @@ package kalang.mixin;
 import kalang.annotation.MixinMethod;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.Charset;
+import java.util.function.Consumer;
 
 public class IOMixin {
 
@@ -87,6 +90,45 @@ public class IOMixin {
     public static void writeFrom(OutputStream os, File file) throws IOException {
         try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(file))) {
             writeFrom(os, is);
+        }
+    }
+
+    @MixinMethod
+    public static void withLock(File file, Consumer<FileLock> fileLockConsumer) throws IOException {
+        doWithLock(file, false, true, fileLockConsumer);
+    }
+
+    @MixinMethod
+    public static boolean tryWithLock(File file, Consumer<FileLock> fileLockConsumer) throws IOException {
+        return doWithLock(file, false, false, fileLockConsumer);
+    }
+
+    @MixinMethod
+    public static void withSharedLock(File file, Consumer<FileLock> fileLockConsumer) throws IOException {
+        doWithLock(file, true, true, fileLockConsumer);
+    }
+
+    @MixinMethod
+    public static boolean tryWithSharedLock(File file, Consumer<FileLock> fileLockConsumer) throws IOException {
+        return doWithLock(file, true, false, fileLockConsumer);
+    }
+
+    private static boolean doWithLock(File file,boolean shared, boolean wait,Consumer<FileLock> fileLockConsumer) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            try (FileChannel chn = fos.getChannel()) {
+                FileLock lock;
+                if (wait) {
+                    lock = chn.lock(0, Long.MAX_VALUE, shared);
+                } else {
+                    lock = chn.tryLock(0, Long.MAX_VALUE, shared);
+                }
+                if (lock != null) {
+                    fileLockConsumer.accept(lock);
+                    lock.release();
+                    return true;
+                }
+                return false;
+            }
         }
     }
     

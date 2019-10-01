@@ -83,25 +83,35 @@ public class CollectionMixin {
 
     @Nonnull
     @MixinMethod
-    public static <K,E> Map<K,List<E>> group(Collection<E> list, Function1<K,E> keyGenerator) {
-        Map<K,List<E>> result = new HashMap<>();
+    public static <K,E, M extends Map<K,List<E>>> M group(Collection<E> list,M map, Function1<K,E> keyGenerator) {
         for (E it: list) {
             K key = keyGenerator.call(it);
-            List<E> eleList = result.computeIfAbsent(key, k -> new LinkedList<>());
+            List<E> eleList = map.computeIfAbsent(key, k -> new LinkedList<>());
             eleList.add(it);
         }
-        return result;
+        return map;
+    }
+
+    @Nonnull
+    @MixinMethod
+    public static <K,E> Map<K,List<E>> group(Collection<E> list, Function1<K,E> keyGenerator) {
+        return group(list, new HashMap<>(), keyGenerator);
+    }
+
+    @Nonnull
+    @MixinMethod
+    public static <K, E, M extends Map<K,E[]>> M group(E[] array, M map, Function1<K,E> keyGenerator) {
+        Class<?> eleType = array.getClass().getComponentType();
+        group(Arrays.asList(array), keyGenerator).forEach((k,e) -> {
+            map.put(k, e.toArray((E[])Array.newInstance(eleType, e.size())));
+        });
+        return map;
     }
 
     @Nonnull
     @MixinMethod
     public static <K,E> Map<K,E[]> group(E[] array, Function1<K,E> keyGenerator) {
-        Map<K,E[]> result = new HashMap<>();
-        Class<?> eleType = array.getClass().getComponentType();
-        group(Arrays.asList(array), keyGenerator).forEach((k,e) -> {
-            result.put(k, e.toArray((E[])Array.newInstance(eleType, e.size())));
-        });
-        return result;
+        return group(array, new HashMap<>(), keyGenerator);
     }
 
     @MixinMethod
@@ -138,6 +148,11 @@ public class CollectionMixin {
             res[i] = array[len - 1 - i];
         }
         return res;
+    }
+
+    @MixinMethod
+    public static String join(Collection list, String delimiter) {
+        return String.join(delimiter, list);
     }
 
     @MixinMethod
