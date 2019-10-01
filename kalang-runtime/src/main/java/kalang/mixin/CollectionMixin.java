@@ -151,6 +151,11 @@ public class CollectionMixin {
     }
 
     @MixinMethod
+    public static String join(Collection list, String delimiter) {
+        return String.join(delimiter, list);
+    }
+
+    @MixinMethod
     public static String join(Object[] list, String delimiter) {
         StringBuilder sb = new StringBuilder();
         int len = list.length;
