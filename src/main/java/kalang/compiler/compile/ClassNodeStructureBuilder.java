@@ -24,8 +24,8 @@ import java.util.Map;
 public class ClassNodeStructureBuilder extends AstBuilder {
 
     //private AstBuilder astBuilder;
-    private ClassNode thisClazz;
-    private ClassNode topClass;
+    //private ClassNode thisClazz;
+    //private ClassNode topClass;
     
     private Map<MethodNode,KalangParser.StatContext[]> methodStatsContexts = new HashMap<>();
 
@@ -246,11 +246,11 @@ public class ClassNodeStructureBuilder extends AstBuilder {
 
     @Override
     public AstNode visitClassBody(KalangParser.ClassBodyContext ctx) {
-        for(KalangParser.FieldDeclContext f:ctx.fieldDecl()){
-            visitFieldDecl(f);
-        }
         for(KalangParser.MethodDeclContext m:ctx.methodDecl()){
             visitMethodDecl(m);
+        }
+        for(KalangParser.FieldDeclContext f:ctx.fieldDecl()){
+            visitFieldDecl(f);
         }
         return null;
     }

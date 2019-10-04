@@ -59,7 +59,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     protected ClassNode thisClazz;
 
-    private ClassNode topClass;
+    protected ClassNode topClass;
 
     @Nonnull
     private AstLoader astLoader;
