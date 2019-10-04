@@ -1,3 +1,6 @@
+static class StringList extends ArrayList<String> {
+
+}
 int lambdaExprTest() {
     var cb = &String(String){ value =>
         return value;
@@ -24,6 +27,15 @@ boolean compareTest() {
         return e1.compareTo(e2);
     });
     return list.equals(<Integer>[1,2,3].asList());
+}
+
+boolean mapTest() {
+    val list = new StringList();
+    list.add("test");
+    val lengthList = list.map({ it =>
+        return it.length();
+    });
+    return <Object>[4].asList().equals(lengthList);
 }
 
 boolean nullCheck() {

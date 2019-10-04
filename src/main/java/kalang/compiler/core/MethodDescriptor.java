@@ -98,6 +98,17 @@ public class MethodDescriptor{
     }
 
     private static void inferGeneric(Type declaredType,Type actualArgType,Map<GenericType,Type> resultMap) {
+        if (actualArgType instanceof ObjectType) {
+            ObjectType actualArgObjectType = (ObjectType) actualArgType;
+            ObjectType superType = actualArgObjectType.getSuperType();
+            if (superType != null) {
+                inferGeneric(declaredType, superType, resultMap);
+            }
+            ObjectType[] interfaces = actualArgObjectType.getInterfaces();
+            for (ObjectType itf: interfaces) {
+                inferGeneric(declaredType, itf, resultMap);
+            }
+        }
         if (declaredType.equals(actualArgType)) {
             return;
         } else if (declaredType instanceof GenericType) {

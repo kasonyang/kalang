@@ -38,7 +38,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
         super(new URL[0],parentClassLoader==null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader);
         Configuration conf = config == null ? new Configuration() : Configuration.copy(config);
         this.parentClassLoader = parentClassLoader;
-        sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});
+        sourceLoader = new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding());
         CodeGenerator cg = this;
         conf.setAstLoader(new JavaAstLoader(conf.getAstLoader(), parentClassLoader));
         compiler = new KalangCompiler(conf){

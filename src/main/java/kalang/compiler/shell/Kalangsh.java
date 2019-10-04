@@ -8,9 +8,7 @@ import kalang.lang.Script;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.StringReader;
+import java.io.*;
 
 /**
  *
@@ -56,7 +54,7 @@ public class Kalangsh extends ShellBase {
                 }
                 File sourceDir = file.getAbsoluteFile().getParentFile();
                 File optionsFile = new File(sourceDir, "kalangsh.options");
-                FileReader fileReader = new FileReader(file);
+                Reader fileReader = new InputStreamReader(new FileInputStream(file), config.getEncoding());
                 FileReader optionsReader = optionsFile.exists() ? new FileReader(optionsFile) : null;
                 KalangShell sh = this.createKalangShell(config, classLoader, fileReader, optionsReader);
                 fileReader.close();
