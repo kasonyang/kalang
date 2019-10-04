@@ -39,7 +39,13 @@ public class SnippetsTest {
         }
         KalangShell shell = new KalangShell();
         shell.addSourcePath(file.getParentFile());
-        Class<?> hwCls = shell.parse(file);
+        Class<?> hwCls;
+        try {
+            hwCls = shell.parse(file);
+        } catch (Throwable throwable) {
+            System.out.println("Parse failed:" + file);
+            throw throwable;
+        }
         if(!checkReturnValue) {
             return;
         }

@@ -1193,10 +1193,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         //find field
         ExprNode outerClassInstanceExpr = createThisExpr(offset);
         while(outerClassInstanceExpr != null){
-            ExprNode fe = this.getObjectFieldExpr(outerClassInstanceExpr, name, offset);
-            ClassType outerClassType = (ClassType) outerClassInstanceExpr.getType();
-            if (fe == null) fe = this.getStaticFieldExpr(new ClassReference(outerClassType.getClassNode()), name, offset);
-            if (fe == null) fe = this.getObjectFieldExpr(outerClassInstanceExpr, "this$0$" + name, offset);
+            ExprNode fe = this.getObjectFieldLikeExpr(outerClassInstanceExpr, name, offset);
+            if (fe == null && outerClassInstanceExpr instanceof ThisExpr) {
+                ClassType outerClassType = (ClassType) outerClassInstanceExpr.getType();
+                fe = this.getStaticFieldExpr(new ClassReference(outerClassType.getClassNode()), name, offset);
+            }
+            if (fe == null){
+                fe = this.getObjectFieldExpr(outerClassInstanceExpr, "this$0$" + name, offset);
+            }
             if (fe != null){
                 return fe;
             }
@@ -1604,7 +1608,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Nullable
     private ExprNode getOuterClassInstanceExpr(ExprNode expr){
-        return this.getObjectFieldExpr(expr, "this$0", null);
+        return this.getObjectFieldExpr(expr, "this$0", OffsetRange.NONE);
     }
 
     @Override
@@ -1968,6 +1972,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             constructorStmts.add(new ExprStmt(ObjectInvokeExpr.create(superExpr,"<init>",new ExprNode[0])));
             ThisExpr thisExpr = new ThisExpr(classNode);
             for (FieldNode f: usedFields) {
+                if (!f.getName().startsWith("this$0$")) {
+                    continue;
+                }
                 String paramName = f.getName().substring("this$0$".length());
                 ParameterNode p = constructor.createParameter(f.getType(), paramName);
                 constructorStmts.add(new ExprStmt(
