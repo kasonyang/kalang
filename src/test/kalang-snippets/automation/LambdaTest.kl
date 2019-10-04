@@ -37,3 +37,11 @@ boolean mapTest() {
     });
     return <Object>[4].asList().equals(lengthList);
 }
+
+boolean nullCheck() {
+    val str as String? = "test";
+    val toStr = &String() {
+        return str == null ? "null" : str.toString();
+    };
+    return toStr() == "test";
+}
