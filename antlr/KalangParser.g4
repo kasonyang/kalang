@@ -235,7 +235,15 @@ expression
         RPAREN #parenExpr
     |   ref=('this'|'super') #selfRefExpr
     |   literal #literalExpr
-    | lambdaType? '{' ( lambdaParams+=Identifier (',' lambdaParams+=Identifier)* '=>')? stat* '}' #lambdaExpr
+    | (
+        ( lambdaType? '{' ( lambdaParams+=Identifier (',' lambdaParams+=Identifier)* '=>')? stat* '}' )
+      | (
+
+            (( lambdaType? '(' (lambdaParams+=Identifier (',' lambdaParams+=Identifier)*)? ')' ) | lambdaParams+=Identifier)
+            '=>'
+            (('{' stat* '}') | expression)
+         )
+      ) #lambdaExpr
     | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=expression ':' values+=expression ( ',' keys+=expression ':' values+=expression)*  ']'
           | '[' ':' ']'
       ) #mapExpr

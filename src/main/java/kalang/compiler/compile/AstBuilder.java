@@ -511,16 +511,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
             rs.expr = new ConstExpr(Types.NULL_TYPE);
         }
-        if(!semanticAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
-        this.methodCtx.returned = true;
-        Type rType = methodCtx.method.getType();
-        if(rs.expr!=null && rType instanceof GenericType) {
-            Type eType = rs.expr.getType();
-            Type oldType = thisClazz.inferredGenericTypes.get(rType);
-            Type newType = oldType == null ? eType : TypeUtil.getCommonType(oldType, eType);
-            thisClazz.inferredGenericTypes.put((GenericType) rType,newType);
-        }
-        return rs;
+        // if(!semanticAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
+        return this.onReturnStmt(rs);
     }
 
     @Override
@@ -1946,19 +1938,34 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 //        for(int i=lambdaParamsCount+1;i<=FunctionClasses.CLASSES.length-1;i++) {
 //            LambdaUtil.createBridgeRunMethod(classNode, methodNode,paramTypes, i);
 //        }
-        List<StatContext> stats = ctx.stat();
+
         BlockStmt bs = this.newBlock();
-        for(StatContext s:stats) {
-            Statement statement = visitStat(s);
-            if(statement!=null) {
-                bs.statements.add(statement);
+        ExpressionContext bodyExprCtx = ctx.expression();
+        if (bodyExprCtx != null) {
+            ExprNode bodyExpr = visitExpression(bodyExprCtx);
+            if (!returnType.equals(Types.VOID_TYPE)) {
+                bodyExpr = requireImplicitCast(methodCtx.method.getType(), bodyExpr, offset(bodyExprCtx));
+                if (bodyExpr != null) {
+                    bs.statements.add(onReturnStmt(new ReturnStmt(bodyExpr)));
+                }
+            } else {
+                bs.statements.add(new ExprStmt(bodyExpr));
+            }
+        } else {
+            List<StatContext> stats = ctx.stat();
+            for(StatContext s:stats) {
+                Statement statement = visitStat(s);
+                if(statement!=null) {
+                    bs.statements.add(statement);
+                }
             }
         }
         if (returnType.equals(Types.getVoidClassType())) {
-            bs.statements.add(new ReturnStmt(new ConstExpr(Types.NULL_TYPE)));
+            bs.statements.add(onReturnStmt(new ReturnStmt(new ConstExpr(Types.NULL_TYPE))));
             methodCtx.returned = true;
         }
         methodNode.getBody().statements.add(bs);
+        popBlock();
         checkMethod();
         FieldUsageAnalyzer fieldUsageAnalyzer = new FieldUsageAnalyzer();
         fieldUsageAnalyzer.analyzer(classNode);
@@ -2048,6 +2055,18 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         lambdaExpr.getReferenceExpr().overrideType(lambdaType);
         thisClazz.classes.add(lambdaClassNode);
         return lambdaClassNode;
+    }
+
+    private ReturnStmt onReturnStmt(ReturnStmt rs) {
+        this.methodCtx.returned = true;
+        Type rType = methodCtx.method.getType();
+        if(rs.expr != null && rType instanceof GenericType) {
+            Type eType = rs.expr.getType();
+            Type oldType = thisClazz.inferredGenericTypes.get(rType);
+            Type newType = oldType == null ? eType : TypeUtil.getCommonType(oldType, eType);
+            thisClazz.inferredGenericTypes.put((GenericType) rType,newType);
+        }
+        return rs;
     }
 
     private InvocationExpr onInvocationExpr(InvocationExpr invocationExpr){
