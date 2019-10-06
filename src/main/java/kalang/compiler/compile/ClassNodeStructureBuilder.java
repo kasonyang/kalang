@@ -6,13 +6,16 @@ import kalang.compiler.antlr.KalangParser.MethodDeclContext;
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
-import kalang.compiler.util.*;
+import kalang.compiler.util.AstUtil;
+import kalang.compiler.util.ClassTypeUtil;
+import kalang.compiler.util.MethodUtil;
+import kalang.compiler.util.ModifierUtil;
+import kalang.mixin.CollectionMixin;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,12 +186,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         }
         //check method duplicated before generate java stub
         String mStr = MethodUtil.getDeclarationKey(name,paramTypes);
-        boolean existed = Arrays.asList(thisClazz.getDeclaredMethodNodes()).stream().anyMatch((m)->{
-            return MethodUtil.getDeclarationKey(m).equals(mStr);
-        });
+        boolean existed = CollectionMixin.find(thisClazz.getDeclaredMethodNodes(), m -> MethodUtil.getDeclarationKey(m).equals(mStr)) != null;
         if (existed) {
-            //TODO should remove the duplicated method
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"declare method duplicately:"+mStr, ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"declare method is duplicated:"+mStr, ctx);
             return null;
         }
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();

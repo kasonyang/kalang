@@ -15,6 +15,7 @@ import java.util.Random;
  *
  * @author Kason Yang
  */
+@Deprecated
 public abstract class ShellScript extends Script {
 
     public final static String DEFAULT_ENCODING = "utf8";
