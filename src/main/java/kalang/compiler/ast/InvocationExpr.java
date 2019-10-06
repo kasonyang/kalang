@@ -10,7 +10,6 @@ import kalang.compiler.util.AstUtil;
 import kalang.mixin.CollectionMixin;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;

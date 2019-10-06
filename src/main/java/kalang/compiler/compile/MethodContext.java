@@ -159,8 +159,7 @@ public class MethodContext {
         if(assignedTable.length<2){
             throw Exceptions.illegalArgument(assignedTable);
         }
-        HashMap<VarObject,Integer> ret = new HashMap();
-        ret.putAll(assignedTable[0]);
+        HashMap<VarObject, Integer> ret = new HashMap(assignedTable[0]);
         for(int i=1;i<assignedTable.length;i++){
             Map<VarObject,Integer> current = new HashMap(ret);
             Map<VarObject,Integer> other = assignedTable[i];

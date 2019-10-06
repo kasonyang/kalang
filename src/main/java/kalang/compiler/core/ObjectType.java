@@ -124,7 +124,7 @@ public abstract class ObjectType extends Type{
             );
             descs.put(md.getDeclarationKey(), md);
         }
-        return descs.values().toArray(new MethodDescriptor[descs.size()]);
+        return descs.values().toArray(new MethodDescriptor[0]);
     }
     
     public MethodDescriptor[] getConstructorDescriptors(@Nullable ClassNode caller){
@@ -143,10 +143,9 @@ public abstract class ObjectType extends Type{
     public FieldDescriptor[] getFieldDescriptors(ClassNode caller){
         FieldNode[] fields = clazz.getFields();
         List<FieldDescriptor> ret = new LinkedList();
-        for(int i=0;i<fields.length;i++){
-            FieldNode f = fields[i];
-            if(AccessUtil.isAccessible(f.modifier, clazz, caller)){
-              ret.add(new StandardFieldDescriptor(f,parseType(f.getType())));
+        for (FieldNode f : fields) {
+            if (AccessUtil.isAccessible(f.modifier, clazz, caller)) {
+                ret.add(new StandardFieldDescriptor(f, parseType(f.getType())));
             }
         }
         ObjectType superType = clazz.getSuperType();
@@ -154,7 +153,7 @@ public abstract class ObjectType extends Type{
             FieldDescriptor[] superFields = superType.getFieldDescriptors(caller);
             ret.addAll(Arrays.asList(superFields));
         }
-        return ret.toArray(new FieldDescriptor[ret.size()]);
+        return ret.toArray(new FieldDescriptor[0]);
     }
 
     @Nullable

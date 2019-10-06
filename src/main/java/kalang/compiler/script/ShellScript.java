@@ -221,9 +221,9 @@ public abstract class ShellScript extends Script {
     
     private ProcessBuilder.Redirect getFileRedirectForOutput(String redirectFile){
         if (redirectFile.startsWith(">>")){
-            return ProcessBuilder.Redirect.appendTo(new File(redirectFile.substring(2, redirectFile.length())));
+            return ProcessBuilder.Redirect.appendTo(new File(redirectFile.substring(2)));
         } else if (redirectFile.startsWith(">")){
-            return ProcessBuilder.Redirect.to(new File(redirectFile.substring(1,redirectFile.length())));
+            return ProcessBuilder.Redirect.to(new File(redirectFile.substring(1)));
         } else {
             return ProcessBuilder.Redirect.appendTo(new File(redirectFile));
         }

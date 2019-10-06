@@ -14,8 +14,7 @@ public class TokenStreamFactory {
     }
     
     public static CommonTokenStream createTokenStream(TokenSource lexer) {
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        return tokens;
+        return new CommonTokenStream(lexer);
     }
     
 }

@@ -15,7 +15,7 @@ public class Proc {
 
     private final Process process;
 
-    public Proc(Process process) throws IOException {
+    public Proc(Process process) {
       this.process = process;
     }
 

@@ -63,7 +63,7 @@ public class IOMixin {
     @MixinMethod
     public static void readTo(InputStream is, OutputStream os) throws IOException {
         byte[] bs = new byte[4096];
-        int len = 0;
+        int len;
         while ((len = is.read(bs)) > 0) {
             os.write(bs, 0, len);
         }

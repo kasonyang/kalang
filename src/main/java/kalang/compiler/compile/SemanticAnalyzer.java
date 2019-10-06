@@ -2,7 +2,6 @@ package kalang.compiler.compile;
 
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
-import kalang.compiler.exception.Exceptions;
 import kalang.compiler.util.AstUtil;
 import kalang.compiler.util.BoxUtil;
 

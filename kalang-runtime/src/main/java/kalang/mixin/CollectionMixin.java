@@ -102,9 +102,7 @@ public class CollectionMixin {
     @MixinMethod
     public static <K, E, M extends Map<K,E[]>> M group(E[] array, M map, Function1<K,E> keyGenerator) {
         Class<?> eleType = array.getClass().getComponentType();
-        group(Arrays.asList(array), keyGenerator).forEach((k,e) -> {
-            map.put(k, e.toArray((E[])Array.newInstance(eleType, e.size())));
-        });
+        group(Arrays.asList(array), keyGenerator).forEach((k,e) -> map.put(k, e.toArray((E[])Array.newInstance(eleType, e.size()))));
         return map;
     }
 

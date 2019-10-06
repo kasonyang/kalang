@@ -78,7 +78,7 @@ public class BoxUtil {
             case CAST_NOTHING:
                 return expr;
             case CAST_OBJECT_TO_PRIMITIVE:
-                return castObject2Primitive(expr, fromType, toType);
+                return castObject2Primitive(expr, toType);
             case CAST_PRIMITIVE:
                 return castPrimitive(expr,(PrimitiveType) fromType, (PrimitiveType)toType);
             case CAST_PRIMITIVE_TO_OBJECT:
@@ -217,7 +217,7 @@ public class BoxUtil {
         return inv;
     }
 
-    private static ExprNode castObject2Primitive(ExprNode expr, Type fromType, Type toType) {
+    private static ExprNode castObject2Primitive(ExprNode expr, Type toType) {
         InvocationExpr inv;
         try {
             inv = ObjectInvokeExpr.create(expr,toType + "Value",null);
@@ -239,17 +239,6 @@ public class BoxUtil {
             throw new RuntimeException(ex);
         }
         return inv;
-    }
-    
-    public static ExprNode castToString(ExprNode expr){
-        Type fromType = expr.getType();
-        if(fromType instanceof PrimitiveType){
-            return castPrimitive2String(expr, (PrimitiveType) fromType);
-        }else if(fromType instanceof ObjectType){
-            return castObject2String(expr);
-        }else{
-            return null;
-        }
     }
 
 }

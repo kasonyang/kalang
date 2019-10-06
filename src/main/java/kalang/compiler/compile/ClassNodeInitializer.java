@@ -73,11 +73,9 @@ public class ClassNodeInitializer extends AstBuilderBase {
             modifier |= Modifier.STATIC;
         }
         Token classKind = ctx.classKind;
-        boolean isInterface = false;
         if (classKind != null) {
             if (classKind.getText().equals("interface")) {
                 modifier |= Modifier.ABSTRACT | Modifier.INTERFACE;
-                isInterface = true;
             }
         }
         String classDefName;

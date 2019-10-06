@@ -23,9 +23,9 @@ public interface CompileContext {
     
     AstLoader getAstLoader();
 
-    public SourceLoader getSourceLoader();
+    SourceLoader getSourceLoader();
     
-    public DiagnosisHandler getDiagnosisHandler();
+    DiagnosisHandler getDiagnosisHandler();
     
     void stopCompile(int stopPhase);
     

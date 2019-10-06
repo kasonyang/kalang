@@ -69,7 +69,7 @@ public class MethodNode extends AstNode implements Annotationable{
 
     @Override
     public AnnotationNode[] getAnnotations() {
-        return annotations.toArray(new AnnotationNode[annotations.size()]);
+        return annotations.toArray(new AnnotationNode[0]);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class MethodNode extends AstNode implements Annotationable{
     }
     
     public ParameterNode[] getParameters(){
-        return parameters.toArray(new ParameterNode[parameters.size()]);
+        return parameters.toArray(new ParameterNode[0]);
     }
 
     public String getName() {

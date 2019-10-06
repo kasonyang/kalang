@@ -107,7 +107,7 @@ public class ClassType extends ObjectType {
     
     private static Type parseGenericType(Type type,Map<GenericType,Type> genericTypes){
         if(type instanceof GenericType){
-            Type actualType = genericTypes.get((GenericType)type);
+            Type actualType = genericTypes.get(type);
             return actualType == null ? type : actualType;
         }else if(type instanceof ClassType){
             ClassType pt = (ClassType) type;

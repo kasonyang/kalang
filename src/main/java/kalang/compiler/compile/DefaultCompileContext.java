@@ -49,12 +49,7 @@ public class DefaultCompileContext implements CompileContext{
 
     @Override
     public SourceLoader getSourceLoader() {
-        return new SourceLoader() {
-            @Override
-            public KalangSource loadSource(String className) {
-                return null;
-            }
-        };
+        return className -> null;
     }
 
     @Override

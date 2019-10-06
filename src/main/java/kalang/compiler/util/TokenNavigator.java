@@ -87,7 +87,7 @@ public class TokenNavigator {
     }
     
     private int getTokenIndexByCaretOffset(int caretOffset){        
-        int idx = Arrays.<Token>binarySearch(startOffset,caretOffset);
+        int idx = Arrays.binarySearch(startOffset,caretOffset);
         if(idx<0){
             idx = -idx - 2;
             if(caretOffset>tokens[idx].getStopIndex()){

@@ -34,10 +34,10 @@ public class UnaryExpr extends ExprNode{
 
     @Override
     public Type getType() {
-        switch(getOperation()){
-            case "!":return Types.BOOLEAN_TYPE;
-            default:return getType(getExpr());
+        if ("!".equals(getOperation())) {
+            return Types.BOOLEAN_TYPE;
         }
+        return getType(getExpr());
     }
 
     /**

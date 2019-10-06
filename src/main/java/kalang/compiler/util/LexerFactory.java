@@ -14,8 +14,7 @@ public class LexerFactory {
     }
     
     public static KalangLexer createLexer(String source){
-        KalangLexer lexer = createLexer(new ANTLRInputStream(source));
-        return lexer;
+        return createLexer(new ANTLRInputStream(source));
     }
 
 }

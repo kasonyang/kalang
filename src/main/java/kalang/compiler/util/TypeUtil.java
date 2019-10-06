@@ -21,7 +21,7 @@ public class TypeUtil {
             Type dt = declaredTypes[i];
             if(dt instanceof GenericType){
                 if(genericTypes!=null){
-                    dt = genericTypes.get((GenericType)dt);
+                    dt = genericTypes.get(dt);
                     Objects.requireNonNull(dt);
                 }
             }
@@ -33,7 +33,7 @@ public class TypeUtil {
     public static  boolean equalType(Type declaredType, Type argType,@Nullable Map<GenericType,Type> genericTypes) {
         if(declaredType instanceof GenericType){
             if(genericTypes!=null){
-                declaredType = genericTypes.get((GenericType)declaredType);
+                declaredType = genericTypes.get(declaredType);
                 Objects.requireNonNull(declaredType);
             }
         }
@@ -56,20 +56,19 @@ public class TypeUtil {
             return Types.NULL_TYPE;
         }
         boolean requireNullable = isNullable(ret);
-        for(int i=0;i<types.length;i++){
-            Type t = types[i];
+        for (Type t : types) {
             requireNullable = requireNullable || isNullable(ret);
-            if(!t.equals(ret)){
+            if (!t.equals(ret)) {
                 if (Types.NULL_TYPE.equals(t)) {
                     requireNullable = true;
                     continue;
                 }
-                if((Types.isPrimitiveDataType(ret)) && (Types.isPrimitiveDataType(t))){
+                if ((Types.isPrimitiveDataType(ret)) && (Types.isPrimitiveDataType(t))) {
                     ret = Types.getHigherType(ret, t);
-                }else{
-                    if(t.isAssignableFrom(ret)){
+                } else {
+                    if (t.isAssignableFrom(ret)) {
                         ret = t;
-                    }else if(!ret.isAssignableFrom(t)){
+                    } else if (!ret.isAssignableFrom(t)) {
                         ret = Types.getRootType();
                     }
                 }

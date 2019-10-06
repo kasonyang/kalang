@@ -1,7 +1,6 @@
 package kalang.compiler.java;
 
 import javax.tools.JavaFileObject;
-import java.io.IOException;
 import java.net.URI;
 
 /**
@@ -15,7 +14,7 @@ public abstract class StringJavaSourceBase extends MemoryJavaSource{
     }
 
     @Override
-    public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+    public CharSequence getCharContent(boolean ignoreEncodingErrors) {
         return getContent();
     }
 

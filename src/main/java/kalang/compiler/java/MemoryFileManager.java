@@ -63,10 +63,10 @@ public class MemoryFileManager implements JavaFileManager{
     }
 
     @Override
-    public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
+    public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling) {
         return new SimpleJavaFileObject(URI.create(location.getName()),JavaFileObject.Kind.CLASS){
             @Override
-            public OutputStream openOutputStream() throws IOException {
+            public OutputStream openOutputStream() {
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 opss.put(className, os);
                 return os;

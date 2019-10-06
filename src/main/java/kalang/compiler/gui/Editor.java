@@ -143,11 +143,7 @@ public class Editor extends javax.swing.JFrame {
         menuTopFile.setText("File");
 
         menuExit.setText("Exit");
-        menuExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuExitActionPerformed(evt);
-            }
-        });
+        menuExit.addActionListener(evt -> menuExitActionPerformed(evt));
         menuTopFile.add(menuExit);
 
         jMenuBar1.add(menuTopFile);
@@ -329,23 +325,13 @@ public class Editor extends javax.swing.JFrame {
 //                    break;
 //                }
 //            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Editor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Editor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Editor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | UnsupportedLookAndFeelException | IllegalAccessException | InstantiationException ex) {
             java.util.logging.Logger.getLogger(Editor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Editor(controller).setVisible(true);
-            }
-        });
+        java.awt.EventQueue.invokeLater(() -> new Editor(controller).setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

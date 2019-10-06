@@ -95,7 +95,7 @@ public class AstUtil {
                 methods.add(m);
             }
         }
-        return methods.toArray(new MethodDescriptor[methods.size()]);
+        return methods.toArray(new MethodDescriptor[0]);
     }
 
     public static ExprNode matchType(Type from, Type target, ExprNode expr) {
@@ -272,7 +272,7 @@ public class AstUtil {
                 classes.addAll(Arrays.asList(listInnerClasses(ic,true)));
             }
         }
-        return classes.toArray(new ClassNode[classes.size()]);
+        return classes.toArray(new ClassNode[0]);
     }
     
     public static String[] listInnerClassesNames(ClassNode clazz,boolean recursive){

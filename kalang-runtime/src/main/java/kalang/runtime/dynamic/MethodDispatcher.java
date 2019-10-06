@@ -16,7 +16,7 @@ public class MethodDispatcher {
     private final static JavaMethodSelector methodSelector = new JavaMethodSelector();
     
     public static Object invokeMethodExactly(Object obj,String method,Object[] args,String[] types) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
-        Class<? extends Object> clazz = obj.getClass();
+        Class<?> clazz = obj.getClass();
         Class[] typeClasses = new Class[types.length];
         for(int i=0;i<types.length;i++){
             typeClasses[i] = Class.forName(types[i]);
@@ -32,7 +32,7 @@ public class MethodDispatcher {
         }else if(mds.size()==1){
             return mds.get(0).invoke(object, args);
         }else{
-            throw new MethodAmbiguousException(mds.toArray(new Method[mds.size()]));
+            throw new MethodAmbiguousException(mds.toArray(new Method[0]));
         }
     }
    
@@ -71,7 +71,7 @@ class JavaMethodSelector extends MethodSelector<Method,Class<?>,Object>{
     @Override
     protected int getMatchScore(Object arg, Class<?> type) {
         //TODO handle sugar
-        Class<? extends Object> argClass = arg.getClass();
+        Class<?> argClass = arg.getClass();
         if (argClass.equals(type)) {
             return 0;
         } else if (type.isAssignableFrom(argClass)) {

@@ -8,12 +8,12 @@ import kalang.compiler.ast.FieldNode;
  */
 public interface FieldDescriptor {
 
-    public String getName();
+    String getName();
 
-    public Type getType();
+    Type getType();
 
-    public int getModifier() ;
+    int getModifier() ;
 
-    public FieldNode getFieldNode() ;
+    FieldNode getFieldNode() ;
 
 }

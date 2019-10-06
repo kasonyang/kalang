@@ -11,7 +11,6 @@ import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 import kalang.compiler.util.*;
 import kalang.mixin.CollectionMixin;
-import kalang.type.Function1;
 import kalang.type.FunctionClasses;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -300,8 +299,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         } catch (MethodNotFoundException | AmbiguousMethodException ex) {
             throw Exceptions.unexpectedException(ex);
         }
-        for(int i=0;i<expr.length;i++){
-            ret = ObjectInvokeExpr.create(ret, "append",new ExprNode[]{expr[i]});
+        for (ExprNode exprNode : expr) {
+            ret = ObjectInvokeExpr.create(ret, "append", new ExprNode[]{exprNode});
         }
         return ObjectInvokeExpr.create(ret,"toString",new ExprNode[0]);
     }
@@ -369,15 +368,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     //TODO add stop token
     protected void handleSyntaxError(String msg, Token token) {
         //TODO what does EMPTY means?
-        handleSyntaxError(msg, (ParserRuleContext.EMPTY), token, token);
+        handleSyntaxError(msg, token, token);
     }
 
     protected void handleSyntaxError(String msg, ParserRuleContext tree) {
-        handleSyntaxError(msg, tree, tree.start, tree.stop);
+        handleSyntaxError(msg, tree.start, tree.stop);
     }
 
     //TODO remove rule
-    protected void handleSyntaxError(String desc, ParserRuleContext rule, Token start, Token stop) {
+    protected void handleSyntaxError(String desc, Token start, Token stop) {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, desc, start, stop);
     }
 
@@ -410,8 +409,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     protected ClassNode resolveNamedClass(String id,ClassNode topClass,ClassNode currentClass){
         TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
         String resolvedName = typeNameResolver.resolve(id, topClass, currentClass);
-        ClassNode ast = resolvedName==null ? null : getAst(resolvedName);
-        return ast;
+        return resolvedName==null ? null : getAst(resolvedName);
     }
 
     protected ClassType parseLambdaType(KalangParser.LambdaTypeContext ctx) {

@@ -28,10 +28,9 @@ public class ObjectInvokeExpr extends InvocationExpr{
         ClassNode clazz = targetType.getClassNode();
         boolean recursive = ! "<init>".equals(methodName);
         //MethodNode[] candidates = AstUtil.listAccessibleMethods(clazz, caller , recursive);
-        List<MethodDescriptor> candidates = new LinkedList();
-        candidates.addAll(Arrays.asList(targetType.getMethodDescriptors(caller,recursive,true)));
+        List<MethodDescriptor> candidates = new LinkedList(Arrays.asList(targetType.getMethodDescriptors(caller, recursive, true)));
         //candidates.addAll(Arrays.asList(targetType.getConstructorDescriptors(caller)));
-        MethodSelection ms = applyMethod(targetType, methodName, args,candidates.toArray(new MethodDescriptor[candidates.size()]));
+        MethodSelection ms = applyMethod(targetType, methodName, args,candidates.toArray(new MethodDescriptor[0]));
         MethodDescriptor md = ms.selectedMethod;
         if(AstUtil.isStatic(md.getModifier())){
             throw new MethodNotFoundException(methodName + " is static");

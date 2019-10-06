@@ -13,7 +13,6 @@ import java.io.IOException;
 public class KalangSourceUtil {
     public static KalangSource create(File dir,File sourceFile, String encoding) throws IOException{
         String clsName = ClassNameUtil.getClassName(dir, sourceFile);
-        KalangSource ks = new KalangSource(clsName,FileUtils.readFileToString(sourceFile, encoding),sourceFile.getName());
-        return ks;        
+        return new KalangSource(clsName,FileUtils.readFileToString(sourceFile, encoding),sourceFile.getName());
     }
 }
