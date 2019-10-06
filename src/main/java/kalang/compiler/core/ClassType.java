@@ -91,12 +91,13 @@ public class ClassType extends ObjectType {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + Arrays.deepHashCode(this.typeArguments);
-        return hash;
+        int hashCode = Objects.hashCode(clazz);
+        hashCode = 31 * hashCode + Arrays.hashCode(typeArguments);
+        hashCode = 31 * hashCode + Objects.hash(nullable);
+        return hashCode;
     }
-    
-    private static Type[] parseGenericType(Type[] types,Map<GenericType,Type> genericTypes){
+
+    private static Type[] parseGenericType(Type[] types, Map<GenericType,Type> genericTypes){
         Type[] actTypes = new Type[types.length];
         for(int i=0;i<actTypes.length;i++){
             actTypes[i] = parseGenericType(types[i],genericTypes);

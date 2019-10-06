@@ -7,6 +7,7 @@ import kalang.compiler.util.TypeUtil;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  *
@@ -108,6 +109,14 @@ public class WildcardType extends ObjectType {
         }
         WildcardType other = (WildcardType) obj;
         return nullable.equals(other.getNullable()) && equalsIgnoreNullable(other);
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode = Arrays.hashCode(lowerBounds);
+        hashCode = hashCode * 31 + Arrays.hashCode(upperBounds);
+        hashCode = hashCode * 31 + Objects.hashCode(nullable);
+        return hashCode;
     }
 
     @Override
