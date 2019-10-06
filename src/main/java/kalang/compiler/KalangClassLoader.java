@@ -110,10 +110,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
         if(diagnosis.getKind().isError()){
             KalangSource source = diagnosis.getSource();
             OffsetRange offset = diagnosis.getOffset();
-            throw new CompileException(String.format("%s @%s:%s"
-                    , diagnosis.getDescription()
-                    , source.getFileName(),offset.startLine)
-            );
+            throw new CompileException(diagnosis.getDescription(), source.getFileName(),offset.startLine);
         }
     }
 
