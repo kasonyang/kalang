@@ -49,13 +49,13 @@ public class SnippetsTest {
         if(!checkReturnValue) {
             return;
         }
-        Object inst = hwCls.newInstance();
         Method[] mds = hwCls.getDeclaredMethods();
         for (int i = 0; i < mds.length; i++) {
             Method m = mds[i];
             if (!Modifier.isPublic(m.getModifiers())) {
                 continue;
             }
+            Object inst = hwCls.newInstance();
             String methodName = m.getName();
             if ((inst instanceof Script) && "execute".equals(methodName)) {
                 continue;

@@ -2178,6 +2178,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             return null;
         }
         List<Statement> stats = new LinkedList<>();
+        targetExpr = createSafeAccessibleExpr(targetExpr, stats);
         LocalVarNode varArrLen = this.declareTempLocalVar(Types.INT_TYPE);
         LocalVarNode varCounter = this.declareTempLocalVar(Types.INT_TYPE);
         stats.add(new VarDeclStmt(Arrays.asList(varArrLen, varCounter)));

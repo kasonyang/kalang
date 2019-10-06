@@ -862,7 +862,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
-    private VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
+    protected VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
         LocalVarNode tmpTarget = declareTempLocalVar(target.getType());
         initStmtsHolder.add(new VarDeclStmt(tmpTarget));
         initStmtsHolder.add(new ExprStmt(new AssignExpr(new VarExpr(tmpTarget),target)));
