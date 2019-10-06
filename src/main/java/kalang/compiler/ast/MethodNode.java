@@ -38,15 +38,19 @@ public class MethodNode extends AstNode implements Annotationable{
     }
     
     public ParameterNode createParameter(Type type,String name){
-        return _createParameter(null, type, name);
+        return _createParameter(null, type, name, 0);
+    }
+
+    public ParameterNode createParameter(Type type, String name, int modifier) {
+        return _createParameter(null, type, name, modifier);
     }
     
     public ParameterNode createParameter(int index,Type type,String name){
-        return _createParameter(index, type, name);
+        return _createParameter(index, type, name, 0);
     }
     
-    private ParameterNode _createParameter(Integer index,Type type,String name){
-        ParameterNode param = new ParameterNode(this, type, name);
+    private ParameterNode _createParameter(Integer index,Type type,String name, int modifier){
+        ParameterNode param = new ParameterNode(this, modifier, type, name);
         if(index==null){
             parameters.add(param);
         }else{

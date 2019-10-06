@@ -58,9 +58,7 @@ public class AstUtil {
             for (Type e : m.getExceptionTypes()) mm.addExceptionType(e);
             ParameterDescriptor[] pds = m.getParameterDescriptors();
             for (ParameterDescriptor pd : pds) {
-                ParameterNode p = mm.createParameter(pd.getType(), pd.getName());
-                //TODO update mm.createParameter
-                p.modifier = pd.getModifier();
+                mm.createParameter(pd.getType(), pd.getName(), pd.getModifier());
             }
             BlockStmt body = mm.getBody();
             ParameterNode[] parameters = mm.getParameters();
