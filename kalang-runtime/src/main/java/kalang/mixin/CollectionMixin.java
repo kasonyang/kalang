@@ -61,8 +61,8 @@ public class CollectionMixin {
 
     @Nonnull
     @MixinMethod
-    public static <T> List<T> findAll(T[] list, Function1<Boolean, T> handler) {
-        return findAll(Arrays.asList(list), handler);
+    public static <T> T[] findAll(T[] list, Function1<Boolean, T> handler) {
+        return findAll(Arrays.asList(list), handler).toArray((T[])Array.newInstance(list.getClass().getComponentType(),0));
     }
 
     @Nonnull

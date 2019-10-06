@@ -4,7 +4,7 @@ class{
     
     class InnerClass{
         public String getName(){
-            return "";//TODO fix field reference
+            return name;
         }
     }
     
