@@ -1,5 +1,7 @@
 package kalang.compiler.ast;
 
+import kalang.mixin.CollectionMixin;
+
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,5 +24,10 @@ public class VarDeclStmt extends Statement{
         ls.addAll(vars);
         return ls;
     }
-    
+
+    @Override
+    public String toString() {
+        List<String> vs = CollectionMixin.map(vars, (v) -> v.getType() + " " + v.getName());
+        return String.join(",", vs);
+    }
 }

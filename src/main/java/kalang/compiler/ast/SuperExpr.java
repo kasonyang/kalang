@@ -26,4 +26,8 @@ public class SuperExpr extends ExprNode{
         return classNode;
     }
 
+    @Override
+    public String toString() {
+        return "super";
+    }
 }

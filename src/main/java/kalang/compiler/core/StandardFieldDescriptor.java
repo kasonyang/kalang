@@ -41,4 +41,8 @@ public class StandardFieldDescriptor implements FieldDescriptor{
         return field;
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

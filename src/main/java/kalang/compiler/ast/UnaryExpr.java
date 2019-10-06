@@ -69,5 +69,9 @@ public class UnaryExpr extends ExprNode{
         Objects.requireNonNull(operation);
         this.operation = operation;
     }
-    
+
+    @Override
+    public String toString() {
+        return operation + expr;
+    }
 }

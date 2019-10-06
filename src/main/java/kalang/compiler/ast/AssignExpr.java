@@ -65,5 +65,9 @@ public class AssignExpr extends ExprNode{
         Objects.requireNonNull(from);
         this.from = from;
     }
-    
+
+    @Override
+    public String toString() {
+        return to + "=" + from;
+    }
 }

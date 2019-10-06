@@ -19,5 +19,9 @@ public class ThisExpr extends ExprNode{
     public Type getType() {
         return classType;
     }
-    
+
+    @Override
+    public String toString() {
+        return "this";
+    }
 }

@@ -16,4 +16,8 @@ public class ThrowStmt extends Statement{
         return ls;
     }
 
+    @Override
+    public String toString() {
+        return "throw " + expr;
+    }
 }

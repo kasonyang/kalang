@@ -43,4 +43,8 @@ public class CastExpr extends ExprNode{
         return expr;
     }
 
+    @Override
+    public String toString() {
+        return "(" + toType + ")" + expr;
+    }
 }

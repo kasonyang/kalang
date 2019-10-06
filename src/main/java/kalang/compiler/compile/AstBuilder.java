@@ -17,6 +17,7 @@ import kalang.compiler.util.*;
 import kalang.mixin.CollectionMixin;
 import kalang.runtime.dynamic.FieldVisitor;
 import kalang.runtime.dynamic.MethodDispatcher;
+import kalang.type.Function0;
 import kalang.type.Function1;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -688,7 +689,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return ie;
     }
 
-    protected ExprNode createFieldExpr(GetFieldExprContext to, @Nullable ExpressionContext fromCtx, OffsetRange offsetRange) {
+    protected ExprNode createFieldExpr(GetFieldExprContext to, @Nullable Function0<ExprNode> fromExprCb, OffsetRange offsetRange) {
         //TODO support iterating syntax
         OffsetRange toOffset = offset(to);
         String refKey = to.refKey.getText();
@@ -697,12 +698,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         AssignableExpr toExpr;
         AstNode expr = (AstNode) visit(exp);
         if (expr == null) return null;
-        Function1<ExprNode, ExprNode> createField = (target) -> requireObjectFieldLikeExpr(target, fname, offset(to));
+        Function1<ExprNode, ExprNode> createField = (target) -> requireObjectFieldLikeExpr(target, fname, offset(to) ,fromExprCb == null ? null : fromExprCb.call());
         Function1<ExprNode, ExprNode> createDynamicField = (target) -> {
             ExprNode[] params;
             String methodName;
             ClassReference fieldVisitorClsRef = new ClassReference(Types.requireClassType(FieldVisitor.class.getName(), NullableKind.NONNULL).getClassNode());
-            if (fromCtx == null) {
+            if (fromExprCb == null) {
                 params = new ExprNode[2];
                 params[0] = target;
                 params[1] = new ConstExpr(fname);
@@ -711,37 +712,28 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 params = new ExprNode[3];
                 params[0] = target;
                 params[1] = new ConstExpr(fname);
-                params[2] = visitExpression(fromCtx);
+                params[2] = fromExprCb.call();
                 if (params[2] == null) {
                     return null;
                 }
                 methodName = "set";
             }
-            return getStaticInvokeExpr(fieldVisitorClsRef, methodName, params, offset(to));
+            return getStaticInvokeExpr(fieldVisitorClsRef, methodName, params, toOffset);
         };
         if (refKey.equals(".")) {
-            ExprNode fieldExpr;
             if (expr instanceof ExprNode) {
-                fieldExpr = createField.call((ExprNode) expr);
+                return createField.call((ExprNode) expr);
             } else if (expr instanceof ClassReference) {
-                fieldExpr = getStaticFieldExpr((ClassReference) expr, fname, offset(to));
+                AssignableExpr sfe = getStaticFieldExpr((ClassReference) expr, fname, toOffset);
+                if (sfe == null) {
+                    return null;
+                }
+                if (fromExprCb != null) {
+                    return mapAst(new AssignExpr(sfe, fromExprCb.call()), offsetRange);
+                }
+                return sfe;
             } else {
                 throw new UnknownError("unknown node:" + expr);
-            }
-            if (fromCtx == null) { // get field
-                return fieldExpr;
-            } else { // set field
-                if (fieldExpr instanceof AssignableExpr) {
-                    toExpr = (AssignableExpr) fieldExpr;
-                } else {
-                    AstBuilder.this.handleSyntaxError("unsupported", to);
-                    return null;
-                }
-                ExprNode fromExpr = visitExpression(fromCtx);
-                if (!this.semanticAnalyzer.validateAssign(toExpr, fromExpr, offsetRange, isInConstructor())) {
-                    return null;
-                }
-                return new AssignExpr(toExpr, fromExpr);
             }
         } else if (refKey.equals("->")) {
             if (!(expr instanceof ExprNode)) {
@@ -768,45 +760,73 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         String assignOp = ctx.getChild(1).getText();
         ExpressionContext toCtx = ctx.expression(0);
         ExpressionContext fromCtx = ctx.expression(1);
-        List<Statement> initStmts = new LinkedList<>();
-        ExprNode toExpr;
-        if (toCtx instanceof GetFieldExprContext) {
-            //TODO check readonly
-            if ("=".equals(assignOp)) {
-                return createFieldExpr((GetFieldExprContext) toCtx, fromCtx, offset(ctx));
+        if ("=".equals(assignOp)) {
+            if (toCtx instanceof GetFieldExprContext) {
+                return createFieldExpr((GetFieldExprContext) toCtx, ()-> visitExpression(fromCtx), offset(ctx));
+            } else if (toCtx instanceof IdentifierExprContext) {
+                IdentifierExprContext toIdCtx = (IdentifierExprContext) toCtx;
+                AstNode nodeExpr = accessNamedNode(toIdCtx.getText(), offset(toIdCtx), visitExpression(fromCtx), offset(ctx));
+                if (!(nodeExpr instanceof  ExprNode)) {
+                    handleSyntaxError("expression expected", offset(ctx));
+                    return null;
+                }
+                return (ExprNode) nodeExpr;
+            } else {
+                ExprNode toExpr = visitExpression(toCtx);
+                if (!(toExpr instanceof AssignableExpr)) {
+                    handleSyntaxError("expression is not assignable", offset(toCtx));
+                    return null;
+                }
+                AssignableExpr to = (AssignableExpr) toExpr;
+                ExprNode from = visitExpression(fromCtx);
+                if (from == null) {
+                    return null;
+                }
+                from = requireImplicitCast(to.getType(), from, offset(ctx));
+                if (from == null) {
+                    return null;
+                }
+                if (!this.semanticAnalyzer.validateAssign(to, from, offset(ctx), isInConstructor())) {
+                    return null;
+                }
+                AssignExpr assignExpr = new AssignExpr(to, from);
+                mapAst(assignExpr, ctx);
+                //TODO remove override information before assign
+                methodCtx.onAssign(toExpr, from);
+                return assignExpr;
             }
-            toExpr = createFieldExpr((GetFieldExprContext)toCtx, null, offset(ctx));
         } else {
-            toExpr = visitExpression(toCtx);
-        }
-        if (!(toExpr instanceof AssignableExpr)) {
-            handleSyntaxError("expression is not assignable", offset(toCtx));
-            return null;
-        }
-        AssignableExpr to = (AssignableExpr) toExpr;
-        ExprNode from;
-        if (assignOp.length() > 1) {
+            ExprNode toValue = visitExpression(toCtx);
             String op = assignOp.substring(0, assignOp.length() - 1);
-            to = getSafeAccessibleAssignableExpr(to, initStmts);
-            from = createBinaryExpr(op, to, () -> visitExpression(fromCtx), offset(ctx));
-        } else {
-            from = visitExpression(fromCtx);
+            List<Statement> initStmts = new LinkedList<>();
+            if (toValue instanceof AssignableExpr) {
+                AssignableExpr to = (AssignableExpr) toValue;
+                to = getSafeAccessibleAssignableExpr(to, initStmts);
+                ExprNode from = createBinaryExpr(op, to, () -> visitExpression(fromCtx), offset(ctx));
+                if (from == null) {
+                    return null;
+                }
+                AssignExpr assignExpr = new AssignExpr(to, from);
+                mapAst(assignExpr, offset(ctx));
+                return initStmts.isEmpty() ? assignExpr : mapAst(new MultiStmtExpr(initStmts, assignExpr), offset(ctx));
+            }
+            if (toCtx instanceof GetFieldExprContext) {
+                ExprNode from = createBinaryExpr(op, toValue, () -> visitExpression(fromCtx), offset(ctx));
+                return createFieldExpr((GetFieldExprContext)toCtx, () -> from  , offset(ctx));
+            } else if (toCtx instanceof IdentifierExprContext) {
+                IdentifierExprContext toIdCtx = (IdentifierExprContext) toCtx;
+                ExprNode from = createBinaryExpr(op, toValue, () -> visitExpression(fromCtx), offset(ctx));
+                AstNode nodeExpr = accessNamedNode(toIdCtx.getText(), offset(toIdCtx), from, offset(ctx));
+                if (!(nodeExpr instanceof  ExprNode)) {
+                    handleSyntaxError("expression expected", offset(ctx));
+                    return null;
+                }
+                return (ExprNode) nodeExpr;
+            } else {
+                handleSyntaxError("expression is not assignable", offset(toCtx));
+                return null;
+            }
         }
-        if (from == null) {
-            return null;
-        }
-        from = requireImplicitCast(to.getType(), from, offset(ctx));
-        if (from == null) {
-            return null;
-        }
-        if (!this.semanticAnalyzer.validateAssign(to, from, offset(ctx), isInConstructor())) {
-            return null;
-        }
-        AssignExpr assignExpr = new AssignExpr(to, from);
-        mapAst(assignExpr, ctx);
-        //TODO remove override information before assign
-        methodCtx.onAssign(toExpr, from);
-        return initStmts.isEmpty() ? assignExpr : new MultiStmtExpr(initStmts, assignExpr);
     }
     
     private ExprNode createBinaryExpr(String op, ExprNode expr1, ExprCreator expr2Creator, OffsetRange offset){
@@ -903,7 +923,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     
     @Nullable
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
-        AstNode namedNode = this.getNodeById(methodName, offset(ctx.start));
+        AstNode namedNode = this.accessNamedNode(methodName, offset(ctx.start), null, null);
         if (namedNode instanceof ParameterExpr || namedNode instanceof VarExpr) {
             return this.getLambdaCall(methodName,(ExprNode) namedNode,args,ctx);
         }
@@ -1154,8 +1174,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return ee;
     }
 
-    private AstNode getNodeById(@Nonnull String name, OffsetRange offset) {
-        AstNode node = getOriginalNodeById(name, offset);
+    private AstNode accessNamedNode(@Nonnull String name, OffsetRange offset, @Nullable ExprNode assignValue, OffsetRange exprOffset) {
+        AstNode node = accessOriginalNamedNode(name, offset,assignValue, exprOffset);
         if (node instanceof ExprNode) {
             ExprNode en = (ExprNode) node;
             Type overrideType = methodCtx.getOverrideType(en);
@@ -1167,33 +1187,60 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Nullable
-    private AstNode getOriginalNodeById(@Nonnull String name, OffsetRange offset) {
+    private AstNode accessOriginalNamedNode(@Nonnull String name, OffsetRange offset, @Nullable ExprNode assignValue, @Nullable OffsetRange exprOffset) {
         //find local var
         LocalVarNode var = methodCtx!=null ? methodCtx.getNamedLocalVar(name) : null;
         if(var!=null){
+            ExprNode result;
             VarExpr ve = new VarExpr(var);
             mapAst(ve, offset);
-            return ve;
+            if (assignValue != null) {
+                result = new AssignExpr(ve, assignValue);
+                mapAst(result, exprOffset);
+            } else {
+                result = ve;
+            }
+            return result;
         }
         //find parameters
         ParameterNode paramNode = methodCtx==null ? null : methodCtx.getNamedParameter(name);
         if(paramNode!=null){
+            ExprNode result;
             ParameterExpr ve = new ParameterExpr(paramNode,methodCtx.getVarObjectType(paramNode));
             mapAst(ve, offset);
-            return ve;
+            if (assignValue != null) {
+                result = new AssignExpr(ve, assignValue);
+                mapAst(result, exprOffset);
+            } else {
+                result = ve;
+            }
+            return result;
         }
         //find field
         ExprNode outerClassInstanceExpr = createThisExpr(offset);
         while(outerClassInstanceExpr != null){
-            ExprNode fe = this.getObjectFieldLikeExpr(outerClassInstanceExpr, name, offset);
+            ExprNode fe = this.getObjectFieldLikeExpr(outerClassInstanceExpr, name, offset, assignValue);
             if (fe == null && outerClassInstanceExpr instanceof ThisExpr) {
                 ClassType outerClassType = (ClassType) outerClassInstanceExpr.getType();
-                fe = this.getStaticFieldExpr(new ClassReference(outerClassType.getClassNode()), name, offset);
+                AssignableExpr staticExpr = this.getStaticFieldExpr(new ClassReference(outerClassType.getClassNode()), name, offset);
+                if (staticExpr != null && assignValue != null) {
+                    ExprNode result = new AssignExpr(staticExpr, assignValue);
+                    mapAst(result, exprOffset);
+                    return result;
+                }
+                fe = staticExpr;
             }
             if (fe == null){
-                fe = this.getObjectFieldExpr(outerClassInstanceExpr, "this$0$" + name, offset);
+                FieldExpr fieldExpr = this.getObjectFieldExpr(outerClassInstanceExpr, "this$0$" + name, offset);
+                if (fieldExpr != null && assignValue != null) {
+                    ExprNode result = new AssignExpr(fieldExpr, assignValue);
+                    mapAst(result, exprOffset);
+                    return result;
+                }
+                fe = fieldExpr;
             }
             if (fe != null){
+
                 return fe;
             }
             outerClassInstanceExpr = this.getOuterClassInstanceExpr(outerClassInstanceExpr);
@@ -1202,6 +1249,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (resolvedTypeName!=null) {
             ClassReference clsRef = new ClassReference(requireAst(resolvedTypeName,true, offset));
             mapAst(clsRef, offset);
+            if (assignValue != null) {
+                handleSyntaxError("expression expected.", offset);
+                return null;
+            }
             return clsRef;
         }
         return null;
@@ -1412,7 +1463,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public AstNode visitIdentifierExpr(IdentifierExprContext ctx) {
         String name = ctx.Identifier().getText();
-        AstNode expr = this.getNodeById(name, offset(ctx.Identifier().getSymbol()));
+        AstNode expr = this.accessNamedNode(name, offset(ctx.Identifier().getSymbol()), null, null);
         if (expr == null) {
             this.handleSyntaxError(name + " is undefined!", ctx);
             return null;
@@ -1527,7 +1578,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public Object visitInstanceofExpr(KalangParser.InstanceofExprContext ctx) {
         ExprNode expr = visitExpression(ctx.expression());
         Token ts = ctx.Identifier().getSymbol();
-        AstNode tnode = getNodeById(ts.getText(), offset(ts));
+        AstNode tnode = accessNamedNode(ts.getText(), offset(ts), null, null);
         if(tnode instanceof ClassReference){
             InstanceOfExpr ie = new InstanceOfExpr(expr, (ClassReference)tnode);
             mapAst(ie, ctx);
@@ -2206,5 +2257,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         expr.offset = offset;
         return expr;
     }
+
+
 
 }

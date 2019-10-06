@@ -47,5 +47,8 @@ public class ConstExpr extends ExprNode{
         return value;
     }
 
-    
+    @Override
+    public String toString() {
+        return value;
+    }
 }
