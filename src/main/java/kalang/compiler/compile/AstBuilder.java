@@ -1243,7 +1243,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
                 return fe;
             }
-            outerClassInstanceExpr = this.getOuterClassInstanceExpr(outerClassInstanceExpr);
+            if (outerClassInstanceExpr instanceof FieldExpr || outerClassInstanceExpr instanceof ThisExpr) {
+                outerClassInstanceExpr = this.getOuterClassInstanceExpr(outerClassInstanceExpr);
+            } else if (outerClassInstanceExpr instanceof VarExpr) {
+                outerClassInstanceExpr = new ThisExpr(getThisType());
+            } else {
+                throw Exceptions.unexpectedValue(outerClassInstanceExpr);
+            }
         }
         String resolvedTypeName = compilationUnit.getTypeNameResolver().resolve(name, topClass, thisClazz);
         if (resolvedTypeName!=null) {
