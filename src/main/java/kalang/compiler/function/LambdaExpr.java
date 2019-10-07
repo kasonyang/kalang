@@ -49,8 +49,7 @@ public class LambdaExpr extends MultiStmtExpr {
 
     @Override
     public List<AstNode> getChildren() {
-        List<AstNode> list = new LinkedList();
-        list.addAll(getStatements());
+        List<AstNode> list = new LinkedList(getStatements());
         return list;
     }
 

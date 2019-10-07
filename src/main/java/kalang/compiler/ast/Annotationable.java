@@ -6,6 +6,6 @@ package kalang.compiler.ast;
  */
 public interface Annotationable {
     
-    public AnnotationNode[] getAnnotations();
+    AnnotationNode[] getAnnotations();
 
 }

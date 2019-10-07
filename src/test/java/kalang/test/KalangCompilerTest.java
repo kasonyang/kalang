@@ -1,7 +1,6 @@
 package kalang.test;
 
 import kalang.compiler.antlr.KalangLexer;
-import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.CodeGenerator;
 import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.compile.KalangCompiler;

@@ -2,7 +2,6 @@ package kalang.compiler.ast;
 
 import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
-import kalang.compiler.exception.Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -47,5 +46,8 @@ public class ConstExpr extends ExprNode{
         return value;
     }
 
-    
+    @Override
+    public String toString() {
+        return value;
+    }
 }

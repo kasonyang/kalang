@@ -99,8 +99,8 @@ public abstract class MethodSelector<M,T,A> {
     }
 
     private boolean isFullMatchScore(int[] score) {
-        for (int i=0; i < score.length; i++) {
-            if (score[i] != 0) {
+        for (int i1 : score) {
+            if (i1 != 0) {
                 return false;
             }
         }
@@ -108,8 +108,8 @@ public abstract class MethodSelector<M,T,A> {
     }
 
     private boolean isValidMatchScore(int[] score) {
-        for (int i=0; i < score.length; i++) {
-            if (score[i] < 0) {
+        for (int i1 : score) {
+            if (i1 < 0) {
                 return false;
             }
         }

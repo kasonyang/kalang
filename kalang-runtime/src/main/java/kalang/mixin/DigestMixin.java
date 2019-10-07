@@ -24,7 +24,17 @@ public class DigestMixin {
 
     @MixinMethod
     public static String md5Hex(String input) throws NoSuchAlgorithmException {
-        return md5Hex(input.getBytes(StandardCharsets.UTF_8));
+        return md5Hex(strToBytes(input));
+    }
+
+    @MixinMethod
+    public static byte[] md5(byte[] input) throws NoSuchAlgorithmException {
+        return digest(input, MD5);
+    }
+
+    @MixinMethod
+    public static byte[] md5(String input) throws NoSuchAlgorithmException {
+        return md5(strToBytes(input));
     }
 
     @MixinMethod
@@ -34,7 +44,17 @@ public class DigestMixin {
 
     @MixinMethod
     public static String sha1Hex(String input) throws NoSuchAlgorithmException {
-        return sha1Hex(input.getBytes(StandardCharsets.UTF_8));
+        return sha1Hex(strToBytes(input));
+    }
+
+    @MixinMethod
+    public static byte[] sha1(byte[] input) throws NoSuchAlgorithmException {
+        return digest(input, SHA1);
+    }
+
+    @MixinMethod
+    public static byte[] sha1(String input) throws NoSuchAlgorithmException {
+        return sha1(strToBytes(input));
     }
 
     @MixinMethod
@@ -44,7 +64,17 @@ public class DigestMixin {
 
     @MixinMethod
     public static String sha256Hex(String input) throws NoSuchAlgorithmException {
-        return sha256Hex(input.getBytes(StandardCharsets.UTF_8));
+        return sha256Hex(strToBytes(input));
+    }
+
+    @MixinMethod
+    public static byte[] sha256(byte[] input) throws NoSuchAlgorithmException {
+        return digest(input, SHA256);
+    }
+
+    @MixinMethod
+    public static byte[] sha256(String input) throws NoSuchAlgorithmException {
+        return sha256(strToBytes(input));
     }
 
     @MixinMethod
@@ -54,7 +84,17 @@ public class DigestMixin {
 
     @MixinMethod
     public static String sha512Hex(String input) throws NoSuchAlgorithmException {
-        return sha512Hex(input.getBytes(StandardCharsets.UTF_8));
+        return sha512Hex(strToBytes(input));
+    }
+
+    @MixinMethod
+    public static byte[] sha512(byte[] input) throws NoSuchAlgorithmException {
+        return digest(input, SHA512);
+    }
+
+    @MixinMethod
+    public static byte[] sha512(String input) throws NoSuchAlgorithmException {
+        return sha512(strToBytes(input));
     }
 
     @MixinMethod
@@ -68,15 +108,11 @@ public class DigestMixin {
     }
 
     private static String toHex(byte[] bytes) {
-        char[] digits = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-        char[] chars = new char[bytes.length << 1];
-        int ci = 0;
-        for (int i = 0; i < bytes.length; i++) {
-            byte b = bytes[i];
-            chars[ci++] = digits[(b & 0xF0) >>> 4];
-            chars[ci++] = digits[b & 0xF];
-        }
-        return new String(chars);
+        return HexMixin.toHexString(bytes);
+    }
+
+    private static byte[] strToBytes(String str) {
+        return str.getBytes(StandardCharsets.UTF_8);
     }
 
 }

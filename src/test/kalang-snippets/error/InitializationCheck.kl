@@ -1,0 +1,7 @@
+num is uninitialized!
+
+int num;
+if ( "".equals(1) ) {
+    num = 1;
+}
+num++;

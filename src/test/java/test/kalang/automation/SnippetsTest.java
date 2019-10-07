@@ -39,17 +39,22 @@ public class SnippetsTest {
         }
         KalangShell shell = new KalangShell();
         shell.addSourcePath(file.getParentFile());
-        Class<?> hwCls = shell.parse(file);
+        Class<?> hwCls;
+        try {
+            hwCls = shell.parse(file);
+        } catch (Throwable throwable) {
+            System.out.println("Parse failed:" + file);
+            throw throwable;
+        }
         if(!checkReturnValue) {
             return;
         }
-        Object inst = hwCls.newInstance();
         Method[] mds = hwCls.getDeclaredMethods();
-        for (int i = 0; i < mds.length; i++) {
-            Method m = mds[i];
+        for (Method m : mds) {
             if (!Modifier.isPublic(m.getModifiers())) {
                 continue;
             }
+            Object inst = hwCls.newInstance();
             String methodName = m.getName();
             if ((inst instanceof Script) && "execute".equals(methodName)) {
                 continue;
@@ -68,9 +73,9 @@ public class SnippetsTest {
                 fail("Exception in method:" + m.getName());
                 continue;
             }
-            System.out.println("result of method[" + fullMethodName + "]:" + ret );
+            System.out.println("result of method[" + fullMethodName + "]:" + ret);
             if (ret instanceof Boolean) {
-                assertTrue("result of method[" + fullMethodName + "] should be true",(Boolean) ret);
+                assertTrue("result of method[" + fullMethodName + "] should be true", (Boolean) ret);
             } else {
                 assertEquals("result of method[" + fullMethodName + "] should be 6", 6, ret);
             }

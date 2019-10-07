@@ -12,7 +12,7 @@ import java.util.Collection;
 public class AmbiguousMethodException extends RuntimeException{
 
     public AmbiguousMethodException(Collection<? extends MethodDescriptor> methods){
-        this(methods.toArray(new MethodDescriptor[methods.size()]));
+        this(methods.toArray(new MethodDescriptor[0]));
     }
     
     public static String[] getMethodDescriptorStrings(MethodDescriptor... methods){

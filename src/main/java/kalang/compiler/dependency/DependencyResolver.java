@@ -88,7 +88,7 @@ public class DependencyResolver {
             Artifact art = artifacts[i];
             mrids[i] = ModuleRevisionId.newInstance(art.getGroup(),art.getName(),art.getVersion());
             revisionId2Artifact.put(mrids[i],art);
-        };
+        }
         DefaultModuleDescriptor moduleDescriptor = DefaultModuleDescriptor.newCallerInstance(mrids, true, false);
         ResolveReport res = ivy.resolve(moduleDescriptor, ops);
         ResolveResult result = new ResolveResult();

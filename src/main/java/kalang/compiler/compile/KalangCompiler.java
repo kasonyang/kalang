@@ -43,12 +43,7 @@ public abstract class KalangCompiler implements CompileContext {
 
     private final AstLoader astLoader;
 
-    private SourceLoader sourceLoader = new SourceLoader() {
-        @Override
-        public KalangSource loadSource(String className) {
-            return null;
-        }
-    };
+    private SourceLoader sourceLoader = className -> null;
 
     public KalangCompiler() {
         this(new Configuration());

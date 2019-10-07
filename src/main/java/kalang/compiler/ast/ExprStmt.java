@@ -36,4 +36,9 @@ public class ExprStmt extends Statement{
         Objects.requireNonNull(expr);
         this.expr = expr;
     }
+
+    @Override
+    public String toString() {
+        return Objects.toString(expr);
+    }
 }

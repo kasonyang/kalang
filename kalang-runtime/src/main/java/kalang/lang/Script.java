@@ -12,7 +12,7 @@ public abstract class Script {
 
     private String[] arguments = new String[0];
 
-    protected abstract int execute() throws Throwable;
+    protected abstract int execute();
 
     public int run() throws Throwable {
         try{

@@ -10,6 +10,7 @@ import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 import kalang.compiler.util.*;
+import kalang.mixin.CollectionMixin;
 import kalang.type.FunctionClasses;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -27,7 +28,13 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     protected final SemanticAnalyzer semanticAnalyzer;
     private CompilationUnit compilationUnit;
 
+    private Map<FieldNode, MethodNode> privateFieldReaderMap = new HashMap<>();
+
+    private Map<FieldNode, MethodNode> privateFieldWriterMap = new HashMap<>();
+
     protected MethodContext methodCtx;
+
+    private int tempVarCounter = 0;
 
     public AstBuilderBase(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
@@ -59,8 +66,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
-    protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset){
-        ExprNode ret;
+    protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset, @Nullable ExprNode assignValue){
+
         Type type = expr.getType();
         if(!(type instanceof  ObjectType)){
             return null;
@@ -68,20 +75,51 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         ObjectType exprType = (ObjectType) type;
         if ((exprType instanceof ArrayType)
                 && fieldName.equals("length")) {
-            ret = new ArrayLengthExpr(expr);
-        } else {
-            try {
-                ret = ObjectFieldExpr.create(expr, fieldName,getCurrentClass());
-            } catch (FieldNotFoundException ex) {
+            ArrayLengthExpr ret = new ArrayLengthExpr(expr);
+            if (assignValue != null) {
+                handleSyntaxError("could not assign a value to final variable", offset);
                 return null;
             }
+            return mapAst(ret, offset);
+        } else {
+            try {
+                FieldExpr fe = ObjectFieldExpr.create(expr, fieldName, getCurrentClass());
+                if (assignValue != null) {
+                    AssignExpr result = new AssignExpr(fe, assignValue);
+                    return mapAst(result, offset);
+                }
+                return fe;
+            } catch (FieldNotFoundException ex) {
+                ExprNode ret;
+                Type targetType = expr.getType();
+                if (!(targetType instanceof ClassType)) {
+                    return null;
+                }
+                ClassNode targetClassNode = ((ClassType) targetType).getClassNode();
+                if (!InheritanceUtil.isInnerClassOf(getCurrentClass(), targetClassNode)) {
+                    return null;
+                }
+                FieldNode field = CollectionMixin.find(targetClassNode.getFields(), f -> fieldName.equals(f.getName()));
+                if (field == null) {
+                    return null;
+                }
+                boolean isWrite = assignValue != null;
+                if (isWrite) {
+                    MethodNode writer = getPrivateFieldAccessor(field, true);
+                    ClassReference clsRef = new ClassReference(writer.getClassNode());
+                    ret = StaticInvokeExpr.create(clsRef, writer.getName(), new ExprNode[]{expr, assignValue}, getCurrentClass());
+                } else {
+                    MethodNode reader = getPrivateFieldAccessor(field, false);
+                    ClassReference clsRef = new ClassReference(reader.getClassNode());
+                    ret = StaticInvokeExpr.create(clsRef, reader.getName(), new ExprNode[]{expr}, getCurrentClass());
+                }
+                return ret;
+            }
         }
-        mapAst(ret, offset);
-        return ret;
     }
 
-    protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset){
-        ExprNode fe = getObjectFieldLikeExpr(expr, fieldName, offset);
+    protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset,@Nullable ExprNode assignValue){
+        ExprNode fe = getObjectFieldLikeExpr(expr, fieldName ,offset, assignValue);
         if (fe == null) {
             this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,offset);
             return null;
@@ -144,7 +182,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nonnull
     protected LocalVarNode declareTempLocalVar(Type type){
-        LocalVarNode var = declareLocalVar(null, type,0,OffsetRange.NONE);
+        LocalVarNode var = declareLocalVar("$temp$" + tempVarCounter++, type,0,OffsetRange.NONE);
         if(var==null) throw Exceptions.unexpectedValue(var);
         return var;
     }
@@ -261,8 +299,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         } catch (MethodNotFoundException | AmbiguousMethodException ex) {
             throw Exceptions.unexpectedException(ex);
         }
-        for(int i=0;i<expr.length;i++){
-            ret = ObjectInvokeExpr.create(ret, "append",new ExprNode[]{expr[i]});
+        for (ExprNode exprNode : expr) {
+            ret = ObjectInvokeExpr.create(ret, "append", new ExprNode[]{exprNode});
         }
         return ObjectInvokeExpr.create(ret,"toString",new ExprNode[0]);
     }
@@ -330,15 +368,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     //TODO add stop token
     protected void handleSyntaxError(String msg, Token token) {
         //TODO what does EMPTY means?
-        handleSyntaxError(msg, (ParserRuleContext.EMPTY), token, token);
+        handleSyntaxError(msg, token, token);
     }
 
     protected void handleSyntaxError(String msg, ParserRuleContext tree) {
-        handleSyntaxError(msg, tree, tree.start, tree.stop);
+        handleSyntaxError(msg, tree.start, tree.stop);
     }
 
     //TODO remove rule
-    protected void handleSyntaxError(String desc, ParserRuleContext rule, Token start, Token stop) {
+    protected void handleSyntaxError(String desc, Token start, Token stop) {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, desc, start, stop);
     }
 
@@ -361,20 +399,17 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
-    protected void mapAst(AstNode node,OffsetRange offsetRange) {
+    protected <T extends AstNode> T mapAst(T node,OffsetRange offsetRange) {
         mapAst(node, offsetRange, false);
+        return node;
     }
 
-    protected void mapAst(@Nonnull AstNode node, @Nonnull Token token) {
-        node.offset = OffsetRangeHelper.getOffsetRange(token);
-    }
 
     @Nullable
     protected ClassNode resolveNamedClass(String id,ClassNode topClass,ClassNode currentClass){
         TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
         String resolvedName = typeNameResolver.resolve(id, topClass, currentClass);
-        ClassNode ast = resolvedName==null ? null : getAst(resolvedName);
-        return ast;
+        return resolvedName==null ? null : getAst(resolvedName);
     }
 
     protected ClassType parseLambdaType(KalangParser.LambdaTypeContext ctx) {
@@ -625,8 +660,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     @Nullable
-    protected ExprNode getObjectFieldExpr(ExprNode expr,String fieldName,OffsetRange offset){
-        ExprNode ret;
+    protected FieldExpr getObjectFieldExpr(ExprNode expr,String fieldName,OffsetRange offset){
+        FieldExpr ret;
         Type type = expr.getType();
         if(!(type instanceof  ObjectType)){
             //AstBuilder.this.handleSyntaxError("unsupported type", rule==null ? ParserRuleContext.EMPTY : rule);
@@ -825,7 +860,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
-    private VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
+    protected VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
         LocalVarNode tmpTarget = declareTempLocalVar(target.getType());
         initStmtsHolder.add(new VarDeclStmt(tmpTarget));
         initStmtsHolder.add(new ExprStmt(new AssignExpr(new VarExpr(tmpTarget),target)));
@@ -903,6 +938,33 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             }
         }
         return Collections.emptyList();
+    }
+
+    private MethodNode getPrivateFieldAccessor(FieldNode field, boolean isWriter) {
+        Map<FieldNode, MethodNode> accessorMap = isWriter ? privateFieldWriterMap : privateFieldReaderMap;
+        MethodNode accessor = accessorMap.get(field);
+        if (accessor != null) {
+            return accessor;
+        }
+        ClassNode cn = field.getClassNode();
+        MethodNode mn = cn.createMethodNode(field.getType(), "access$" + accessorMap.size(), Modifier.STATIC | Modifier.SYNCHRONIZED);
+        ParameterNode objPn = mn.createParameter(Types.getClassType(cn), "obj");
+        if (isWriter) {
+            ParameterNode valuePn = mn.createParameter(field.getType(), "value");
+            mn.getBody().statements.add(new ExprStmt(
+                    new AssignExpr(
+                            new ObjectFieldExpr(new ParameterExpr(objPn), field)
+                            , new ParameterExpr(valuePn)
+                    )
+            ));
+            mn.getBody().statements.add(new ReturnStmt(new ParameterExpr(valuePn)));
+        } else {
+            mn.getBody().statements.add(new ReturnStmt(
+                    new ObjectFieldExpr(new ParameterExpr(objPn), field)
+            ));
+        }
+        accessorMap.put(field, mn);
+        return mn;
     }
 
 }

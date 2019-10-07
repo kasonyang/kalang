@@ -47,13 +47,7 @@ public class Kalangc extends ShellBase {
                     return Constant.ERR_IO_EXCEPTION;
                 }
             } else {
-                try {
-                    //TODO here should be currenDir?
-                    fsc.addSource(currentDir, srcFile);
-                } catch (IOException ex) {
-                    System.err.println(ex.getMessage());
-                    //TODO show exception message
-                }
+                fsc.addSource(currentDir, srcFile);
             }
         }
         try {

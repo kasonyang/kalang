@@ -259,7 +259,7 @@ public class Types {
 
     public static boolean isNumberClass(Type type) {
         if(type instanceof ObjectType)
-            return Arrays.asList(numberClass).contains(((ObjectType)type).getName());
+            return Arrays.asList(numberClass).contains(type.getName());
         else return false;
     }
 
@@ -475,7 +475,7 @@ public class Types {
         baseMap.put(SHORT_TYPE, Arrays.asList(INT_TYPE, LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE));
         baseMap.put(INT_TYPE, Arrays.asList(LONG_TYPE, FLOAT_TYPE, DOUBLE_TYPE));
         baseMap.put(LONG_TYPE, Arrays.asList(FLOAT_TYPE, DOUBLE_TYPE));
-        baseMap.put(FLOAT_TYPE, Arrays.asList(DOUBLE_TYPE));
+        baseMap.put(FLOAT_TYPE, Collections.singletonList(DOUBLE_TYPE));
         baseMap.put(DOUBLE_TYPE, new LinkedList());
         if (baseMap.containsKey(fromType)) {
             return baseMap.get(fromType).contains(toType);

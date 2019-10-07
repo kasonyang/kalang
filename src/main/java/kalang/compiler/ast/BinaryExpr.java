@@ -96,4 +96,8 @@ public abstract class BinaryExpr extends ExprNode{
         return operation;
     }
 
+    @Override
+    public String toString() {
+        return expr1 + this.operation + expr2;
+    }
 }

@@ -24,4 +24,8 @@ public class ReturnStmt extends Statement{
         return ls;
     }
 
+    @Override
+    public String toString() {
+        return "return " + (expr == null ? "" : expr);
+    }
 }

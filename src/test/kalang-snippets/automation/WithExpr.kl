@@ -5,3 +5,13 @@ boolean withExpr() {
     };
     return arr.readIntB(0) == 0x1234 && arr.readIntB(4) == arr.length;
 }
+
+int withInClosure() {
+    val num = 6;
+    val cb = &int[]() {
+        return with(new int[1]) {
+            this[0] = num;
+        };
+    };
+    return cb()[0];
+}

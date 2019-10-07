@@ -14,14 +14,35 @@ import java.util.Objects;
  */
 public class AstVerifier extends AstVisitor {
 
+    private MethodNode method;
+
+    @Override
+    public Object visitMethodNode(MethodNode node) {
+        this.method = node;
+        super.visitMethodNode(node);
+        this.method = null;
+        return null;
+    }
+
+    @Override
+    public Object visitReturnStmt(ReturnStmt node) {
+        Type retType = method.getType();
+        if (node.expr == null) {
+            if(!retType.equals(Types.VOID_TYPE)){
+                throw new MalformedAstException("missing return value", node);
+            }
+        }else{
+            checkAssignable(node.expr, method.getType(), node);
+        }
+        return super.visitReturnStmt(node);
+    }
+
     @Override
     public Object visitAssignExpr(AssignExpr node) {
         super.visitAssignExpr(node);
-        Type ft = node.getFrom().getType();
         Type tt = node.getTo().getType();
-        requireNotNull(ft, node,"type of from is null");
         requireNotNull(tt, node,"type of to is null");
-        requireTrue(tt.isAssignableFrom(ft), node, ft + " is not assignable to " + tt);
+        checkAssignable(node.getFrom(), tt, node);
         return null;
     }
 
@@ -75,6 +96,12 @@ public class AstVerifier extends AstVisitor {
         if (obj == null) {
             throw new MalformedAstException(msg, originalNode);
         }
+    }
+
+    private void checkAssignable(ExprNode from , Type toType , AstNode node) {
+        Type ft = from.getType();
+        requireNotNull(ft, from,"type of from is null");
+        requireTrue(toType.isAssignableFrom(ft),node , ft + " is not assignable to " + toType);
     }
 
 }
