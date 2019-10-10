@@ -631,6 +631,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         List<Token> vk = ctx.annotationValueKey;
         KalangParser.LiteralContext dv = ctx.annotationDefaultValue;
         AnnotationNode anNode = new AnnotationNode(anType);
+        mapAst(anNode, ctx);
         if(vk!=null && vk.size()>0){
             List<KalangParser.LiteralContext> anValues = ctx.annotationValue;
             int ksize = vk.size();

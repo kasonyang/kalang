@@ -17,6 +17,9 @@ public class MethodNode extends AstNode implements Annotationable{
 
     @Nullable
     private ConstExpr defaultReturnValue;
+
+    @Nullable
+    private ConstExpr defaultValue = null;
     
     private final List<ParameterNode> parameters = new LinkedList();
     
@@ -126,4 +129,12 @@ public class MethodNode extends AstNode implements Annotationable{
         this.defaultReturnValue = defaultReturnValue;
     }
 
+    @Nullable
+    public ConstExpr getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(@Nullable ConstExpr defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 }

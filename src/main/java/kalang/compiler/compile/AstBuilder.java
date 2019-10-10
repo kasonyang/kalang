@@ -1666,26 +1666,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     @Nullable
     public AnnotationNode visitAnnotation(KalangParser.AnnotationContext ctx) {
-        ClassNode anType = requireAst(ctx.annotationType,false);
-        if(anType==null) return null;
-        List<Token> vk = ctx.annotationValueKey;
-        LiteralContext dv = ctx.annotationDefaultValue;
-        AnnotationNode anNode = new AnnotationNode(anType);
-        if(vk!=null && vk.size()>0){
-            List<LiteralContext> anValues = ctx.annotationValue;
-            int ksize = vk.size();
-            for(int i=0;i<ksize;i++){
-                String kname = vk.get(i).getText();
-                ConstExpr value = visitLiteral(anValues.get(i));
-                anNode.values.put(kname, value);
-            }
-        }else if(dv!=null){
-            ConstExpr defaultValue = visitLiteral(dv);
-            anNode.values.put("value", defaultValue);
-        }
-        if(!semanticAnalyzer.validateAnnotation(anNode)) return null;
-        //TODO validate annotation's values
-        return anNode;
+        return parseAnnotation(ctx);
     }
 
     private BlockStmt requireBlock(ParserRuleContext stmt) {

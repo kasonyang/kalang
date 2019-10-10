@@ -223,14 +223,14 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         List<String> missingValues = new LinkedList<>();
         for(MethodNode m:mds){
             String name = m.getName();
-            if(!attrKeys.contains(name)){
+            if(m.getDefaultValue() == null && !attrKeys.contains(name)){
                 missingValues.add(name);
             }
         }
         if(missingValues.size()>0){
             //TODO add offset on annotationNode
             diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    ,"Missing attribute for annotation:" + missingValues.toString(),OffsetRange.NONE);
+                    ,"Missing attribute for annotation:" + missingValues.toString(), annotation.offset);
             return false;
         }
         return true;

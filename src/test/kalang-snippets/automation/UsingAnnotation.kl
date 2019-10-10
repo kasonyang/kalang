@@ -1,0 +1,11 @@
+import javax.annotation.Resource;
+
+@Resource(name = "test")
+class {
+
+    boolean test() {
+        val r = this.getClass().getAnnotation(Resource.class);
+        return "test".equals(r.name());
+    }
+
+}
