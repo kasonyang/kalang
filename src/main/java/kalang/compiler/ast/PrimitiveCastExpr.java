@@ -52,4 +52,8 @@ public class PrimitiveCastExpr extends ExprNode{
         return expr;
     }
 
+    @Override
+    public String toString() {
+        return "(" + toType + ")" + expr;
+    }
 }

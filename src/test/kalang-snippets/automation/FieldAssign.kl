@@ -4,6 +4,7 @@ class {
 
     private int value = 0;
 
+    private long longValue = 1;
 
     boolean run() {
         value = 0;
@@ -26,6 +27,9 @@ class {
         return index == 2 && value == 2;
     }
 
+    boolean testAutoCast(){
+        return longValue == 1L;
+    }
 
     private FieldAssign getObj() {
         index ++ ;

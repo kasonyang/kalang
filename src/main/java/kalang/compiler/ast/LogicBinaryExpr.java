@@ -6,9 +6,9 @@ import kalang.compiler.core.Types;
  *
  * @author Kason Yang 
  */
-public class CompareExpr extends BinaryExpr{
+public class LogicBinaryExpr extends BinaryExpr{
 
-    public CompareExpr(ExprNode expr1, ExprNode expr2, String operation) {
+    public LogicBinaryExpr(ExprNode expr1, ExprNode expr2, String operation) {
         super(expr1, expr2, operation);
     }
 
@@ -16,7 +16,5 @@ public class CompareExpr extends BinaryExpr{
     public Type getType() {
         return Types.BOOLEAN_TYPE;
     }
-    
-    
 
 }

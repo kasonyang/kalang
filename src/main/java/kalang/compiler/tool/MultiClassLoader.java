@@ -27,8 +27,7 @@ public class MultiClassLoader extends ClassLoader{
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         for(ClassLoader cl:classLoaders){
             try{
-                Class<?> clazz = cl.loadClass(name);
-                return clazz;
+                return cl.loadClass(name);
             }catch(ClassNotFoundException ex){
                 
             }

@@ -10,12 +10,12 @@ import kalang.compiler.util.AstUtil;
 import kalang.compiler.util.ClassTypeUtil;
 import kalang.compiler.util.MethodUtil;
 import kalang.compiler.util.ModifierUtil;
+import kalang.mixin.CollectionMixin;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +27,8 @@ import java.util.Map;
 public class ClassNodeStructureBuilder extends AstBuilder {
 
     //private AstBuilder astBuilder;
-    private ClassNode thisClazz;
-    private ClassNode topClass;
+    //private ClassNode thisClazz;
+    //private ClassNode topClass;
     
     private Map<MethodNode,KalangParser.StatContext[]> methodStatsContexts = new HashMap<>();
 
@@ -102,8 +102,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             );
         }
         MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
-        for (int i = 0; i < methods.length; i++) {
-            MethodNode node = methods[i];
+        for (MethodNode node : methods) {
             BlockStmt body = node.getBody();
             if (body != null) {
                 if (AstUtil.isConstructor(node)) {//constructor
@@ -113,13 +112,13 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                             throw Exceptions.unexpectedValue(enclosingClass);
                         }
                         ParameterNode outerInstanceParam = node.createParameter(0, Types.getClassType(enclosingClass), "this$0");
-                        ExprNode parentFieldExpr = getObjectFieldExpr(
-                                new ThisExpr(Types.getClassType(thisClazz)), "this$0", ParserRuleContext.EMPTY
+                        AssignableExpr parentFieldExpr = getObjectFieldExpr(
+                                new ThisExpr(Types.getClassType(thisClazz)), "this$0", OffsetRange.NONE
                         );
                         if (parentFieldExpr == null) {
                             throw Exceptions.unexpectedValue(parentFieldExpr);
                         }
-                        body.statements.add(1, new ExprStmt(new AssignExpr((AssignableExpr) parentFieldExpr, new ParameterExpr(outerInstanceParam))));
+                        body.statements.add(1, new ExprStmt(new AssignExpr(parentFieldExpr, new ParameterExpr(outerInstanceParam))));
                     }
                 }
             }
@@ -186,12 +185,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         }
         //check method duplicated before generate java stub
         String mStr = MethodUtil.getDeclarationKey(name,paramTypes);
-        boolean existed = Arrays.asList(thisClazz.getDeclaredMethodNodes()).stream().anyMatch((m)->{
-            return MethodUtil.getDeclarationKey(m).equals(mStr);
-        });
+        boolean existed = CollectionMixin.find(thisClazz.getDeclaredMethodNodes(), m -> MethodUtil.getDeclarationKey(m).equals(mStr)) != null;
         if (existed) {
-            //TODO should remove the duplicated method
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"declare method duplicately:"+mStr, ctx);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"declare method is duplicated:"+mStr, ctx);
             return null;
         }
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();
@@ -226,7 +222,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         KalangParser.BlockStmtContext bstm = ctx.blockStmt();
         if(bstm!=null){
             List<KalangParser.StatContext> stats = bstm.stat();
-            if(stats!=null) this.methodStatsContexts.put(method, stats.toArray(new KalangParser.StatContext[stats.size()]));
+            if(stats!=null) this.methodStatsContexts.put(method, stats.toArray(new KalangParser.StatContext[0]));
         }
         if (ctx.exceptionTypes != null) {
             for (Token et : ctx.exceptionTypes) {
@@ -249,11 +245,11 @@ public class ClassNodeStructureBuilder extends AstBuilder {
 
     @Override
     public AstNode visitClassBody(KalangParser.ClassBodyContext ctx) {
-        for(KalangParser.FieldDeclContext f:ctx.fieldDecl()){
-            visitFieldDecl(f);
-        }
         for(KalangParser.MethodDeclContext m:ctx.methodDecl()){
             visitMethodDecl(m);
+        }
+        for(KalangParser.FieldDeclContext f:ctx.fieldDecl()){
+            visitFieldDecl(f);
         }
         return null;
     }
@@ -274,20 +270,28 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             );
             varInfo.modifier |= fieldModifier;
             FieldNode fieldNode = thisClazz.createField(varInfo.type, varInfo.name,varInfo.modifier);
+            mapAst(fieldNode, offset(ctx));
             //TODO simplify it
             if(initExpr!=null){
+                initExpr = requireImplicitCast(fieldNode.getType(), initExpr, offset(ctx));
+                if (initExpr == null) {
+                    continue;
+                }
                 if(AstUtil.isStatic(fieldNode.modifier)){
-                    thisClazz.staticInitStmts.add(new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(thisClazz), fieldNode), initExpr)));
+                    ExprStmt initExprStmt = new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(thisClazz), fieldNode), initExpr));
+                    mapAst(initExpr, offset(ctx), true);
+                    thisClazz.staticInitStmts.add(initExprStmt);
                 }else{
-                    thisClazz.initStmts.add(new ExprStmt(
+                    ExprStmt initExprStmt = new ExprStmt(
                             new AssignExpr(
                                     new ObjectFieldExpr(
                                             new ThisExpr(Types.getClassType(thisClazz)), fieldNode
                                     )
                                     , initExpr
                             )
-                        )
                     );
+                    mapAst(initExprStmt, offset(ctx), true);
+                    thisClazz.initStmts.add(initExprStmt);
                 }
             }
         }
@@ -309,7 +313,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         method = mm;
         List<KalangParser.StatContext> stats = ctx.stat();
         if(stats!=null){
-            this.methodStatsContexts.put(mm, stats.toArray(new KalangParser.StatContext[stats.size()]));
+            this.methodStatsContexts.put(mm, stats.toArray(new KalangParser.StatContext[0]));
         }
         AstUtil.createEmptyConstructor(thisClazz);
         AstUtil.createScriptMainMethodIfNotExists(thisClazz);

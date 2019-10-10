@@ -103,23 +103,23 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if(genericTypes==null || genericTypes.length==0){
             return null;
         }
-        String gnrTypeStr = "";
+        StringBuilder gnrTypeStr = new StringBuilder();
         for(GenericType t:genericTypes){
-            gnrTypeStr += t.getName() + ":" + "Ljava/lang/Object;";
+            gnrTypeStr.append(t.getName()).append(":").append("Ljava/lang/Object;");
         }
-        String superTypeStr = "";
-        if(c.getSuperType()!=null) superTypeStr += typeSignature(c.getSuperType());
+        StringBuilder superTypeStr = new StringBuilder();
+        if(c.getSuperType()!=null) superTypeStr.append(typeSignature(c.getSuperType()));
         for(ObjectType itf:c.getInterfaces()){
-            superTypeStr += typeSignature(itf);
+            superTypeStr.append(typeSignature(itf));
         }
         return "<" + gnrTypeStr + ">" + superTypeStr ;
         
     }
     
     private String methodSignature(MethodNode m){
-        String ptype = "";
+        StringBuilder ptype = new StringBuilder();
         for(ParameterNode p:m.getParameters()){
-            ptype += typeSignature(p.getType());
+            ptype.append(typeSignature(p.getType()));
         }
         return "(" + ptype + ")" + typeSignature(m.getType());
     }
@@ -130,11 +130,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             return "T" + type.getName() + ";" ;
         }else if(type instanceof ClassType){
             ClassType pt = (ClassType) type;
-            String ptypes = "";
+            StringBuilder ptypes = new StringBuilder();
             for(Type p:pt.getTypeArguments()){
-                ptypes += typeSignature(p);
+                ptypes.append(typeSignature(p));
             }
-            if(!ptypes.isEmpty()) ptypes = "<" + ptypes + ">";
+            if(ptypes.length() > 0) ptypes = new StringBuilder("<" + ptypes + ">");
             return "L" + pt.getClassNode().name.replace('.', '/') + ptypes + ";";
         }else if(type instanceof PrimitiveType){
             return getTypeDescriptor(type);
@@ -225,7 +225,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         String parentName = "java.lang.Object";
         ObjectType superType = node.getSuperType();
         if(superType!=null){
-            parentName = superType.getName();
+            parentName = internalName(superType);
         }
         String[] interfaces = null;
         if(node.getInterfaces().length>0){
@@ -332,8 +332,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         for(LocalVarNode v:this.varTables.values()){
             this.destroyLocalVarNode(v);
         }
-        int startVarIdx = this.varStartIndexOfFrame.pop();
-        this.varIdCounter = startVarIdx;
+        this.varIdCounter = this.varStartIndexOfFrame.pop();
         this.varTables = this.varTables.popStack();
     }
 
@@ -421,8 +420,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private void ifExpr(boolean jumpOnTrue,ExprNode condition,Label label){
-        if(condition instanceof LogicExpr){
-            LogicExpr be = (LogicExpr) condition;
+        if(condition instanceof LogicBinaryExpr){
+            LogicBinaryExpr be = (LogicBinaryExpr) condition;
             ExprNode e1 = be.getExpr1();
             ExprNode e2 = be.getExpr2();
             String op = be.getOperation();
@@ -454,8 +453,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 default:
                     throw  new UnsupportedOperationException("Unsupported operation:" + op);
             }
-        }else if(condition instanceof CompareExpr){
-            ifCompare(jumpOnTrue,((CompareExpr) condition).getExpr1(), ((CompareExpr) condition).getExpr2(), ((CompareExpr) condition).getOperation(), label);
+        }else if(condition instanceof CompareBinaryExpr){
+            ifCompare(jumpOnTrue,((CompareBinaryExpr) condition).getExpr1(), ((CompareBinaryExpr) condition).getExpr2(), ((CompareBinaryExpr) condition).getOperation(), label);
         }else if(condition instanceof UnaryExpr && ((UnaryExpr)condition).getOperation().equals("!")){
             ifExpr(!jumpOnTrue, ((UnaryExpr)condition).getExpr(), label);
         }else{
@@ -757,8 +756,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Type ct = ce.getType();
         if(v==null){
             return null;
-        } else if (ct.equals(Types.getClassClassType())) {
-            return org.objectweb.asm.Type.getType("L" + internalName(v) + ";");
         } else if (ct.equals(BOOLEAN_TYPE)) {
             return Boolean.valueOf(v);
         } else if (ct.equals(BYTE_TYPE)) {
@@ -779,6 +776,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             return v;
         } else if (ct.equals(NULL_TYPE)) {
             return null;
+        } else if (ct instanceof ClassType) {
+            ClassType clsType = (ClassType) ct;
+            ClassNode expectedClassNode = astLoader.loadAst(CLASS_CLASS_NAME);
+            if (!clsType.getClassNode().equals(expectedClassNode)) {
+                throw Exceptions.unsupportedTypeException(clsType);
+            }
+            return org.objectweb.asm.Type.getType("L" + internalName(v) + ";");
         } else {
             throw Exceptions.unsupportedTypeException(ct);
         }
@@ -963,11 +967,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private String getTypeDescriptor(Type[] types){
         if(types==null) return null;
         if(types.length==0) return null;
-        String ts = "";
+        StringBuilder ts = new StringBuilder();
         for(Type t:types){
-            ts += getTypeDescriptor(t);
+            ts.append(getTypeDescriptor(t));
         }
-        return ts;
+        return ts.toString();
     }
     
     private String getTypeDescriptor(Type t){
@@ -998,7 +1002,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else if(t instanceof ArrayType){
             return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());
         }else if(t instanceof GenericType){
-            return getTypeDescriptor(((GenericType) t).getSuperType());
+            GenericType gt = (GenericType) t;
+            ObjectType st = gt.getSuperType();
+            ObjectType[] itfs = gt.getInterfaces();
+            if (itfs.length == 1 && st != null && st.isAssignableFrom(itfs[0])) {
+                st = itfs[0];
+            }
+            return getTypeDescriptor(st);
         }else if(t instanceof ClassType){
             return "L" + internalName(((ClassType) t).getClassNode().name) + ";";
         }else if(t instanceof WildcardType){
@@ -1013,11 +1023,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private String getMethodDescriptor(Type returnType,Type[] parameterTypes){
-        String desc = "";
+        StringBuilder desc = new StringBuilder();
         String retTyp = getTypeDescriptor(returnType);
         if(parameterTypes!=null){
             for(Type t:parameterTypes){
-                desc += getTypeDescriptor(t);
+                desc.append(getTypeDescriptor(t));
             }
         }
         return "(" + desc + ")" + retTyp;     
@@ -1322,7 +1332,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         visit(expr2);
         int t = getT(type);
         if(T_I == t){
-            int opc = -1;
+            int opc;
             switch(op){
                 case "==" :
                     opc = jumpOnTrue ? IF_ICMPEQ : IF_ICMPNE;
@@ -1364,7 +1374,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }else{
                throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
             }
-            int opc = -1;
+            int opc;
             switch(op){
                 case "==" : opc =jumpOnTrue ? IFEQ : IFNE;break;
                 case ">"    : opc =jumpOnTrue ? IFGT : IFLE ;break;

@@ -7,6 +7,7 @@ import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Type;
 import kalang.compiler.util.AstUtil;
+import kalang.mixin.CollectionMixin;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -97,4 +98,9 @@ public abstract class InvocationExpr extends ExprNode {
         return method;
     }
 
+    @Override
+    public String toString() {
+        String args = CollectionMixin.join(arguments, ",");
+        return getMethod().getName() + "(" + args + ")";
+    }
 }

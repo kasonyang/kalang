@@ -7,8 +7,10 @@ import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Types;
 import kalang.compiler.util.AstUtil;
+import kalang.mixin.CollectionMixin;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 /**
@@ -25,9 +27,8 @@ public class StaticInvokeExpr extends InvocationExpr{
     
     public static StaticInvokeExpr create(ClassReference clazz, String methodName, ExprNode[] args,@Nullable ClassNode caller) throws MethodNotFoundException, AmbiguousMethodException {
         ObjectType clazzType = Types.getClassType(clazz.getReferencedClassNode());
-        //TODO static only
-        //TODO what about generic static method?
-        MethodDescriptor[] candidates = clazzType.getMethodDescriptors(caller, true,true);
+        MethodDescriptor[] mds = clazzType.getMethodDescriptors(caller, true, true);
+        MethodDescriptor[] candidates = CollectionMixin.findAll(mds, it -> Modifier.isStatic(it.getModifier()));
         MethodSelection ms = applyMethod(Types.getClassType( clazz.getReferencedClassNode()) , methodName, args,candidates);
         MethodDescriptor md = ms.selectedMethod;
         if(!AstUtil.isStatic(md.getModifier())){

@@ -163,12 +163,12 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         throw new IllegalArgumentException("BUG!Unknown node type:"+node.getClass());
     }
     
-    public List<T> visitAll(AstNode[] nodes){
+    protected List<T> visitAll(AstNode[] nodes){
         if(nodes==null) return Collections.emptyList();
         return visitAll(Arrays.asList(nodes));
     }
     
-    public List<T> visitAll(List<?  extends AstNode> nodes){
+    protected List<T> visitAll(List<? extends AstNode> nodes){
         if(nodes==null) return null;
         List<T> result = new LinkedList<>();
         for(AstNode n:nodes){
@@ -177,7 +177,7 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         return result;
     }
     
-    public Map<AstNode,T> visitChildren(AstNode node){
+    protected Map<AstNode,T> visitChildren(AstNode node){
         Map<AstNode,T> result = new HashMap<>();
         List<AstNode> children = node.getChildren();
         for(AstNode c:children){

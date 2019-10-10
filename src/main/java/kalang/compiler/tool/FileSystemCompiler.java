@@ -46,7 +46,7 @@ public class FileSystemCompiler {
         if (outputDir == null) {
             throw new IllegalStateException("output diretory is null");
         }
-        URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[classPaths.size()]), this.classLoader);
+        URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]), this.classLoader);
         AstLoader astLoader = new JavaAstLoader(this.parentAstLoader, pathClassLoader);
         Configuration conf = Configuration.copy(configuration);
         conf.setAstLoader(astLoader);
@@ -66,12 +66,12 @@ public class FileSystemCompiler {
             File file = e.getValue();
             compiler.addSource(className, FileUtils.readFileToString(file), file.getName());
         }
-        FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(sourcePaths.toArray(new File[sourcePaths.size()]), new String[]{"kl", "kalang"});
+        FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(sourcePaths.toArray(new File[0]), new String[]{"kl", "kalang"}, conf.getEncoding());
         compiler.setSourceLoader(sourceLoader);
         compiler.compile();
     }
 
-    public void addSource(File srcDir, File file) throws IOException {
+    public void addSource(File srcDir, File file) {
         String className = ClassNameUtil.getClassName(srcDir, file);
         sourceFiles.put(className, file);
 

@@ -8,9 +8,7 @@ import kalang.lang.Script;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.StringReader;
+import java.io.*;
 
 /**
  *
@@ -41,7 +39,7 @@ public class Kalangsh extends ShellBase {
             String[] scriptArgs;
             if (cli.hasOption("code")) {
                 String code = cli.getOptionValue("code");
-                KalangShell sh = this.createKalangShell(config, classLoader,new StringReader(code));
+                KalangShell sh = this.createKalangShell(config, classLoader,new StringReader(code), null);
                 scriptArgs = new String[0];
                 clazz = sh.parse("Temp",code, "Tmp.kl");
             } else {
@@ -54,9 +52,15 @@ public class Kalangsh extends ShellBase {
                 if (args.length > 1) {
                     System.arraycopy(args, 1, scriptArgs, 0, scriptArgs.length);
                 }
-                FileReader fileReader = new FileReader(file);
-                KalangShell sh = this.createKalangShell(config, classLoader, fileReader);
+                File sourceDir = file.getAbsoluteFile().getParentFile();
+                File optionsFile = new File(sourceDir, "kalangsh.options");
+                Reader fileReader = new InputStreamReader(new FileInputStream(file), config.getEncoding());
+                FileReader optionsReader = optionsFile.exists() ? new FileReader(optionsFile) : null;
+                KalangShell sh = this.createKalangShell(config, classLoader, fileReader, optionsReader);
                 fileReader.close();
+                if (optionsReader != null) {
+                    optionsReader.close();
+                }
                 sh.addSourcePath(file.getAbsoluteFile().getParentFile());
                 clazz = sh.parse(file);
             }

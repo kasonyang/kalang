@@ -43,7 +43,7 @@ public class MethodUtil {
         for (Type t : types) {
             typeStrList.add(t.getDeclarationKey());
         }
-        return MethodUtil.getDeclarationKey(name, typeStrList.toArray(new String[typeStrList.size()]));
+        return MethodUtil.getDeclarationKey(name, typeStrList.toArray(new String[0]));
     }
     
     public static String getDeclarationKey(MethodNode node) {

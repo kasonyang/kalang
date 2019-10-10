@@ -58,7 +58,7 @@ public class ClassNode extends AstNode implements Annotationable{
     }
     
     public GenericType[] getGenericTypes(){
-        return genericTypes.toArray(new GenericType[genericTypes.size()]);
+        return genericTypes.toArray(new GenericType[0]);
     }
     
     @Override

@@ -2,6 +2,7 @@ package kalang.compiler.shell;
 
 import kalang.compiler.compile.Configuration;
 import kalang.compiler.dependency.Artifact;
+import kalang.compiler.dependency.DependenciesCache;
 import kalang.compiler.dependency.DependencyResolver;
 import kalang.compiler.dependency.ResolveResult;
 import kalang.compiler.profile.Profiler;
@@ -9,16 +10,17 @@ import kalang.compiler.profile.Span;
 import kalang.compiler.profile.SpanFormatter;
 import kalang.compiler.tool.KalangShell;
 import kalang.lang.Runtime;
+import lombok.SneakyThrows;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  *
@@ -82,7 +84,8 @@ public abstract class ShellBase {
     }
     
     protected void printVersion() {
-        System.out.println(String.format("%s v%s", appName, Runtime.getVersion()));
+        Runtime.BuildInfo bi = Runtime.getBuildInfo();
+        System.out.println(String.format("%s v%s\nBuild time: %s", appName, Runtime.getVersion(), new Date(bi.getBuildTime())));
     }
 
     protected Configuration createConfiguration(CommandLine cli) {
@@ -96,8 +99,9 @@ public abstract class ShellBase {
 
     protected ClassLoader createClassLoader(CommandLine cli) {
         boolean verbose = cli.hasOption("verbose");
-        List<URL> urls = new LinkedList();
-        String[] libPaths = cli.getOptionValue("libpath", "").split(";");
+        Set<URL> urls = new HashSet<>();
+        urls.add(Runtime.getRuntimeClassPath());
+        String[] libPaths = cli.getOptionValue("libpath", "").split(File.pathSeparator);
         for (String l : libPaths) {
             if (l.isEmpty()) {
                 continue;
@@ -118,12 +122,12 @@ public abstract class ShellBase {
                 System.out.println("Add class path:" + u);
             }
         }
-        return new URLClassLoader(urls.toArray(new URL[0]));
+        return new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader().getParent());
     }
 
     protected File[] parseClassPath(CommandLine cli) {
         if (cli.hasOption("classpath")) {
-            String[] cps = cli.getOptionValue("classpath").split(";");
+            String[] cps = cli.getOptionValue("classpath").split(File.pathSeparator);
             File[] file = new File[cps.length];
             for (int i = 0; i < cps.length; i++) {
                 file[i] = new File(cps[i]);
@@ -133,57 +137,76 @@ public abstract class ShellBase {
         return new File[0];
     }
 
-    protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader) throws IOException {
-        String scriptBase = "";
-        List<String> dependencies = new LinkedList<>();
-        List<String> repositories = new LinkedList<>();
-        List<URL> classpaths = new LinkedList<>();
-        List<File> sourcepaths = new LinkedList<>();
+    protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader,@Nullable Reader optionsReader) throws IOException {
+        //String scriptBase = "";
+        Set<String> dependencies = new HashSet<>();
+        Set<String> repositories = new HashSet<>();
+        Set<URL> classpaths = new HashSet<>();
+        Set<File> sourcepaths = new HashSet<>();
         BufferedReader bufferedReader = new BufferedReader(reader);
-        String line;
-        while((line=bufferedReader.readLine())!=null) {
-            line = line.trim();
-            if (line.isEmpty()) {
-                continue;
+        Consumer<String> optionHandler = new Consumer<String>() {
+            @Override
+            @SneakyThrows
+            public void accept(String line) {
+                if (line.isEmpty()) {
+                    return;
+                }
+                if (line.startsWith("!")) {
+                    return;
+                }
+                String[] parts = line.split(" ",2);
+                String optionName = parts[0];
+                String optionValue = parts.length>1 ? parts[1] : "";
+                if (optionValue.isEmpty()) {
+                    return;
+                }
+                switch (optionName) {
+//                case "script":
+//                case "base":
+//                    scriptBase = optionValue;
+//                    break;
+                    case "dependency":
+                        dependencies.add(optionValue);
+                        break;
+                    case "repository":
+                        repositories.add(optionValue);
+                        break;
+                    case "classpath":
+                        classpaths.add(new File(optionValue).toURI().toURL());
+                        break;
+                    case "libpath":
+                        addClasspathFromLibPath(classpaths,new File(optionValue));
+                        break;
+                    case "sourcepath":
+                        sourcepaths.add(new File(optionValue));
+                        break;
+                    default:
+                        System.err.println("warn:unknown option:" + optionName);
+                        break;
+                }
             }
+        };
+        String line;
+        if (optionsReader != null) {
+            BufferedReader bfdOptionsReader = new BufferedReader(optionsReader);
+            while ((line = bfdOptionsReader.readLine()) != null) {
+                optionHandler.accept(line.trim());
+            }
+        }
+        while((line = bufferedReader.readLine()) != null) {
+            line = line.trim();
             if (!line.startsWith("#")) {
                 break;
             }
-            String[] parts = line.split(" ",2);
-            String optionName = parts[0].substring(1);
-            String optionValue = parts.length>1 ? parts[1] : "";
-            if (optionValue.isEmpty()) {
-                continue;
-            }
-            switch (optionName) {
-                case "script":
-                case "base":
-                    scriptBase = optionValue;
-                    break;
-                case "dependency":
-                    dependencies.add(optionValue);
-                    break;
-                case "repository":
-                    repositories.add(optionValue);
-                    break;
-                case "classpath":
-                    classpaths.add(new File(optionValue).toURI().toURL());
-                    break;
-                case "libpath":
-                    addClasspathFromLibPath(classpaths,new File(optionValue));
-                    break;
-                case "sourcepath":
-                    sourcepaths.add(new File(optionValue));
-                    break;
-                default:
-                    break;
-            }
+            optionHandler.accept(line.substring(1));
         }
-        if (!scriptBase.isEmpty()) {
-            config.setScriptBaseClass(scriptBase);
-        }
+//        if (!scriptBase.isEmpty()) {
+//            config.setScriptBaseClass(scriptBase);
+//        }
         if (!dependencies.isEmpty()) {
+            Span rdSpan = Profiler.getInstance().beginSpan("resolving dependencies");
             ResolveResult resolveResult = resolveDependencies(dependencies,repositories);
+            Profiler.getInstance().endSpan(rdSpan);
             for(File localFile:resolveResult.getLocalFiles()) {
                 classpaths.add(localFile.toURI().toURL());
             }
@@ -196,6 +219,17 @@ public abstract class ShellBase {
             shell.addSourcePath(sp);
         }
         return shell;
+    }
+
+    public File getAppHomeDir(@Nullable  String subDir, boolean autoCreate) throws IOException {
+        File file = new File(FileUtils.getUserDirectory(),".kalang");
+        if (subDir != null && !subDir.isEmpty()) {
+            file = new File(file, subDir);
+        }
+        if (!file.exists() && autoCreate && !file.mkdirs()) {
+            throw new IOException("failed to create directory:" + file);
+        }
+        return file;
     }
 
     private void outputProfileInfo(String destination) {
@@ -215,22 +249,28 @@ public abstract class ShellBase {
         new SpanFormatter().format(rootSpan,os);
     }
 
-    private ResolveResult resolveDependencies(List<String> dependencies,List<String> repositories) {
-        List<Artifact> artifacts = new LinkedList<>();
-        for(String d:dependencies){
-            d = d.trim();
-            String[] dParts = d.split(":");
-            if (dParts.length!=3) {
-                System.err.println("illeage artifact:" + d);
-                continue;
+
+
+    private ResolveResult resolveDependencies(Set<String> dependencies,Set<String> repositories) throws IOException {
+        File cacheFile = new File(getAppHomeDir("cache", true), "dependencies.cache");
+        DependenciesCache dc = new DependenciesCache(cacheFile);
+        return dc.get(dependencies,() -> {
+            List<Artifact> artifacts = new LinkedList<>();
+            for(String d:dependencies){
+                d = d.trim();
+                String[] dParts = d.split(":");
+                if (dParts.length!=3) {
+                    System.err.println("illegal artifact:" + d);
+                    continue;
+                }
+                artifacts.add(new Artifact(dParts[0],dParts[1],dParts[2]));
             }
-            artifacts.add(new Artifact(dParts[0],dParts[1],dParts[2]));
-        }
-        DependencyResolver resolver =new DependencyResolver(repositories);
-        return resolver.resolve(artifacts.toArray(new Artifact[0]));
+            DependencyResolver resolver =new DependencyResolver(repositories);
+            return resolver.resolve(artifacts.toArray(new Artifact[0]));
+        });
     }
 
-    private void addClasspathFromLibPath(List<URL> list,File libpath) {
+    private void addClasspathFromLibPath(Set<URL> list,File libpath) {
         if (!libpath.exists() || !libpath.isDirectory()) {
             return;
         }

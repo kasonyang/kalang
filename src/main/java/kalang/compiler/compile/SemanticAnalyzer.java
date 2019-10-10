@@ -2,7 +2,6 @@ package kalang.compiler.compile;
 
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
-import kalang.compiler.exception.Exceptions;
 import kalang.compiler.util.AstUtil;
 import kalang.compiler.util.BoxUtil;
 
@@ -180,7 +179,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     boolean requireArray(AstNode node, Type t) {
         if (!isArray(t)) {
-            diagnosisReporter.report(Diagnosis.Kind.ERROR, "array type required.");
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "array type required.", node.offset);
             return false;
         }
         return true;
@@ -224,14 +223,14 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
         List<String> missingValues = new LinkedList<>();
         for(MethodNode m:mds){
             String name = m.getName();
-            if(!attrKeys.contains(name)){
+            if(m.getDefaultValue() == null && !attrKeys.contains(name)){
                 missingValues.add(name);
             }
         }
         if(missingValues.size()>0){
             //TODO add offset on annotationNode
             diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    ,"Missing attribute for annotation:" + missingValues.toString(),OffsetRange.NONE);
+                    ,"Missing attribute for annotation:" + missingValues.toString(), annotation.offset);
             return false;
         }
         return true;

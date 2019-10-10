@@ -3,7 +3,6 @@ package test.kalang.core;
 import kalang.compiler.AstNotFoundException;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.JavaAstLoader;
-import kalang.compiler.core.Type;
 import org.junit.Assert;
 import org.junit.Test;
 

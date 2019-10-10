@@ -3,6 +3,8 @@ package kalang.compiler.ast;
 import kalang.compiler.core.Type;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+
 public class VarExpr extends AssignableExpr{
     
     protected final LocalVarNode var;
@@ -33,7 +35,7 @@ public class VarExpr extends AssignableExpr{
 
     @Override
     public String toString() {
-        return var.getName();
+        return Objects.toString(var);
     }
     
     public void overrideType(Type newType) {
@@ -43,7 +45,7 @@ public class VarExpr extends AssignableExpr{
     public void removeOverrideType(){
         overrideType = null;
     }
-    
-    
+
+
     
 }

@@ -8,7 +8,7 @@ import java.util.Map;
  *
  * @author Kason Yang 
  */
-public class AnnotationNode{
+public class AnnotationNode extends AstNode{
     
     protected ClassNode annotationType;
     

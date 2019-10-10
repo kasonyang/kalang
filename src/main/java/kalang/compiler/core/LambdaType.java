@@ -3,6 +3,8 @@ package kalang.compiler.core;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.util.LambdaUtil;
 
+import java.util.Objects;
+
 public class LambdaType extends ObjectType {
 
     private static int functionTypeCounter = 0;
@@ -19,6 +21,11 @@ public class LambdaType extends ObjectType {
             return false;
         }
         return nullable.equals(((ObjectType) type).getNullable()) && equalsIgnoreNullable((ObjectType) type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parameterCount, nullable);
     }
 
     public boolean isAssignableTo(Type type) {

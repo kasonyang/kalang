@@ -39,4 +39,8 @@ public class ArrayLengthExpr extends ExprNode{
         this.arrayExpr = arrayExpr;
     }
 
+    @Override
+    public String toString() {
+        return arrayExpr + ".length";
+    }
 }

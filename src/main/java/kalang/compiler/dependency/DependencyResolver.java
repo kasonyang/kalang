@@ -14,6 +14,7 @@ import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.plugins.resolver.AbstractResolver;
 import org.apache.ivy.plugins.resolver.IBiblioResolver;
 import org.apache.ivy.util.Message;
+import org.apache.ivy.util.url.URLHandlerRegistry;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -27,7 +28,7 @@ public class DependencyResolver {
         this.repositories = Collections.EMPTY_LIST;
     }
 
-    public DependencyResolver(List<String> repositories){
+    public DependencyResolver(Set<String> repositories){
         this.repositories = new LinkedList<>(repositories);
     }
 
@@ -47,6 +48,7 @@ public class DependencyResolver {
 
     private ResolveResult doResolve(Artifact[] artifacts) throws IOException, ParseException {
         Message.setDefaultLogger(new NoMessageLogger());
+        URLHandlerRegistry.setDefault(new ExtendURLHandler());
         IvySettings settings = new IvySettings();
         if (!this.repositories.isEmpty()) {
             int repoSize = repositories.size();
@@ -86,7 +88,7 @@ public class DependencyResolver {
             Artifact art = artifacts[i];
             mrids[i] = ModuleRevisionId.newInstance(art.getGroup(),art.getName(),art.getVersion());
             revisionId2Artifact.put(mrids[i],art);
-        };
+        }
         DefaultModuleDescriptor moduleDescriptor = DefaultModuleDescriptor.newCallerInstance(mrids, true, false);
         ResolveReport res = ivy.resolve(moduleDescriptor, ops);
         ResolveResult result = new ResolveResult();

@@ -31,7 +31,7 @@ public class AntlrTest {
     }
     
     private CommonTokenStream createTokenStream() throws IOException{
-        KalangSource source = KalangSourceUtil.create(new File("src/test/kalang-snippets"), new File("src/test/kalang-snippets/automation/HelloKalang.kl"));
+        KalangSource source = KalangSourceUtil.create(new File("src/test/kalang-snippets"), new File("src/test/kalang-snippets/automation/HelloKalang.kl"), "utf8");
         return TokenStreamFactory.createTokenStream(source.getText());
     }
     

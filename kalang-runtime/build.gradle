@@ -12,8 +12,8 @@ apply from:"../gradle/maven-publish.gradle"
 
 processResources {
   from("src/main/resources"){
-    include 'default.properties'
+    include 'kalang/lang/runtime.properties'
     expand  version: project.version,
-            buildtime: new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format( new Date() )
+            buildtime: new Date().getTime()
   }
 }

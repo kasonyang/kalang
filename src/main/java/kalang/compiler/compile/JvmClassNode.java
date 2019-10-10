@@ -1,10 +1,7 @@
 package kalang.compiler.compile;
 
 import kalang.compiler.AstNotFoundException;
-import kalang.compiler.ast.AnnotationNode;
-import kalang.compiler.ast.ClassNode;
-import kalang.compiler.ast.FieldNode;
-import kalang.compiler.ast.MethodNode;
+import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.WildcardType;
@@ -96,11 +93,12 @@ public class JvmClassNode extends ClassNode {
                 String mName;
                 int mModifier;
                 HashMap<TypeVariable,GenericType> gTypeMap = new HashMap<>(getGenericTypeMap());
-
+                ConstExpr defaultValue = null;
                 if (m instanceof Method) {
                     mType = getType(((Method) m).getGenericReturnType(), gTypeMap , ((Method) m).getReturnType(), nullable);
                     mName = m.getName();
                     mModifier = m.getModifiers();
+                    defaultValue = new ConstExpr (((Method) m).getDefaultValue());
                 } else if (m instanceof Constructor) {
                     mName = "<init>";
                     mType = Types.VOID_TYPE;// getType(clz);
@@ -109,6 +107,7 @@ public class JvmClassNode extends ClassNode {
                     throw Exceptions.unexpectedValue(m);
                 }
                 MethodNode methodNode = createMethodNode(mType, mName, mModifier);
+                methodNode.setDefaultValue(defaultValue);
                 for (Parameter p : m.getParameters()) {
                     NullableKind pnullable = getNullable(p.getAnnotations());
                     methodNode.createParameter(getType(p.getParameterizedType(), gTypeMap, p.getType(), pnullable), p.getName());

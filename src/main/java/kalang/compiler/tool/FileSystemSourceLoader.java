@@ -22,11 +22,14 @@ public class FileSystemSourceLoader implements SourceLoader {
 
     private final List<File> srcDirs = new ArrayList<>();
     
-    private final List<String> extentions = new ArrayList<>();
+    private final List<String> extensions = new ArrayList<>();
+
+    private final String encoding;
     
-    public FileSystemSourceLoader(File[] srcDir,String[] extentions) {
+    public FileSystemSourceLoader(File[] srcDir, String[] extensions, String encoding) {
         this.srcDirs.addAll(Arrays.asList(srcDir));
-        this.extentions.addAll(Arrays.asList(extentions));
+        this.extensions.addAll(Arrays.asList(extensions));
+        this.encoding = encoding;
     }
     
     public void addSourceDir(File dir){
@@ -34,18 +37,18 @@ public class FileSystemSourceLoader implements SourceLoader {
     }
     
     public void addExtention(String ext){
-        extentions.add(ext);
+        extensions.add(ext);
     }
     
     @Override
     public KalangSource loadSource(String className) {
-        for(String e:extentions){
+        for(String e: extensions){
             String fn = className.replace(".", "/") + "." + e;
             for(File s:srcDirs){
                 File srcFile = new File(s,fn);
                 if(FilePathUtil.existFile(srcFile)){
                     try {
-                        return KalangSourceUtil.create(s,srcFile);
+                        return KalangSourceUtil.create(s, srcFile, encoding);
                     } catch (IOException ex) {
                         Logger.getLogger(FileSystemSourceLoader.class.getName()).log(Level.SEVERE, null, ex);
                         return null;

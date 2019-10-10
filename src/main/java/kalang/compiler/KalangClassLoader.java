@@ -38,7 +38,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
         super(new URL[0],parentClassLoader==null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader);
         Configuration conf = config == null ? new Configuration() : Configuration.copy(config);
         this.parentClassLoader = parentClassLoader;
-        sourceLoader = new FileSystemSourceLoader(sourceDir,new String[]{"kl","kalang"});
+        sourceLoader = new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding());
         CodeGenerator cg = this;
         conf.setAstLoader(new JavaAstLoader(conf.getAstLoader(), parentClassLoader));
         compiler = new KalangCompiler(conf){
@@ -110,10 +110,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
         if(diagnosis.getKind().isError()){
             KalangSource source = diagnosis.getSource();
             OffsetRange offset = diagnosis.getOffset();
-            throw new CompileException(String.format("%s @%s:%s"
-                    , diagnosis.getDescription()
-                    , source.getFileName(),offset.startLine)
-            );
+            throw new CompileException(diagnosis.getDescription(), source.getFileName(),offset.startLine);
         }
     }
 

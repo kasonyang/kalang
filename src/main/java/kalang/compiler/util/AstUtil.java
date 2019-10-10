@@ -58,9 +58,7 @@ public class AstUtil {
             for (Type e : m.getExceptionTypes()) mm.addExceptionType(e);
             ParameterDescriptor[] pds = m.getParameterDescriptors();
             for (ParameterDescriptor pd : pds) {
-                ParameterNode p = mm.createParameter(pd.getType(), pd.getName());
-                //TODO update mm.createParameter
-                p.modifier = pd.getModifier();
+                mm.createParameter(pd.getType(), pd.getName(), pd.getModifier());
             }
             BlockStmt body = mm.getBody();
             ParameterNode[] parameters = mm.getParameters();
@@ -97,7 +95,7 @@ public class AstUtil {
                 methods.add(m);
             }
         }
-        return methods.toArray(new MethodDescriptor[methods.size()]);
+        return methods.toArray(new MethodDescriptor[0]);
     }
 
     public static ExprNode matchType(Type from, Type target, ExprNode expr) {
@@ -274,7 +272,7 @@ public class AstUtil {
                 classes.addAll(Arrays.asList(listInnerClasses(ic,true)));
             }
         }
-        return classes.toArray(new ClassNode[classes.size()]);
+        return classes.toArray(new ClassNode[0]);
     }
     
     public static String[] listInnerClassesNames(ClassNode clazz,boolean recursive){

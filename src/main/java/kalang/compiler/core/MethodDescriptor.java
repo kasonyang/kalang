@@ -6,7 +6,6 @@ import kalang.compiler.ast.MethodNode;
 import kalang.compiler.util.MethodUtil;
 
 import java.lang.reflect.Modifier;
-import java.security.InvalidParameterException;
 import java.util.*;
 
 /**
@@ -98,6 +97,17 @@ public class MethodDescriptor{
     }
 
     private static void inferGeneric(Type declaredType,Type actualArgType,Map<GenericType,Type> resultMap) {
+        if (actualArgType instanceof ObjectType) {
+            ObjectType actualArgObjectType = (ObjectType) actualArgType;
+            ObjectType superType = actualArgObjectType.getSuperType();
+            if (superType != null) {
+                inferGeneric(declaredType, superType, resultMap);
+            }
+            ObjectType[] interfaces = actualArgObjectType.getInterfaces();
+            for (ObjectType itf: interfaces) {
+                inferGeneric(declaredType, itf, resultMap);
+            }
+        }
         if (declaredType.equals(actualArgType)) {
             return;
         } else if (declaredType instanceof GenericType) {
@@ -137,7 +147,7 @@ public class MethodDescriptor{
 
     private static Type parseGenericType(Type type,Map<GenericType,Type> genericTypes){
         if(type instanceof GenericType){
-            Type actualType = genericTypes.get((GenericType)type);
+            Type actualType = genericTypes.get(type);
             return actualType == null ? type : actualType;
         }else if(type instanceof ClassType){
             ClassType pt = (ClassType) type;

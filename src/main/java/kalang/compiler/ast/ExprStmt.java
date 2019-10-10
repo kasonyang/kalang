@@ -11,7 +11,8 @@ public class ExprStmt extends Statement{
     protected ExprNode expr;
     
     public ExprStmt(ExprNode expr){
-            this.expr = expr;
+        this.expr = expr;
+        offset = expr.offset;
     }
     
     @Override
@@ -34,5 +35,10 @@ public class ExprStmt extends Statement{
     public void setExpr(ExprNode expr) {
         Objects.requireNonNull(expr);
         this.expr = expr;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toString(expr);
     }
 }

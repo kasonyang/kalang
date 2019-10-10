@@ -1,6 +1,8 @@
 
 package kalang.compiler.ast;
 
+import java.util.Objects;
+
 /**
  *
  * @author Kason Yang 
@@ -16,5 +18,9 @@ public class ClassReference extends AstNode{
     public ClassNode getReferencedClassNode() {
         return referencedClassNode;
     }
-    
+
+    @Override
+    public String toString() {
+        return Objects.toString(referencedClassNode);
+    }
 }

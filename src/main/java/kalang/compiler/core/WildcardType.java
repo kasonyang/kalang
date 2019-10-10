@@ -7,6 +7,7 @@ import kalang.compiler.util.TypeUtil;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  *
@@ -41,8 +42,13 @@ public class WildcardType extends ObjectType {
         }
     }
 
-    public WildcardType(@Nullable Type[] upperBounds,@Nullable Type[] lowerBounds) {
-        super(getClassNode(upperBounds, lowerBounds),NullableKind.NONNULL);
+    @Deprecated
+    public WildcardType(@Nullable Type[] upperBounds,@Nullable Type[] lowerBounds){
+        this(upperBounds, lowerBounds, NullableKind.NONNULL);
+    }
+
+    public WildcardType(@Nullable Type[] upperBounds,@Nullable Type[] lowerBounds, NullableKind nullableKind) {
+        super(getClassNode(upperBounds, lowerBounds), nullableKind);
         this.upperBounds = upperBounds == null ? new Type[0] : upperBounds;
         this.lowerBounds = lowerBounds == null ? new Type[0] : lowerBounds;
     }
@@ -103,6 +109,14 @@ public class WildcardType extends ObjectType {
         }
         WildcardType other = (WildcardType) obj;
         return nullable.equals(other.getNullable()) && equalsIgnoreNullable(other);
+    }
+
+    @Override
+    public int hashCode() {
+        int hashCode = Arrays.hashCode(lowerBounds);
+        hashCode = hashCode * 31 + Arrays.hashCode(upperBounds);
+        hashCode = hashCode * 31 + Objects.hashCode(nullable);
+        return hashCode;
     }
 
     @Override

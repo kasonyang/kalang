@@ -1,0 +1,14 @@
+boolean testQuestion() {
+    val v1 = true ? 2 : 20;
+    val v2 = false ? 5 : 50;
+    return v1 + v2 == 52;
+}
+
+boolean testQuestion2() {
+    val v = true ? 1 : 2L;
+    return v == 1L;
+}
+
+Boolean? nullableReturn() {
+    return true ? true : null;
+}

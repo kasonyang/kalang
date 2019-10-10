@@ -16,13 +16,17 @@ public class AccessUtil {
         Objects.requireNonNull(targetOwner);
         if (Modifier.isPublic(targetModifier)) {
             return true;
-        } else if (Modifier.isPrivate(targetModifier)) {
-            return targetOwner == caller;
         }
         if (caller == null) {
             return false;
         }
-        return targetOwner.equals(caller) || InheritanceUtil.isSubclassOf(caller, targetOwner);
+        if (targetOwner.equals(caller)) {
+            return true;
+        }
+        if (!Modifier.isPrivate(targetModifier)) {
+            return InheritanceUtil.isInSamePackage(caller, targetOwner) || InheritanceUtil.isSubclassOf(caller, targetOwner);
+        }
+        return false;
     }
 
 }

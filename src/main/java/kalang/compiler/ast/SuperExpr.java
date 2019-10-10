@@ -10,8 +10,8 @@ public class SuperExpr extends ExprNode{
     
     private ClassNode classNode;
 
-    public SuperExpr(ClassNode classNode) {
-        this.classNode = classNode;
+    public SuperExpr(ClassNode callerClassNode) {
+        this.classNode = callerClassNode;
     }
 
     @Override
@@ -26,4 +26,8 @@ public class SuperExpr extends ExprNode{
         return classNode;
     }
 
+    @Override
+    public String toString() {
+        return "super";
+    }
 }

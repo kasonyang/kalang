@@ -5,6 +5,7 @@ import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -70,11 +71,11 @@ public class MethodContext {
         if(expr instanceof InstanceOfExpr && onTrue){
             InstanceOfExpr ie = (InstanceOfExpr) expr;
             changeTypeTemporarilyIfCould(ie.getExpr(), Types.getClassType(ie.getTarget().getReferencedClassNode()));
-        } else if(expr instanceof CompareExpr) {
-            CompareExpr ce = (CompareExpr) expr;
+        } else if(expr instanceof CompareBinaryExpr) {
+            CompareBinaryExpr ce = (CompareBinaryExpr) expr;
             ExprNode e1 = ce.getExpr1();
             ExprNode e2 = ce.getExpr2();
-            boolean isEQ = ce.getOperation().equals(CompareExpr.OP_EQ);
+            boolean isEQ = ce.getOperation().equals(CompareBinaryExpr.OP_EQ);
             if (e1.getType().equals(Types.NULL_TYPE)) {
                 onNull(e2, onTrue, isEQ);
             } else if (e2.getType().equals(Types.NULL_TYPE)) {
@@ -101,14 +102,14 @@ public class MethodContext {
             }
         } else if(expr instanceof UnaryExpr){
             onIf(((UnaryExpr) expr).getExpr(),!onTrue);
-        } else if(expr instanceof LogicExpr){
-            LogicExpr le = (LogicExpr) expr;
-            if(le.getOperation().equals(LogicExpr.OP_LOGIC_AND)){
+        } else if(expr instanceof LogicBinaryExpr){
+            LogicBinaryExpr le = (LogicBinaryExpr) expr;
+            if(le.getOperation().equals(LogicBinaryExpr.OP_LOGIC_AND)){
                 if(onTrue){
                     onIf(le.getExpr1(),true);
                     onIf(le.getExpr2(),true);
                 }
-            }else if(le.getOperation().equals(LogicExpr.OP_LOGIC_OR)){
+            }else if(le.getOperation().equals(LogicBinaryExpr.OP_LOGIC_OR)){
                 if(!onTrue){
                     onIf(le.getExpr1(),false);
                     onIf(le.getExpr2(),false);
@@ -116,6 +117,18 @@ public class MethodContext {
             }
         }
 
+    }
+
+    @Nullable
+    public Type getOverrideType(ExprNode expr) {
+        VarObject key = getOverrideTypeKey(expr);
+        if (key != null) {
+            Type type = getVarObjectType(key);
+            if (!expr.getType().equals(type)) {
+                return type;
+            }
+        }
+        return null;
     }
 
     public Type getVarObjectType(VarObject p) {
@@ -146,11 +159,11 @@ public class MethodContext {
         if(assignedTable.length<2){
             throw Exceptions.illegalArgument(assignedTable);
         }
-        HashMap<VarObject,Integer> ret = new HashMap();
-        ret.putAll(assignedTable[0]);
+        HashMap<VarObject, Integer> ret = new HashMap(assignedTable[0]);
         for(int i=1;i<assignedTable.length;i++){
+            Map<VarObject,Integer> current = new HashMap(ret);
             Map<VarObject,Integer> other = assignedTable[i];
-            for(Map.Entry<VarObject,Integer> e:ret.entrySet()){
+            for(Map.Entry<VarObject,Integer> e: current.entrySet()){
                 Integer oneNullable = e.getValue();
                 Integer otherNullable = other.get(e.getKey());
                 if(oneNullable.equals(otherNullable)) continue;
@@ -213,16 +226,19 @@ public class MethodContext {
 
     @Nullable
     private VarObject getOverrideTypeKey(ExprNode expr){
-        VarObject key ;
-        //It isn't supported to override type of field because it is not safe
         if(expr instanceof VarExpr){
-            key = ((VarExpr) expr).getVar();
-        }else if(expr instanceof ParameterExpr){
-            key = ((ParameterExpr) expr).getParameter();
-        }else{
-            key = null;
+            return ((VarExpr) expr).getVar();
+        }else if(expr instanceof ParameterExpr) {
+            return ((ParameterExpr) expr).getParameter();
+        } else if (expr instanceof FieldExpr) {
+            FieldExpr fe = (FieldExpr) expr;
+            FieldDescriptor fd = fe.getField();
+            if (!Modifier.isFinal(fd.getModifier())) {//It isn't supported to override type of non-final field because it is not safe
+                return null;
+            }
+            return fd.getFieldNode();
         }
-        return key;
+        return null;
     }
 
     private void removeOverrideType(ExprNode expr){

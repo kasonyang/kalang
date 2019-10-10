@@ -28,6 +28,24 @@ public class CollectionMixin {
         return find(Arrays.asList(list), handler);
     }
 
+    @MixinMethod
+    public static <T> int findIndex(Collection<T> list, Function1<Boolean,T> handler) {
+        int index = 0;
+        for (T it : list) {
+            Boolean ret = handler.call(it);
+            if (ret != null && ret) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
+    @MixinMethod
+    public static <T> int findIndex(T[] list, Function1<Boolean,T> handler) {
+        return findIndex(Arrays.asList(list), handler);
+    }
+
     @Nonnull
     @MixinMethod
     public static <T> List<T> findAll(Collection<T> list, Function1<Boolean, T> handler) {
@@ -43,8 +61,8 @@ public class CollectionMixin {
 
     @Nonnull
     @MixinMethod
-    public static <T> List<T> findAll(T[] list, Function1<Boolean, T> handler) {
-        return findAll(Arrays.asList(list), handler);
+    public static <T> T[] findAll(T[] list, Function1<Boolean, T> handler) {
+        return findAll(Arrays.asList(list), handler).toArray((T[])Array.newInstance(list.getClass().getComponentType(),0));
     }
 
     @Nonnull
@@ -65,25 +83,33 @@ public class CollectionMixin {
 
     @Nonnull
     @MixinMethod
-    public static <K,E> Map<K,List<E>> group(Collection<E> list, Function1<K,E> keyGenerator) {
-        Map<K,List<E>> result = new HashMap<>();
+    public static <K,E, M extends Map<K,List<E>>> M group(Collection<E> list,M map, Function1<K,E> keyGenerator) {
         for (E it: list) {
             K key = keyGenerator.call(it);
-            List<E> eleList = result.computeIfAbsent(key, k -> new LinkedList<>());
+            List<E> eleList = map.computeIfAbsent(key, k -> new LinkedList<>());
             eleList.add(it);
         }
-        return result;
+        return map;
+    }
+
+    @Nonnull
+    @MixinMethod
+    public static <K,E> Map<K,List<E>> group(Collection<E> list, Function1<K,E> keyGenerator) {
+        return group(list, new HashMap<>(), keyGenerator);
+    }
+
+    @Nonnull
+    @MixinMethod
+    public static <K, E, M extends Map<K,E[]>> M group(E[] array, M map, Function1<K,E> keyGenerator) {
+        Class<?> eleType = array.getClass().getComponentType();
+        group(Arrays.asList(array), keyGenerator).forEach((k,e) -> map.put(k, e.toArray((E[])Array.newInstance(eleType, e.size()))));
+        return map;
     }
 
     @Nonnull
     @MixinMethod
     public static <K,E> Map<K,E[]> group(E[] array, Function1<K,E> keyGenerator) {
-        Map<K,E[]> result = new HashMap<>();
-        Class<?> eleType = array.getClass().getComponentType();
-        group(Arrays.asList(array), keyGenerator).forEach((k,e) -> {
-            result.put(k, e.toArray((E[])Array.newInstance(eleType, e.size())));
-        });
-        return result;
+        return group(array, new HashMap<>(), keyGenerator);
     }
 
     @MixinMethod
@@ -120,6 +146,11 @@ public class CollectionMixin {
             res[i] = array[len - 1 - i];
         }
         return res;
+    }
+
+    @MixinMethod
+    public static String join(Collection list, String delimiter) {
+        return String.join(delimiter, list);
     }
 
     @MixinMethod

@@ -7,6 +7,7 @@ import kalang.compiler.core.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 public abstract class FieldExpr extends AssignableExpr{
     
@@ -36,4 +37,8 @@ public abstract class FieldExpr extends AssignableExpr{
         return field;
     }
 
+    @Override
+    public String toString() {
+        return Objects.toString(field);
+    }
 }

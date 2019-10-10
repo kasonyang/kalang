@@ -1,5 +1,8 @@
+static class StringList extends ArrayList<String> {
+
+}
 int lambdaExprTest() {
-    var cb = &String(String){ value =>
+    var cb = &String(String)(value) => {
         return value;
     };
     return Integer.parseInt(cb.call("3")) + Integer.parseInt(cb("3"));
@@ -14,14 +17,27 @@ int lambdaInvokeTest() {
 
 boolean consumerTest() {
     val list = Arrays.asList(<Integer>[1,2,3]);
-    list.forEach({ it => it.intValue(); });
+    list.forEach(it => it.intValue());
     return true;
 }
 
 boolean compareTest() {
     val list = <Integer>[1,3,2].asList();
-    list.sort({ e1,e2 =>
-        return e1.compareTo(e2);
-    });
+    list.sort((e1,e2) => e1.compareTo(e2));
     return list.equals(<Integer>[1,2,3].asList());
+}
+
+boolean mapTest() {
+    val list = new StringList();
+    list.add("test");
+    val lengthList = list.map(it => it.length());
+    return <Object>[4].asList().equals(lengthList);
+}
+
+boolean nullCheck() {
+    val str as String? = "test";
+    val toStr = &String() {
+        return str == null ? "null" : str.toString();
+    };
+    return toStr() == "test";
 }

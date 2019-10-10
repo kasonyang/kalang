@@ -44,12 +44,12 @@ class {
     }
 
     int safeFieldNav() {
-        val st as ST = null;
+        val st as ST? = null;
         return st?.testField == null ? 6 : 1;
     }
 
     int safeDynamicNav() {
-        val st as ST = null;
+        val st as ST? = null;
         return st?->testField == null ? 6 : 1;
     }
 

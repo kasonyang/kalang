@@ -10,11 +10,10 @@ import java.util.Set;
 public class CollectionsUtil {
     
     public static <T> Set<T> getIntersection(Set<T>... collections){
-        Set<T> sets = new HashSet<>();
-        if(collections.length<2) return sets;
-        sets = collections[0];
+        if(collections.length<2) return new HashSet<>();
+        Set<T> sets = new HashSet<>(collections[0]);
         for(int i=1;i<collections.length;i++){
-            Set<T> c = sets;
+            Set<T> c = new HashSet(sets);
             Set<T> c2 = collections[i];
             sets.clear();
             for(T it:c){

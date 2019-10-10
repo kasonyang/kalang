@@ -1,6 +1,3 @@
-/*
-
-*/
 package kalang.compiler.ast;
 
 import javax.annotation.Nonnull;
@@ -99,4 +96,8 @@ public abstract class BinaryExpr extends ExprNode{
         return operation;
     }
 
+    @Override
+    public String toString() {
+        return expr1 + this.operation + expr2;
+    }
 }

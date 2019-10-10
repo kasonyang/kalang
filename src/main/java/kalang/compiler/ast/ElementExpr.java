@@ -70,5 +70,9 @@ public class ElementExpr extends AssignableExpr{
         Objects.requireNonNull(index);
         this.index = index;
     }
-    
+
+    @Override
+    public String toString() {
+        return arrayExpr + "[" + index + "]";
+    }
 }

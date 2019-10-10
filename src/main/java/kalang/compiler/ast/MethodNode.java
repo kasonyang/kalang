@@ -17,6 +17,9 @@ public class MethodNode extends AstNode implements Annotationable{
 
     @Nullable
     private ConstExpr defaultReturnValue;
+
+    @Nullable
+    private ConstExpr defaultValue = null;
     
     private final List<ParameterNode> parameters = new LinkedList();
     
@@ -38,15 +41,19 @@ public class MethodNode extends AstNode implements Annotationable{
     }
     
     public ParameterNode createParameter(Type type,String name){
-        return _createParameter(null, type, name);
+        return _createParameter(null, type, name, 0);
+    }
+
+    public ParameterNode createParameter(Type type, String name, int modifier) {
+        return _createParameter(null, type, name, modifier);
     }
     
     public ParameterNode createParameter(int index,Type type,String name){
-        return _createParameter(index, type, name);
+        return _createParameter(index, type, name, 0);
     }
     
-    private ParameterNode _createParameter(Integer index,Type type,String name){
-        ParameterNode param = new ParameterNode(this, type, name);
+    private ParameterNode _createParameter(Integer index,Type type,String name, int modifier){
+        ParameterNode param = new ParameterNode(this, modifier, type, name);
         if(index==null){
             parameters.add(param);
         }else{
@@ -65,7 +72,7 @@ public class MethodNode extends AstNode implements Annotationable{
 
     @Override
     public AnnotationNode[] getAnnotations() {
-        return annotations.toArray(new AnnotationNode[annotations.size()]);
+        return annotations.toArray(new AnnotationNode[0]);
     }
 
     @Override
@@ -78,7 +85,7 @@ public class MethodNode extends AstNode implements Annotationable{
     }
     
     public ParameterNode[] getParameters(){
-        return parameters.toArray(new ParameterNode[parameters.size()]);
+        return parameters.toArray(new ParameterNode[0]);
     }
 
     public String getName() {
@@ -122,4 +129,12 @@ public class MethodNode extends AstNode implements Annotationable{
         this.defaultReturnValue = defaultReturnValue;
     }
 
+    @Nullable
+    public ConstExpr getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(@Nullable ConstExpr defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 }

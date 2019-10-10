@@ -6,6 +6,7 @@ import kalang.compiler.core.ObjectType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -31,6 +32,14 @@ public class InheritanceUtil {
             }
         }
         return false;
+    }
+
+    public static boolean isInnerClassOf(ClassNode innerClass, ClassNode outerClass) {
+        return innerClass.name.startsWith(outerClass.name) && innerClass.name.length() != outerClass.name.length();
+    }
+
+    public static boolean isInSamePackage(ClassNode class1, ClassNode class2) {
+        return Objects.equals(NameUtil.getPackageName(class1.name), NameUtil.getPackageName(class2.name));
     }
 
 }

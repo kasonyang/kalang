@@ -10,6 +10,7 @@ import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 import kalang.compiler.util.*;
+import kalang.mixin.CollectionMixin;
 import kalang.type.FunctionClasses;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -27,7 +28,13 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     protected final SemanticAnalyzer semanticAnalyzer;
     private CompilationUnit compilationUnit;
 
+    private Map<FieldNode, MethodNode> privateFieldReaderMap = new HashMap<>();
+
+    private Map<FieldNode, MethodNode> privateFieldWriterMap = new HashMap<>();
+
     protected MethodContext methodCtx;
+
+    private int tempVarCounter = 0;
 
     public AstBuilderBase(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
@@ -59,8 +66,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
-    protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset){
-        ExprNode ret;
+    protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset, @Nullable ExprNode assignValue){
+
         Type type = expr.getType();
         if(!(type instanceof  ObjectType)){
             return null;
@@ -68,20 +75,51 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         ObjectType exprType = (ObjectType) type;
         if ((exprType instanceof ArrayType)
                 && fieldName.equals("length")) {
-            ret = new ArrayLengthExpr(expr);
-        } else {
-            try {
-                ret = ObjectFieldExpr.create(expr, fieldName,getCurrentClass());
-            } catch (FieldNotFoundException ex) {
+            ArrayLengthExpr ret = new ArrayLengthExpr(expr);
+            if (assignValue != null) {
+                handleSyntaxError("could not assign a value to final variable", offset);
                 return null;
             }
+            return mapAst(ret, offset);
+        } else {
+            try {
+                FieldExpr fe = ObjectFieldExpr.create(expr, fieldName, getCurrentClass());
+                if (assignValue != null) {
+                    AssignExpr result = new AssignExpr(fe, assignValue);
+                    return mapAst(result, offset);
+                }
+                return fe;
+            } catch (FieldNotFoundException ex) {
+                ExprNode ret;
+                Type targetType = expr.getType();
+                if (!(targetType instanceof ClassType)) {
+                    return null;
+                }
+                ClassNode targetClassNode = ((ClassType) targetType).getClassNode();
+                if (!InheritanceUtil.isInnerClassOf(getCurrentClass(), targetClassNode)) {
+                    return null;
+                }
+                FieldNode field = CollectionMixin.find(targetClassNode.getFields(), f -> fieldName.equals(f.getName()));
+                if (field == null) {
+                    return null;
+                }
+                boolean isWrite = assignValue != null;
+                if (isWrite) {
+                    MethodNode writer = getPrivateFieldAccessor(field, true);
+                    ClassReference clsRef = new ClassReference(writer.getClassNode());
+                    ret = StaticInvokeExpr.create(clsRef, writer.getName(), new ExprNode[]{expr, assignValue}, getCurrentClass());
+                } else {
+                    MethodNode reader = getPrivateFieldAccessor(field, false);
+                    ClassReference clsRef = new ClassReference(reader.getClassNode());
+                    ret = StaticInvokeExpr.create(clsRef, reader.getName(), new ExprNode[]{expr}, getCurrentClass());
+                }
+                return ret;
+            }
         }
-        mapAst(ret, offset);
-        return ret;
     }
 
-    protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset){
-        ExprNode fe = getObjectFieldLikeExpr(expr, fieldName, offset);
+    protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset,@Nullable ExprNode assignValue){
+        ExprNode fe = getObjectFieldLikeExpr(expr, fieldName ,offset, assignValue);
         if (fe == null) {
             this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,offset);
             return null;
@@ -144,7 +182,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nonnull
     protected LocalVarNode declareTempLocalVar(Type type){
-        LocalVarNode var = declareLocalVar(null, type,0,OffsetRange.NONE);
+        LocalVarNode var = declareLocalVar("$temp$" + tempVarCounter++, type,0,OffsetRange.NONE);
         if(var==null) throw Exceptions.unexpectedValue(var);
         return var;
     }
@@ -190,21 +228,35 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     protected BinaryExpr constructBinaryExpr(ExprNode expr1,ExprNode expr2,String op){
         BinaryExpr binExpr;
         switch(op){
-            case "==":
-            case "!=":
-            case ">":
-            case ">=":
-            case "<":
-            case "<=":
-                binExpr = new CompareExpr(expr1, expr2, op);
+            case BinaryExpr.OP_EQ:
+            case BinaryExpr.OP_NE:
+            case BinaryExpr.OP_GT:
+            case BinaryExpr.OP_GE:
+            case BinaryExpr.OP_LT:
+            case BinaryExpr.OP_LE:
+                binExpr = new CompareBinaryExpr(expr1, expr2, op);
                 break;
-            case "&&":
-            case "||":
-                binExpr = new LogicExpr(expr1, expr2, op);
+            case BinaryExpr.OP_LOGIC_AND:
+            case BinaryExpr.OP_LOGIC_OR:
+                binExpr = new LogicBinaryExpr(expr1, expr2, op);
+                break;
+            case BinaryExpr.OP_ADD:
+            case BinaryExpr.OP_SUB:
+            case BinaryExpr.OP_MUL:
+            case BinaryExpr.OP_DIV:
+            case BinaryExpr.OP_REM:
+                binExpr = new ArithmeticBinaryExpr(expr1, expr2, op);
+                break;
+            case BinaryExpr.OP_SHIFT_LEFT:
+            case BinaryExpr.OP_SHIFT_RIGHT:
+            case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT:
+            case BinaryExpr.OP_AND:
+            case BinaryExpr.OP_OR:
+            case BinaryExpr.OP_XOR:
+                binExpr = new BitwiseBinaryExpr(expr1, expr2, op);
                 break;
             default:
-                binExpr = new MathExpr(expr1, expr2, op);
-                break;
+                throw Exceptions.unexpectedValue(op);
         }
         semanticAnalyzer.validateBinaryExpr(binExpr);
         return binExpr;
@@ -247,8 +299,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         } catch (MethodNotFoundException | AmbiguousMethodException ex) {
             throw Exceptions.unexpectedException(ex);
         }
-        for(int i=0;i<expr.length;i++){
-            ret = ObjectInvokeExpr.create(ret, "append",new ExprNode[]{expr[i]});
+        for (ExprNode exprNode : expr) {
+            ret = ObjectInvokeExpr.create(ret, "append", new ExprNode[]{exprNode});
         }
         return ObjectInvokeExpr.create(ret,"toString",new ExprNode[0]);
     }
@@ -316,15 +368,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     //TODO add stop token
     protected void handleSyntaxError(String msg, Token token) {
         //TODO what does EMPTY means?
-        handleSyntaxError(msg, (ParserRuleContext.EMPTY), token, token);
+        handleSyntaxError(msg, token, token);
     }
 
     protected void handleSyntaxError(String msg, ParserRuleContext tree) {
-        handleSyntaxError(msg, tree, tree.start, tree.stop);
+        handleSyntaxError(msg, tree.start, tree.stop);
     }
 
     //TODO remove rule
-    protected void handleSyntaxError(String desc, ParserRuleContext rule, Token start, Token stop) {
+    protected void handleSyntaxError(String desc, Token start, Token stop) {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, desc, start, stop);
     }
 
@@ -337,20 +389,27 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         node.offset = OffsetRangeHelper.getOffsetRange(tree);
     }
 
-    protected void mapAst(AstNode node,OffsetRange offsetRange) {
+    protected void mapAst(AstNode node,OffsetRange offsetRange, boolean recursive) {
         node.offset = offsetRange;
+        if (recursive) {
+            List<AstNode> children = node.getChildren();
+            for (AstNode c: children) {
+                mapAst(c, offsetRange, true);
+            }
+        }
     }
 
-    protected void mapAst(@Nonnull AstNode node, @Nonnull Token token) {
-        node.offset = OffsetRangeHelper.getOffsetRange(token);
+    protected <T extends AstNode> T mapAst(T node,OffsetRange offsetRange) {
+        mapAst(node, offsetRange, false);
+        return node;
     }
+
 
     @Nullable
     protected ClassNode resolveNamedClass(String id,ClassNode topClass,ClassNode currentClass){
         TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
         String resolvedName = typeNameResolver.resolve(id, topClass, currentClass);
-        ClassNode ast = resolvedName==null ? null : getAst(resolvedName);
-        return ast;
+        return resolvedName==null ? null : getAst(resolvedName);
     }
 
     protected ClassType parseLambdaType(KalangParser.LambdaTypeContext ctx) {
@@ -552,8 +611,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             if (clsRef == null) {
                 return null;
             }
-            //TODO fix type parameter
-            ce = new ConstExpr(Types.getClassClassType(), clsRef.getReferencedClassNode().name);
+            ClassNode nodeOfClassClass = loadAst(Types.CLASS_CLASS_NAME);
+            ClassType[] ptTypes = new ClassType[] { Types.getClassType(clsRef.getReferencedClassNode()) };
+            ce = new ConstExpr(Types.getClassType(nodeOfClassClass, ptTypes), clsRef.getReferencedClassNode().name);
         } else if (ctx.getText().equals("null")) {
             ce = new ConstExpr(Types.NULL_TYPE,"null");
         } else {
@@ -571,6 +631,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         List<Token> vk = ctx.annotationValueKey;
         KalangParser.LiteralContext dv = ctx.annotationDefaultValue;
         AnnotationNode anNode = new AnnotationNode(anType);
+        mapAst(anNode, ctx);
         if(vk!=null && vk.size()>0){
             List<KalangParser.LiteralContext> anValues = ctx.annotationValue;
             int ksize = vk.size();
@@ -600,8 +661,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     @Nullable
-    protected ExprNode getObjectFieldExpr(ExprNode expr,String fieldName,@Nullable ParserRuleContext rule){
-        ExprNode ret;
+    protected FieldExpr getObjectFieldExpr(ExprNode expr,String fieldName,OffsetRange offset){
+        FieldExpr ret;
         Type type = expr.getType();
         if(!(type instanceof  ObjectType)){
             //AstBuilder.this.handleSyntaxError("unsupported type", rule==null ? ParserRuleContext.EMPTY : rule);
@@ -617,7 +678,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 return null;
             }
         }
-        if(rule!=null) mapAst(ret, rule);
+        mapAst(ret, offset, true);
         return ret;
     }
 
@@ -800,7 +861,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
-    private VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
+    protected VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
         LocalVarNode tmpTarget = declareTempLocalVar(target.getType());
         initStmtsHolder.add(new VarDeclStmt(tmpTarget));
         initStmtsHolder.add(new ExprStmt(new AssignExpr(new VarExpr(tmpTarget),target)));
@@ -860,6 +921,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return astLoader.getAst(className);
     }
 
+    protected ClassNode loadAst(String className) {
+        AstLoader astLoader = compilationUnit.getCompileContext().getAstLoader();
+        return astLoader.loadAst(className);
+    }
+
     protected List<MethodDescriptor> getImportedMethods(Map<String, ClassNode> importedMethods, List<ClassNode> importedPaths, String methodName) {
         ClassNode classOfStaticImport = importedMethods.get(methodName);
         if (classOfStaticImport != null) {
@@ -873,6 +939,33 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             }
         }
         return Collections.emptyList();
+    }
+
+    private MethodNode getPrivateFieldAccessor(FieldNode field, boolean isWriter) {
+        Map<FieldNode, MethodNode> accessorMap = isWriter ? privateFieldWriterMap : privateFieldReaderMap;
+        MethodNode accessor = accessorMap.get(field);
+        if (accessor != null) {
+            return accessor;
+        }
+        ClassNode cn = field.getClassNode();
+        MethodNode mn = cn.createMethodNode(field.getType(), "access$" + accessorMap.size(), Modifier.STATIC | Modifier.SYNCHRONIZED);
+        ParameterNode objPn = mn.createParameter(Types.getClassType(cn), "obj");
+        if (isWriter) {
+            ParameterNode valuePn = mn.createParameter(field.getType(), "value");
+            mn.getBody().statements.add(new ExprStmt(
+                    new AssignExpr(
+                            new ObjectFieldExpr(new ParameterExpr(objPn), field)
+                            , new ParameterExpr(valuePn)
+                    )
+            ));
+            mn.getBody().statements.add(new ReturnStmt(new ParameterExpr(valuePn)));
+        } else {
+            mn.getBody().statements.add(new ReturnStmt(
+                    new ObjectFieldExpr(new ParameterExpr(objPn), field)
+            ));
+        }
+        accessorMap.put(field, mn);
+        return mn;
     }
 
 }

@@ -1,6 +1,9 @@
 
 package kalang.compiler.core;
 import kalang.compiler.util.AstUtil;
+
+import java.util.Objects;
+
 /**
  *
  * @author Kason Yang
@@ -29,6 +32,11 @@ public class ArrayType extends ObjectType{
             return false;
         }
         return nullable.equals(obj) && equalsIgnoreNullable((ArrayType) obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(componentType) * 31 + Objects.hash(nullable);
     }
 
     @Override

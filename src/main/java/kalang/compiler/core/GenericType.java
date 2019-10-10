@@ -4,6 +4,7 @@ import kalang.compiler.ast.ClassNode;
 import kalang.compiler.util.AstUtil;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -25,9 +26,12 @@ public class GenericType extends ObjectType{
     }
 
     @Override
-    public boolean equalsIgnoreNullable(ObjectType other) {
-        //TODO fix equalsIgnoreNullable
-        return equals(other);
+    public boolean equalsIgnoreNullable(ObjectType obj) {
+        if (!(obj instanceof GenericType)) {
+            return false;
+        }
+        GenericType other = (GenericType) obj;
+        return Objects.equals(getSuperType(), other.getSuperType()) && Arrays.equals(getInterfaces(), other.getInterfaces());
     }
 
     @Override

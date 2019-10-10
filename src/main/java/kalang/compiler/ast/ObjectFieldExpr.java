@@ -52,7 +52,9 @@ public class ObjectFieldExpr extends FieldExpr{
     public List<AstNode> getChildren() {
         return Collections.singletonList(target);
     }
-    
-    
 
+    @Override
+    public String toString() {
+        return target + "." +getField();
+    }
 }

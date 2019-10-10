@@ -1,0 +1,13 @@
+class {
+
+    private int value = this.getInt();
+
+    int test() {
+        return value;
+    }
+
+    private int getInt() {
+        return 6;
+    }
+
+}
