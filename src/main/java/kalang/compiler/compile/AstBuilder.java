@@ -2014,11 +2014,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             SuperExpr superExpr = new SuperExpr(classNode);
             constructorStmts.add(new ExprStmt(ObjectInvokeExpr.create(superExpr,"<init>",new ExprNode[0])));
             ThisExpr thisExpr = new ThisExpr(classNode);
-            for (FieldNode f: usedFields) {
+            FieldNode[] declaredFields = classNode.getFields();
+            for (FieldNode f: declaredFields) {
                 if (!f.getName().startsWith("this$0$")) {
                     continue;
                 }
-                if (!f.getClassNode().equals(classNode)) {
+                if (!usedFields.contains(f)) {
+                    classNode.removeField(f);
                     continue;
                 }
                 String paramName = f.getName().substring("this$0$".length());

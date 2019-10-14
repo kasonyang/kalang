@@ -7,6 +7,7 @@ import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Type;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -45,8 +46,7 @@ public class NewObjectExpr extends ExprNode{
     
     @Override
     public List<AstNode> getChildren() {
-        return Collections.EMPTY_LIST;
-        //return Collections.singletonList(constructor);
+        return Arrays.asList(constructor.getArguments());
     }
 
     @Override
