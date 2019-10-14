@@ -2018,6 +2018,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 if (!f.getName().startsWith("this$0$")) {
                     continue;
                 }
+                if (!f.getClassNode().equals(classNode)) {
+                    continue;
+                }
                 String paramName = f.getName().substring("this$0$".length());
                 ParameterNode p = constructor.createParameter(f.getType(), paramName);
                 constructorStmts.add(new ExprStmt(
