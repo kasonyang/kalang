@@ -2210,20 +2210,15 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ExprNode conditionExpr = new CompareBinaryExpr(new VarExpr(targetTmpVar), new ConstExpr(Types.NULL_TYPE), "==");
         methodCtx.newOverrideTypeStack();
         methodCtx.onIf(conditionExpr, true);
-        ExprNode trueExpr = new ConstExpr(Types.NULL_TYPE);
         methodCtx.popOverrideTypeStack();
         methodCtx.newOverrideTypeStack();
         methodCtx.onIf(conditionExpr, false);
         ExprNode targetTmpExpr = new VarExpr(targetTmpVar, methodCtx.getVarObjectType(targetTmpVar));
-        ExprNode invokeExpr = navigateExprMaker.call(targetTmpExpr);
-        if (invokeExpr == null) {
-            return null;
-        }
-        ExprNode falseExpr = BoxUtil.assignToObjectType(invokeExpr);
+        ExprNode falseExpr = navigateExprMaker.call(targetTmpExpr);
         if (falseExpr == null) {
-            handleSyntaxError("unable cast " + invokeExpr.getType() + " to object type", invokeExpr.offset);
             return null;
         }
+        ExprNode trueExpr = Values.getDefaultValue(falseExpr.getType());
         methodCtx.popOverrideTypeStack();
         LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
         VarDeclStmt vds = new VarDeclStmt(vo);
