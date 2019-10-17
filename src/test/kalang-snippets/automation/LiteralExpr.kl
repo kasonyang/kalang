@@ -2,3 +2,11 @@ boolean classLiteral() {
     val str = String.class.newInstance();
     return str.length() == 0;
 }
+
+boolean intLiteral() {
+    return 100_000 == 100000;
+}
+
+boolean longLiteral() {
+    return 100_000L == 100000L;
+}
