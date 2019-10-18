@@ -83,7 +83,7 @@ public class CollectionMixin {
 
     @Nonnull
     @MixinMethod
-    public static <K,E, M extends Map<K,List<E>>> M group(Collection<E> list,M map, Function1<K,E> keyGenerator) {
+    public static <K,E, M extends Map<K,List<E>>> Map<K,List<E>> group(Collection<E> list,M map, Function1<K,E> keyGenerator) {
         for (E it: list) {
             K key = keyGenerator.call(it);
             List<E> eleList = map.computeIfAbsent(key, k -> new LinkedList<>());
@@ -100,7 +100,7 @@ public class CollectionMixin {
 
     @Nonnull
     @MixinMethod
-    public static <K, E, M extends Map<K,E[]>> M group(E[] array, M map, Function1<K,E> keyGenerator) {
+    public static <K, E, M extends Map<K,E[]>> Map<K,E[]> group(E[] array, M map, Function1<K,E> keyGenerator) {
         Class<?> eleType = array.getClass().getComponentType();
         group(Arrays.asList(array), keyGenerator).forEach((k,e) -> map.put(k, e.toArray((E[])Array.newInstance(eleType, e.size()))));
         return map;

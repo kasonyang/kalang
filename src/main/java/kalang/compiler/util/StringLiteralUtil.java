@@ -57,7 +57,7 @@ public class StringLiteralUtil {
         } else if (longLiteral.length() > 1 && longLiteral.startsWith("0")) {
             return Long.parseUnsignedLong(longLiteral.substring(1).replace("_", ""), 8);
         } else {
-            return Long.parseUnsignedLong(longLiteral);
+            return Long.parseUnsignedLong(longLiteral.replace("_", ""), 10);
         }
     }
 
@@ -67,7 +67,7 @@ public class StringLiteralUtil {
         } else if (longLiteral.length() > 1 && longLiteral.startsWith("0")) {
             return Integer.parseUnsignedInt(longLiteral.substring(1).replace("_", ""), 8);
         } else {
-            return Integer.parseUnsignedInt(longLiteral, 10);
+            return Integer.parseUnsignedInt(longLiteral.replace("_", ""), 10);
         }
     }
 

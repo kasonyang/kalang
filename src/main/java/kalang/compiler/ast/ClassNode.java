@@ -91,9 +91,14 @@ public class ClassNode extends AstNode implements Annotationable{
     public AnnotationNode[] getAnnotations() {
         return annotations.toArray(new AnnotationNode[0]);
     }
-    
+
+    //TODO rename to getDeclaredFields?
     public FieldNode[] getFields(){
         return this.fields.toArray(new FieldNode[fields.size()]);
+    }
+
+    public void removeField(FieldNode fieldNode) {
+        fields.remove(fieldNode);
     }
     
     public void addInterface(ObjectType type){

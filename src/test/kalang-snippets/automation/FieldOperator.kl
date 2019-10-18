@@ -43,9 +43,9 @@ class {
         return ( (Integer)fields[0] + (Integer)fields[1] ) + 4 ;
     }
 
-    int safeFieldNav() {
+    boolean safeFieldNav() {
         val st as ST? = null;
-        return st?.testField == null ? 6 : 1;
+        return st?.testField == 0;
     }
 
     int safeDynamicNav() {

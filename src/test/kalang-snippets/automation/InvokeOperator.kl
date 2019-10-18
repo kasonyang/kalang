@@ -28,12 +28,14 @@ class {
         return ints.length == 3 && ints[2] == 6 && callGetArrayCount == 1;
     }
 
-    int safeInvoke(){
+    boolean safeInvoke(){
         val s as String? = null;
-        if ( s?.length() == null) {
-            return 6;
-        }
-        return 1;
+        return s?.length() == 0;
+    }
+
+    boolean safeInvoke2() {
+        val s as String? = null;
+        return s?.toString() == null;
     }
 
     int saveDynamicInvoke() {
