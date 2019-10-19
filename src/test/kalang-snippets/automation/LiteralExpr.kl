@@ -3,6 +3,18 @@ boolean classLiteral() {
     return str.length() == 0;
 }
 
+boolean primitiveClassLiteral() {
+    return int.class.isPrimitive();
+}
+
+boolean primitiveArrayClassLiteral() {
+    return int[].class == new int[0].getClass();
+}
+
+boolean arrayClassLiteral() {
+    return String[].class == new String[0].getClass();
+}
+
 boolean intLiteral() {
     return 100_000 == 100000;
 }

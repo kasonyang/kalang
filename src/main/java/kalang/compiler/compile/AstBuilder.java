@@ -510,7 +510,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 return null;
             }
         } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
-            rs.expr = new ConstExpr(Types.NULL_TYPE);
+            rs.expr = new ConstExpr(null);
         }
         // if(!semanticAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
         return this.onReturnStmt(rs);
@@ -1147,11 +1147,29 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (expr instanceof ConstExpr) {
             ConstExpr ce = (ConstExpr) expr;
             if (op.equals(UnaryExpr.OPERATION_LOGIC_NOT)) {
-                ce = new ConstExpr(ce.getType(), String.valueOf(!Boolean.parseBoolean(ce.getValue())));
+                ce = new ConstExpr(!(Boolean)ce.getValue());
                 mapAst(ce, ctx);
                 return ce;
             } else if (op.equals(UnaryExpr.OPERATION_NEG)) {
-                ce = new ConstExpr(ce.getType(), "-" + ce.getValue());
+                Object v = ce.getValue();
+                if (v instanceof Byte) {
+                    v = - (Byte) v;
+                } else if (v instanceof Character) {
+                    v = - (Character) v;
+                } else if (v instanceof Short) {
+                    v = - (Short) v;
+                } else if (v instanceof Integer) {
+                    v = -(Integer) v;
+                } else if (v instanceof Long) {
+                    v = -(Long) v;
+                } else if (v instanceof Float) {
+                    v = - (Float) v;
+                } else if (v instanceof Double) {
+                    v = - (Double) v;
+                } else {
+                    throw Exceptions.unexpectedValue(v);
+                }
+                ce = new ConstExpr(v);
                 mapAst(ce, ctx);
                 return ce;
             }
@@ -1263,7 +1281,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public ConstExpr visitLiteral(LiteralContext ctx) {
+    public ExprNode visitLiteral(LiteralContext ctx) {
         return this.parseLiteral(ctx);
     }
 
@@ -1997,7 +2015,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         }
         if (returnType.equals(Types.getVoidClassType())) {
-            bs.statements.add(onReturnStmt(new ReturnStmt(new ConstExpr(Types.NULL_TYPE))));
+            bs.statements.add(onReturnStmt(new ReturnStmt(new ConstExpr(null))));
             methodCtx.returned = true;
         }
         methodNode.getBody().statements.add(bs);
@@ -2148,14 +2166,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return invocationExpr;
     }
 
-    protected OffsetRange offset(ParserRuleContext ctx) {
-        return OffsetRangeHelper.getOffsetRange(ctx);
-    }
-
-    private OffsetRange offset(Token token) {
-        return OffsetRangeHelper.getOffsetRange(token);
-    }
-
     private ExprNode createStarNavigateExpr(AstNode target, Function1<ExprNode, ExprNode> navigateExprMaker, OffsetRange offset) {
         if (!(target instanceof ExprNode)) {
             handleSyntaxError("expression required", target.offset);
@@ -2207,7 +2217,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         LocalVarNode targetTmpVar = declareTempLocalVar(targetExpr.getType());
         stmts.add(new VarDeclStmt(targetTmpVar));
         stmts.add(new ExprStmt(new AssignExpr(new VarExpr(targetTmpVar), targetExpr)));
-        ExprNode conditionExpr = new CompareBinaryExpr(new VarExpr(targetTmpVar), new ConstExpr(Types.NULL_TYPE), "==");
+        ExprNode conditionExpr = new CompareBinaryExpr(new VarExpr(targetTmpVar), new ConstExpr(null), "==");
         methodCtx.newOverrideTypeStack();
         methodCtx.onIf(conditionExpr, true);
         methodCtx.popOverrideTypeStack();

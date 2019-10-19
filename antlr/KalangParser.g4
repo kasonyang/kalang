@@ -304,14 +304,14 @@ expression
         expression #assignExpr
 ;
 
-literal
-    :   IntegerLiteral 
+literal:
+    IntegerLiteral
     |   FloatingPointLiteral 
     |   CharacterLiteral 
     |   StringLiteral 
     |   MultiLineStringLiteral
-    |   BooleanLiteral 
-    |   Identifier '.' 'class'
+    |   BooleanLiteral
+    |   (primitiveType | Identifier) (arrayPrefix='[' ']')? '.' 'class'
     |   'null' 
     ;
 varModifier:('static'|'final'|'private'|'public'|'protected'|'synchronized'|'abstract'|'native'|'transient'|'volatile')+;

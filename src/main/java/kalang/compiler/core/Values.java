@@ -39,7 +39,7 @@ public class Values {
         } else if (Types.DOUBLE_TYPE.equals(type)) {
             return new ConstExpr(DEFAULT_DOUBLE_VALUE);
         } else if (type instanceof ObjectType) {
-            return new ConstExpr(Types.NULL_TYPE);
+            return new ConstExpr(null);
         } else {
             throw Exceptions.unexpectedValue(type);
         }

@@ -66,6 +66,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
+    protected OffsetRange offset(ParserRuleContext ctx) {
+        return OffsetRangeHelper.getOffsetRange(ctx);
+    }
+
+    protected OffsetRange offset(Token token) {
+        return OffsetRangeHelper.getOffsetRange(token);
+    }
+
+
     protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset, @Nullable ExprNode assignValue){
 
         Type type = expr.getType();
@@ -553,7 +562,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return ast;
     }
 
-    protected ConstExpr parseLiteral(KalangParser.LiteralContext ctx){
+    protected ExprNode parseLiteral(KalangParser.LiteralContext ctx){
         String t = ctx.getText();
         ConstExpr ce;
         if (ctx.IntegerLiteral() != null) {
@@ -566,18 +575,18 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 t = t.substring(0,t.length()-1);
                 constType = Types.INT_TYPE;
             }
-            String constValue;
+            Object constValue;
             try{
                 if (Types.INT_TYPE.equals(constType)) {
-                    constValue = String.valueOf(StringLiteralUtil.parseInteger(t));
+                    constValue = StringLiteralUtil.parseInteger(t);
                 } else  {
-                    constValue = String.valueOf(StringLiteralUtil.parseLong(t));
+                    constValue = StringLiteralUtil.parseLong(t);
                 }
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid number", ctx);
                 return null;
             }
-            ce = new ConstExpr(constType, constValue);
+            ce = new ConstExpr(constValue);
         } else if (ctx.FloatingPointLiteral() != null) {
             Type constType = Types.DOUBLE_TYPE;
             if(t.toUpperCase().endsWith("D")){
@@ -587,35 +596,52 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 t = t.substring(0,t.length()-1);
                 constType = Types.FLOAT_TYPE;
             }
+            Object val;
             try{
                 if (Types.FLOAT_TYPE.equals(constType)) {
-                    Float.parseFloat(t);
+                    val = Float.parseFloat(t);
                 } else {
-                    Double.parseDouble(t);
+                    val = Double.parseDouble(t);
                 }
             }catch(NumberFormatException ex){
                 this.handleSyntaxError("invalid float value", ctx);
                 return null;
             }
-            ce = new ConstExpr(constType, t);
+            ce = new ConstExpr(val);
         } else if (ctx.BooleanLiteral() != null) {
-            ce = new ConstExpr(Types.BOOLEAN_TYPE, t);
+            ce = new ConstExpr(Boolean.valueOf(t));
         } else if (ctx.CharacterLiteral() != null) {
-            ce = new ConstExpr(Types.CHAR_TYPE, StringLiteralUtil.parse(t));
+            ce = new ConstExpr(StringLiteralUtil.parse(t).charAt(1));
         } else if (ctx.StringLiteral() != null) {
-            ce = new ConstExpr(Types.getStringClassType(), StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
+            ce = new ConstExpr(StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
         } else if (ctx.MultiLineStringLiteral()!=null){
-            ce = new ConstExpr(Types.getStringClassType(), StringLiteralUtil.parse(t.substring(3,t.length()-3)));
-        } else if (ctx.Identifier()!=null){
-            ClassReference clsRef = requireClassReference(ctx.Identifier().getSymbol());
-            if (clsRef == null) {
-                return null;
+            ce = new ConstExpr(StringLiteralUtil.parse(t.substring(3,t.length()-3)));
+        } else if (ctx.Identifier() != null || ctx.primitiveType() != null){
+            boolean isArray = ctx.arrayPrefix != null;
+            Type type;
+            if (ctx.Identifier() != null) {
+                type = requireClassType(ctx.Identifier().getSymbol());
+                if (type == null) {
+                    handleSyntaxError("type not found:" + ctx.Identifier().getText(), offset(ctx.Identifier().getSymbol()));
+                    return null;
+                }
+                if (isArray) {
+                    type = Types.getArrayType(type);
+                }
+            } else {
+                type = Types.getPrimitiveType(ctx.primitiveType().getText());
+                if (isArray) {
+                    type = Types.getArrayType(type);
+                } else {
+                    ObjectType intClassType = requireClassType("Integer", ctx.primitiveType().getStart());
+                    Objects.requireNonNull(intClassType);
+                    ClassReference clsRef = new ClassReference(intClassType.getClassNode());
+                    return getStaticFieldExpr(clsRef, "TYPE", offset(ctx.primitiveType()));
+                }
             }
-            ClassNode nodeOfClassClass = loadAst(Types.CLASS_CLASS_NAME);
-            ClassType[] ptTypes = new ClassType[] { Types.getClassType(clsRef.getReferencedClassNode()) };
-            ce = new ConstExpr(Types.getClassType(nodeOfClassClass, ptTypes), clsRef.getReferencedClassNode().name);
+            ce = new ConstExpr(type);
         } else if (ctx.getText().equals("null")) {
-            ce = new ConstExpr(Types.NULL_TYPE,"null");
+            ce = new ConstExpr(null);
         } else {
             throw Exceptions.unexpectedValue(ctx.getText());
         }
@@ -637,11 +663,13 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             int ksize = vk.size();
             for(int i=0;i<ksize;i++){
                 String kname = vk.get(i).getText();
-                ConstExpr value = parseLiteral(anValues.get(i));
+                //TODO annotation value may be field
+                ConstExpr value = (ConstExpr) parseLiteral(anValues.get(i));
                 anNode.values.put(kname, value);
             }
         }else if(dv!=null){
-            ConstExpr defaultValue = parseLiteral(dv);
+            //TODO annotation value may be field
+            ConstExpr defaultValue = (ConstExpr) parseLiteral(dv);
             anNode.values.put("value", defaultValue);
         }
         if(!semanticAnalyzer.validateAnnotation(anNode)) return null;

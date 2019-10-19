@@ -752,38 +752,22 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     protected Object getJavaConst(ConstExpr ce){
-        String v = ce.getValue();
-        Type ct = ce.getType();
+        Object v = ce.getValue();
         if(v==null){
             return null;
-        } else if (ct.equals(BOOLEAN_TYPE)) {
-            return Boolean.valueOf(v);
-        } else if (ct.equals(BYTE_TYPE)) {
-            return Byte.valueOf(v);
-        } else if (ct.equals(SHORT_TYPE)) {
-            return Short.valueOf(v);
-        } else if (ct.equals(CHAR_TYPE)) {
-            return v.toCharArray()[1];
-        } else if (ct.equals(INT_TYPE)) {
-            return Integer.parseInt(v);
-        } else if (ct.equals(LONG_TYPE)) {
-            return Long.parseLong(v);
-        } else if (ct.equals(FLOAT_TYPE)) {
-            return Float.parseFloat(v);
-        } else if (ct.equals(DOUBLE_TYPE)) {
-            return Double.parseDouble(v);
-        } else if (ct.equals(Types.getStringClassType())) {
-            return v;
-        } else if (ct.equals(NULL_TYPE)) {
-            return null;
-        } else if (ct instanceof ClassType) {
-            ClassType clsType = (ClassType) ct;
-            ClassNode expectedClassNode = astLoader.loadAst(CLASS_CLASS_NAME);
-            if (!clsType.getClassNode().equals(expectedClassNode)) {
-                throw Exceptions.unsupportedTypeException(clsType);
+        }else if(v instanceof Type){
+            return asmType((Type)v);
+        }else{
+            Type ct = ce.getType();
+            if(
+                    Types.isNumber(ct)
+                            || Types.isBoolean(ct)
+                            || Types.isCharType(ct)
+                            || ct.equals(Types.getCharClassType())
+                            || ct.equals(Types.getStringClassType())
+            ){
+                return ce.getValue();
             }
-            return org.objectweb.asm.Type.getType("L" + internalName(v) + ";");
-        } else {
             throw Exceptions.unsupportedTypeException(ct);
         }
     }
@@ -1255,7 +1239,25 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private ConstExpr getConstX(Type type, int i) {
-        return new ConstExpr(type, String.valueOf(i));
+        Object obj;
+        int t = getT(type);
+        switch (t) {
+            case T_I:
+                obj = i;
+                break;
+            case T_L:
+                obj = (long) i;
+                break;
+            case T_F:
+                obj = (float) i;
+                break;
+            case T_D:
+                obj = (double) i;
+                break;
+            default:
+                throw new UnsupportedOperationException("unsupported type:" + type);
+        }
+        return new ConstExpr(obj);
     }
     private void constX(Object x){
         md.visitLdcInsn(x);
