@@ -713,9 +713,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT:
                 break;
             default:
-                Type type1 = e1.getType();
-                Type type2 = e2.getType();
-                if (!type1.equals(type2)) {
+                int type1 = getT(e1.getType());
+                int type2 = getT(e2.getType());
+                if (type1 != type2) {
                     throw new IllegalArgumentException(String.format("invalid types:%s and %s",type1,type2));
                 }
         }
