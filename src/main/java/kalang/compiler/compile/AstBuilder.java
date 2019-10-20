@@ -1963,8 +1963,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
         classNode.fileName = topClass.fileName;
         classNode.setSuperType(Types.getRootType());
+        FieldNode outerClassField = null;
         if (!Modifier.isStatic(methodCtx.method.getModifier())){
-            FieldNode outerClassField = classNode.createField(Types.getClassType(oldClass), "this$0", Modifier.PUBLIC);
+            outerClassField = classNode.createField(Types.getClassType(oldClass), "this$0", Modifier.PUBLIC);
             ObjectFieldExpr outerFieldExpr = new ObjectFieldExpr(lambdaExpr.getReferenceExpr(), outerClassField);
             lambdaExpr.addStatement(new ExprStmt(new AssignExpr(outerFieldExpr,new ThisExpr(oldClass))));
         }
@@ -1996,6 +1997,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 //        }
 
         BlockStmt bs = this.newBlock();
+        LocalVarNode oldThisVar = thisVar;
+        if (outerClassField != null) {
+            LocalVarNode outerClassVar = declareTempLocalVar(outerClassField.getType());
+            ObjectFieldExpr fieldExpr = new ObjectFieldExpr(createThisExpr(OffsetRange.NONE), outerClassField);
+            bs.statements.add(new VarDeclStmt(outerClassVar));
+            bs.statements.add(new ExprStmt(new AssignExpr(new VarExpr(outerClassVar), fieldExpr)));
+            thisVar = outerClassVar;
+        }
         ExpressionContext bodyExprCtx = ctx.expression();
         if (bodyExprCtx != null) {
             ExprNode bodyExpr = visitExpression(bodyExprCtx);
@@ -2021,6 +2030,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             methodCtx.returned = true;
         }
         methodNode.getBody().statements.add(bs);
+        //TODO thisVar maybe assign never when exception occurs
+        thisVar = oldThisVar;
         popBlock();
         checkMethod();
         FieldUsageAnalyzer fieldUsageAnalyzer = new FieldUsageAnalyzer();

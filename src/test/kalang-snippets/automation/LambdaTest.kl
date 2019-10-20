@@ -41,3 +41,11 @@ boolean nullCheck() {
     };
     return toStr() == "test";
 }
+
+boolean thisVarTest() {
+    val that = this;
+    val cb = &Boolean() {
+        return this === that;
+    };
+    return cb();
+}
