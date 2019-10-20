@@ -917,7 +917,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public AstNode visitBinaryExpr(BinaryExprContext ctx) {
         TerminalNode opNode = (TerminalNode) ctx.getChild(1);
         String op = opNode.getText();
-        return createBinaryExpr(op, visitExpression(ctx.expression(0)), ()->visitExpression(ctx.expression(1)), offset(ctx));
+        ExprNode expr = createBinaryExpr(op, visitExpression(ctx.expression(0)), () -> visitExpression(ctx.expression(1)), offset(ctx));
+        ExprNode valuatedExpr = ConstExprUtil.evaluate(expr);
+        return valuatedExpr != null ? valuatedExpr : expr;
     }
     
     @Nullable
