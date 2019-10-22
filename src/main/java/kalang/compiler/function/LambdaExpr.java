@@ -1,42 +1,30 @@
 package kalang.compiler.function;
 
 import kalang.compiler.ast.*;
+import kalang.compiler.core.MethodDescriptor;
+import kalang.compiler.core.Type;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
  *
  * @author Kason Yang
  */
-public class LambdaExpr extends MultiStmtExpr {
+public class LambdaExpr extends ExprNode{
 
-    private final VarExpr referenceVarExpr;
+    private Type type;
+
+    private MethodDescriptor interfaceMethod;
+
+    private MethodNode implementationMethod;
+
+    private List<ExprNode> captureArguments = new LinkedList<>();
 
     private final Map<String, VarObject> accessibleVarObjects = new HashMap();
 
-    private final Statement varDeclStmt;
-
-    private ExprNode initExpr;
-
-    private final LocalVarNode tmpVar;
-
-    public LambdaExpr(LocalVarNode tmpVar) {
-        super(new LinkedList(), new VarExpr(tmpVar));
-        this.referenceVarExpr = (VarExpr) this.reference;
-        this.varDeclStmt = new VarDeclStmt(tmpVar);
-        this.tmpVar = tmpVar;
-    }
-
-    public VarExpr getReferenceExpr() {
-        return referenceVarExpr;
-    }
-
-    public void setInitExpr(ExprNode initExpr) {
-        this.initExpr = initExpr;
-    }
-
-    public ExprNode getInitExpr() {
-        return initExpr;
+    public LambdaExpr(Type type) {
+        this.type = type;
     }
 
     public void putAccessibleVarObject(String name, VarObject var) {
@@ -49,18 +37,37 @@ public class LambdaExpr extends MultiStmtExpr {
 
     @Override
     public List<AstNode> getChildren() {
-        List<AstNode> list = new LinkedList(getStatements());
+        List<AstNode> list = new LinkedList(captureArguments);
         return list;
     }
 
+    public MethodDescriptor getInterfaceMethod() {
+        return interfaceMethod;
+    }
+
+    public void setInterfaceMethod(MethodDescriptor interfaceMethod) {
+        this.interfaceMethod = interfaceMethod;
+    }
+
+    public MethodNode getImplementationMethod() {
+        return implementationMethod;
+    }
+
+    public void setImplementationMethod(MethodNode implementationMethod) {
+        this.implementationMethod = implementationMethod;
+    }
+
+    public List<ExprNode> getCaptureArguments() {
+        return captureArguments;
+    }
+
+    public void setCaptureArguments(List<ExprNode> captureArguments) {
+        this.captureArguments = captureArguments;
+    }
+
+    @Nonnull
     @Override
-    public List<Statement> getStatements() {
-        List<Statement> statements = super.getStatements();
-        List<Statement> list = new ArrayList();
-        list.add(varDeclStmt);
-        list.add(new ExprStmt(new AssignExpr(new VarExpr(tmpVar), initExpr)));
-        list.addAll(statements);
-        return list;
+    public Type getType() {
+        return type;
     }
-
 }

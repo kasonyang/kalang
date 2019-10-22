@@ -1638,9 +1638,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         List<Token> lambdaParams = ctx.lambdaParams;
         int lambdaParamsCount = lambdaParams == null ? 0 : lambdaParams.size();
         Type type = functionType!=null ? functionType : new LambdaType(lambdaParamsCount);
-        LocalVarNode tmpVar = this.declareTempLocalVar(Types.getRootType());
-        LambdaExpr ms = new LambdaExpr(tmpVar);
-        ms.getReferenceExpr().overrideType(type);
+        //LocalVarNode tmpVar = this.declareTempLocalVar(Types.getRootType());
+        LambdaExpr ms = new LambdaExpr(type);
+        //ms.getReferenceExpr().overrideType(type);
         Map<String,VarObject> accessibleVars = new HashMap();
         VarTable<String, LocalVarNode> vtb = this.methodCtx.varTables;
         while(vtb!=null) {
@@ -1666,7 +1666,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (functionType!=null){
             MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(functionType);
             Objects.requireNonNull(funcMethod);
-            createLambdaNode(functionType,funcMethod,ms,ctx);
+            ms.setInterfaceMethod(funcMethod);
+            createLambdaNode(ms,ctx);
         } else {
             lambdaExprCtxMap.put(ms, ctx);
         }
@@ -1954,34 +1955,36 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return diagnosisReporter;
     }
 
-    private ClassNode createFunctionClassNode(ClassType interfaceType,MethodDescriptor funcMethod,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
+    private void createFunctionClassNode(LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
+        MethodDescriptor funcMethod = lambdaExpr.getInterfaceMethod();
         Type returnType = funcMethod.getReturnType();
         Type[] paramTypes = funcMethod.getParameterTypes();
-        String lambdaName = this.thisClazz.name + "$" + ++anonymousClassCounter;
-        ClassNode oldClass = thisClazz;
+        String lambdaName = "lambda$" + ++anonymousClassCounter;
+        //ClassNode oldClass = thisClazz;
         MethodContext oldMethodCtx = this.methodCtx;
-        ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
-        classNode.fileName = topClass.fileName;
-        classNode.setSuperType(Types.getRootType());
-        FieldNode outerClassField = null;
-        if (!Modifier.isStatic(methodCtx.method.getModifier())){
-            outerClassField = classNode.createField(Types.getClassType(oldClass), "this$0", Modifier.PUBLIC);
-            ObjectFieldExpr outerFieldExpr = new ObjectFieldExpr(lambdaExpr.getReferenceExpr(), outerClassField);
-            lambdaExpr.addStatement(new ExprStmt(new AssignExpr(outerFieldExpr,new ThisExpr(oldClass))));
-        }
+        //ClassNode classNode = thisClazz = new ClassNode(lambdaName,Modifier.PUBLIC);
+        //classNode.fileName = topClass.fileName;
+        //classNode.setSuperType(Types.getRootType());
+//        FieldNode outerClassField = null;
+//        if (!Modifier.isStatic(methodCtx.method.getModifier())){
+//            outerClassField = classNode.createField(Types.getClassType(oldClass), "this$0", Modifier.PUBLIC);
+//            ObjectFieldExpr outerFieldExpr = new ObjectFieldExpr(lambdaExpr.getReferenceExpr(), outerClassField);
+//            lambdaExpr.addStatement(new ExprStmt(new AssignExpr(outerFieldExpr,new ThisExpr(oldClass))));
+//        }
+        MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , Modifier.PUBLIC);
+        enterMethod(methodNode);
         Map<String, VarObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
         for( Map.Entry<String, VarObject> v:accessibleVars.entrySet()) {
             String name = v.getKey();
             VarObject var = v.getValue();
-            classNode.createField(var.getType(),"this$0$" + name, Modifier.PUBLIC | Modifier.FINAL);
+            methodNode.createParameter(var.getType(), name, Modifier.FINAL | ModifierConstant.SYNTHETIC);
         }
-        MethodNode methodNode = classNode.createMethodNode(returnType, funcMethod.getName(), Modifier.PUBLIC);
-        enterMethod(methodNode);
         List<Token> lambdaParams = ctx.lambdaParams;
         if (paramTypes.length < lambdaParams.size()) {
             String msg = String.format("expected %d parameters but got %d",paramTypes.length,lambdaParams.size());
             this.diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
-            return null;
+            return;
+            //return null;
         }
         for (int i=0;i<paramTypes.length;i++) {
             Type pt = paramTypes[i];
@@ -1991,20 +1994,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
             methodNode.createParameter(pt,name);
         }
-        classNode.addInterface(interfaceType);
+        //classNode.addInterface(interfaceType);
 //        for(int i=lambdaParamsCount+1;i<=FunctionClasses.CLASSES.length-1;i++) {
 //            LambdaUtil.createBridgeRunMethod(classNode, methodNode,paramTypes, i);
 //        }
 
         BlockStmt bs = this.newBlock();
-        LocalVarNode oldThisVar = thisVar;
-        if (outerClassField != null) {
-            LocalVarNode outerClassVar = declareTempLocalVar(outerClassField.getType());
-            ObjectFieldExpr fieldExpr = new ObjectFieldExpr(createThisExpr(OffsetRange.NONE), outerClassField);
-            bs.statements.add(new VarDeclStmt(outerClassVar));
-            bs.statements.add(new ExprStmt(new AssignExpr(new VarExpr(outerClassVar), fieldExpr)));
-            thisVar = outerClassVar;
-        }
+//        LocalVarNode oldThisVar = thisVar;
+//        if (outerClassField != null) {
+//            LocalVarNode outerClassVar = declareTempLocalVar(outerClassField.getType());
+//            ObjectFieldExpr fieldExpr = new ObjectFieldExpr(createThisExpr(OffsetRange.NONE), outerClassField);
+//            bs.statements.add(new VarDeclStmt(outerClassVar));
+//            bs.statements.add(new ExprStmt(new AssignExpr(new VarExpr(outerClassVar), fieldExpr)));
+//            thisVar = outerClassVar;
+//        }
         ExpressionContext bodyExprCtx = ctx.expression();
         if (bodyExprCtx != null) {
             ExprNode bodyExpr = visitExpression(bodyExprCtx);
@@ -2031,44 +2034,62 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         methodNode.getBody().statements.add(bs);
         //TODO thisVar maybe assign never when exception occurs
-        thisVar = oldThisVar;
+        //thisVar = oldThisVar;
         popBlock();
         checkMethod();
-        FieldUsageAnalyzer fieldUsageAnalyzer = new FieldUsageAnalyzer();
-        fieldUsageAnalyzer.analyzer(classNode);
-        Set<FieldNode> usedFields = fieldUsageAnalyzer.getUsedFields();
-        if (usedFields.isEmpty()) {
-            AstUtil.createEmptyConstructor(classNode);
-        } else {
-            MethodNode constructor = classNode.createMethodNode(Types.VOID_TYPE, "<init>", Modifier.PUBLIC);
-            List<Statement> constructorStmts = new LinkedList<>();
-            SuperExpr superExpr = new SuperExpr(classNode);
-            constructorStmts.add(new ExprStmt(ObjectInvokeExpr.create(superExpr,"<init>",new ExprNode[0])));
-            ThisExpr thisExpr = new ThisExpr(classNode);
-            FieldNode[] declaredFields = classNode.getFields();
-            for (FieldNode f: declaredFields) {
-                if (!f.getName().startsWith("this$0$")) {
-                    continue;
-                }
-                if (!usedFields.contains(f)) {
-                    classNode.removeField(f);
-                    continue;
-                }
-                String paramName = f.getName().substring("this$0$".length());
-                ParameterNode p = constructor.createParameter(f.getType(), paramName);
-                constructorStmts.add(new ExprStmt(
-                        new AssignExpr(
-                                ObjectFieldExpr.create(thisExpr, f.getName(), classNode),
-                                new ParameterExpr(p)
-                        )
-                ));
-            }
-            constructor.getBody().statements.addAll(constructorStmts);
-        }
+        //FieldUsageAnalyzer fieldUsageAnalyzer = new FieldUsageAnalyzer();
+        //fieldUsageAnalyzer.analyzer(classNode);
+        //Set<FieldNode> usedFields = fieldUsageAnalyzer.getUsedFields();
+//        if (usedFields.isEmpty()) {
+//            AstUtil.createEmptyConstructor(classNode);
+//        } else {
+//            MethodNode constructor = classNode.createMethodNode(Types.VOID_TYPE, "<init>", Modifier.PUBLIC);
+//            List<Statement> constructorStmts = new LinkedList<>();
+//            SuperExpr superExpr = new SuperExpr(classNode);
+//            constructorStmts.add(new ExprStmt(ObjectInvokeExpr.create(superExpr,"<init>",new ExprNode[0])));
+//            ThisExpr thisExpr = new ThisExpr(classNode);
+//            FieldNode[] declaredFields = classNode.getFields();
+//            for (FieldNode f: declaredFields) {
+//                if (!f.getName().startsWith("this$0$")) {
+//                    continue;
+//                }
+//                if (!usedFields.contains(f)) {
+//                    classNode.removeField(f);
+//                    continue;
+//                }
+//                String paramName = f.getName().substring("this$0$".length());
+//                ParameterNode p = constructor.createParameter(f.getType(), paramName);
+//                constructorStmts.add(new ExprStmt(
+//                        new AssignExpr(
+//                                ObjectFieldExpr.create(thisExpr, f.getName(), classNode),
+//                                new ParameterExpr(p)
+//                        )
+//                ));
+//            }
+//            constructor.getBody().statements.addAll(constructorStmts);
+//        }
         //TODO check return
-        thisClazz = oldClass;
+        //thisClazz = oldClass;
+        //TODO remove unused parameter
+        lambdaExpr.setImplementationMethod(methodNode);
+        List<ExprNode> captureArgs = lambdaExpr.getCaptureArguments();
+        for (ParameterNode p: methodNode.getParameters()) {
+            if (!ModifierUtil.isSynthetic(p.modifier)) {
+                continue;
+            }
+            //p.modifier = p.modifier & ~ModifierConstant.SYNTHETIC;
+            VarObject captureVar = accessibleVars.get(p.getName());
+            Objects.requireNonNull(captureVar);
+            if (captureVar instanceof LocalVarNode) {
+                captureArgs.add(new VarExpr((LocalVarNode) captureVar));
+            } else if (captureVar instanceof ParameterNode) {
+                captureArgs.add(new ParameterExpr((ParameterNode) captureVar));
+            } else {
+                throw Exceptions.unexpectedValue(captureVar);
+            }
+        }
         methodCtx = oldMethodCtx;
-        return classNode;
+        //return classNode;
     }
 
     private void processConstructor(ClassNode clazz) {
@@ -2100,33 +2121,33 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
     }
 
-    private ClassNode createLambdaNode(ClassType interfaceClass,MethodDescriptor funcMethod,LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
-        ClassNode lambdaClassNode = this.createFunctionClassNode(interfaceClass,funcMethod,lambdaExpr,ctx);
-        ClassType lambdaType = Types.getClassType(lambdaClassNode);
-        //lambdaExpr.getReferenceExpr()
-        NewObjectExpr newExpr;
-        try {
-            MethodNode initMethod = CollectionMixin.find(lambdaClassNode.getDeclaredMethodNodes(), it -> "<init>".equals(it.getName()));
-            ParameterNode[] initParamNodes = initMethod.getParameters();
-            ExprNode[] initParams = new ExprNode[initParamNodes.length];
-            for (int i = 0; i < initParams.length; i++) {
-                VarObject var = lambdaExpr.getAccessibleVarObjects().get(initParamNodes[i].getName());
-                    if (var instanceof LocalVarNode) {
-                    initParams[i] = new VarExpr((LocalVarNode)var);
-                } else if (var instanceof ParameterNode) {
-                    initParams[i] = new ParameterExpr((ParameterNode)var);
-                } else {
-                    throw Exceptions.unexpectedValue(var);
-                }
-            }
-            newExpr = new NewObjectExpr(lambdaType, initParams, thisClazz);
-        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-            throw Exceptions.unexpectedException(ex);
-        }
-        lambdaExpr.setInitExpr(newExpr);
-        lambdaExpr.getReferenceExpr().overrideType(lambdaType);
-        thisClazz.classes.add(lambdaClassNode);
-        return lambdaClassNode;
+    private void createLambdaNode(LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
+        this.createFunctionClassNode(lambdaExpr,ctx);
+//        ClassType lambdaType = Types.getClassType(lambdaClassNode);
+//        //lambdaExpr.getReferenceExpr()
+//        NewObjectExpr newExpr;
+//        try {
+//            MethodNode initMethod = CollectionMixin.find(lambdaClassNode.getDeclaredMethodNodes(), it -> "<init>".equals(it.getName()));
+//            ParameterNode[] initParamNodes = initMethod.getParameters();
+//            ExprNode[] initParams = new ExprNode[initParamNodes.length];
+//            for (int i = 0; i < initParams.length; i++) {
+//                VarObject var = lambdaExpr.getAccessibleVarObjects().get(initParamNodes[i].getName());
+//                    if (var instanceof LocalVarNode) {
+//                    initParams[i] = new VarExpr((LocalVarNode)var);
+//                } else if (var instanceof ParameterNode) {
+//                    initParams[i] = new ParameterExpr((ParameterNode)var);
+//                } else {
+//                    throw Exceptions.unexpectedValue(var);
+//                }
+//            }
+//            newExpr = new NewObjectExpr(lambdaType, initParams, thisClazz);
+//        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+//            throw Exceptions.unexpectedException(ex);
+//        }
+//        lambdaExpr.setInitExpr(newExpr);
+//        lambdaExpr.getReferenceExpr().overrideType(lambdaType);
+//        thisClazz.classes.add(lambdaClassNode);
+//        return lambdaClassNode;
     }
 
     private ReturnStmt onReturnStmt(ReturnStmt rs) {
@@ -2144,24 +2165,27 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private InvocationExpr onInvocationExpr(InvocationExpr invocationExpr){
         ExprNode[] args = invocationExpr.getArguments();
         Type[] paramTypes = invocationExpr.getMethod().getParameterTypes();
-        Map<GenericType,Type> inferredTypes = new HashMap<>();
+        // Map<GenericType,Type> inferredTypes = new HashMap<>();
         for(int i=0;i<args.length;i++) {
             ExprNode arg = args[i];
             if (arg instanceof LambdaExpr) {
-                boolean isInit = ((LambdaExpr) arg).getInitExpr() != null;
+                boolean isInit = ((LambdaExpr) arg).getInterfaceMethod() != null;
                 if (!isInit) {
                     ClassType lambdaType = (ClassType) inferLambdaType(paramTypes[i]);
                     LambdaExprContext ctx = lambdaExprCtxMap.get(arg);
                     MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(lambdaType);
                     Objects.requireNonNull(funcMethod);
-                    ClassNode lambdaClassNode = createLambdaNode(lambdaType, funcMethod,(LambdaExpr) arg, ctx);
-                    Map<GenericType, Type> iTypes = lambdaClassNode.inferredGenericTypes;
-                    if (!iTypes.isEmpty()) {
-                        inferredTypes.putAll(iTypes);
-                    }
+                    LambdaExpr lambdaArg = (LambdaExpr) arg;
+                    lambdaArg.setInterfaceMethod(funcMethod);
+                    createLambdaNode(lambdaArg, ctx);
+//                    Map<GenericType, Type> iTypes = lambdaClassNode.inferredGenericTypes;
+//                    if (!iTypes.isEmpty()) {
+//                        inferredTypes.putAll(iTypes);
+//                    }
                 }
             }
         }
+        Map<GenericType, Type> inferredTypes = thisClazz.inferredGenericTypes;
         if (!inferredTypes.isEmpty()) {
             MethodDescriptor md = invocationExpr.getMethod();
             for(int i=0;i<paramTypes.length;i++) {

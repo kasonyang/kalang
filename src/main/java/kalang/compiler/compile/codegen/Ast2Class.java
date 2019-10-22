@@ -6,23 +6,20 @@ import kalang.compiler.ast.*;
 import kalang.compiler.compile.AstLoader;
 import kalang.compiler.compile.CodeGenerator;
 import kalang.compiler.core.*;
+import kalang.compiler.core.Type;
 import kalang.compiler.exception.Exceptions;
+import kalang.compiler.function.LambdaExpr;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.invoke.*;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -232,7 +229,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             interfaces = internalName(node.getInterfaces());
         }
         int access = node.modifier;
-        classWriter.visit(V1_6, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);
+        classWriter.visit(V1_8, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);
         String fileName = node.fileName;
         if(fileName!=null && !fileName.isEmpty()){
             classWriter.visitSource(fileName, null);
@@ -1394,6 +1391,48 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMultiStmt(MultiStmt node) {
         visitAll(node.statements);
+        return null;
+    }
+
+    @Override
+    public Object visitLambdaExpr(LambdaExpr node) {
+        md.visitVarInsn(ALOAD, 0);
+        for (ExprNode arg: node.getCaptureArguments()) {
+            visit(arg);
+        }
+        MethodDescriptor interfaceMd = node.getInterfaceMethod();
+        MethodNode implMd = node.getImplementationMethod();
+        List<Type> invokeTypes = new LinkedList<>();
+        invokeTypes.add(Types.getClassType(implMd.getClassNode()));
+        //invokeTypes.add(interfaceMd.getMethodNode().getClassNode().name);
+        for (ExprNode arg: node.getCaptureArguments()) {
+            invokeTypes.add(arg.getType());
+        }
+        String invokeMdDesc = getMethodDescriptor(Types.getClassType(interfaceMd.getMethodNode().getClassNode()), invokeTypes.toArray(new Type[0]));
+        String mdDesc = getMethodDescriptor(interfaceMd.getReturnType(), interfaceMd.getParameterTypes());
+        String metafactoryDesc = org.objectweb.asm.Type.getMethodDescriptor(
+                org.objectweb.asm.Type.getType(CallSite.class)
+                , org.objectweb.asm.Type.getType(MethodHandles.Lookup.class)
+                , org.objectweb.asm.Type.getType(String.class)
+                , org.objectweb.asm.Type.getType(MethodType.class)
+                , org.objectweb.asm.Type.getType(MethodType.class)
+                , org.objectweb.asm.Type.getType(MethodHandle.class)
+                , org.objectweb.asm.Type.getType(MethodType.class)
+        );
+        Object[] bootstrapArgs = new Object[] {
+                org.objectweb.asm.Type.getMethodType(getMethodDescriptor(interfaceMd.getMethodNode()))
+                //TODO fix H_INVOKE
+                , new Handle(H_INVOKESPECIAL, internalName(this.clazz), implMd.getName(), getMethodDescriptor(implMd), false)
+                , org.objectweb.asm.Type.getMethodType(mdDesc)
+        };
+//                MethodHandles.Lookup caller,
+//                String invokedName,
+//                MethodType invokedType,
+//                MethodType samMethodType,
+//                MethodHandle implMethod,
+//                MethodType instantiatedMethodType
+        Handle bootstrapMd = new Handle(H_INVOKESTATIC, internalName(LambdaMetafactory.class.getName()), "metafactory", metafactoryDesc, false);
+        md.visitInvokeDynamicInsn(interfaceMd.getName(), invokeMdDesc, bootstrapMd, bootstrapArgs);
         return null;
     }
 

@@ -1,5 +1,7 @@
 package kalang.compiler.ast;
 
+import kalang.compiler.function.LambdaExpr;
+
 public class AstVisitor<T> extends AbstractAstVisitor<T>{
     
     @Override
@@ -236,5 +238,11 @@ public class AstVisitor<T> extends AbstractAstVisitor<T>{
         return null;
     }
 
-    
+    @Override
+    public T visitLambdaExpr(LambdaExpr node) {
+        visitChildren(node);
+        return null;
+    }
+
+
 }

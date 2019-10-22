@@ -1,5 +1,7 @@
 package kalang.compiler.util;
 
+import kalang.compiler.core.ModifierConstant;
+
 import java.lang.reflect.Modifier;
 
 /**
@@ -35,6 +37,10 @@ public class ModifierUtil {
 
     public static boolean isInterface(int modifier) {
         return Modifier.isInterface(modifier);
+    }
+
+    public static boolean isSynthetic(int modifier) {
+        return (modifier & ModifierConstant.SYNTHETIC) > 0;
     }
 
     /**
