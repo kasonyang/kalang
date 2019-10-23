@@ -1,5 +1,7 @@
 package kalang.compiler.ast;
 
+import kalang.compiler.function.LambdaExpr;
+
 public interface IAstVisitor<T> {
 
     T visitInstanceOfExpr(InstanceOfExpr node);
@@ -79,5 +81,7 @@ public interface IAstVisitor<T> {
     T visitNewObjectExpr(NewObjectExpr node);
 
     T visitMultiStmt(MultiStmt node);
+
+    T visitLambdaExpr(LambdaExpr node);
 
 }
