@@ -1,4 +1,6 @@
 package kalang.compiler.ast;
+import kalang.compiler.function.LambdaExpr;
+
 import java.util.*;
 public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
 
@@ -158,6 +160,10 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         }
         if(node instanceof FieldNode){
             return visitFieldNode((FieldNode) node);
+        }
+
+        if (node instanceof LambdaExpr) {
+            return visitLambdaExpr((LambdaExpr) node);
         }
         
         throw new IllegalArgumentException("BUG!Unknown node type:"+node.getClass());

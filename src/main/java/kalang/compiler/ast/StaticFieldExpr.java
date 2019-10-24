@@ -7,6 +7,9 @@ import kalang.compiler.core.Types;
 import kalang.compiler.util.AstUtil;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
+
 /**
  *
  * @author Kason Yang 
@@ -33,6 +36,11 @@ public class StaticFieldExpr extends FieldExpr{
 
     public ClassReference getClassReference() {
         return clazz;
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.emptyList();
     }
 
 }

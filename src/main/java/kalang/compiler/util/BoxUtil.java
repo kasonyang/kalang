@@ -159,7 +159,7 @@ public class BoxUtil {
         if (originConst.getType().equals(toType)) {
             return originConst;
         }
-        String value = originConst.getValue();
+        Object value = originConst.getValue();
         Type constType = originConst.getType();
         if (!Types.INT_TYPE.equals(constType)) {
             return null;
@@ -176,25 +176,29 @@ public class BoxUtil {
             }
             return assign(newConst, newConst.getType(), toType);
         }
-        int num = Integer.parseInt(value);
+        int num = (Integer) value;
         ConstExpr newConstExpr;
         if (toType.equals(Types.BYTE_TYPE)) {
             if (num > Byte.MAX_VALUE || num < Byte.MIN_VALUE) {
                 return null;
             }
+            value = (byte) num;
         } else if (toType.equals(Types.CHAR_TYPE)) {
             if (num > Character.MAX_VALUE || num < Character.MIN_VALUE) {
                 return null;
             }
+            value = (char) num;
         } else if (toType.equals(Types.SHORT_TYPE)) {
             if (num > Short.MAX_VALUE || num < Short.MIN_VALUE) {
                 return null;
             }
+            value = (short) num;
         } else if (toType.equals(Types.LONG_TYPE)) {
+            value = (long) num;
         } else {
             return null;
         }
-        newConstExpr = new ConstExpr(toType, value);
+        newConstExpr = new ConstExpr(value);
         newConstExpr.offset = originConst.offset;
         return newConstExpr;
     }

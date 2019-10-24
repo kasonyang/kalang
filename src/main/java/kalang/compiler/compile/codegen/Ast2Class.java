@@ -6,23 +6,20 @@ import kalang.compiler.ast.*;
 import kalang.compiler.compile.AstLoader;
 import kalang.compiler.compile.CodeGenerator;
 import kalang.compiler.core.*;
+import kalang.compiler.core.Type;
 import kalang.compiler.exception.Exceptions;
+import kalang.compiler.function.LambdaExpr;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.invoke.*;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -232,7 +229,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             interfaces = internalName(node.getInterfaces());
         }
         int access = node.modifier;
-        classWriter.visit(V1_6, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);
+        classWriter.visit(V1_8, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);
         String fileName = node.fileName;
         if(fileName!=null && !fileName.isEmpty()){
             classWriter.visitSource(fileName, null);
@@ -713,9 +710,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT:
                 break;
             default:
-                Type type1 = e1.getType();
-                Type type2 = e2.getType();
-                if (!type1.equals(type2)) {
+                int type1 = getT(e1.getType());
+                int type2 = getT(e2.getType());
+                if (type1 != type2) {
                     throw new IllegalArgumentException(String.format("invalid types:%s and %s",type1,type2));
                 }
         }
@@ -752,38 +749,22 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     protected Object getJavaConst(ConstExpr ce){
-        String v = ce.getValue();
-        Type ct = ce.getType();
+        Object v = ce.getValue();
         if(v==null){
             return null;
-        } else if (ct.equals(BOOLEAN_TYPE)) {
-            return Boolean.valueOf(v);
-        } else if (ct.equals(BYTE_TYPE)) {
-            return Byte.valueOf(v);
-        } else if (ct.equals(SHORT_TYPE)) {
-            return Short.valueOf(v);
-        } else if (ct.equals(CHAR_TYPE)) {
-            return v.toCharArray()[1];
-        } else if (ct.equals(INT_TYPE)) {
-            return Integer.parseInt(v);
-        } else if (ct.equals(LONG_TYPE)) {
-            return Long.parseLong(v);
-        } else if (ct.equals(FLOAT_TYPE)) {
-            return Float.parseFloat(v);
-        } else if (ct.equals(DOUBLE_TYPE)) {
-            return Double.parseDouble(v);
-        } else if (ct.equals(Types.getStringClassType())) {
-            return v;
-        } else if (ct.equals(NULL_TYPE)) {
-            return null;
-        } else if (ct instanceof ClassType) {
-            ClassType clsType = (ClassType) ct;
-            ClassNode expectedClassNode = astLoader.loadAst(CLASS_CLASS_NAME);
-            if (!clsType.getClassNode().equals(expectedClassNode)) {
-                throw Exceptions.unsupportedTypeException(clsType);
+        }else if(v instanceof Type){
+            return asmType((Type)v);
+        }else{
+            Type ct = ce.getType();
+            if(
+                    Types.isNumber(ct)
+                            || Types.isBoolean(ct)
+                            || Types.isCharType(ct)
+                            || ct.equals(Types.getCharClassType())
+                            || ct.equals(Types.getStringClassType())
+            ){
+                return ce.getValue();
             }
-            return org.objectweb.asm.Type.getType("L" + internalName(v) + ";");
-        } else {
             throw Exceptions.unsupportedTypeException(ct);
         }
     }
@@ -1255,7 +1236,25 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     private ConstExpr getConstX(Type type, int i) {
-        return new ConstExpr(type, String.valueOf(i));
+        Object obj;
+        int t = getT(type);
+        switch (t) {
+            case T_I:
+                obj = i;
+                break;
+            case T_L:
+                obj = (long) i;
+                break;
+            case T_F:
+                obj = (float) i;
+                break;
+            case T_D:
+                obj = (double) i;
+                break;
+            default:
+                throw new UnsupportedOperationException("unsupported type:" + type);
+        }
+        return new ConstExpr(obj);
     }
     private void constX(Object x){
         md.visitLdcInsn(x);
@@ -1392,6 +1391,46 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMultiStmt(MultiStmt node) {
         visitAll(node.statements);
+        return null;
+    }
+
+    @Override
+    public Object visitLambdaExpr(LambdaExpr node) {
+        MethodNode invokeMethod = node.getInvokeMethod();
+        boolean isStatic = ModifierUtil.isStatic(invokeMethod.getModifier());
+        if (!isStatic) {
+            md.visitVarInsn(ALOAD, 0);
+        }
+        for (ExprNode arg: node.getCaptureArguments()) {
+            visit(arg);
+        }
+        MethodDescriptor interfaceMd = node.getInterfaceMethod();
+        List<Type> invokeTypes = new LinkedList<>();
+        if (!isStatic){
+            invokeTypes.add(Types.getClassType(invokeMethod.getClassNode()));
+        }
+        for (ExprNode arg: node.getCaptureArguments()) {
+            invokeTypes.add(arg.getType());
+        }
+        String invokeMdDesc = getMethodDescriptor(Types.getClassType(interfaceMd.getMethodNode().getClassNode()), invokeTypes.toArray(new Type[0]));
+        String mdDesc = getMethodDescriptor(interfaceMd.getReturnType(), interfaceMd.getParameterTypes());
+        String metafactoryDesc = org.objectweb.asm.Type.getMethodDescriptor(
+                org.objectweb.asm.Type.getType(CallSite.class)
+                , org.objectweb.asm.Type.getType(MethodHandles.Lookup.class)
+                , org.objectweb.asm.Type.getType(String.class)
+                , org.objectweb.asm.Type.getType(MethodType.class)
+                , org.objectweb.asm.Type.getType(MethodType.class)
+                , org.objectweb.asm.Type.getType(MethodHandle.class)
+                , org.objectweb.asm.Type.getType(MethodType.class)
+        );
+        int invokeTag = isStatic ? H_INVOKESTATIC : H_INVOKESPECIAL;
+        Object[] bootstrapArgs = new Object[] {
+                org.objectweb.asm.Type.getMethodType(getMethodDescriptor(interfaceMd.getMethodNode()))
+                , new Handle(invokeTag, internalName(invokeMethod.getClassNode()), invokeMethod.getName(), getMethodDescriptor(invokeMethod), false)
+                , org.objectweb.asm.Type.getMethodType(mdDesc)
+        };
+        Handle bootstrapMd = new Handle(H_INVOKESTATIC, internalName(LambdaMetafactory.class.getName()), "metafactory", metafactoryDesc, false);
+        md.visitInvokeDynamicInsn(interfaceMd.getName(), invokeMdDesc, bootstrapMd, bootstrapArgs);
         return null;
     }
 

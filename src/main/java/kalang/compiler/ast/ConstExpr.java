@@ -1,27 +1,25 @@
 package kalang.compiler.ast;
 
 import kalang.compiler.core.NullableKind;
+import kalang.compiler.core.PrimitiveType;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
 import kalang.compiler.exception.Exceptions;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class ConstExpr extends ExprNode{
     
     @Nullable
-    protected String value;
+    protected Object value;
     
     protected Type constType;
 
-    public ConstExpr(int i) {
-        this(Types.INT_TYPE, String.valueOf(i));
-    }
-
     public ConstExpr(Object value) {
         Type t;
-        String v = null;
         if(value == null){
             t = Types.NULL_TYPE;
         }else{
@@ -43,38 +41,24 @@ public class ConstExpr extends ExprNode{
                 t = Types.CHAR_TYPE;
             }else if(value instanceof String){
                 t = Types.getStringClassType();
-            }else if(value instanceof ClassReference) {
+            }else if(value instanceof Type) {
+                if (Types.NULL_TYPE.equals(value)) {
+                    throw Exceptions.unexpectedValue(value);
+                }
+                Type typeArg = value instanceof PrimitiveType ? Types.getClassType((PrimitiveType) value) : (Type) value;
+                t = Types.getClassType(Types.getClassClassType().getClassNode(), new Type[]{typeArg});
+            } else if (value instanceof Class) { // compatible with annotation
                 t = Types.getClassClassType();
-                v = ((ClassReference) value).getReferencedClassNode().name;
-            } else if (value instanceof Class) {
-                t = Types.getClassClassType();
-                v = ((Class) value).getName();
-            } else if (value instanceof Enum) {
+                value = t;
+            } else if (value instanceof Enum) {// compatible with annotation
                 t = Types.requireClassType(Enum.class.getName(), NullableKind.UNKNOWN);
-                v = ((Enum) value).name();
-            }else{
+            } else{
                 throw Exceptions.unsupportedTypeException(value);
             }
         }
         this.constType = t;
-        this.value = v == null ? String.valueOf(value) : v;
+        this.value = value;
     }
-
-    public ConstExpr(String value) {
-        this(Types.getStringClassType(), value);
-        Objects.requireNonNull(value);
-    }
-
-    public ConstExpr(Type type) {
-        this(type,"");
-    }
-
-    public ConstExpr(Type type,String value) {
-        constType = type;
-        this.value  = value;
-    }
-    
-    
 
     @Override
     public Type getType() {
@@ -85,12 +69,18 @@ public class ConstExpr extends ExprNode{
      * @return the value
      */
     @Nullable
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 
     @Override
     public String toString() {
-        return value;
+        return Objects.toString(value);
     }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.emptyList();
+    }
+
 }

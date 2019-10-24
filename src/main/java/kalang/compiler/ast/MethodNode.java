@@ -7,6 +7,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+
 public class MethodNode extends AstNode implements Annotationable{
     
     private final int modifier;
@@ -38,6 +40,15 @@ public class MethodNode extends AstNode implements Annotationable{
         this.type = type;
         this.name = name;
         this.body = Modifier.isAbstract(modifier) ? null : new BlockStmt();
+    }
+
+    public boolean removeParameter(ParameterNode p) {
+        return parameters.remove(p);
+    }
+
+    public boolean removeParameter(String name) {
+        Objects.requireNonNull(name);
+        return parameters.removeIf( it -> name.equals(it.getName()));
     }
     
     public ParameterNode createParameter(Type type,String name){

@@ -3,6 +3,10 @@ package kalang.compiler.ast;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
+
+import java.util.Collections;
+import java.util.List;
+
 public class ThisExpr extends ExprNode{
     
     private final ObjectType classType;
@@ -24,4 +28,10 @@ public class ThisExpr extends ExprNode{
     public String toString() {
         return "this";
     }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.emptyList();
+    }
+
 }
