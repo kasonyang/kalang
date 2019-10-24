@@ -3,6 +3,8 @@ package kalang.compiler.ast;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 public class NewArrayExpr extends ExprNode{
     
@@ -49,5 +51,9 @@ public class NewArrayExpr extends ExprNode{
         Objects.requireNonNull(size);
         this.size = size;
     }
-    
+
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.singletonList(size);
+    }
 }

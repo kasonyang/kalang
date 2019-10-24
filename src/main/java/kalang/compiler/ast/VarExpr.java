@@ -3,6 +3,8 @@ package kalang.compiler.ast;
 import kalang.compiler.core.Type;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class VarExpr extends AssignableExpr{
@@ -46,6 +48,9 @@ public class VarExpr extends AssignableExpr{
         overrideType = null;
     }
 
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.singletonList(var);
+    }
 
-    
 }

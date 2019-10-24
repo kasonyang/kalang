@@ -3,6 +3,9 @@ package kalang.compiler.ast;
 import kalang.compiler.core.Type;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
+
 public class ParameterExpr extends AssignableExpr{
     
     protected ParameterNode parameter;
@@ -32,6 +35,11 @@ public class ParameterExpr extends AssignableExpr{
     
     public void removeOverrideType(){
         overrideType = null;
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.singletonList(parameter);
     }
 
 }

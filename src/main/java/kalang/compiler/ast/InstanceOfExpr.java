@@ -2,6 +2,10 @@
 package kalang.compiler.ast;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
+
+import java.util.Collections;
+import java.util.List;
+
 /**
  *
  * @author Kason Yang 
@@ -28,6 +32,11 @@ public class InstanceOfExpr extends ExprNode{
 
     public ExprNode getExpr() {
         return expr;
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.singletonList(expr);
     }
 
 }

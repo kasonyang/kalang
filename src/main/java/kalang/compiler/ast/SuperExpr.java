@@ -2,6 +2,9 @@
 package kalang.compiler.ast;
 import kalang.compiler.core.Type;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  *
  * @author Kason Yang 
@@ -30,4 +33,10 @@ public class SuperExpr extends ExprNode{
     public String toString() {
         return "super";
     }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.emptyList();
+    }
+
 }

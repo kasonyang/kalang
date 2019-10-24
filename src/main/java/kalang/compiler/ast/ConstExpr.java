@@ -7,6 +7,8 @@ import kalang.compiler.core.Types;
 import kalang.compiler.exception.Exceptions;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class ConstExpr extends ExprNode{
@@ -75,4 +77,10 @@ public class ConstExpr extends ExprNode{
     public String toString() {
         return Objects.toString(value);
     }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return Collections.emptyList();
+    }
+
 }
