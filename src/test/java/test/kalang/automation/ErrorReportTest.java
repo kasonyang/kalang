@@ -40,7 +40,7 @@ public class ErrorReportTest {
             fail("invalid file compile passed");
         } catch (CompileException ce) {
             String actualErrorMsg = ce.getDescription();
-            Assert.assertEquals(expectedErrorMsg, actualErrorMsg);
+            Assert.assertEquals("unexpected error message in file:" + file.getName(), expectedErrorMsg, actualErrorMsg);
         }
     }
 

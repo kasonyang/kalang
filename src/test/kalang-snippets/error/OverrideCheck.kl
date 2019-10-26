@@ -1,0 +1,5 @@
+method OverrideCheck.myNewMethod() does not override or implement a method from a supertype
+
+class {
+    override void myNewMethod() {}
+}

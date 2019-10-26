@@ -222,7 +222,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Nonnull
     public AstLoader getAstLoader() {
-        return astLoader;
+        return compilationUnit.getCompileContext().getAstLoader();
     }
 
     @Nonnull

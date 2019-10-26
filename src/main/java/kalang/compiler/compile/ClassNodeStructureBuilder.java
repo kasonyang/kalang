@@ -7,10 +7,7 @@ import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 import kalang.compiler.util.AstUtil;
-import kalang.compiler.util.ClassTypeUtil;
-import kalang.compiler.util.MethodUtil;
 import kalang.compiler.util.ModifierUtil;
-import kalang.mixin.CollectionMixin;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
@@ -184,12 +181,6 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             paramNames = new String[0];
         }
         //check method duplicated before generate java stub
-        String mStr = MethodUtil.getDeclarationKey(name,paramTypes);
-        boolean existed = CollectionMixin.find(thisClazz.getDeclaredMethodNodes(), m -> MethodUtil.getDeclarationKey(m).equals(mStr)) != null;
-        if (existed) {
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"declare method is duplicated:"+mStr, ctx);
-            return null;
-        }
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();
         if(blockStmt==null){
             if(ModifierUtil.isInterface(thisClazz.modifier)){
@@ -204,21 +195,10 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         for(int i=0;i<paramTypes.length;i++){
             method.createParameter(paramTypes[i], paramNames[i]);
         }
+        if (isOverriding) {
+            method.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));
+        }
         for(AnnotationNode a:getAnnotations(ctx.annotation()))  method.addAnnotation(a);
-        ObjectType superType = thisClazz.getSuperType();
-        if(superType==null){//the superType of interface may be null
-            superType = Types.getRootType();
-        }
-        MethodDescriptor overriddenMd = ClassTypeUtil.getMethodDescriptor(superType, mStr, thisClazz, true,true);
-        if(overriddenMd==null){
-            overriddenMd = ClassTypeUtil.getMethodDescriptor(thisClazz.getInterfaces(), mStr, thisClazz, true,true);
-        }
-        if(isOverriding && overriddenMd==null){            
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"method does not override or implement a method from a supertype", ctx);
-        }
-        if(!isOverriding && overriddenMd!=null && !"<init>".equals(overriddenMd.getName())){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"method overrides or implements a method from a supertype", ctx);
-        }
         KalangParser.BlockStmtContext bstm = ctx.blockStmt();
         if(bstm!=null){
             List<KalangParser.StatContext> stats = bstm.stat();
@@ -308,6 +288,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             }
         }
         MethodNode mm = thisClazz.createMethodNode(Types.INT_TYPE,"execute",Modifier.PUBLIC);
+        mm.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));
         mm.addExceptionType(Types.getExceptionClassType());
         mm.setDefaultReturnValue(new ConstExpr(0));
         method = mm;

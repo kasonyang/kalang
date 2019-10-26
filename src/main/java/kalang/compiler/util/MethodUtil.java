@@ -65,7 +65,7 @@ public class MethodUtil {
     public static String toString(MethodNode node) {
         String className = "";
         if (node.getClassNode() != null) {
-            className = node.getClassNode().name + "#";
+            className = node.getClassNode().name;
         }
         return String.format("%s.%s(%s)", className, node.getName(), getParametersDescription(getParameterTypes(node)));
     }

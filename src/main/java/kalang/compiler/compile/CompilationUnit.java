@@ -4,6 +4,7 @@ import kalang.compiler.MalformedAstException;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
+import kalang.compiler.compile.analyzer.OverrideAnalyzer;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.helper.*;
@@ -84,6 +85,7 @@ public class CompilationUnit {
         }else if(phase == PHASE_BUILDAST) {
             parseBody(context.getDiagnosisHandler());
         }else if(phase == PHASE_SEMANTIC) {
+            new OverrideAnalyzer(astBuilder.getDiagnosisReporter()).analyze(getAst());
             AstVerifier astVerifier = new AstVerifier();
             try {
                 astVerifier.visit(getAst());
