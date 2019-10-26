@@ -1,0 +1,3 @@
+int methodWithDefParam(int value = 5) {
+    return value + 1;
+}

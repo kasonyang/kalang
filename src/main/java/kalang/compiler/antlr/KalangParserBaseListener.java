@@ -124,6 +124,18 @@ public class KalangParserBaseListener implements KalangParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterParamDecl(KalangParser.ParamDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParamDecl(KalangParser.ParamDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAnnotation(KalangParser.AnnotationContext ctx) { }
 	/**
 	 * {@inheritDoc}

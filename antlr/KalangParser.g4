@@ -94,12 +94,15 @@ methodDecl:
    )
    '('   
         (
-            paramTypes+=type paramIds+=Identifier
-            (',' paramTypes+=type paramIds+=Identifier)*
+            params+=paramDecl
+            (',' params+=paramDecl)*
         )?
     ')'
    ('throws' exceptionTypes+=Identifier (',' exceptionTypes+=Identifier)*)?
    ( blockStmt | ';')
+;
+paramDecl:
+    paramType=type paramId=Identifier  ( '=' paramDefVal=expression)?
 ;
 annotation:
     '@' annotationType=Identifier 

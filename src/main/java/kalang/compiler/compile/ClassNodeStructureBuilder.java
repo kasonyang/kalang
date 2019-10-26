@@ -29,7 +29,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     
     private Map<MethodNode,KalangParser.StatContext[]> methodStatsContexts = new HashMap<>();
 
-    private MethodNode method;
+    private Map<MethodNode, MethodDeclContext> missParamMethods = new HashMap<>();
 
     private final CompilationUnit compilationUnit;
     private DiagnosisReporter diagnosisReporter;
@@ -163,23 +163,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             }
             name = ctx.name.getText();
         }
-        List<KalangParser.TypeContext> paramTypesCtx = ctx.paramTypes;
         int modifier = parseModifier(ctx.varModifier());
-        Type[] paramTypes;
-        String[] paramNames;
-        if (paramTypesCtx != null) {
-            int paramSize = paramTypesCtx.size();
-            paramTypes = new Type[paramSize];
-            paramNames = new String[paramSize];
-            for(int i=0;i<paramSize;i++){
-                KalangParser.TypeContext t = paramTypesCtx.get(i);
-                paramTypes[i] = parseType(t);
-                paramNames[i] = ctx.paramIds.get(i).getText();
-            }
-        }else{
-            paramTypes = new Type[0];
-            paramNames = new String[0];
-        }
         //check method duplicated before generate java stub
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();
         if(blockStmt==null){
@@ -191,9 +175,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                 diagnosisReporter.report(Diagnosis.Kind.ERROR, "declare abstract method in non-abstract class", ctx);
             }
         }
-        method = thisClazz.createMethodNode(type,name,modifier);
-        for(int i=0;i<paramTypes.length;i++){
-            method.createParameter(paramTypes[i], paramNames[i]);
+        MethodNode method = thisClazz.createMethodNode(type, name, modifier);
+        for (KalangParser.ParamDeclContext t : ctx.params) {
+            method.createParameter(parseType(t.paramType), t.paramId.getText());
         }
         if (isOverriding) {
             method.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));
@@ -213,9 +197,26 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             }
         }
         mapAst(method, ctx);
-        MethodNode m = method;
-        method=null;
-        return m;
+        ParameterNode[] methodParams = method.getParameters();
+        int paramsCount = methodParams.length;
+        for(int i = 0;i < paramsCount;i++){
+            KalangParser.ParamDeclContext p = ctx.params.get(i);
+            if (p.paramDefVal != null) {
+                MethodNode m = thisClazz.createMethodNode(method.getType(), method.getName(), method.getModifier());
+                for (int j = 0; j < i - 1; j++) {
+                    m.createParameter(methodParams[j].getType(), methodParams[j].getName(), methodParams[j].modifier);
+                }
+                for (AnnotationNode a: m.getAnnotations()) {
+                    m.addAnnotation(a);
+                }
+                for (Type e: m.getExceptionTypes()) {
+                    m.addExceptionType(e);
+                }
+                mapAst(m, ctx);
+                missParamMethods.put(m, ctx);
+            }
+        }
+        return method;
     }
     
     @Nullable
@@ -291,7 +292,6 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         mm.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));
         mm.addExceptionType(Types.getExceptionClassType());
         mm.setDefaultReturnValue(new ConstExpr(0));
-        method = mm;
         List<KalangParser.StatContext> stats = ctx.stat();
         if(stats!=null){
             this.methodStatsContexts.put(mm, stats.toArray(new KalangParser.StatContext[0]));
@@ -322,4 +322,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     ClassNode getTopClass() {
         return topClass;
     }
+
+    public Map<MethodNode, MethodDeclContext> getMissParamMethods() {
+        return missParamMethods;
+    }
+
 }
