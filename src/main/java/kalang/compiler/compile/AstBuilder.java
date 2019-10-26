@@ -193,25 +193,32 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 checkMethod();
             }
         }
-        Map<MethodNode, MethodDeclContext> missParamsMethodsMap = classNodeStructureBuilder.getMissParamMethods();
-        for (Map.Entry<MethodNode, MethodDeclContext> e: missParamsMethodsMap.entrySet()) {
-            MethodNode m = e.getKey();
-            MethodDeclContext mdCtx = e.getValue();
-            int requiredParamCount = mdCtx.params.size();
+        List<MissingParamMethodInfo> missParamsMethods = classNodeStructureBuilder.getMissParamMethods();
+        for (MissingParamMethodInfo e: missParamsMethods) {
+            MethodNode m = e.getMissingParamMethod();
+            MethodDeclContext mdCtx = e.getMethodDeclContext();
+            MethodNode originMethod = e.getOriginMethod();
             ParameterNode[] mnParams = m.getParameters();
+            ParameterNode[] originParams = originMethod.getParameters();
             enterMethod(m);
-            ExprNode[] callParams = new ExprNode[requiredParamCount];
+            ExprNode[] callParams = new ExprNode[originParams.length];
             for (int i = 0; i < mnParams.length; i++) {
                 callParams[i] = new ParameterExpr(mnParams[i]);
             }
-            for (int i = mnParams.length; i < requiredParamCount; i++) {
+            for (int i = mnParams.length; i < originParams.length; i++) {
                 ParamDeclContext pCtx = mdCtx.params.get(i);
                 ExpressionContext defValCtx = pCtx.paramDefVal;
                 if (defValCtx == null) {
                     handleSyntaxError("missing default value for parameter " + pCtx.paramId.getText(), offset(pCtx));
                     return;
                 } else {
-                    callParams[i] = visitExpression(defValCtx);
+                    callParams[i] = requireImplicitCast(originParams[i].getType(), visitExpression(defValCtx), offset(defValCtx));
+                    if (callParams[i] == null) {
+                        return;
+                    }
+                    if (Types.NULL_TYPE.equals(callParams[i].getType())) {
+                        callParams[i] = new CastExpr(originParams[i].getType(), callParams[i]);
+                    }
                 }
             }
             ExprNode callExpr = getObjectInvokeExpr(createThisExpr(OffsetRange.NONE), m.getName(), callParams, OffsetRange.NONE);

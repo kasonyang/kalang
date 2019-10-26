@@ -14,6 +14,7 @@ import org.antlr.v4.runtime.Token;
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     
     private Map<MethodNode,KalangParser.StatContext[]> methodStatsContexts = new HashMap<>();
 
-    private Map<MethodNode, MethodDeclContext> missParamMethods = new HashMap<>();
+    private List<MissingParamMethodInfo> missParamMethods = new LinkedList<>();
 
     private final CompilationUnit compilationUnit;
     private DiagnosisReporter diagnosisReporter;
@@ -213,10 +214,10 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                     m.addExceptionType(e);
                 }
                 mapAst(m, ctx);
-                missParamMethods.put(m, ctx);
+                missParamMethods.add(new MissingParamMethodInfo(m, method, ctx));
             }
         }
-        return method;
+        return null;
     }
     
     @Nullable
@@ -323,7 +324,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         return topClass;
     }
 
-    public Map<MethodNode, MethodDeclContext> getMissParamMethods() {
+    public List<MissingParamMethodInfo> getMissParamMethods() {
         return missParamMethods;
     }
 
