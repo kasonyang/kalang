@@ -4,13 +4,13 @@ import kalang.compiler.ast.ExprNode;
 import kalang.compiler.core.*;
 import kalang.compiler.exception.Exceptions;
 import kalang.compiler.util.BoxUtil;
-import kalang.runtime.util.MethodSelector;
+import kalang.runtime.util.MethodResolver;
 
 /**
  *
  * @author Kason Yang
  */
-public class KalangMethodSelector extends MethodSelector<MethodDescriptor,Type, ExprNode> {
+public class KalangMethodSelector extends MethodResolver<MethodDescriptor,Type, ExprNode> {
 
     @Override
     protected String getMethodName(MethodDescriptor m) {

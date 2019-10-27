@@ -53,7 +53,7 @@ public abstract class InvocationExpr extends ExprNode {
         if(args == null) args = new ExprNode[0];
         Type[] types = AstUtil.getExprTypes(args);
         if(types==null) types = new Type[0];
-        List<MethodDescriptor> selectedList = methodSelector.select(candidates, methodName, args);
+        List<MethodDescriptor> selectedList = methodSelector.resolve(candidates, methodName, args);
         if (selectedList.isEmpty()) {
             throw new MethodNotFoundException(clazz,methodName);
         } else if (selectedList.size() > 1) {
