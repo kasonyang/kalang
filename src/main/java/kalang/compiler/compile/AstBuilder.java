@@ -430,7 +430,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitCompilationUnit(CompilationUnitContext ctx) {
-        visitChildren(ctx);
+        try {
+            visitChildren(ctx);
+        } catch (NodeException ex) {
+            handleSyntaxError(ex.getMessage(), ex.getOffsetRange());
+        }
         return null;
     }
 
@@ -531,7 +535,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public Statement visitStat(StatContext ctx) {
         ParseTree child = ctx.getChild(0);
-        return child==null ? null : (Statement)visit(child);
+        try {
+            return child == null ? null : (Statement) visit(child);
+        } catch (NodeException ex) {
+            handleSyntaxError(ex.getMessage(), ex.getOffsetRange());
+            return null;
+        }
     }
 
     @Override
@@ -715,7 +724,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 InvocationExpr.MethodSelection apply = InvocationExpr.applyMethod(clazz, methodName, args,clazz.getConstructorDescriptors(thisClazz));
                 ie = onInvocationExpr(new ObjectInvokeExpr(target, apply.selectedMethod, apply.appliedArguments));
             } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-                this.methodNotFound(ctx.start, clazz.getName(), methodName, args);
+                this.methodNotFound(offset(ctx.start), clazz.getName(), methodName, args);
                 return null;
             }
         }else{
@@ -1005,7 +1014,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 expr = onInvocationExpr(new ObjectInvokeExpr(invokeTarget, ms.selectedMethod, ms.appliedArguments));
             }
         } catch (MethodNotFoundException ex) {
-            this.methodNotFound(ctx.getStart(), clazzType, methodName, args);
+            this.methodNotFound(offset(ctx.getStart()), clazzType.getName(), methodName, args);
             expr = new UnknownInvocationExpr(null, methodName, args);
         } catch (AmbiguousMethodException ex) {
             methodIsAmbiguous(ctx.start, ex);
@@ -1414,7 +1423,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {
-            methodNotFound(ctx.classType().rawClass, clsType.getName(), "<init>", params);
+            methodNotFound(offset(ctx.classType().rawClass), clsType.getName(), "<init>", params);
             return null;
         } catch(AmbiguousMethodException ex){
             methodIsAmbiguous(ctx.classType().rawClass ,ex);

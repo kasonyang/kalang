@@ -222,6 +222,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         methodCtx.returned = false;
     }
 
+    @Nullable
     protected AssignableExpr getStaticFieldExpr(ClassReference clazz,String fieldName,OffsetRange offset){
         AssignableExpr ret;
         try {
@@ -279,25 +280,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), offset);
     }
 
-
-    protected void methodNotFound(Token token , Type type,String methodName,ExprNode[] params){
-        methodNotFound(token,type.getName(),methodName,params);
-    }
-
-    protected void methodNotFound(Token token , String className,String methodName,ExprNode[] params){
-        Type[] types = AstUtil.getExprTypes(params);
-        diagnosisReporter.report(Diagnosis.Kind.ERROR
-                , "method not found:" + MethodUtil.toString(className,methodName, types)
-                , token
-        );
-    }
-
     protected void methodNotFound(OffsetRange offset, String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
-        diagnosisReporter.report(Diagnosis.Kind.ERROR
-                , "method not found:" + MethodUtil.toString(className,methodName, types)
-                ,offset
-        );
+        throw new NodeException("method not found:" + MethodUtil.toString(className,methodName, types), offset);
     }
 
     @Nullable
@@ -562,6 +547,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return ast;
     }
 
+    @Nonnull
     protected ExprNode parseLiteral(KalangParser.LiteralContext ctx){
         String t = ctx.getText();
         ConstExpr ce;
@@ -583,8 +569,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                     constValue = StringLiteralUtil.parseLong(t);
                 }
             }catch(NumberFormatException ex){
-                this.handleSyntaxError("invalid number", ctx);
-                return null;
+                throw new NodeException("invalid number", offset(ctx));
             }
             ce = new ConstExpr(constValue);
         } else if (ctx.FloatingPointLiteral() != null) {
@@ -604,8 +589,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                     val = Double.parseDouble(t);
                 }
             }catch(NumberFormatException ex){
-                this.handleSyntaxError("invalid float value", ctx);
-                return null;
+                throw new NodeException("invalid float value", offset(ctx));
             }
             ce = new ConstExpr(val);
         } else if (ctx.BooleanLiteral() != null) {
@@ -622,8 +606,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             if (ctx.Identifier() != null) {
                 type = requireClassType(ctx.Identifier().getSymbol());
                 if (type == null) {
-                    handleSyntaxError("type not found:" + ctx.Identifier().getText(), offset(ctx.Identifier().getSymbol()));
-                    return null;
+                    throw new NodeException("type not found:" + ctx.Identifier().getText(), offset(ctx.Identifier().getSymbol()));
                 }
                 if (isArray) {
                     type = Types.getArrayType(type);
@@ -636,7 +619,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                     ObjectType intClassType = requireClassType("Integer", ctx.primitiveType().getStart());
                     Objects.requireNonNull(intClassType);
                     ClassReference clsRef = new ClassReference(intClassType.getClassNode());
-                    return getStaticFieldExpr(clsRef, "TYPE", offset(ctx.primitiveType()));
+                    AssignableExpr staticFieldExpr = getStaticFieldExpr(clsRef, "TYPE", offset(ctx.primitiveType()));
+                    Objects.requireNonNull(staticFieldExpr);
+                    return staticFieldExpr;
                 }
             }
             ce = new ConstExpr(type);
