@@ -186,7 +186,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 );
             }
         }
-        new InitializationAnalyzer(compilationUnit, compilationUnit.getCompileContext().getAstLoader()).check(getCurrentClass(), m);
     }
 
     @Nonnull

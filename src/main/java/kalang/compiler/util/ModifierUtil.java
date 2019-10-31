@@ -47,6 +47,10 @@ public class ModifierUtil {
         return Modifier.isStatic(modifier);
     }
 
+    public static boolean isFinal(int modifier) {
+        return Modifier.isFinal(modifier);
+    }
+
     /**
      *
      * @param modifierString the string of modifier,could be multiple modifier

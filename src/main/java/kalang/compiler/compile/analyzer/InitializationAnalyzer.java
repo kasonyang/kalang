@@ -1,9 +1,12 @@
-package kalang.compiler.compile;
+package kalang.compiler.compile.analyzer;
 
 import kalang.compiler.ast.*;
+import kalang.compiler.compile.Diagnosis;
+import kalang.compiler.compile.DiagnosisReporter;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.VarTable;
 import kalang.compiler.util.CollectionsUtil;
+import kalang.compiler.util.ModifierUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,27 +20,18 @@ import java.util.Set;
  */
 public class InitializationAnalyzer extends AstVisitor<Object> {
 
-    private AstLoader astLoader;
-
-    private MethodNode method;
-
-    private CompilationUnit source;
-
-    private VarTable<LocalVarNode, Void> assignedVars = new VarTable<>();
+    private VarTable<VarObject, Void> assignedVars;
 
     private DiagnosisReporter diagnosisReporter;
     
-    private boolean returned = false;
+    private boolean returned;
 
-    public InitializationAnalyzer(CompilationUnit source, AstLoader astLoader) {
-        this.astLoader = astLoader;
-        this.source = source;
-        
+    public InitializationAnalyzer(DiagnosisReporter diagnosisReporter) {
+        this.diagnosisReporter = diagnosisReporter;
     }
 
-    public void check(ClassNode clz,MethodNode method) {
-        this.diagnosisReporter = new DiagnosisReporter(source);
-        this.visit(method);
+    public void analyze(ClassNode clazz) {
+        visit(clazz);
     }
 
     @Override
@@ -58,14 +52,20 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
     public Object visitAssignExpr(AssignExpr node) {
         AssignableExpr to = node.getTo();
         if (to instanceof VarExpr) {
-            assignedVars.put(((VarExpr) to).getVar(), null);
+            LocalVarNode varObj = ((VarExpr) to).getVar();
+            validateModifier(varObj);
+            assignedVars.put(varObj, null);
+        } else if (to instanceof FieldExpr) {
+            FieldNode varObj = ((FieldExpr) to).getField().getFieldNode();
+            validateModifier(varObj);
+            assignedVars.put(varObj, null);
         }
         return super.visitAssignExpr(node);
     }
 
     @Override
     public Type visitTryStmt(TryStmt node) {
-        List<VarTable<LocalVarNode, Void>> assignedList = new ArrayList(node.getCatchStmts().size() + 1);
+        List<VarTable<VarObject, Void>> assignedList = new ArrayList(node.getCatchStmts().size() + 1);
         enterNewFrame();
         if (!visitAndCheckReturned(node.getExecStmt())){
             assignedList.add(assignedVars);
@@ -88,7 +88,7 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
 
     @Override
     public Type visitIfStmt(IfStmt node) {
-        List<VarTable<LocalVarNode, Void>> assignedVarsList = new ArrayList(2);
+        List<VarTable<VarObject, Void>> assignedVarsList = new ArrayList(2);
         enterNewFrame();
         if (!visitAndCheckReturned(node.getTrueBody())){
             assignedVarsList.add(assignedVars);
@@ -118,7 +118,8 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
 
     @Override
     public Object visitMethodNode(MethodNode node) {
-        method = node;
+        returned = false;
+        this.assignedVars = new VarTable<>();
         return super.visitMethodNode(node);
     }
 
@@ -130,22 +131,22 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         assignedVars = assignedVars.getParent();
     }
 
-    protected void addIntersectedAssignedVar(List<VarTable<LocalVarNode, Void>> assignedVarsList) {
+    protected void addIntersectedAssignedVar(List<VarTable<VarObject, Void>> assignedVarsList) {
         if (assignedVarsList.isEmpty()){
             return;
         }
         if (assignedVarsList.size()==1){
-            for(Map.Entry<LocalVarNode, Void> s:assignedVarsList.get(0).vars().entrySet()){
+            for(Map.Entry<VarObject, Void> s:assignedVarsList.get(0).vars().entrySet()){
                 assignedVars.put(s.getKey(), null);
             }
             return;
         }
-        Set<LocalVarNode>[] assigned = new Set[assignedVarsList.size()];
+        Set<VarObject>[] assigned = new Set[assignedVarsList.size()];
         for (int i = 0; i < assigned.length; i++) {
             assigned[i] = assignedVarsList.get(i).keySet();
         }
-        Set<LocalVarNode> sets = CollectionsUtil.getIntersection(assigned);
-        for (LocalVarNode s : sets) {
+        Set<VarObject> sets = CollectionsUtil.getIntersection(assigned);
+        for (VarObject s : sets) {
             assignedVars.put(s, null);
         }
     }
@@ -175,6 +176,12 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
         boolean ret = returned;
         returned = oldReturned;
         return ret;
+    }
+
+    private void validateModifier(VarObject toVarObj) {
+        if (ModifierUtil.isFinal(toVarObj.modifier) && assignedVars.exist(toVarObj)) {
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "cannot assign a value to final variable " + toVarObj.getName());
+        }
     }
     
 }

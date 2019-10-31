@@ -1777,7 +1777,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             varId = idsCtx.get(0);
         }else{
             TerminalNode indexId = idsCtx.get(0);
-            LocalVarNode indexVar = this.declareLocalVar(indexId.getText(),Types.INT_TYPE,Modifier.FINAL,offset(ctx));
+            LocalVarNode indexVar = this.declareLocalVar(indexId.getText(),Types.INT_TYPE, 0 ,offset(ctx));
             if(indexVar==null) return null;
             block.statements.add(new VarDeclStmt(indexVar));
             indexVarExpr = new VarExpr(indexVar);         

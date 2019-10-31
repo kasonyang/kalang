@@ -1,0 +1,10 @@
+cannot assign a value to final variable value
+
+class {
+    private final int value = 1;
+
+    constructor() {
+        value = 2;
+    }
+
+}
