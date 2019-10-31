@@ -16,11 +16,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The initialization analyzer class.
+ * The assignment analyzer class.
  *
  * @author Kason Yang
  */
-public class InitializationAnalyzer extends AstVisitor<Object> {
+public class AssignmentAnalyzer extends AstVisitor<Object> {
 
     private VarTable<VarObject, Void> assignedVars;
 
@@ -30,7 +30,7 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
 
     private MethodNode method;
 
-    public InitializationAnalyzer(DiagnosisReporter diagnosisReporter) {
+    public AssignmentAnalyzer(DiagnosisReporter diagnosisReporter) {
         this.diagnosisReporter = diagnosisReporter;
     }
 
