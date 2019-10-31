@@ -11,7 +11,7 @@ import java.util.Objects;
 public class Exceptions {
     
     public static UnsupportedOperationException unsupportedTypeException(Object obj){
-        return unsupportedTypeException(obj.getClass());
+        return unsupportedTypeException(obj == null ? "null" : obj.getClass());
     }
     
     public static UnsupportedOperationException unsupportedTypeException(Class clazz){

@@ -829,9 +829,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 if (from == null) {
                     return null;
                 }
-                if (!this.semanticAnalyzer.validateAssign(to, from, offset(ctx), isInConstructor())) {
-                    return null;
-                }
                 AssignExpr assignExpr = new AssignExpr(to, from);
                 mapAst(assignExpr, ctx);
                 //TODO remove override information before assign

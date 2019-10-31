@@ -5,6 +5,8 @@ import kalang.compiler.compile.Diagnosis;
 import kalang.compiler.compile.DiagnosisReporter;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.VarTable;
+import kalang.compiler.exception.Exceptions;
+import kalang.compiler.util.AstUtil;
 import kalang.compiler.util.CollectionsUtil;
 import kalang.compiler.util.ModifierUtil;
 
@@ -25,6 +27,8 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
     private DiagnosisReporter diagnosisReporter;
     
     private boolean returned;
+
+    private MethodNode method;
 
     public InitializationAnalyzer(DiagnosisReporter diagnosisReporter) {
         this.diagnosisReporter = diagnosisReporter;
@@ -57,8 +61,23 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
             assignedVars.put(varObj, null);
         } else if (to instanceof FieldExpr) {
             FieldNode varObj = ((FieldExpr) to).getField().getFieldNode();
-            validateModifier(varObj);
+            if (ModifierUtil.isFinal(varObj.modifier)) {
+                if (AstUtil.isConstructor(method)) {
+                    validateModifier(varObj);
+                } else {
+                    reportAssignFinalVarError(varObj);
+                }
+            }
             assignedVars.put(varObj, null);
+        } else if (to instanceof ParameterExpr) {
+            ParameterNode varObj = ((ParameterExpr) to).getParameter();
+            if (ModifierUtil.isFinal(varObj.modifier)) {
+                reportAssignFinalVarError(varObj);
+            }
+        } else if (to instanceof ElementExpr) {
+            //do nothing
+        } else {
+            throw Exceptions.unsupportedTypeException(to);
         }
         return super.visitAssignExpr(node);
     }
@@ -118,8 +137,9 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
 
     @Override
     public Object visitMethodNode(MethodNode node) {
+        method = node;
         returned = false;
-        this.assignedVars = new VarTable<>();
+        assignedVars = new VarTable<>();
         return super.visitMethodNode(node);
     }
 
@@ -180,8 +200,12 @@ public class InitializationAnalyzer extends AstVisitor<Object> {
 
     private void validateModifier(VarObject toVarObj) {
         if (ModifierUtil.isFinal(toVarObj.modifier) && assignedVars.exist(toVarObj)) {
-            diagnosisReporter.report(Diagnosis.Kind.ERROR, "cannot assign a value to final variable " + toVarObj.getName());
+            reportAssignFinalVarError(toVarObj);
         }
+    }
+
+    private void reportAssignFinalVarError(VarObject toVarObj) {
+        diagnosisReporter.report(Diagnosis.Kind.ERROR, "cannot assign a value to final variable " + toVarObj.getName());
     }
     
 }

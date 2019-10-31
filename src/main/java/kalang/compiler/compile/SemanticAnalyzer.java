@@ -6,7 +6,6 @@ import kalang.compiler.util.AstUtil;
 import kalang.compiler.util.BoxUtil;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -106,35 +105,6 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     public boolean validateElementExpr(ElementExpr node) {
         return requireArray(node, node.getArrayExpr().getType());
-    }
-    
-    public boolean validateAssign(AssignableExpr to,ExprNode from, OffsetRange offset,boolean isInitializationStmt){
-        if (to instanceof VarExpr) {
-            LocalVarNode varObject = ((VarExpr) to).getVar();
-            if (!isInitializationStmt && Modifier.isFinal(varObject.modifier)) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", varObject.getName()),offset);
-                return false;
-            }
-        } else if (to instanceof FieldExpr){
-            FieldDescriptor field = ((FieldExpr) to).getField();
-            if (!isInitializationStmt && Modifier.isFinal(field.getModifier())) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", field.getName()),offset);
-                return false;
-            }
-        } else if (to instanceof ParameterExpr) {
-            ParameterNode parameter = ((ParameterExpr) to).getParameter();
-            if (Modifier.isFinal(parameter.modifier)) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s is readonly", parameter.getName()),offset);
-                return false;
-            }
-        }
-        Type toType = to.getType();
-        Type fromType = from.getType();
-        if(!toType.isAssignableFrom(fromType)){
-          diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("incompatible types: %s cannot be converted to %s",fromType,toType),offset);
-          return false;
-        }
-        return true;
     }
 
     public boolean validateReturnStmt(MethodNode method,ReturnStmt node) {
