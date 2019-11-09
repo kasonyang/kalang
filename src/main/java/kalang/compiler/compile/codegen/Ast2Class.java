@@ -901,33 +901,41 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitNewArrayExpr(NewArrayExpr node) {
-        visit(node.getSize());
-        Type t = node.getComponentType();
-        int opr = -1;
-        int op = NEWARRAY;
-        if(t.equals(BOOLEAN_TYPE)){
-            opr = T_BOOLEAN;
-        }else if(t.equals(CHAR_TYPE)){
-            opr = T_CHAR;
-        }else if(t.equals(SHORT_TYPE)){
-            opr = T_SHORT;
-        }else if(t.equals(INT_TYPE)){
-            opr = T_INT;
-        }else if(t.equals(LONG_TYPE)){
-            opr = T_LONG;
-        }else if(t.equals(FLOAT_TYPE)){
-            opr = T_FLOAT;
-        }else if(t.equals(DOUBLE_TYPE)){
-            opr = T_DOUBLE;
-        }else if(t.equals(BYTE_TYPE)){
-            opr = T_BYTE;
-        }else{
-            op = ANEWARRAY;
+        ExprNode[] sizes = node.getSizes();
+        visitAll(sizes);
+        Type ct = node.getComponentType();
+        if (sizes.length < 1) {
+            throw new IllegalArgumentException("illegal sizes length " + sizes);
         }
-        if(op==NEWARRAY){
-            md.visitIntInsn(op, opr);
-        }else{
-            md.visitTypeInsn(ANEWARRAY, internalName(t));
+        if (sizes.length == 1) {
+            int opr = -1;
+            int op = NEWARRAY;
+            if(ct.equals(BOOLEAN_TYPE)){
+                opr = T_BOOLEAN;
+            }else if(ct.equals(CHAR_TYPE)){
+                opr = T_CHAR;
+            }else if(ct.equals(SHORT_TYPE)){
+                opr = T_SHORT;
+            }else if(ct.equals(INT_TYPE)){
+                opr = T_INT;
+            }else if(ct.equals(LONG_TYPE)){
+                opr = T_LONG;
+            }else if(ct.equals(FLOAT_TYPE)){
+                opr = T_FLOAT;
+            }else if(ct.equals(DOUBLE_TYPE)){
+                opr = T_DOUBLE;
+            }else if(ct.equals(BYTE_TYPE)){
+                opr = T_BYTE;
+            }else{
+                op = ANEWARRAY;
+            }
+            if(op == NEWARRAY){
+                md.visitIntInsn(op, opr);
+            }else{
+                md.visitTypeInsn(ANEWARRAY, internalName(ct));
+            }
+        } else {
+            md.visitMultiANewArrayInsn(getTypeDescriptor(node.getType()), sizes.length);
         }
         return null;
     }

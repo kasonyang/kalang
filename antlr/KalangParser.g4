@@ -262,8 +262,8 @@ expression
     |  expression '[' expression ']' #getArrayElementExpr    
     |   'new' classType
          '(' (params+=expression (',' params+=expression)*)? ')'     #newExpr
-    |   ( 'new' type '[' size=expression ']' 
-            | 'new' type '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}'
+    |   ( 'new' type ( '[' sizes+=expression ']' )+ ( suffix+='[' ']' )*
+            | 'new' type '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}' //TODO support multi dimensions
         )    #newArrayExpr
     |   expression op=('++' | '--') #incExpr
     |   ( '+' | '-' ) expression #unaryExpr

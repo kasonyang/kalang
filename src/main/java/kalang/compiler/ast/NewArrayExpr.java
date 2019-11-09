@@ -3,18 +3,22 @@ package kalang.compiler.ast;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 public class NewArrayExpr extends ExprNode{
     
     protected Type componentType;
     
-    protected ExprNode size;
-    
+    protected ExprNode[] sizes;
+
+    public NewArrayExpr(Type componentType,ExprNode[] sizes){
+        this.componentType = componentType;
+        this.sizes = sizes;
+    }
+
     public NewArrayExpr(Type componentType,ExprNode size){
-            this.componentType = componentType;
-            this.size = size;
+        this(componentType, new ExprNode[]{size});
     }
 
     @Override
@@ -40,20 +44,20 @@ public class NewArrayExpr extends ExprNode{
     /**
      * @return the size
      */
-    public ExprNode getSize() {
-        return size;
+    public ExprNode[] getSizes() {
+        return sizes;
     }
 
     /**
-     * @param size the size to set
+     * @param sizes the size to set
      */
-    public void setSize(ExprNode size) {
-        Objects.requireNonNull(size);
-        this.size = size;
+    public void setSizes(ExprNode[] sizes) {
+        Objects.requireNonNull(sizes);
+        this.sizes = sizes;
     }
 
     @Override
     public List<AstNode> getChildren() {
-        return Collections.singletonList(size);
+        return Arrays.asList(sizes);
     }
 }

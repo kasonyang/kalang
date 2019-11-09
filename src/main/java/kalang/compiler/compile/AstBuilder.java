@@ -378,10 +378,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public ExprNode visitNewArrayExpr(KalangParser.NewArrayExprContext ctx) {
         Type type = parseType(ctx.type());
+        if (type == null) {
+            return null;
+        }
         ExprNode ret;
-        if(ctx.size!=null){
-            ExprNode size = visitExpression(ctx.size);
-            ret = new NewArrayExpr(type,size);
+        if(ctx.initExpr.isEmpty()){
+            ExprNode[] sizeNodes = new ExprNode[ctx.sizes.size()];
+            for (int i = 0; i < sizeNodes.length; i++){
+                sizeNodes[i] = visitExpression(ctx.sizes.get(i));
+            }
+            int dimensions = sizeNodes.length + ctx.suffix.size();
+            for (int i = 0; i < dimensions - 1; i++) {
+                type = Types.getArrayType(type);
+            }
+            ret = new NewArrayExpr(type,sizeNodes);
         }else{
             ExprNode[] initExprs = new ExprNode[ctx.initExpr.size()];
             for(int i=0;i<initExprs.length;i++){

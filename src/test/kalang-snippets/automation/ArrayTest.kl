@@ -1,0 +1,28 @@
+boolean newArray2D() {
+    val arr = new int[1][2];
+    arr[0][1] = 6;
+    return arr[0][1] == 6;
+}
+
+boolean newArray2D1() {
+    val arr = new int[1][];
+    arr[0] = [0,1,2];
+    return arr[0][2] == 2;
+}
+
+boolean newArray3D() {
+    val arr = new int[1][2][3];
+    arr[0][1][2] = 6;
+    return arr[0][1][2] == 6;
+}
+
+boolean newArray3D1() {
+    val arr = new int[1][][];
+    arr[0] = new int[2][];
+    arr[0][1] = new int[3];
+    arr[0][1][2] = 6;
+    return arr[0][1][2] == 6;
+}
+
+
+
