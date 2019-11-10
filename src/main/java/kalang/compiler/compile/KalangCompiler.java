@@ -15,9 +15,7 @@ import org.antlr.v4.runtime.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static kalang.compiler.compile.CompilePhase.PHASE_ALL;
 
@@ -33,7 +31,7 @@ public abstract class KalangCompiler implements CompileContext {
     private HashMap<String, CompilationUnit> compilationUnits = new HashMap<>();
 
     @Nonnull
-    private final HashMap<String, KalangSource> sources = new HashMap();
+    private final List<KalangSource> sources = new LinkedList<>();
 
     private int compilingPhase;
 
@@ -72,8 +70,8 @@ public abstract class KalangCompiler implements CompileContext {
                 }
                 String[] classNameInfo = className.split("\\$", 2);
                 String topClassName = classNameInfo[0];
-                if (compilationUnits.containsKey(topClassName)) {
-                    CompilationUnit compilationUnit = compilationUnits.get(topClassName);
+                CompilationUnit compilationUnit = compilationUnits.get(topClassName);
+                if (compilationUnit != null) {
                     ClassNode clazz = compilationUnit.getAst();
                     if (classNameInfo.length == 1) {
                         return clazz;
@@ -111,7 +109,7 @@ public abstract class KalangCompiler implements CompileContext {
 
     public void addSource(KalangSource source) {
         String className = source.getClassName();
-        sources.put(className, source);
+        sources.add(source);
         compilationUnits.put(className, createCompilationUnit(source));
     }
 
@@ -128,7 +126,11 @@ public abstract class KalangCompiler implements CompileContext {
         while (compilingPhase < targetPhase && compilingPhase < this.compileTargetPhase) {
             compilingPhase++;
             Span span = Profiler.getInstance().beginSpan("compilePhase@" + compilingPhase);
-            for (CompilationUnit unit : compilationUnits.values()) {
+            int compiledCount = 0;
+            while (compiledCount < sources.size()) {
+                KalangSource src = sources.get(compiledCount++);
+                CompilationUnit unit = compilationUnits.get(src.getClassName());
+                Objects.requireNonNull(unit);
                 unit.compile(compilingPhase);
             }
             Profiler.getInstance().endSpan(span);
@@ -156,8 +158,8 @@ public abstract class KalangCompiler implements CompileContext {
     }
 
     @Nonnull
-    public HashMap<String, KalangSource> getSources() {
-        return sources;
+    public KalangSource[] getSources() {
+        return sources.toArray(new KalangSource[0]);
     }
 
     @Nonnull
