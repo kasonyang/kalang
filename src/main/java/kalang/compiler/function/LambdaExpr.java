@@ -70,4 +70,8 @@ public class LambdaExpr extends ExprNode{
     public Type getType() {
         return type;
     }
+
+    public void fixType(Type newType) {
+        this.type = newType;
+    }
 }

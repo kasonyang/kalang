@@ -842,6 +842,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 AssignExpr assignExpr = new AssignExpr(to, from);
                 mapAst(assignExpr, ctx);
                 //TODO remove override information before assign
+                if (from instanceof LambdaExpr) {
+                    inferLambdaIfNeed((LambdaExpr)from,  toExpr.getType());
+                }
                 methodCtx.onAssign(toExpr, from);
                 return assignExpr;
             }
@@ -1526,7 +1529,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 if (initExpr == null) {
                     continue;
                 }
+                if (initExpr instanceof LambdaExpr) {
+                    inferLambdaIfNeed((LambdaExpr)initExpr,  localVar.getType());
+                }
                 AssignExpr assignExpr = new AssignExpr(new VarExpr(localVar), initExpr);
+                methodCtx.onAssign(assignExpr.getTo(), initExpr);
                 mapAst(assignExpr, v);
                 ms.statements.add(new ExprStmt(assignExpr));
             }
@@ -2137,16 +2144,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         for(int i=0;i<args.length;i++) {
             ExprNode arg = args[i];
             if (arg instanceof LambdaExpr) {
-                boolean isInit = ((LambdaExpr) arg).getInterfaceMethod() != null;
-                if (!isInit) {
-                    ClassType lambdaType = (ClassType) inferLambdaType(paramTypes[i]);
-                    LambdaExprContext ctx = lambdaExprCtxMap.get(arg);
-                    MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(lambdaType);
-                    Objects.requireNonNull(funcMethod);
-                    LambdaExpr lambdaArg = (LambdaExpr) arg;
-                    lambdaArg.setInterfaceMethod(funcMethod);
-                    createLambdaNode(lambdaArg, ctx);
-                }
+                this.inferLambdaIfNeed((LambdaExpr) arg,paramTypes[i]);
             }
         }
         Map<GenericType, Type> inferredTypes = thisClazz.inferredGenericTypes;
@@ -2165,6 +2163,19 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         }
         return invocationExpr;
+    }
+
+    private void inferLambdaIfNeed(LambdaExpr lambdaExpr, Type inferredType) {
+        boolean isInit = lambdaExpr.getInterfaceMethod() != null;
+        if (!isInit) {
+            ClassType lambdaType = (ClassType) inferLambdaType(inferredType);
+            LambdaExprContext ctx = lambdaExprCtxMap.get(lambdaExpr);
+            MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(lambdaType);
+            Objects.requireNonNull(funcMethod);
+            lambdaExpr.setInterfaceMethod(funcMethod);
+            createLambdaNode(lambdaExpr, ctx);
+            lambdaExpr.fixType(lambdaType);
+        }
     }
 
     private ExprNode createStarNavigateExpr(AstNode target, Function1<ExprNode, ExprNode> navigateExprMaker, OffsetRange offset) {

@@ -241,8 +241,7 @@ expression
     | (
         ( lambdaType? '{' ( lambdaParams+=Identifier (',' lambdaParams+=Identifier)* '=>')? stat* '}' )
       | (
-
-            (( lambdaType? '(' (lambdaParams+=Identifier (',' lambdaParams+=Identifier)*)? ')' ) | lambdaParams+=Identifier)
+            ( ('(' (lambdaParams+=Identifier (',' lambdaParams+=Identifier)*)? ')' ) | lambdaParams+=Identifier)
             '=>'
             (('{' stat* '}') | expression)
          )

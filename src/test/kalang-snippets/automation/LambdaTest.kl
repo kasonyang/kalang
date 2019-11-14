@@ -2,14 +2,14 @@ static class StringList extends ArrayList<String> {
 
 }
 int lambdaExprTest() {
-    var cb = &String(String)(value) => {
+    var cb as &String(String) = (value) => {
         return value;
     };
     return Integer.parseInt(cb.call("3")) + Integer.parseInt(cb("3"));
 }
 
 int lambdaInvokeTest() {
-    val cb = &Integer() {
+    val cb as &Integer() = () => {
         return lambdaExprTest();
     };
     return cb();
@@ -36,7 +36,7 @@ boolean mapTest() {
 
 boolean nullCheck() {
     val str as String? = "test";
-    val toStr = &String() {
+    val toStr as &String() = () => {
         return str == null ? "null" : str.toString();
     };
     return toStr() == "test";
@@ -44,7 +44,7 @@ boolean nullCheck() {
 
 boolean thisVarTest() {
     val that = this;
-    val cb = &Boolean() {
+    val cb as &Boolean() = () => {
         return this === that;
     };
     return cb();

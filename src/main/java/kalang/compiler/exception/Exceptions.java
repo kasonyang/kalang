@@ -9,9 +9,10 @@ import java.util.Objects;
  * @author Kason Yang 
  */
 public class Exceptions {
-    
-    public static UnsupportedOperationException unsupportedTypeException(Object obj){
-        return unsupportedTypeException(obj == null ? "null" : obj.getClass());
+
+    public static RuntimeException unsupportedTypeException(Object obj){
+        String typeName = obj == null ? "null" : obj.getClass().getName();
+        return new IllegalArgumentException("Unsupported type:" + typeName);
     }
     
     public static UnsupportedOperationException unsupportedTypeException(Class clazz){
