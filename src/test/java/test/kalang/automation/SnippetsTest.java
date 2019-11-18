@@ -5,6 +5,7 @@ import kalang.lang.Script;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -23,7 +24,11 @@ public class SnippetsTest {
     @Test
     public void testAutomation() throws Exception {
         File automationSrcDir = new File("src/test/kalang-snippets/automation");
-        testAll(automationSrcDir,true);
+        for (File f: automationSrcDir.listFiles()) {
+            if (f.isFile()) {
+                testFile(f, true);
+            }
+        }
     }
 
     private void testAll(File file,boolean checkReturnValue) throws Exception {
@@ -34,6 +39,10 @@ public class SnippetsTest {
             }
             return;
         }
+        testFile(file, checkReturnValue);
+    }
+
+    private void testFile(File file, boolean checkReturnValue) throws IllegalAccessException, InstantiationException, IOException {
         if (!file.isFile()) {
             return;
         }
@@ -79,9 +88,7 @@ public class SnippetsTest {
             } else {
                 assertEquals("result of method[" + fullMethodName + "] should be 6", 6, ret);
             }
-
         }
-
     }
 
 }

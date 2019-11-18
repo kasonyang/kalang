@@ -1,0 +1,8 @@
+import model.*;
+class {
+
+    boolean test() {
+        return ClassA.getInstance() != null;
+    }
+
+}

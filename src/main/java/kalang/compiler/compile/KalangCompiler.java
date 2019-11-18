@@ -126,12 +126,16 @@ public abstract class KalangCompiler implements CompileContext {
         while (compilingPhase < targetPhase && compilingPhase < this.compileTargetPhase) {
             compilingPhase++;
             Span span = Profiler.getInstance().beginSpan("compilePhase@" + compilingPhase);
-            int compiledCount = 0;
-            while (compiledCount < sources.size()) {
-                KalangSource src = sources.get(compiledCount++);
-                CompilationUnit unit = compilationUnits.get(src.getClassName());
-                Objects.requireNonNull(unit);
-                unit.compile(compilingPhase);
+            Set<CompilationUnit> compiledUnits = new HashSet<>();
+            // compilationUnits may be updated when compiling
+            while (compiledUnits.size() < compilationUnits.size()) {
+                HashSet<CompilationUnit> currentUnitSet = new HashSet<>(compilationUnits.values());
+                for (CompilationUnit unit: currentUnitSet) {
+                    if (!compiledUnits.add(unit)) {
+                        continue;
+                    }
+                    unit.compile(compilingPhase);
+                }
             }
             Profiler.getInstance().endSpan(span);
         }

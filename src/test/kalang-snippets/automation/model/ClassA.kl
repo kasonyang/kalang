@@ -1,0 +1,9 @@
+class {
+
+    private constructor(String param) {}
+
+    static ClassA getInstance() {
+        return new ClassA("test");
+    }
+
+}
