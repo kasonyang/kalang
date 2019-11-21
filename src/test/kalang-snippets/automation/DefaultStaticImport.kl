@@ -4,6 +4,6 @@ int testPluginFind() {
 }
 
 int testMap() {
-    var lens = <Integer>[123456].map({ it => return String.valueOf(it); });
+    var lens = <Integer>[123456].asList().map({ it => return String.valueOf(it); });
     return lens.get(0).length();
 }

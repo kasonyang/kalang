@@ -77,12 +77,6 @@ public class CollectionMixin {
 
     @Nonnull
     @MixinMethod
-    public static <R, E> List<R> map(E[] list, Function1<R, E> handler) {
-        return map(Arrays.asList(list), handler);
-    }
-
-    @Nonnull
-    @MixinMethod
     public static <K,E, M extends Map<K,List<E>>> Map<K,List<E>> group(Collection<E> list,M map, Function1<K,E> keyGenerator) {
         for (E it: list) {
             K key = keyGenerator.call(it);
