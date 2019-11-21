@@ -21,6 +21,9 @@ public class MethodNode extends AstNode implements Annotationable{
     private ConstExpr defaultReturnValue;
 
     @Nullable
+    public Type inferredReturnType;
+
+    @Nullable
     private ConstExpr defaultValue = null;
     
     private final List<ParameterNode> parameters = new LinkedList();

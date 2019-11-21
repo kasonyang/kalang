@@ -3,6 +3,7 @@ package kalang.compiler.core;
 
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.exception.Exceptions;
+import kalang.compiler.util.ParameterizedUtil;
 
 import java.util.*;
 /**
@@ -207,13 +208,13 @@ public class ClassType extends ObjectType {
     }
 
     public ClassType toParameterized(Map<GenericType,Type> genericTypeTypeMap) {
-        GenericType[] gts = clazz.getGenericTypes();
-        Type[] typeArgs = new Type[gts.length];
-        for(int i=0;i<typeArgs.length;i++) {
-            Type aType = genericTypeTypeMap.get(gts[i]);
-            typeArgs[i] = aType==null ? gts[i] : aType;
+        GenericType[] declaredGenericTypes = clazz.getGenericTypes();
+        Type[] typeArgs = new Type[declaredGenericTypes.length];
+        for (int i = 0; i < typeArgs.length; i++) {
+            typeArgs[i] = i < typeArguments.length ? typeArguments[i] : declaredGenericTypes[i];
         }
-        return Types.getClassType(clazz,typeArgs);
+        Type[] newTypeArgs = ParameterizedUtil.parameterizedType(typeArgs, genericTypeTypeMap);
+        return Types.getClassType(clazz,newTypeArgs);
     }
 
 }

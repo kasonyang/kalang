@@ -90,6 +90,19 @@ public class MethodUtil {
         }
         return types;
     }
+
+    public static Type[] getReturnAndParamTypes(Type returnType, Type[] paramTypes) {
+        Type[] types = new Type[paramTypes.length + 1];
+        types[0] = returnType;
+        for (int i = 1; i < types.length; i++) {
+            types[i] = paramTypes[i-1];
+        }
+        return types;
+    }
+
+    public static Type[] getReturnAndParamTypes(MethodDescriptor md) {
+        return getReturnAndParamTypes(md.getReturnType(), md.getParameterTypes());
+    }
     
     @Nullable
     public static MethodDescriptor getMethodDescriptor(MethodDescriptor[] methods,String name,@Nullable Type[] parameterTypes){

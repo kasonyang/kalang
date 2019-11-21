@@ -35,8 +35,6 @@ public class ClassNode extends AstNode implements Annotationable{
     public final List<Statement> staticInitStmts = new LinkedList<>();
     
     public final List<Statement> initStmts = new LinkedList<>();
-
-    public final Map<GenericType,Type> inferredGenericTypes = new HashMap<>();
     
     protected List<GenericType> genericTypes = new LinkedList<>();
     

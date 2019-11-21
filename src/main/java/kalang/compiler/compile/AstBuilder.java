@@ -1723,7 +1723,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(functionType);
             Objects.requireNonNull(funcMethod);
             ms.setInterfaceMethod(funcMethod);
-            createLambdaNode(ms,ctx);
+            createLambdaNode(ms,ctx, functionType);
         } else {
             lambdaExprCtxMap.put(ms, ctx);
         }
@@ -2011,7 +2011,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return diagnosisReporter;
     }
 
-    private void createLambdaNode(LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx){
+    private void createLambdaNode(LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx, ClassType lambdaType){
         MethodDescriptor funcMethod = lambdaExpr.getInterfaceMethod();
         Type returnType = funcMethod.getReturnType();
         Type[] paramTypes = funcMethod.getParameterTypes();
@@ -2067,6 +2067,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         methodNode.getBody().statements.add(bs);
         popBlock();
         checkMethod();
+        Type[] declaredFuncTypes = MethodUtil.getReturnAndParamTypes(funcMethod);
+        Type[] actualFuncTypes = MethodUtil.getReturnAndParamTypes(methodNode.inferredReturnType, funcMethod.getParameterTypes());
+        Map<GenericType, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
+        ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
+        lambdaExpr.fixType(parameterizedType);
         //TODO check return
         Set<ParameterNode> usedParamNodes = new HashSet<>();
         new AstNodeCollector().collect(methodNode, ParameterExpr.class).forEach(it -> usedParamNodes.add(it.getParameter()));
@@ -2128,12 +2133,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     private ReturnStmt onReturnStmt(ReturnStmt rs) {
         this.methodCtx.returned = true;
-        Type rType = methodCtx.method.getType();
-        if(rs.expr != null && rType instanceof GenericType) {
+        if(rs.expr != null) {
             Type eType = rs.expr.getType();
-            Type oldType = thisClazz.inferredGenericTypes.get(rType);
-            Type newType = oldType == null ? eType : TypeUtil.getCommonType(oldType, eType);
-            thisClazz.inferredGenericTypes.put((GenericType) rType,newType);
+            Type oldType = methodCtx.method.inferredReturnType;
+            methodCtx.method.inferredReturnType = oldType == null ? eType : TypeUtil.getCommonType(oldType, eType);
         }
         return rs;
     }
@@ -2147,15 +2150,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 this.inferLambdaIfNeed((LambdaExpr) arg,paramTypes[i]);
             }
         }
-        Map<GenericType, Type> inferredTypes = thisClazz.inferredGenericTypes;
+        Type[] actualTypes = AstUtil.getExprTypes(args);
+        Map<GenericType, Type> inferredTypes = ParameterizedUtil.getGenericTypeMap(paramTypes, actualTypes);
         if (!inferredTypes.isEmpty()) {
             MethodDescriptor md = invocationExpr.getMethod();
-            for(int i=0;i<paramTypes.length;i++) {
-                if (paramTypes[i] instanceof ClassType) {
-                    paramTypes[i] = ((ClassType) paramTypes[i]).toParameterized(inferredTypes);
-                }
-            }
-            MethodDescriptor newMd = md.toParameterized(inferredTypes, paramTypes);
+            MethodDescriptor newMd = md.toParameterized(inferredTypes, actualTypes);
             if (invocationExpr instanceof StaticInvokeExpr) {
                 invocationExpr = new StaticInvokeExpr(((StaticInvokeExpr) invocationExpr).getInvokeClass(),newMd,args);
             } else if (invocationExpr instanceof ObjectInvokeExpr) {
@@ -2173,8 +2172,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(lambdaType);
             Objects.requireNonNull(funcMethod);
             lambdaExpr.setInterfaceMethod(funcMethod);
-            createLambdaNode(lambdaExpr, ctx);
-            lambdaExpr.fixType(lambdaType);
+            createLambdaNode(lambdaExpr, ctx, lambdaType);
         }
     }
 

@@ -149,7 +149,7 @@ public class SemanticAnalyzer extends AstVisitor<Type> {
 
     boolean requireArray(AstNode node, Type t) {
         if (!isArray(t)) {
-            diagnosisReporter.report(Diagnosis.Kind.ERROR, "array type required.", node.offset);
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "array type required.Found " + t.getName(), node.offset);
             return false;
         }
         return true;
