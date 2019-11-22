@@ -25,7 +25,10 @@ public class Kalangsh extends ShellBase {
     }
 
     public static void main(String[] args) {
-        System.exit(new Kalangsh().run(args));
+        int result = new Kalangsh().run(args);
+        if (result != 0) {
+            System.exit(result);
+        }
     }
 
     @Override
