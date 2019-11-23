@@ -3,6 +3,7 @@ package kalang.compiler.compile.analyzer;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.Diagnosis;
 import kalang.compiler.compile.DiagnosisReporter;
+import kalang.compiler.compile.OffsetRange;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.VarTable;
 import kalang.compiler.exception.Exceptions;
@@ -57,22 +58,22 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
         AssignableExpr to = node.getTo();
         if (to instanceof VarExpr) {
             LocalVarNode varObj = ((VarExpr) to).getVar();
-            validateModifier(varObj);
+            validateModifier(varObj, node.offset);
             assignedVars.put(varObj, null);
         } else if (to instanceof FieldExpr) {
             FieldNode varObj = ((FieldExpr) to).getField().getFieldNode();
             if (ModifierUtil.isFinal(varObj.modifier)) {
                 if (AstUtil.isConstructor(method)) {
-                    validateModifier(varObj);
+                    validateModifier(varObj, node.offset);
                 } else {
-                    reportAssignFinalVarError(varObj);
+                    reportAssignFinalVarError(varObj, node.offset);
                 }
             }
             assignedVars.put(varObj, null);
         } else if (to instanceof ParameterExpr) {
             ParameterNode varObj = ((ParameterExpr) to).getParameter();
             if (ModifierUtil.isFinal(varObj.modifier)) {
-                reportAssignFinalVarError(varObj);
+                reportAssignFinalVarError(varObj, node.offset);
             }
         } else if (to instanceof ElementExpr) {
             //do nothing
@@ -198,14 +199,14 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
         return ret;
     }
 
-    private void validateModifier(VarObject toVarObj) {
+    private void validateModifier(VarObject toVarObj, OffsetRange offset) {
         if (ModifierUtil.isFinal(toVarObj.modifier) && assignedVars.exist(toVarObj)) {
-            reportAssignFinalVarError(toVarObj);
+            reportAssignFinalVarError(toVarObj, offset);
         }
     }
 
-    private void reportAssignFinalVarError(VarObject toVarObj) {
-        diagnosisReporter.report(Diagnosis.Kind.ERROR, "cannot assign a value to final variable " + toVarObj.getName());
+    private void reportAssignFinalVarError(VarObject toVarObj, OffsetRange offset) {
+        diagnosisReporter.report(Diagnosis.Kind.ERROR, "cannot assign a value to final variable " + toVarObj.getName(), offset);
     }
     
 }

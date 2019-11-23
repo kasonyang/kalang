@@ -1727,6 +1727,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         } else {
             lambdaExprCtxMap.put(ms, ctx);
         }
+        mapAst(ms, offset(ctx));
         return ms;
     }
 
@@ -2167,10 +2168,23 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private void inferLambdaIfNeed(LambdaExpr lambdaExpr, Type inferredType) {
         boolean isInit = lambdaExpr.getInterfaceMethod() != null;
         if (!isInit) {
-            ClassType lambdaType = (ClassType) inferLambdaType(inferredType);
+            if (inferredType instanceof LambdaType) {
+                handleSyntaxError("lambda type is not specified", lambdaExpr.offset);
+                return;
+            }
+            String errorMsg = "cannot create lambda expression for type:" + inferredType.getName();
+            Type inferredLambdaType = inferLambdaType(inferredType);
+            if (!(inferredLambdaType instanceof ClassType)) {
+                handleSyntaxError(errorMsg, lambdaExpr.offset);
+                return;
+            }
+            ClassType lambdaType = (ClassType) inferredLambdaType;
             LambdaExprContext ctx = lambdaExprCtxMap.get(lambdaExpr);
             MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(lambdaType);
-            Objects.requireNonNull(funcMethod);
+            if (funcMethod == null) {
+                handleSyntaxError(errorMsg, lambdaExpr.offset);
+                return;
+            }
             lambdaExpr.setInterfaceMethod(funcMethod);
             createLambdaNode(lambdaExpr, ctx, lambdaType);
         }

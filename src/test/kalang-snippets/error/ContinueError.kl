@@ -1,0 +1,4 @@
+continue outside of loop@2
+void test() {
+    continue;
+}

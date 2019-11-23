@@ -1,5 +1,4 @@
-num is uninitialized!
-
+num is uninitialized!@5
 int num;
 if ( "".equals(1) ) {
     num = 1;

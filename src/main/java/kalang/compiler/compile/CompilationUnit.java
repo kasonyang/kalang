@@ -99,7 +99,11 @@ public class CompilationUnit {
             if(codeGenerator==null){
                 throw new IllegalStateException("CodeGenerator is missing");
             }
-            codeGenerator.generate(this.getAst());
+            try {
+                codeGenerator.generate(this.getAst());
+            } catch (MalformedAstException ex) {
+                this.astBuilder.handleSyntaxError(ex.getMessage(), ex.getMalformedNode().offset);
+            }
         }
     }
     

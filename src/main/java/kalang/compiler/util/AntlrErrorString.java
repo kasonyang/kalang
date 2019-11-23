@@ -1,5 +1,6 @@
 package kalang.compiler.util;
 
+import kalang.mixin.StringMixin;
 import org.antlr.v4.runtime.*;
 
 public class AntlrErrorString {
@@ -17,7 +18,8 @@ public class AntlrErrorString {
                 );
             }
         }
-        return "syntax error at input:" + input;
+        String[] inputLines = StringMixin.lines(input);
+        return "syntax error at input:" + inputLines[inputLines.length - 1];
     }
 
     public static String inputMismatch(InputMismatchException e) {

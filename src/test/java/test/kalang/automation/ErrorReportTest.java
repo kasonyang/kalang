@@ -39,7 +39,7 @@ public class ErrorReportTest {
             shell.parse(FilenameUtils.getBaseName(file.getName()), source, file.getName());
             fail("invalid file compile passed");
         } catch (CompileException ce) {
-            String actualErrorMsg = ce.getDescription();
+            String actualErrorMsg = ce.getDescription() + "@" + ce.getLine();
             Assert.assertEquals("unexpected error message in file:" + file.getName(), expectedErrorMsg, actualErrorMsg);
         }
     }

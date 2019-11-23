@@ -2,6 +2,7 @@
 package kalang.compiler.compile.codegen;
 
 import kalang.compiler.AstNotFoundException;
+import kalang.compiler.MalformedAstException;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.AstLoader;
 import kalang.compiler.compile.CodeGenerator;
@@ -382,8 +383,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitBreakStmt(BreakStmt node) {
         if (breakLabels.isEmpty()) {
-            LOG.warning("redundant break statement:" + node.offset);
-            return null;
+            throw new MalformedAstException("break outside of loop", node);
         }
         md.visitJumpInsn(GOTO, breakLabels.peek());
         return null;
@@ -391,6 +391,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitContinueStmt(ContinueStmt node) {
+        if (continueLabels.isEmpty()) {
+            throw new MalformedAstException("continue outside of loop", node);
+        }
         md.visitJumpInsn(GOTO, continueLabels.peek());
         return null;
     }

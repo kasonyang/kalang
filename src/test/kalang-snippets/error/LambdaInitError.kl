@@ -1,0 +1,4 @@
+lambda type is not specified@1
+val cb = () => {
+    println("test");
+};

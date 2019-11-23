@@ -1,5 +1,4 @@
-missing default value for parameter lastParam
-
+missing default value for parameter lastParam@1
 int methodWithDefParam(int value = 5, String lastParam) {
     return value + 1;
 }

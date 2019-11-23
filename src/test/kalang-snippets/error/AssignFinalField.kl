@@ -1,5 +1,4 @@
-cannot assign a value to final variable value
-
+cannot assign a value to final variable value@5
 class {
     private final int value = 1;
 

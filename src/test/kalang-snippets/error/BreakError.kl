@@ -1,0 +1,4 @@
+break outside of loop@2
+void test() {
+    break;
+}
