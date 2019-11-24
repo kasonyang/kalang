@@ -5,3 +5,18 @@ int andExprCheck() {
     }
     return 1;
 }
+
+boolean continueCheck() {
+    for (var i = 0; i < 1; i++) {
+        val s = getNull();
+        if (s == null) {
+            continue;
+        }
+        return s.length() == 1;
+    }
+    return true;
+}
+
+private String? getNull() {
+    return null;
+}
