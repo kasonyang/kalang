@@ -77,7 +77,7 @@ public class Types {
     
     public static final String SCRIPT_CLASS_NAME = "kalang.Script";
     
-    public static final String MAP_IMPL_CLASS_NAME = "java.util.HashMap";
+    public static final String MAP_IMPL_CLASS_NAME = "java.util.LinkedHashMap";
     
     public static final String LIST_IMPL_CLASS_NAME = "java.util.LinkedList";
     
