@@ -417,14 +417,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public AstNode visitQuestionExpr(KalangParser.QuestionExprContext ctx) {
         List<Statement> stmts = new LinkedList<>();
         ExprNode conditionExpr = (ExprNode) visit(ctx.expression(0));
-        methodCtx.newOverrideTypeStack();
-        methodCtx.onIf(conditionExpr,true);
-        ExprNode trueExpr = (ExprNode) visit(ctx.expression(1));
-        methodCtx.popOverrideTypeStack();
-        methodCtx.newOverrideTypeStack();
-        methodCtx.onIf(conditionExpr,false);
-        ExprNode falseExpr = (ExprNode)  visit(ctx.expression(2));
-        methodCtx.popOverrideTypeStack();
+        ExprNode trueExpr = methodCtx.doInCondition(conditionExpr,true, () -> visitExpression(ctx.expression(1)));
+        ExprNode falseExpr = methodCtx.doInCondition(conditionExpr,false, () -> visitExpression(ctx.expression(2)));
         Type trueType = trueExpr.getType();
         Type falseType  = falseExpr.getType();
         Type type;
@@ -505,26 +499,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             this.diagnosisReporter.report(Diagnosis.Kind.ERROR, exprType + " cannot be converted to boolean type", ctx.expression());
             return null;
         }
-        BlockStmt trueBody = null;
-        BlockStmt falseBody = null;
         VarTable<VarObject,Integer> trueAssigned,falseAssigned;
         this.methodCtx.nullState = trueAssigned = this.methodCtx.nullState.newStack();
-        methodCtx.newOverrideTypeStack();
-        methodCtx.onIf(expr, true);
-        if (ctx.trueStmt != null) {
-            trueBody=requireBlock(ctx.trueStmt);
-        }
-        methodCtx.popOverrideTypeStack();
+        BlockStmt trueBody = ctx.trueStmt == null ? null : methodCtx.doInCondition(expr, true, () -> requireBlock(ctx.trueStmt));
         this.methodCtx.nullState = this.methodCtx.nullState.popStack();
         boolean trueReturned = this.methodCtx.returned;
         this.methodCtx.returned = false;
         this.methodCtx.nullState = falseAssigned = this.methodCtx.nullState.newStack();
-        methodCtx.newOverrideTypeStack();
-        methodCtx.onIf(expr,false);
-        if (ctx.falseStmt != null) {
-            falseBody=requireBlock(ctx.falseStmt);
-        }
-        methodCtx.popOverrideTypeStack();
+        BlockStmt falseBody = ctx.falseStmt == null ? null : methodCtx.doInCondition(expr,false, () -> requireBlock(ctx.falseStmt));
         this.methodCtx.nullState = this.methodCtx.nullState.popStack();
         methodCtx.handleMultiBranchedAssign(trueAssigned.vars(),falseAssigned.vars());
         boolean falseReturned = this.methodCtx.returned;
@@ -915,14 +897,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private ExprNode createBinaryExpr(String op, ExprNode expr1, ExprCreator expr2Creator, OffsetRange offset){
         ExprNode expr2;
         if ("&&".equals(op) || "||".equals(op)) {
-            methodCtx.newOverrideTypeStack();
             expr1 = requireCastToPrimitiveDataType(expr1,expr1.offset);
             if (expr1 == null) {
                 return null;
             }
-            methodCtx.onIf(expr1,"&&".equals(op));
-            expr2 = expr2Creator.createExpr();
-            methodCtx.popOverrideTypeStack();
+            expr2 = methodCtx.doInCondition(expr1,"&&".equals(op), () -> expr2Creator.createExpr());
         } else {
             expr2 = expr2Creator.createExpr();
         }
@@ -2278,18 +2257,15 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         stmts.add(new VarDeclStmt(targetTmpVar));
         stmts.add(new ExprStmt(new AssignExpr(new VarExpr(targetTmpVar), targetExpr)));
         ExprNode conditionExpr = new CompareBinaryExpr(new VarExpr(targetTmpVar), new ConstExpr(null), "==");
-        methodCtx.newOverrideTypeStack();
-        methodCtx.onIf(conditionExpr, true);
-        methodCtx.popOverrideTypeStack();
-        methodCtx.newOverrideTypeStack();
-        methodCtx.onIf(conditionExpr, false);
-        ExprNode targetTmpExpr = new VarExpr(targetTmpVar, methodCtx.getVarObjectType(targetTmpVar));
-        ExprNode falseExpr = navigateExprMaker.call(targetTmpExpr);
+        methodCtx.doInCondition(conditionExpr, true, null);
+        ExprNode falseExpr = methodCtx.doInCondition(conditionExpr, false, () -> {
+            ExprNode targetTmpExpr = new VarExpr(targetTmpVar, methodCtx.getVarObjectType(targetTmpVar));
+            return navigateExprMaker.call(targetTmpExpr);
+        });
         if (falseExpr == null) {
             return null;
         }
         ExprNode trueExpr = Values.getDefaultValue(falseExpr.getType());
-        methodCtx.popOverrideTypeStack();
         LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
         VarDeclStmt vds = new VarDeclStmt(vo);
         stmts.add(vds);
