@@ -37,7 +37,7 @@ public class DateTime implements Comparable<DateTime> {
      */
     public DateTime(int year, int month, int date, int hour, int minute, int second, int millisecond) {
         Calendar d = Calendar.getInstance();
-        d.set(year, month + 1, date, hour, minute, second);
+        d.set(year, month - 1, date, hour, minute, second);
         d.set(Calendar.MILLISECOND, millisecond);
         this.timeInMillis = d.getTimeInMillis();
     }
