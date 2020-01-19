@@ -1439,6 +1439,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
             params = paramList.toArray(new ExprNode[0]);
             newExpr = new NewObjectExpr(clsType,params,thisClazz);
+            onInvocationExpr(newExpr.getConstructor());
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {

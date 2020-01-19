@@ -29,7 +29,7 @@ public class DateTime implements Comparable<DateTime> {
     /**
      * constructor of DateTime
      * @param year the value of year
-     * @param month the value of month.The value is 1-based. e.g. 1 for January
+     * @param month the value of month.The value is 0-based. e.g. 0 for January
      * @param date the value of date
      * @param hour the value of hour
      * @param minute the value of minute
@@ -37,7 +37,7 @@ public class DateTime implements Comparable<DateTime> {
      */
     public DateTime(int year, int month, int date, int hour, int minute, int second, int millisecond) {
         Calendar d = Calendar.getInstance();
-        d.set(year, month + 1, date, hour, minute, second);
+        d.set(year, month, date, hour, minute, second);
         d.set(Calendar.MILLISECOND, millisecond);
         this.timeInMillis = d.getTimeInMillis();
     }
