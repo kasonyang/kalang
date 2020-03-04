@@ -27,6 +27,8 @@ public class KalangMethodSelector extends MethodResolver<MethodDescriptor,Type, 
         Type actualType = arg.getType();
         if(t1.isAssignableFrom(t2)) return false;
         if(t2.isAssignableFrom(t1)) return true;
+        if (actualType.equals(t1) && !actualType.equals(t2)) return true;
+        if (actualType.equals(t2) && !actualType.equals(t1)) return false;
         if(actualType instanceof ClassType){
             if( (t1 instanceof ClassType) && (t2 instanceof PrimitiveType)) return true;
         }else if(actualType instanceof PrimitiveType){
