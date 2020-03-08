@@ -9,6 +9,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class MethodContext {
 
@@ -64,6 +65,16 @@ public class MethodContext {
                 }
                 nullState.put(key, ns);
             }
+        }
+    }
+
+    public <T> T doInCondition(ExprNode conditionExpr, boolean onTrue, @Nullable Supplier<T> callback) {
+        newOverrideTypeStack();
+        try {
+            onIf(conditionExpr, onTrue);
+            return callback == null ? null : callback.get();
+        } finally {
+            popOverrideTypeStack();
         }
     }
 
@@ -191,11 +202,11 @@ public class MethodContext {
         return varTables.get(name);
     }
 
-    public void newOverrideTypeStack(){
+    private void newOverrideTypeStack(){
         overrideTypes = new VarTable(overrideTypes);
     }
 
-    public void popOverrideTypeStack(){
+    private void popOverrideTypeStack(){
         overrideTypes = overrideTypes.getParent();
     }
 
