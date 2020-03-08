@@ -1,0 +1,101 @@
+class {
+
+    static byte[] sha1(byte[] message){
+        var h0 = 0x67452301;
+        var h1 = 0xEFCDAB89;
+        var h2 = 0x98BADCFE;
+        var h3 = 0x10325476;
+        var h4 = 0xC3D2E1F0;
+
+        val blockCount = ((message.length+8) >>> 6) + 1;
+        val messageLenInBits = message.length * 8L;
+        val padding = with(new byte[ (blockCount << 6) - message.length ]) {
+            this[0] = -0x80;
+            writeLongB(length - 8, messageLenInBits);
+        };
+
+        var offset = 0;
+        for (var s=0; s < blockCount; s++) {
+            var block = message;
+            var blockOffset = s << 6;
+            val availableData = message.length - blockOffset;
+            if (availableData < 64) {
+                block = new byte[64];
+                if (availableData > 0) {
+                    System.arraycopy(message, blockOffset, block, 0, availableData);
+                }
+                if (availableData >= 0) {
+                    block[availableData] = -0x80;
+                }
+                if (s == blockCount - 1) {
+                    block.writeLongB(56, messageLenInBits);
+                }
+                blockOffset = 0;
+            }
+            val buffer = new int[80];
+            for (var j=0; j < 16; j++, blockOffset += 4) {
+                buffer[j] = block.readIntB(blockOffset);
+            }
+            for (var j=16; j < 80; j++) {
+                buffer[j] = Integer.rotateLeft(buffer[j-3] ^ buffer[j-8] ^ buffer[j-14] ^ buffer[j-16], 1);
+            }
+            var a = h0;
+            var b = h1;
+            var c = h2;
+            var d = h3;
+            var e = h4;
+            var k = 0;
+            var f = 0;
+            for (var i=0; i < 80; i++){
+                if ( i >=0 && i <= 19) {
+                    f = (b & c) | (( ~b) & d);
+                    k = 0x5A827999;
+                } else if ( i >=20 && i <= 39) {
+                    f = b ^ c ^ d;
+                    k = 0x6ED9EBA1;
+                } else if ( i >=40 && i <= 59) {
+                    f = (b & c) | (b & d) | (c & d);
+                    k = 0x8F1BBCDC;
+                } else if ( i >=60 && i <= 79) {
+                    f = b ^ c ^ d;
+                    k = 0xCA62C1D6;
+                }
+                val temp = Integer.rotateLeft(a, 5) + f + e + k + buffer[i];
+                e = d;
+                d = c;
+                c = Integer.rotateLeft(b, 30);
+                b = a;
+                a = temp;
+            }
+            h0 += a;
+            h1 += b;
+            h2 += c;
+            h3 += d;
+            h4 += e;
+        }
+        return with (new byte[20]) {
+            writeIntB(0, h0);
+            writeIntB(4, h1);
+            writeIntB(8, h2);
+            writeIntB(12, h3);
+            writeIntB(16, h4);
+        };
+    }
+
+    static String sha1AsHex(byte[] data) {
+        return toHex(sha1(data));
+    }
+
+    private static String toHex(byte[] bytes) {
+        val digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
+        val chars = new char[bytes.length << 1];
+        var ci = 0;
+        for (var i = 0; i < bytes.length; i++) {
+            byte b = bytes[i];
+            chars[ci++] = digits[(b & 0xF0) >>> 4];
+            chars[ci++] = digits[b & 0xF];
+        }
+        return new String(chars);
+    }
+
+}

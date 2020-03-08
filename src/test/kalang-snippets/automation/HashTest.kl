@@ -1,0 +1,28 @@
+import algorithm.Md5;
+import algorithm.Sha1;
+
+boolean testMd5() {
+    var str = "";
+    for (var i = 0; i < 1024; i++) {
+        if (Md5.md5AsHex(str.getBytes("utf-8")) != str.md5Hex()) {
+            println("test failed,str=${str}");
+            return false;
+        }
+        str = str + String.valueOf((char)i);
+    }
+    return true;
+}
+
+boolean testSha1() {
+    var str = "";
+    for (var i = 0; i < 1024; i++) {
+        val hex1 = Sha1.sha1AsHex(str.getBytes("utf-8"));
+        val hex2 = str.sha1Hex();
+        if ( hex1 != hex2) {
+            println("test failed,i=${i},hex1=${hex1},hex2=${hex2},str=${str}");
+            return false;
+        }
+        str = str + String.valueOf((char)i);
+    }
+    return true;
+}
