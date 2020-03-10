@@ -136,13 +136,13 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return fe;
     }
 
-    protected void processConstructor() {
+    protected void processConstructorsAndStaticInitStmts() {
         ClassNode thisClazz = getCurrentClass();
         MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
         for(MethodNode m:methods) {
             BlockStmt mbody = m.getBody();
             if(AstUtil.isConstructor(m)){
-                @SuppressWarnings("null")
+                assert mbody != null;
                 List<Statement> bodyStmts = mbody.statements;
                 if(!AstUtil.hasConstructorCallStatement(bodyStmts)){
                     try {
@@ -162,9 +162,10 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                     //TODO handle error
                     throw new RuntimeException("missing constructor call");
                 }
-                mbody.statements.addAll(1, thisClazz.initStmts);
+                mbody.statements.addAll(1, buildFieldInitStmts(false));
             }
         }
+        thisClazz.staticInitStmts.addAll(buildFieldInitStmts(true));
     }
 
     protected void checkMethod() {
@@ -880,6 +881,22 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return new VarExpr(tmpTarget);
     }
 
+    protected ExprNode visitExpression(KalangParser.ExpressionContext expression) {
+        Object node = visit(expression);
+        if(node instanceof ExprNode){
+            return (ExprNode) node;
+        }else{
+            ExprNode expr;
+            if(node instanceof AstNode){
+                expr = new ErrorousExpr((AstNode)node);
+            }else{
+                expr = new ErrorousExpr();
+            }
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "not an expression",expression);
+            return expr;
+        }
+    }
+
     private boolean isSafeAccessibleExpr(ExprNode expr) {
         return expr instanceof VarExpr
                 || expr instanceof ParameterExpr
@@ -978,6 +995,30 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
         accessorMap.put(field, mn);
         return mn;
+    }
+
+    private List<Statement> buildFieldInitStmts(boolean isStatic) {
+        List<Statement> stmts = new LinkedList<>();
+        ClassNode clazz = getCurrentClass();
+        for (Map.Entry<FieldNode, KalangParser.ExpressionContext> e: clazz.fieldInitExprMap.entrySet()) {
+            FieldNode fn = e.getKey();
+            KalangParser.ExpressionContext exprCtx = e.getValue();
+            if (isStatic != ModifierUtil.isStatic(fn.getModifier())) {
+                continue;
+            }
+            ExprNode initExpr = requireImplicitCast(fn.getType(), visitExpression(exprCtx), offset(exprCtx));
+            ExprStmt initExprStmt;
+            if (isStatic) {
+                initExprStmt = new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(clazz), fn), initExpr));
+            } else {
+                initExprStmt = new ExprStmt(
+                        new AssignExpr(new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), fn), initExpr)
+                );
+            }
+            mapAst(initExprStmt, offset(exprCtx), true);
+            stmts.add(initExprStmt);
+        }
+        return stmts;
     }
 
 }

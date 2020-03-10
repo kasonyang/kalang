@@ -177,7 +177,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
             visitMethods(topClass);
-            processConstructor(topClass);
+            processConstructorsAndStaticInitStmts(topClass);
             checkAndBuildInterfaceMethods(topClass);
         }
     }
@@ -516,22 +516,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
         return ifStmt;
-    }
-
-    protected ExprNode visitExpression(ExpressionContext expression) {
-        Object node = visit(expression);
-        if(node instanceof ExprNode){
-            return (ExprNode) node;
-        }else{
-            ExprNode expr;
-            if(node instanceof AstNode){
-                expr = new ErrorousExpr((AstNode)node);
-            }else{
-                expr = new ErrorousExpr();
-            }
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "not an expression",expression);
-            return expr;
-        }
     }
 
     @Override
@@ -2119,11 +2103,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         methodCtx = oldMethodCtx;
     }
 
-    private void processConstructor(ClassNode clazz) {
+    private void processConstructorsAndStaticInitStmts(ClassNode clazz) {
         thisClazz = clazz;
-        processConstructor();
+        processConstructorsAndStaticInitStmts();
         for (ClassNode c:thisClazz.classes) {
-            processConstructor(c);
+            processConstructorsAndStaticInitStmts(c);
         }
     }
 

@@ -1,5 +1,6 @@
 package kalang.compiler.ast;
 
+import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.core.GenericType;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Type;
@@ -33,8 +34,8 @@ public class ClassNode extends AstNode implements Annotationable{
     public final List<AnnotationNode> annotations = new LinkedList<>();
     
     public final List<Statement> staticInitStmts = new LinkedList<>();
-    
-    public final List<Statement> initStmts = new LinkedList<>();
+
+    public final Map<FieldNode, KalangParser.ExpressionContext> fieldInitExprMap = new HashMap<>();
     
     protected List<GenericType> genericTypes = new LinkedList<>();
     

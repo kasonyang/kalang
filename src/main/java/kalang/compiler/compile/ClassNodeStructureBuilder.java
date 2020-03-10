@@ -240,41 +240,13 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     public Void visitFieldDecl(KalangParser.FieldDeclContext ctx) {
         int fieldModifier = parseModifier(ctx.varModifier());
         for(KalangParser.VarDeclContext vd:ctx.varDecl()){
-            ExprNode initExpr;
-            if(vd.expression()!=null){
-                initExpr = visitExpression(vd.expression());
-            }else{
-                initExpr = null;
-            }
-            AstBuilder.VarInfo varInfo = varDecl(vd,initExpr==null
-                    ?Types.getRootType()
-                    :initExpr.getType()
-            );
+            AstBuilder.VarInfo varInfo = varDecl(vd, Types.getRootType());
             varInfo.modifier |= fieldModifier;
             FieldNode fieldNode = thisClazz.createField(varInfo.type, varInfo.name,varInfo.modifier);
             mapAst(fieldNode, offset(ctx));
-            //TODO simplify it
-            if(initExpr!=null){
-                initExpr = requireImplicitCast(fieldNode.getType(), initExpr, offset(ctx));
-                if (initExpr == null) {
-                    continue;
-                }
-                if(AstUtil.isStatic(fieldNode.modifier)){
-                    ExprStmt initExprStmt = new ExprStmt(new AssignExpr(new StaticFieldExpr(new ClassReference(thisClazz), fieldNode), initExpr));
-                    mapAst(initExpr, offset(ctx), true);
-                    thisClazz.staticInitStmts.add(initExprStmt);
-                }else{
-                    ExprStmt initExprStmt = new ExprStmt(
-                            new AssignExpr(
-                                    new ObjectFieldExpr(
-                                            new ThisExpr(Types.getClassType(thisClazz)), fieldNode
-                                    )
-                                    , initExpr
-                            )
-                    );
-                    mapAst(initExprStmt, offset(ctx), true);
-                    thisClazz.initStmts.add(initExprStmt);
-                }
+            KalangParser.ExpressionContext initExpr = vd.expression();
+            if (initExpr != null) {
+                thisClazz.fieldInitExprMap.put(fieldNode, initExpr);
             }
         }
         return null;
