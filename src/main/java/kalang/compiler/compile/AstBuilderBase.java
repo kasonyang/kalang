@@ -299,28 +299,14 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return ObjectInvokeExpr.create(ret,"toString",new ExprNode[0]);
     }
 
-    @Nullable
-    protected ExprNode requireImplicitCast(Type resultType,@Nullable ExprNode expr,OffsetRange offset) {
-        if (expr==null) {
-            return null;
-        }
+    @Nonnull
+    protected ExprNode requireImplicitCast(Type resultType, ExprNode expr,OffsetRange offset) {
         Type exprType = expr.getType();
         ExprNode result = BoxUtil.assign(expr, exprType, resultType);
         if (result == null) {
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, String.format("%s cannot be converted to %s", exprType,resultType), offset);
-            return null;
+            throw new NodeException(String.format("%s cannot be converted to %s", exprType,resultType), offset);
         }
         return result;
-    }
-
-    @Nullable
-    protected ExprNode requireCastable(ExprNode expr1, Type fromType, Type toType,OffsetRange offset) {
-        ExprNode expr = BoxUtil.assign(expr1,fromType,toType);
-        if(expr==null){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    , "unable to cast " + fromType + " to " + toType, offset);
-        }
-        return expr;
     }
 
     @Nonnull
@@ -760,9 +746,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         PrimitiveType resultType = MathType.getType(numPriType1, numPriType2);
         expr1 = requireImplicitCast(resultType,requireImplicitCast(numPriType1, expr1, expr1.offset),expr1.offset);
         expr2 = requireImplicitCast(resultType, requireImplicitCast(numPriType2, expr2, expr2.offset), expr2.offset);
-        if (expr1 == null || expr2 == null) {
-            return null;
-        }
         return constructBinaryExpr(expr1, expr2, op);
     }
 

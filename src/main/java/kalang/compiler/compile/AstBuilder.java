@@ -215,9 +215,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     return;
                 } else {
                     callParams[i] = requireImplicitCast(originParams[i].getType(), visitExpression(defValCtx), offset(defValCtx));
-                    if (callParams[i] == null) {
-                        return;
-                    }
                     if (Types.NULL_TYPE.equals(callParams[i].getType())) {
                         callParams[i] = new CastExpr(originParams[i].getType(), callParams[i]);
                     }
@@ -536,9 +533,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (ctx.expression() != null) {
             ExprNode expr = visitExpression(ctx.expression());
             rs.expr = requireImplicitCast(methodCtx.method.getType(), expr, offset(ctx));
-            if (rs.expr == null) {
-                return null;
-            }
         } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
             rs.expr = new ConstExpr(null);
         }
@@ -832,9 +826,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     return null;
                 }
                 from = requireImplicitCast(to.getType(), from, offset(ctx));
-                if (from == null) {
-                    return null;
-                }
                 AssignExpr assignExpr = new AssignExpr(to, from);
                 mapAst(assignExpr, ctx);
                 //TODO remove override information before assign
@@ -1179,7 +1170,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         switch(op){
             case UnaryExpr.OPERATION_LOGIC_NOT:
-                expr = requireCastable(expr,expr.getType(),Types.BOOLEAN_TYPE,OffsetRangeHelper.getOffsetRange(exprCtx));
+                expr = requireImplicitCast(Types.BOOLEAN_TYPE, expr, OffsetRangeHelper.getOffsetRange(exprCtx));
                 //TODO create a new node for logic-not expression?
                 break;
             case UnaryExpr.OPERATION_NEG:
@@ -1261,9 +1252,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             mapAst(ve, offset);
             if (assignValue != null) {
                 assignValue = requireImplicitCast(ve.getType(), assignValue, offset);
-                if (assignValue == null) {
-                    return null;
-                }
                 result = new AssignExpr(ve, assignValue);
                 mapAst(result, exprOffset);
             } else {
@@ -1524,9 +1512,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ms.statements.add(vds);
             if(initExpr!=null){
                 initExpr = requireImplicitCast(localVar.getType(), initExpr, offset(ctx));
-                if (initExpr == null) {
-                    continue;
-                }
                 if (initExpr instanceof LambdaExpr) {
                     inferLambdaIfNeed((LambdaExpr)initExpr,  localVar.getType());
                 }
@@ -1922,8 +1907,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         for(int i=0;i<initExprs.length;i++){
             if(exprCtx==null) throw Exceptions.unexpectedValue(exprCtx);
-            initExprs[i] = requireCastable(initExprs[i], initExprs[i].getType(), type,OffsetRangeHelper.getOffsetRange(exprCtx.get(i)));
-            if(initExprs[i]==null) return null;
+            initExprs[i] = requireImplicitCast(type, initExprs[i], OffsetRangeHelper.getOffsetRange(exprCtx.get(i)));
         }
         ExprNode arrExpr = createInitializedArray(type, initExprs);
         mapAst(arrExpr, ctx);
@@ -2046,9 +2030,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 ExprNode bodyExpr = visitExpression(bodyExprCtx);
                 if (!returnType.equals(Types.VOID_TYPE)) {
                     bodyExpr = requireImplicitCast(methodCtx.method.getType(), bodyExpr, offset(bodyExprCtx));
-                    if (bodyExpr != null) {
-                        bsStatements.add(onReturnStmt(new ReturnStmt(bodyExpr)));
-                    }
+                    bsStatements.add(onReturnStmt(new ReturnStmt(bodyExpr)));
                 } else {
                     bsStatements.add(new ExprStmt(bodyExpr));
                 }
