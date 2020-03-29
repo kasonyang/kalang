@@ -1874,17 +1874,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                             return loopBodyStatements;
                         });
                         VarExpr theIndexVarExpr = indexVarExpr;
-                        BlockStmt updateBs = newBlock(() -> {
-                            if (theIndexVarExpr != null) {
-                                //do index++
-                                return new ExprStmt(
-                                        new AssignExpr(
-                                                theIndexVarExpr
-                                                , new ArithmeticBinaryExpr(theIndexVarExpr, new ConstExpr(1), BinaryExpr.OP_ADD)
-                                        )
-                                );
-                            }
-                            return null;
+                        BlockStmt updateBs = theIndexVarExpr == null ? null : newBlock(() -> {
+                            //do index++
+                            return new ExprStmt(
+                                    new AssignExpr(
+                                            theIndexVarExpr
+                                            , new ArithmeticBinaryExpr(theIndexVarExpr, new ConstExpr(1), BinaryExpr.OP_ADD)
+                                    )
+                            );
                         });
                         loopStmt = new LoopStmt(cnd, null, loopBodyBs, updateBs);
                     } else {
