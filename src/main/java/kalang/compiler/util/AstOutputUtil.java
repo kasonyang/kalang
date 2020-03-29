@@ -13,7 +13,7 @@ public class AstOutputUtil {
     static final String LINE_DELIMITER = "\r\n";
     
     public static String toString(AstNode node){
-        if(node==null) return "null";
+        if(node==null) return "[null]";
         String nodeStr = node.toString();
         StringBuilder sb = new StringBuilder();
         sb.append(nodeStr).append(":");

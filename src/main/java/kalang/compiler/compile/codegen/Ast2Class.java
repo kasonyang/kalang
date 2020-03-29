@@ -2,6 +2,7 @@
 package kalang.compiler.compile.codegen;
 
 import kalang.compiler.AstNotFoundException;
+import kalang.compiler.CodeGenerationException;
 import kalang.compiler.MalformedAstException;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.AstLoader;
@@ -1081,7 +1082,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     @Override
     public void generate(ClassNode classNode){
-        visitClassNode(classNode);
+        try {
+            visitClassNode(classNode);
+        } catch (Exception ex) {
+            throw new CodeGenerationException("fail to generate class:" + classNode.name, classNode, ex);
+        }
     }
 
     @Override

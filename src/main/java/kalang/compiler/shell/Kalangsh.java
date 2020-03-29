@@ -1,8 +1,10 @@
 package kalang.compiler.shell;
 
+import kalang.compiler.CodeGenerationException;
 import kalang.compiler.CompileException;
 import kalang.compiler.compile.Configuration;
 import kalang.compiler.tool.KalangShell;
+import kalang.compiler.util.AstOutputUtil;
 import kalang.compiler.util.ClassExecutor;
 import kalang.lang.Script;
 import org.apache.commons.cli.CommandLine;
@@ -79,6 +81,10 @@ public class Kalangsh extends ShellBase {
         } catch (CompileException ex) {
             System.err.println(ex.getMessage());
             return Constant.ERR_COMPILE_ERROR;
+        } catch (CodeGenerationException ex) {
+            System.err.println(ex.getMessage());
+            System.err.println(AstOutputUtil.toString(ex.getClassNode()));
+            return Constant.ERR_UNKNOWN_EXCEPTION;
         } catch (Throwable ex) {
             ex.printStackTrace(System.err);
             return Constant.ERR_UNKNOWN_EXCEPTION;
