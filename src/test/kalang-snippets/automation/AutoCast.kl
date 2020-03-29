@@ -9,3 +9,10 @@ boolean shortPlusShort() {
     short s2 = 100;
     return s1 + s2 == 32867;
 }
+
+boolean integer2int() {
+    val i as Object = 123;
+    var j = 456;
+    j = (Integer) i;
+    return j == 123;
+}

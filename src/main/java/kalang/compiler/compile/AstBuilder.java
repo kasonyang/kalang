@@ -1260,6 +1260,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             VarExpr ve = new VarExpr(var);
             mapAst(ve, offset);
             if (assignValue != null) {
+                assignValue = requireImplicitCast(ve.getType(), assignValue, offset);
+                if (assignValue == null) {
+                    return null;
+                }
                 result = new AssignExpr(ve, assignValue);
                 mapAst(result, exprOffset);
             } else {
