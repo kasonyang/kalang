@@ -125,8 +125,7 @@ public class AstUtil {
         if (from.length != target.length || from.length!=args.length) {
             return null;
         }
-        if(from.length==0) return new ExprNode[0];
-       ExprNode[] newParams = new ExprNode[from.length];
+        ExprNode[] newParams = new ExprNode[from.length];
         for (int i = 0; i < from.length; i++) {
             Type f = from[i];
             Type t = target[i];

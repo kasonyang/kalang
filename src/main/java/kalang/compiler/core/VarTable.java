@@ -50,14 +50,16 @@ public class VarTable<T, V> {
     public V get(T key, boolean includeParent) {
         V est = vars.get(key);
         if (est == null && includeParent && parent != null) {
-            est = parent.get(key, includeParent);
+            est = parent.get(key, true);
         }
         return est;
     }
     
     public void remove(T key,boolean includeParent){
         vars.remove(key);
-        if(includeParent && parent!=null) parent.remove(key, includeParent);
+        if(includeParent && parent!=null){
+            parent.remove(key, true);
+        }
     }
 
     /**

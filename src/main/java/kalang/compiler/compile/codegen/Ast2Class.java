@@ -415,7 +415,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitExprStmt(ExprStmt node) {
         visitChildren(node);
         Type type = node.getExpr().getType();
-        if(type !=null && !Types.VOID_TYPE.equals(type)){
+        if(!Types.VOID_TYPE.equals(type)){
             pop(type);
         }
         return null;
@@ -473,16 +473,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         Statement trueBody = node.getTrueBody();
         Statement falseBody = node.getFalseBody();    
         ifExpr(false,condition,falseLabel);
-        if(trueBody!=null){
-            visit(trueBody);
-        }
-        if(falseBody==null){
-            md.visitLabel(falseLabel);
-        }else{
-            md.visitJumpInsn(GOTO, stopLabel);
-            md.visitLabel(falseLabel);
-            visit(falseBody);
-        }
+        visit(trueBody);
+        md.visitJumpInsn(GOTO, stopLabel);
+        md.visitLabel(falseLabel);
+        visit(falseBody);
         md.visitLabel(stopLabel);
         return null;
     }

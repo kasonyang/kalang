@@ -45,7 +45,9 @@ public class FileSystemFileManager implements JavaFileManager{
                         : p;
                 if(dir.exists() && dir.isDirectory()){
                     Collection<File> files = FileUtils.listFiles(dir, new String[]{"java"}, recurse);
-                    if(files!=null) for(File f:files) list.add(StringJavaSource.loadFromFile(p,f));
+                    for(File f:files) {
+                        list.add(StringJavaSource.loadFromFile(p,f));
+                    }
                 }
                 
             }

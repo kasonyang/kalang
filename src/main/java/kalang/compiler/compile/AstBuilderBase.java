@@ -130,8 +130,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset,@Nullable ExprNode assignValue){
         ExprNode fe = getObjectFieldLikeExpr(expr, fieldName ,offset, assignValue);
         if (fe == null) {
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "field not found:" + fieldName,offset);
-            return null;
+            throw new NodeException("field not found:" + fieldName,offset);
         }
         return fe;
     }
@@ -191,20 +190,17 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nonnull
     protected LocalVarNode declareTempLocalVar(Type type){
-        LocalVarNode var = declareLocalVar("$temp$" + tempVarCounter++, type,0,OffsetRange.NONE);
-        if(var==null) throw Exceptions.unexpectedValue(var);
-        return var;
+        return declareLocalVar("$temp$" + tempVarCounter++, type,0,OffsetRange.NONE);
     }
 
-    @Nullable
+    @Nonnull
     protected LocalVarNode declareLocalVar(@Nullable String name,Type type,int modifier,OffsetRange offset){
         LocalVarNode localVarNode = new LocalVarNode(type,name,modifier);
         if(name!=null){
             ParameterNode param = methodCtx.getNamedParameter(name);
             LocalVarNode var = methodCtx.getNamedLocalVar(name);
             if (param != null || var != null){
-                diagnosisReporter.report(Diagnosis.Kind.ERROR,"variable is defined",  offset);
-                return null;
+                throw new NodeException("variable is defined",  offset);
             }
             this.methodCtx.varTables.put(name,localVarNode);
         }
@@ -321,13 +317,12 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return (ObjectType) type;
     }
 
-    @Nullable
+    @Nonnull
     protected ExprNode requireCastToPrimitiveDataType(ExprNode expr, OffsetRange offsetRange) {
         Type oldType = expr.getType();
         expr = BoxUtil.assignToPrimitiveDataType(expr,oldType);
         if (expr == null) {
-            diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    , "unable to cast " + oldType + " to primitive type", offsetRange);
+            throw new NodeException("unable to cast " + oldType + " to primitive type", offsetRange);
         }
         return expr;
     }
@@ -456,21 +451,20 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         List<KalangParser.ParameterizedElementTypeContext> parameterTypes = ctx.parameterTypes;
         if(parameterTypes!=null && !parameterTypes.isEmpty()){
             Type[] typeArguments = new Type[parameterTypes.size()];
-            if(parameterTypes!=null && parameterTypes.size()>0){
-                if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
-                    diagnosisReporter.report(
-                            Diagnosis.Kind.ERROR
-                            , "wrong number of type arguments"
-                            ,ctx
-                    );
-                    return null;
-                }
-                for(int i=0;i<typeArguments.length;i++){
-                    typeArguments[i] = parseParameterizedElementType(parameterTypes.get(i));
-                    //TODO should return null?
-                    if(typeArguments[i]==null) return null;
-                }
+            if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
+                diagnosisReporter.report(
+                        Diagnosis.Kind.ERROR
+                        , "wrong number of type arguments"
+                        ,ctx
+                );
+                return null;
             }
+            for(int i=0;i<typeArguments.length;i++){
+                typeArguments[i] = parseParameterizedElementType(parameterTypes.get(i));
+                //TODO should return null?
+                if(typeArguments[i]==null) return null;
+            }
+
             return Types.getClassType(clazzType.getClassNode(), typeArguments,nullable);
         } else {
             return Types.getClassType(clazzType.getClassNode(), nullable);
@@ -724,9 +718,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     protected ExprNode createBinaryBoolOperateExpr(ExprNode expr1,ExprNode expr2,String op) {
         expr1 = requireCastToPrimitiveDataType(expr1,expr1.offset);
         expr2 = requireCastToPrimitiveDataType(expr2,expr2.offset);
-        if (expr1 == null || expr2 == null) {
-            return null;
-        }
         return constructBinaryExpr(expr1, expr2, op);
     }
 
@@ -835,7 +826,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 return type;
             }
             if (ubs.length == 1) {
-                return ubs[1];
+                return ubs[0];
             }
             return type;
         } else if (type instanceof ClassType) {
@@ -864,6 +855,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return new VarExpr(tmpTarget);
     }
 
+    @Nonnull
     protected ExprNode visitExpression(KalangParser.ExpressionContext expression) {
         Object node = visit(expression);
         if(node instanceof ExprNode){

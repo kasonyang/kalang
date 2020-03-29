@@ -38,14 +38,12 @@ public class MethodDispatcherTest {
         assertEquals("Object", MethodDispatcher.invokeMethodExactly(this, "test", new Object[]{list}, new String[]{Object.class.getName()}));
         
         MethodDispatcherTest test = new MethodDispatcherTest();
-        boolean ambs = false;
         try{
             MethodDispatcher.invokeMethod(test, "method", list,list);
             fail("unexcepted");
         }catch(MethodAmbiguousException ex){
-            ambs = true;
+            //Do nothing
         }
-        assertTrue(ambs);
     }
     
 }
