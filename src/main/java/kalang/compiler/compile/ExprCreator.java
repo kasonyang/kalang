@@ -1,8 +1,7 @@
 package kalang.compiler.compile;
 
+import kalang.annotation.Nonnull;
 import kalang.compiler.ast.ExprNode;
-
-import javax.annotation.Nullable;
 
 /**
  * expression creator
@@ -10,7 +9,7 @@ import javax.annotation.Nullable;
  */
 public interface ExprCreator {
 
-    @Nullable
+    @Nonnull
     ExprNode createExpr();
 
 }
