@@ -43,11 +43,11 @@ public class DependenciesCache {
             result = deserializeResult(cacheLines[cacheLineIndex].substring(cachePrefix.length()));
             if (!this.isValidResolveResult(result)) {
                 result = null;
-                cacheLineIndex = -1;
                 cacheLines[cacheLineIndex] = "";
+                cacheLineIndex = -1;
             } else if (cacheLineIndex > BLOCK_SIZE) {
-                cacheLineIndex = -1;
                 cacheLines[cacheLineIndex] = "";
+                cacheLineIndex = -1;
             }
         }
         if (result == null) {
