@@ -5,7 +5,7 @@ import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.analyzer.AssignmentAnalyzer;
-import kalang.compiler.compile.analyzer.OverrideAnalyzer;
+import kalang.compiler.compile.analyzer.MethodDeclarationAnalyzer;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.helper.*;
@@ -86,7 +86,7 @@ public class CompilationUnit {
         }else if(phase == PHASE_BUILDAST) {
             parseBody(context.getDiagnosisHandler());
         }else if(phase == PHASE_SEMANTIC) {
-            new OverrideAnalyzer(astBuilder.getDiagnosisReporter()).analyze(getAst());
+            new MethodDeclarationAnalyzer(astBuilder.getDiagnosisReporter()).analyze(getAst());
             new AssignmentAnalyzer(astBuilder.getDiagnosisReporter()).analyze(getAst());
             AstVerifier astVerifier = new AstVerifier();
             try {

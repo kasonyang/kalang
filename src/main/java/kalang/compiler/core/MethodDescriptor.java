@@ -16,8 +16,19 @@ import static kalang.compiler.util.ParameterizedUtil.parameterizedType;
  * @author Kason Yang
  */
 public class MethodDescriptor{
-    
-    
+
+    protected final Type[] parameterTypes;
+    protected final int modifier;
+    protected final MethodNode methodNode;
+    protected final ParameterDescriptor[] parameterDescriptors;
+    protected final Type returnType;
+
+    protected final String name;
+
+    protected final Type[] exceptionTypes;
+
+    private final String declarationKey;
+
 
     public MethodDescriptor(MethodNode method, ParameterDescriptor[] parameterDescriptors, Type returnType,Type[] exceptionTypes) {
         this.modifier = method.getModifier();
@@ -31,6 +42,7 @@ public class MethodDescriptor{
         parameterTypes = ptypes;
         this.returnType = returnType;
         this.exceptionTypes = exceptionTypes;
+        this.declarationKey = MethodUtil.getDeclarationKey(name, parameterTypes);
     }
 
     @Override
@@ -56,16 +68,6 @@ public class MethodDescriptor{
         return new MethodDescriptor(methodNode,pds,parameterizedType(returnType,genericTypeMap),parameterizedType(exceptionTypes,genericTypeMap));
     }
 
-    protected final Type[] parameterTypes;
-    protected final int modifier;
-    protected final MethodNode methodNode;
-    protected final ParameterDescriptor[] parameterDescriptors;
-    protected final Type returnType;
-
-    protected final String name;
-
-    protected final Type[] exceptionTypes;
-
     public Type[] getParameterTypes() {
         return parameterTypes;
     }
@@ -87,7 +89,7 @@ public class MethodDescriptor{
     }
 
     public String getDeclarationKey(){
-        return MethodUtil.getDeclarationKey(name, parameterTypes);
+        return declarationKey;
     }
 
     public Type getReturnType() {
