@@ -904,7 +904,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         visitAll(sizes);
         Type ct = node.getComponentType();
         if (sizes.length < 1) {
-            throw new IllegalArgumentException("illegal sizes length " + sizes);
+            throw new IllegalArgumentException("illegal sizes length " + sizes.length);
         }
         if (sizes.length == 1) {
             int opr = -1;
@@ -1526,6 +1526,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             } else {
                 do {
                     t1 = t1.getSuperType();
+                    assert t1 != null;
                 } while (!t1.isAssignableFrom(t2));
                 return t1.getName().replace('.', '/');
             }

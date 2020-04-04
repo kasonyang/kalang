@@ -62,10 +62,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         }
         ObjectType superType = null;
         if (ctx.parentClass != null) {
-            ObjectType parentClass = parseClassType(ctx.parentClass);
-            if (parentClass != null) {
-                superType = parentClass;
-            }
+            superType = parseClassType(ctx.parentClass);
         }
         if (Modifier.isInterface(thisClazz.modifier)) {
             //TODO update syntax to support:interface extends T1,T2...
@@ -77,10 +74,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         }
         if (ctx.interfaces != null && ctx.interfaces.size() > 0) {
             for (KalangParser.ClassTypeContext itf : ctx.interfaces) {
-                ObjectType itfClz = parseClassType(itf);
-                if (itfClz != null) {
-                    thisClazz.addInterface(itfClz);
-                }
+                thisClazz.addInterface(parseClassType(itf));
             }
         }
         if (this.isDeclaringNonStaticInnerClass()) {

@@ -77,7 +77,7 @@ public class FileSystemCompiler {
 
     }
 
-    public void addSourceDir(File sourceDir) throws IOException {
+    public void addSourceDir(File sourceDir) {
         Collection<File> files = FileUtils.listFiles(sourceDir, new String[]{"kl"}, true);
         for (File f : files) {
             addSource(sourceDir, f);

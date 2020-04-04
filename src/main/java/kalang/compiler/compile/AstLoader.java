@@ -45,8 +45,8 @@ public class AstLoader {
             }else if (this!=BASE_AST_LOADER) {
                 return BASE_AST_LOADER.loadAst(className);
             }
-        }catch(AstNotFoundException ex){
-
+        } catch (AstNotFoundException ex){
+            //Do nothing
         }
         if(className.endsWith("[]")){
             String name = className;

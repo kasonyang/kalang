@@ -178,9 +178,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private void visitMethods(ClassNode clazz){
         thisClazz = clazz;
         for(MethodNode m:thisClazz.getDeclaredMethodNodes()){
-            BlockStmt mbody = m.getBody();
             StatContext[] stats = classNodeStructureBuilder.getStatContexts(m);
             if(stats!=null){
+                BlockStmt mbody = m.getBody();
+                assert mbody != null;
                 enterMethod(m);
                 for (StatContext s: stats) {
                     mbody.statements.add(visitStat(s));
@@ -215,10 +216,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
             ExprNode callExpr = getObjectInvokeExpr(createThisExpr(OffsetRange.NONE), m.getName(), callParams, OffsetRange.NONE);
             Objects.requireNonNull(callExpr);
+            BlockStmt mbody = m.getBody();
+            assert mbody != null;
             if (Types.VOID_TYPE.equals(m.getType())) {
-                m.getBody().statements.add(new ExprStmt(callExpr));
+                mbody.statements.add(new ExprStmt(callExpr));
             } else {
-                m.getBody().statements.add((new ReturnStmt(callExpr)));
+                mbody.statements.add((new ReturnStmt(callExpr)));
             }
         }
         for(ClassNode c:clazz.classes){
@@ -270,17 +273,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public Object visit(ParseTree tree) {
-        if (tree == null) {
-            System.err.print("visit null");
-            Exception ex = new Exception();
-            ex.printStackTrace(System.err);
-            return null;
-        }
+        Objects.requireNonNull(tree);
         if(tree instanceof StatContext && methodCtx.returned){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    ,"unreachable statement"
-                    , (StatContext) tree
-            );
+            handleSyntaxError("unreachable statement", offset((StatContext)tree));
         }
         return super.visit(tree);
     }
@@ -336,7 +331,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ObjectType valueType = ctx.valueType != null
                 ? requireClassType(ctx.valueType)
                 : getTypeForGeneric(TypeUtil.getCommonType(valuesTypes));
-        if(keyType==null || valueType == null) return null;
         LocalVarNode vo = declareTempLocalVar(Types.getClassType(Types.getMapImplClassType().getClassNode(),new Type[]{keyType,valueType}));
         VarDeclStmt vds = new VarDeclStmt(vo);
         NewObjectExpr newExpr;
@@ -351,14 +345,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         VarExpr ve = new VarExpr(vo);
         for(int i=0;i<keyExprs.length;i++) {
             ExprNode[] args = new ExprNode[]{keyExprs[i],valuesExprs[i]};
-            InvocationExpr iv;
             try {
-                iv = ObjectInvokeExpr.create(ve, "put",args);
+                stmts.add(new ExprStmt(ObjectInvokeExpr.create(ve, "put",args)));
             } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                 throw Exceptions.unexpectedException(ex);
             }
-            ExprStmt es = new ExprStmt(iv);
-            stmts.add(es);
         }
         MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
         mapAst(mse,ctx);
@@ -368,9 +359,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public ExprNode visitNewArrayExpr(KalangParser.NewArrayExprContext ctx) {
         Type type = parseType(ctx.type());
-        if (type == null) {
-            return null;
-        }
         ExprNode ret;
         if(ctx.initExpr.isEmpty()){
             ExprNode[] sizeNodes = new ExprNode[ctx.sizes.size()];
@@ -401,12 +389,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ExprNode falseExpr = methodCtx.doInCondition(conditionExpr,false, () -> visitExpression(ctx.expression(2)));
         Type trueType = trueExpr.getType();
         Type falseType  = falseExpr.getType();
-        Type type;
-        if(trueType.equals(falseType)){
-            type = trueType;
-        }else{
-            type = TypeUtil.getCommonType(trueType,falseType);
-        }
+        Type type = trueType.equals(falseType) ? trueType : TypeUtil.getCommonType(trueType,falseType);
         trueExpr = requireImplicitCast(type, trueExpr, trueExpr.offset);
         falseExpr = requireImplicitCast(type, falseExpr, falseExpr.offset);
         LocalVarNode vo = this.declareTempLocalVar(type);
@@ -537,7 +520,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         Type declType = type != null ? parseType(type) : inferedType;
         if (isDefinedId(name)) {
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,"the name is defined already:" + name, ctx);
+            handleSyntaxError("the name is defined already:" + name, offset(ctx));
         }
         vds.name = name;
         vds.type = declType;
@@ -650,7 +633,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public List<Statement> visitExpressions(ExpressionsContext ctx) {
-        List<Statement> list = new LinkedList();
+        List<Statement> list = new LinkedList<>();
         for (ExpressionContext e : ctx.expression()) {
             ExprNode expr = visitExpression(e);
             list.add(new ExprStmt(expr));
@@ -698,8 +681,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 InvocationExpr.MethodSelection apply = InvocationExpr.applyMethod(clazz, methodName, args,clazz.getConstructorDescriptors(thisClazz));
                 ie = onInvocationExpr(new ObjectInvokeExpr(target, apply.selectedMethod, apply.appliedArguments));
             } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-                this.methodNotFound(offset(ctx.start), clazz.getName(), methodName, args);
-                return null;
+                throw createMethodNotFoundException(offset(ctx.start), clazz.getName(), methodName, args);
             }
         }else{
             ie= getImplicitInvokeExpr(methodName,args,ctx);
@@ -707,6 +689,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return ie;
     }
 
+    @Nonnull
     protected ExprNode createFieldExpr(GetFieldExprContext to, @Nullable Function0<ExprNode> fromExprCb, OffsetRange offsetRange) {
         //TODO support iterating syntax
         OffsetRange toOffset = offset(to);
@@ -714,7 +697,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ExpressionContext exp = to.expression();
         String fname = to.Identifier().getText();
         AstNode expr = (AstNode) visit(exp);
-        if (expr == null) return null;
+        Objects.requireNonNull(expr);
         Function1<ExprNode, ExprNode> createField = (target) -> requireObjectFieldLikeExpr(target, fname, offset(to) ,fromExprCb == null ? null : fromExprCb.call());
         Function1<ExprNode, ExprNode> createDynamicField = (target) -> {
             ExprNode[] params;
@@ -730,9 +713,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 params[0] = target;
                 params[1] = new ConstExpr(fname);
                 params[2] = fromExprCb.call();
-                if (params[2] == null) {
-                    return null;
-                }
+                Objects.requireNonNull(params[2]);
                 methodName = "set";
             }
             return getStaticInvokeExpr(fieldVisitorClsRef, methodName, params, toOffset);
@@ -741,21 +722,17 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (expr instanceof ExprNode) {
                 return createField.call((ExprNode) expr);
             } else if (expr instanceof ClassReference) {
-                AssignableExpr sfe = getStaticFieldExpr((ClassReference) expr, fname, toOffset);
-                if (sfe == null) {
-                    return null;
-                }
+                AssignableExpr sfe = StaticFieldExpr.create((ClassReference) expr, fname, null);
                 if (fromExprCb != null) {
                     return mapAst(new AssignExpr(sfe, fromExprCb.call()), offsetRange);
                 }
-                return sfe;
+                return mapAst(sfe, offsetRange);
             } else {
                 throw new UnknownError("unknown node:" + expr);
             }
         } else if (refKey.equals("->")) {
             if (!(expr instanceof ExprNode)) {
-                handleSyntaxError("not an expression", expr.offset);
-                return null;
+                throw new NodeException("not an expression", expr.offset);
             }
             return createDynamicField.call((ExprNode) expr);
         } else if (refKey.equals("*.")) {
@@ -784,15 +761,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 IdentifierExprContext toIdCtx = (IdentifierExprContext) toCtx;
                 AstNode nodeExpr = accessNamedNode(toIdCtx.getText(), offset(toIdCtx), visitExpression(fromCtx), offset(ctx));
                 if (!(nodeExpr instanceof  ExprNode)) {
-                    handleSyntaxError("expression expected", offset(ctx));
-                    return null;
+                    throw new NodeException("expression expected", offset(ctx));
                 }
                 return (ExprNode) nodeExpr;
             } else {
                 ExprNode toExpr = visitExpression(toCtx);
                 if (!(toExpr instanceof AssignableExpr)) {
-                    handleSyntaxError("expression is not assignable", offset(toCtx));
-                    return null;
+                    throw new NodeException("expression is not assignable", offset(toCtx));
                 }
                 AssignableExpr to = (AssignableExpr) toExpr;
                 ExprNode from = visitExpression(fromCtx);
@@ -826,13 +801,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 ExprNode from = createBinaryExpr(op, toValue, () -> visitExpression(fromCtx), offset(ctx));
                 AstNode nodeExpr = accessNamedNode(toIdCtx.getText(), offset(toIdCtx), from, offset(ctx));
                 if (!(nodeExpr instanceof  ExprNode)) {
-                    handleSyntaxError("expression expected", offset(ctx));
-                    return null;
+                    throw new NodeException("expression expected", offset(ctx));
                 }
                 return (ExprNode) nodeExpr;
             } else {
-                handleSyntaxError("expression is not assignable", offset(toCtx));
-                return null;
+                throw new NodeException("expression is not assignable", offset(toCtx));
             }
         }
     }
@@ -959,11 +932,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 expr = onInvocationExpr(new ObjectInvokeExpr(invokeTarget, ms.selectedMethod, ms.appliedArguments));
             }
         } catch (MethodNotFoundException ex) {
-            this.methodNotFound(offset(ctx.getStart()), clazzType.getName(), methodName, args);
-            expr = new UnknownInvocationExpr(null, methodName, args);
+            throw createMethodNotFoundException(offset(ctx.getStart()), clazzType.getName(), methodName, args);
         } catch (AmbiguousMethodException ex) {
-            methodIsAmbiguous(ctx.start, ex);
-            return null;
+            throw new NodeException(ex.getMessage(), offset(ctx.start));
         }
         mapAst(expr, ctx);
         return expr;
@@ -978,19 +949,17 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
     
     @Nullable
-    private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,ExprNode[] args,OffsetRange ctx){
+    private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,ExprNode[] args,OffsetRange offset){
         if("<init>".equals(methodName)){
             throw Exceptions.unexpectedException("Don't get constructor by this method.");
         }
         Type targetType = target.getType();
         if(!(targetType instanceof ObjectType)){
-            handleSyntaxError("class type required.", ctx);
-            return null;
+            throw new NodeException("class type required.", offset);
         }
         ObjectType targetClassType = (ObjectType) targetType;
         if(targetClassType.getNullable()==NullableKind.NULLABLE){
-            handleSyntaxError("expression may be null", ctx);
-            return null;
+            throw new NodeException("expression may be null", offset);
         }
         MethodDescriptor[] methods = targetClassType.getMethodDescriptors(thisClazz, methodName, true, true);
         ExprNode expr;
@@ -999,10 +968,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 List<MethodDescriptor> mixinMethods = getImportedMixinMethod(methodName);
                 if (!mixinMethods.isEmpty()) {
                     ClassNode pluginClass = mixinMethods.get(0).getMethodNode().getClassNode();
-                    LinkedList<ExprNode> newArgs = new LinkedList();
+                    LinkedList<ExprNode> newArgs = new LinkedList<>();
                     newArgs.add(target);
                     newArgs.addAll(Arrays.asList(args));
-                    return getStaticInvokeExpr(new ClassReference(pluginClass),methodName, newArgs.toArray(new ExprNode[0]), ctx);
+                    return getStaticInvokeExpr(new ClassReference(pluginClass),methodName, newArgs.toArray(new ExprNode[0]), offset);
                 }
             }
             InvocationExpr.MethodSelection ms = ObjectInvokeExpr.applyMethod(targetClassType, methodName, args,methods);
@@ -1022,13 +991,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 expr = invoke;
             }
         } catch (MethodNotFoundException ex) {
-            methodNotFound(ctx, targetType.toString(), methodName, args);
-            expr= new UnknownInvocationExpr(target,methodName,args);
+            throw createMethodNotFoundException(offset, targetType.toString(), methodName, args);
         } catch(AmbiguousMethodException ex){
-            methodIsAmbiguous(ctx,ex);
-            return null;
+            throw new NodeException(ex.getMessage(), offset);
         }
-        mapAst(expr, ctx);
+        mapAst(expr, offset);
         return expr;
     }
     
@@ -1047,8 +1014,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         try {
             expr = onInvocationExpr(StaticInvokeExpr.create(clazz, methodName, argumentsCtx));
         } catch (MethodNotFoundException ex) {
-            methodNotFound(offset, clazz.getReferencedClassNode().name, methodName, argumentsCtx);
-            expr = new UnknownInvocationExpr(clazz, methodName , argumentsCtx);
+            throw createMethodNotFoundException(offset, clazz.getReferencedClassNode().name, methodName, argumentsCtx);
         } catch(AmbiguousMethodException ex){
             throw new NodeException(ex.getMessage(), offset);
         }
@@ -1089,8 +1055,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         } else if (refKey.equals("->")) {
             if (!(target instanceof ExprNode)) {
-                handleSyntaxError("expression required", ctx.expression);
-                return null;
+                throw new NodeException("expression required", offset(ctx.expression));
             }
             return createDynamicInvoke.call((ExprNode) target);
         } else if (refKey.equals("*.")) {
@@ -1166,10 +1131,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public ElementExpr visitGetArrayElementExpr(GetArrayElementExprContext ctx) {
-        ElementExpr ee = new ElementExpr(
-                visitExpression(ctx.expression(0))
-                ,visitExpression(ctx.expression(1))
-        );
+        ElementExpr ee = new ElementExpr(visitExpression(ctx.expression(0)),visitExpression(ctx.expression(1)));
         mapAst(ee, offset(ctx), true);
         if(!semanticAnalyzer.validateElementExpr(ee)) return null;
         return ee;
@@ -1242,7 +1204,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 fe = fieldExpr;
             }
             if (fe != null){
-
                 return fe;
             }
             if (outerClassInstanceExpr instanceof FieldExpr || outerClassInstanceExpr instanceof ThisExpr) {
@@ -1258,8 +1219,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ClassReference clsRef = new ClassReference(requireAst(resolvedTypeName,true, offset));
             mapAst(clsRef, offset);
             if (assignValue != null) {
-                handleSyntaxError("expression expected.", offset);
-                return null;
+                throw new NodeException("expression expected.", offset);
             }
             return clsRef;
         }
@@ -1303,9 +1263,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             String location = prefix.substring(0, prefix.length() - 1);
             if (isImportStatic || isImportMixin) {
                 ClassNode locationCls = requireAst(location, ctx.stop,true);
-                if (locationCls==null) {
-                    return null;
-                }
                 if (isImportStatic) {
                     importStaticMember(locationCls,null);
                 } else {
@@ -1324,7 +1281,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 //TODO support alias
                 String location = prefix.substring(0,prefix.length()-1);
                 ClassNode locationCls = requireAst(location, ctx.stop,true);
-                if (locationCls==null) return null;
                 if (isImportStatic) {
                     importStaticMember(locationCls,name);
                 } else {
@@ -1346,13 +1302,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
         ObjectType clsType = parseClassType(ctx.classType());
-        if(clsType==null) return null;
         List<Object> paramExprsList = visitAll(ctx.params);
         if (paramExprsList.contains(null)) {
             return null;
         }
         ExprNode[] params = paramExprsList.toArray(new ExprNode[0]);
-        List<ExprNode> paramList = new LinkedList(Arrays.asList(params));
+        List<ExprNode> paramList = new LinkedList<>(Arrays.asList(params));
         NewObjectExpr newExpr;
         try {
             if(this.isNonStaticInnerClass(clsType.getClassNode())){
@@ -1364,11 +1319,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {
-            methodNotFound(offset(ctx.classType().rawClass), clsType.getName(), "<init>", params);
-            return null;
+            throw createMethodNotFoundException(offset(ctx.classType().rawClass), clsType.getName(), "<init>", params);
         } catch(AmbiguousMethodException ex){
-            methodIsAmbiguous(ctx.classType().rawClass ,ex);
-            return null;
+            throw new NodeException(ex.getMessage(), offset(ctx.classType().rawClass));
         }
     }
 
@@ -1382,13 +1335,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if(toType instanceof PrimitiveType){
                 castExpr = new PrimitiveCastExpr((PrimitiveType)fromType,(PrimitiveType)toType, expr);
             }else{
-                this.handleSyntaxError("unable to cast primitive type to class type", ctx);
-                return null;
+                throw new NodeException("unable to cast primitive type to class type", offset(ctx));
             }
         }else{
             if(toType instanceof PrimitiveType){
-                this.handleSyntaxError("unable to cast class type to primitive type", ctx);
-                return null;
+                throw new NodeException("unable to cast class type to primitive type", offset(ctx));
             }else{
                 castExpr = new CastExpr(toType,expr);
             }
@@ -1442,8 +1393,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (initExpr != null) {
                 Type initType = initExpr.getType();
                 if (Types.isVoid(initType)) {
-                    handleSyntaxError("could not create variable for " + initType.getName() + " type", offset(ctx));
-                    return null;
+                    throw new NodeException("could not create variable for " + initType.getName() + " type", offset(ctx));
                 }
             }
             VarInfo varInfo = varDecl(v,initExpr==null
@@ -1543,8 +1493,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public ExprNode getIncrementExpr(ExpressionContext expressionContext,String op,boolean isOperatorFirst){
         ExprNode expr = visitExpression(expressionContext);
         if(!(expr instanceof AssignableExpr)){
-            AstBuilder.this.handleSyntaxError("require assignable expression", expressionContext);
-            return null;
+            throw new NodeException("require assignable expression", offset(expressionContext));
         }
         boolean isDesc = op.equals("--");
         ExprNode reference;
@@ -1565,14 +1514,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public Object visitErrorousStat(KalangParser.ErrorousStatContext ctx) {
-        handleSyntaxError("missing ';'", ctx.start , ctx.stop);
+        handleSyntaxError("missing ';'", offset(ctx));
         return null;
     }
 
     @Override
     public Object visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx) {
-        handleSyntaxError("identifier excepted", ctx.stop , ctx.stop);
-        return null;
+        throw new NodeException("identifier excepted", offset(ctx.stop));
     }
 
     @Override
@@ -1585,8 +1533,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             mapAst(ie, ctx);
             return ie;
         }else{
-            AstBuilder.this.handleSyntaxError("unsupported type", ts);
-            return null;
+            throw new NodeException("unsupported type", offset(ts));
         }
     }
 
@@ -1727,14 +1674,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     blockStatements.add(new VarDeclStmt(counterVar));//var i
                     VarExpr counterVarExpr = new VarExpr(counterVar);
                     VarExpr lenVarExpr = new VarExpr(lenVar);
-                    blockStatements.add(
-                            new ExprStmt(new AssignExpr(lenVarExpr, new ArrayLengthExpr(expr)))
-                    );//l = array.length
-                    blockStatements.add(
-                            new ExprStmt(
-                                    new AssignExpr(counterVarExpr, new ConstExpr(0))
-                            )
-                    );//i=0
+                    blockStatements.add(new ExprStmt(new AssignExpr(lenVarExpr, new ArrayLengthExpr(expr))));//l = array.length
+                    blockStatements.add(new ExprStmt(new AssignExpr(counterVarExpr, new ConstExpr(0))));//i=0
                     ExprNode cnd = new CompareBinaryExpr(counterVarExpr, lenVarExpr, CompareBinaryExpr.OP_LT);
                     VarExpr theIndexVarExpr = indexVarExpr;
                     BlockStmt loopBodyBs = this.newBlock(() -> {
@@ -1743,9 +1684,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                                 new AssignExpr(localVariable, new ElementExpr(expr, counterVarExpr))
                         ));
                         if (theIndexVarExpr != null) {
-                            loopBodyStatements.add(new ExprStmt(
-                                    new AssignExpr(theIndexVarExpr, counterVarExpr)
-                            ));
+                            loopBodyStatements.add(new ExprStmt(new AssignExpr(theIndexVarExpr, counterVarExpr)));
                         }
                         loopBodyStatements.add(visitStat(ctx.stat()));
                         return loopBodyStatements;
@@ -1771,9 +1710,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                         LocalVarNode iterableVarNode = this.declareTempLocalVar(getIterableExpr.getType());
                         blockStatements.add(new VarDeclStmt(iterableVarNode));
                         VarExpr iterableVarExpr = new VarExpr(iterableVarNode);
-                        blockStatements.add(new ExprStmt(new AssignExpr(
-                                iterableVarExpr, getIterableExpr
-                        )));
+                        blockStatements.add(new ExprStmt(new AssignExpr(iterableVarExpr, getIterableExpr)));
                         //set index = 0
                         if (indexVarExpr != null) {
                             blockStatements.add(new ExprStmt(new AssignExpr(indexVarExpr, new ConstExpr(0))));
@@ -1813,7 +1750,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                         });
                         loopStmt = new LoopStmt(cnd, null, loopBodyBs, updateBs);
                     } else {
-                        this.handleSyntaxError("require array type or iterable type", ctx.expression());
+                        this.handleSyntaxError("require array type or iterable type", offset(ctx.expression()));
                         loopStmt = null;
                     }
                 }
@@ -1856,7 +1793,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public Object visitInterpolationExpr(KalangParser.InterpolationExprContext ctx) {
         List<ParseTree> children = ctx.children;
         ExprNode[] exprs = new ExprNode[children.size()];
-        Token[] exprTokens = new Token[children.size()];
         for(int i=0;i<exprs.length;i++){
             ParseTree c = children.get(i);
             if(c instanceof TerminalNode){
@@ -1881,10 +1817,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                         throw Exceptions.unexpectedValue(t);
                 }
                 exprs[i]=new ConstExpr(StringLiteralUtil.parse(text));
-                exprTokens[i] = token;
             }else if(c instanceof ExpressionContext){
                 exprs[i] = this.visitExpression((ExpressionContext) c);
-                exprTokens[i] = ((ExpressionContext) c).getStart();
             }else{
                 throw Exceptions.unexpectedValue(c);
             }
@@ -2107,16 +2041,15 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
     }
 
+    @Nonnull
     private ExprNode createStarNavigateExpr(AstNode target, Function1<ExprNode, ExprNode> navigateExprMaker, OffsetRange offset) {
         if (!(target instanceof ExprNode)) {
-            handleSyntaxError("expression required", target.offset);
-            return null;
+            throw new NodeException("expression required", target.offset);
         }
         ExprNode targetExpr = (ExprNode) target;
         Type targetType = targetExpr.getType();
         if (!(targetType instanceof ArrayType)) {
-            handleSyntaxError("array required", target.offset);
-            return null;
+            throw new NodeException("array required", target.offset);
         }
         List<Statement> stats = new LinkedList<>();
         targetExpr = createSafeAccessibleExpr(targetExpr, stats);
@@ -2130,7 +2063,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         CompareBinaryExpr conditionExpr = new CompareBinaryExpr(varCounterExpr, varArrLenExpr, CompareBinaryExpr.OP_LT);
         ExprNode targetEleExpr = new ElementExpr(targetExpr, varCounterExpr);
         ExprNode invokeExpr = navigateExprMaker.call(targetEleExpr);
-        if (invokeExpr == null) return null;
+        assert invokeExpr != null;
         LocalVarNode varRet = this.declareTempLocalVar(Types.getArrayType(invokeExpr.getType()));
         VarExpr varRetExpr = new VarExpr(varRet);
         stats.add(new VarDeclStmt(varRet));
@@ -2148,10 +2081,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return expr;
     }
 
+    @Nonnull
     private ExprNode createSafeNavigateExpr(AstNode target, Function1<ExprNode, ExprNode> navigateExprMaker, OffsetRange offsetRange) {
         if (!(target instanceof ExprNode)) {
-            handleSyntaxError("expression required", target.offset);
-            return null;
+            throw new NodeException("expression required", target.offset);
         }
         ExprNode targetExpr = (ExprNode) target;
         List<Statement> stmts = new LinkedList<>();
@@ -2164,9 +2097,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ExprNode targetTmpExpr = new VarExpr(targetTmpVar, methodCtx.getVarObjectType(targetTmpVar));
             return navigateExprMaker.call(targetTmpExpr);
         });
-        if (falseExpr == null) {
-            return null;
-        }
         ExprNode trueExpr = Values.getDefaultValue(falseExpr.getType());
         LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
         VarDeclStmt vds = new VarDeclStmt(vo);

@@ -94,9 +94,7 @@ public class MethodUtil {
     public static Type[] getReturnAndParamTypes(Type returnType, Type[] paramTypes) {
         Type[] types = new Type[paramTypes.length + 1];
         types[0] = returnType;
-        for (int i = 1; i < types.length; i++) {
-            types[i] = paramTypes[i-1];
-        }
+        System.arraycopy(paramTypes, 0, types, 1, paramTypes.length);
         return types;
     }
 

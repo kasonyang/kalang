@@ -84,10 +84,7 @@ public class ClassType extends ObjectType {
         }
         Type[] thisPts = this.getTypeArguments();
         Type[] otherPts = other.getTypeArguments();
-        if (!Arrays.deepEquals(thisPts,otherPts)) {
-            return false;
-        }
-        return true;
+        return Arrays.deepEquals(thisPts, otherPts);
     }
 
     @Override

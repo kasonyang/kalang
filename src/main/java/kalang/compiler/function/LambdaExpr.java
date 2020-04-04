@@ -37,8 +37,7 @@ public class LambdaExpr extends ExprNode{
 
     @Override
     public List<AstNode> getChildren() {
-        List<AstNode> list = new LinkedList(captureArguments);
-        return list;
+        return new LinkedList<>(captureArguments);
     }
 
     public MethodDescriptor getInterfaceMethod() {

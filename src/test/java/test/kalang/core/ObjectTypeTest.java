@@ -7,8 +7,7 @@ import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Types;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -31,8 +30,8 @@ public class ObjectTypeTest {
     ClassNode classNode = type.getClassNode();
     ObjectType rootType = Types.getRootType();
     ClassNode rootClassNode = rootType.getClassNode();
-    assertEquals(null,type.getFieldDescriptor(rootClassNode, "privateField"));
-    assertEquals(null,type.getFieldDescriptor(rootClassNode, "protectedField"));
+    assertNull(type.getFieldDescriptor(rootClassNode, "privateField"));
+    assertNull(type.getFieldDescriptor(rootClassNode, "protectedField"));
     assertNotEquals(null, type.getFieldDescriptor(rootClassNode, "publicField"));
     assertNotEquals(null,type.getFieldDescriptor(classNode, "privateField"));
     assertNotEquals(null,type.getFieldDescriptor(classNode, "protectedField"));

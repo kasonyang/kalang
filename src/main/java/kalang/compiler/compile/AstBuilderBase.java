@@ -125,6 +125,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
+    @Nonnull
     protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset,@Nullable ExprNode assignValue){
         ExprNode fe = getObjectFieldLikeExpr(expr, fieldName ,offset, assignValue);
         if (fe == null) {
@@ -145,10 +146,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                     try {
                         bodyStmts.add(0, AstUtil.createDefaultSuperConstructorCall(thisClazz));
                     } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-                        diagnosisReporter.report(Diagnosis.Kind.ERROR
-                                ,"default constructor not found"
-                                ,m.offset
-                        );
+                        handleSyntaxError("default constructor not found",m.offset);
                     }
                 }
                 //check super()
@@ -156,8 +154,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 assert stmtsSize > 0;
                 Statement firstStmt = mbody.statements.get(0);
                 if(!AstUtil.isConstructorCallStatement(firstStmt)){
-                    //TODO handle error
-                    throw new RuntimeException("missing constructor call");
+                    handleSyntaxError("missing constructor call", firstStmt.offset);
                 }
                 mbody.statements.addAll(1, buildFieldInitStmts(false));
             }
@@ -167,21 +164,14 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected void checkMethod() {
         MethodNode m = this.methodCtx.method;
-        boolean needReturn = (
-                m.getType() != null
-                        && !m.getType().equals(Types.VOID_TYPE)
-        );
+        boolean needReturn = m.getType() != null && !m.getType().equals(Types.VOID_TYPE);
         BlockStmt mbody = m.getBody();
         if (mbody != null && needReturn && !methodCtx.returned) {
             ConstExpr defaultVal = m.getDefaultReturnValue();
             if (defaultVal!=null) {
                 mbody.statements.add(new ReturnStmt(defaultVal));
             } else {
-                this.diagnosisReporter.report(
-                        Diagnosis.Kind.ERROR
-                        , "Missing return statement in method:" + MethodUtil.toString(methodCtx.method)
-                        , m.offset
-                );
+                handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(methodCtx.method), m.offset);
             }
         }
     }
@@ -207,8 +197,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected boolean isDefinedId(String id){
         return methodCtx!=null &&
-                (methodCtx.getNamedLocalVar(id)!=null
-                        || methodCtx.getNamedParameter(id) != null);
+                (methodCtx.getNamedLocalVar(id) != null || methodCtx.getNamedParameter(id) != null);
     }
 
     protected void enterMethod(MethodNode method) {
@@ -267,17 +256,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return binExpr;
     }
 
-    protected void methodIsAmbiguous(Token token , AmbiguousMethodException ex){
-        diagnosisReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), token);
-    }
-
-    protected void methodIsAmbiguous(OffsetRange offset , AmbiguousMethodException ex){
-        diagnosisReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), offset);
-    }
-
-    protected void methodNotFound(OffsetRange offset, String className,String methodName,ExprNode[] params){
+    protected NodeException createMethodNotFoundException(OffsetRange offset, String className,String methodName,ExprNode[] params){
         Type[] types = AstUtil.getExprTypes(params);
-        throw new NodeException("method not found:" + MethodUtil.toString(className,methodName, types), offset);
+        return new NodeException("method not found:" + MethodUtil.toString(className,methodName, types), offset);
     }
 
     @Nonnull
@@ -328,36 +309,22 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected int parseModifier(KalangParser.VarModifierContext modifier) {
         int defaultModifier = Modifier.PUBLIC;
-        if (modifier == null) return defaultModifier;
+        if (modifier == null) {
+            return defaultModifier;
+        }
         String modifierText = parseTreeToText(modifier);
         if (modifierText.isEmpty()) return defaultModifier;
         try {
             return ModifierUtil.parse(modifierText);
         } catch (InvalidModifierException ex) {
-            this.handleSyntaxError(ex.getMessage(), modifier);
+            this.handleSyntaxError(ex.getMessage(), offset(modifier));
             return defaultModifier;
         }
-    }
-
-    //TODO add stop token
-    protected void handleSyntaxError(String msg, Token token) {
-        //TODO what does EMPTY means?
-        handleSyntaxError(msg, token, token);
-    }
-
-    protected void handleSyntaxError(String msg, ParserRuleContext tree) {
-        handleSyntaxError(msg, tree.start, tree.stop);
-    }
-
-    //TODO remove rule
-    protected void handleSyntaxError(String desc, Token start, Token stop) {
-        diagnosisReporter.report(Diagnosis.Kind.ERROR, desc, start, stop);
     }
 
     protected void handleSyntaxError(String desc, OffsetRange offsetRange) {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, desc, offsetRange);
     }
-
 
     protected void mapAst(@Nonnull AstNode node, @Nonnull ParserRuleContext tree) {
         node.offset = OffsetRangeHelper.getOffsetRange(tree);
@@ -395,8 +362,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         int maxParamCount = FunctionClasses.CLASSES.length-1;
         if (paramCount > maxParamCount) {
             String msg = "only support " +maxParamCount + " parameters";
-            diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
-            return Types.getRootType();
+            throw new NodeException(msg,offset(ctx));
         }
         Type[] paramTypes = new Type[paramCount];
         for(int i=0;i<paramTypes.length;i++) {
@@ -405,84 +371,76 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return Types.getFunctionType(returnType, paramTypes, nullable);
     }
 
-    @Nullable
+    @Nonnull
     protected Type parseType(KalangParser.TypeContext ctx) {
         KalangParser.ClassTypeContext ct = ctx.classType();
         KalangParser.PrimitiveTypeContext pt = ctx.primitiveType();
-        if(ct!=null){
+        if(ct != null){
             return parseClassType(ct);
-        }else if(pt!=null){
+        }else if(pt != null){
             return Types.getPrimitiveType(pt.getText());
         }else{
             NullableKind nullable = ctx.nullable!=null ? NullableKind.NULLABLE : NullableKind.NONNULL;
             KalangParser.TypeContext t = ctx.type();
             Type cpt = parseType(t);
-            if(cpt==null) return null;
             return Types.getArrayType(cpt,nullable);
         }
     }
 
-    @Nullable
-    protected ObjectType parseClassType(KalangParser.ClassTypeContext ctx){
-        NullableKind nullable = ctx.nullable==null ? NullableKind.NONNULL : NullableKind.NULLABLE;
+    @Nonnull
+    protected ObjectType parseClassType(KalangParser.ClassTypeContext ctx) {
+        NullableKind nullable = ctx.nullable == null ? NullableKind.NONNULL : NullableKind.NULLABLE;
         KalangParser.LambdaTypeContext lambdaType = ctx.lambdaType();
-        if (lambdaType!=null) {
+        if (lambdaType != null) {
             return this.parseLambdaType(lambdaType);
         }
         Token rawTypeToken = ctx.rawClass;
-        List<String> classNameParts = new LinkedList();
-        for(Token p:ctx.paths){
+        List<String> classNameParts = new LinkedList<>();
+        for (Token p : ctx.paths) {
             classNameParts.add(p.getText());
         }
-        if(ctx.innerClass!=null){
+        if (ctx.innerClass != null) {
             classNameParts.add(rawTypeToken.getText() + "$" + ctx.innerClass.getText());
-        }else{
+        } else {
             classNameParts.add(rawTypeToken.getText());
         }
         String rawType = String.join(".", classNameParts);
-        for(GenericType gt:getCurrentClass().getGenericTypes()){
-            if(rawType.equals(gt.getName())) return gt;
+        for (GenericType gt : getCurrentClass().getGenericTypes()) {
+            if (rawType.equals(gt.getName())) {
+                return gt;
+            }
         }
-        ObjectType clazzType = requireClassType(rawType,rawTypeToken);
-        if(clazzType==null) return null;
+        ObjectType clazzType = requireClassType(rawType, rawTypeToken);
         ClassNode clazzNode = clazzType.getClassNode();
         GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
         List<KalangParser.ParameterizedElementTypeContext> parameterTypes = ctx.parameterTypes;
-        if(parameterTypes!=null && !parameterTypes.isEmpty()){
+        if (parameterTypes != null && !parameterTypes.isEmpty()) {
             Type[] typeArguments = new Type[parameterTypes.size()];
-            if(clzDeclaredGenericTypes.length!=parameterTypes.size()){
-                diagnosisReporter.report(
-                        Diagnosis.Kind.ERROR
-                        , "wrong number of type arguments"
-                        ,ctx
-                );
-                return null;
+            if (clzDeclaredGenericTypes.length != parameterTypes.size()) {
+                throw new NodeException("wrong number of type arguments", offset(ctx));
             }
-            for(int i=0;i<typeArguments.length;i++){
+            for (int i = 0; i < typeArguments.length; i++) {
                 typeArguments[i] = parseParameterizedElementType(parameterTypes.get(i));
-                //TODO should return null?
-                if(typeArguments[i]==null) return null;
+                Objects.requireNonNull(typeArguments[i]);
             }
-
-            return Types.getClassType(clazzType.getClassNode(), typeArguments,nullable);
+            return Types.getClassType(clazzType.getClassNode(), typeArguments, nullable);
         } else {
             return Types.getClassType(clazzType.getClassNode(), nullable);
         }
     }
 
-    @Nullable
+    @Nonnull
     protected ObjectType requireClassType(@Nonnull Token token){
         return requireClassType(token.getText(),token);
     }
 
-    @Nullable
+    @Nonnull
     protected ObjectType requireClassType(@Nonnull String id,@Nonnull Token token){
         ClassNode ast = requireAst(id, token,false);
-        if(ast==null) return null;
         return Types.getClassType(ast,new Type[0]);
     }
 
-    @Nullable
+    @Nonnull
     protected ClassNode requireAst(Token token,boolean fullname){
         return requireAst(token.getText(),token,fullname);
     }
@@ -493,7 +451,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
      * @param token
      * @return
      */
-    @Nullable
+    @Nonnull
     protected ClassNode requireAst(String id,Token token,boolean fullname) {
         ClassNode ast;
         if (fullname) {
@@ -501,8 +459,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         } else {
             ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
         }
-        if(ast==null){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, token);
+        if(ast == null){
+            throw new NodeException("class not found:" + id, offset(token));
         }
         return ast;
     }
@@ -512,16 +470,16 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
      * @param id
      * @return
      */
-    @Nullable
-    protected ClassNode requireAst(String id,boolean fullName, OffsetRange offset) {
+    @Nonnull
+    protected ClassNode requireAst(String id, boolean fullName, OffsetRange offset) {
         ClassNode ast;
         if (fullName) {
             ast = getAst(id);
         } else {
             ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
         }
-        if(ast==null){
-            diagnosisReporter.report(Diagnosis.Kind.ERROR, "class not found:" + id, offset);
+        if (ast == null) {
+            throw new NodeException("class not found:" + id, offset);
         }
         return ast;
     }
@@ -584,9 +542,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             Type type;
             if (ctx.Identifier() != null) {
                 type = requireClassType(ctx.Identifier().getSymbol());
-                if (type == null) {
-                    throw new NodeException("type not found:" + ctx.Identifier().getText(), offset(ctx.Identifier().getSymbol()));
-                }
                 if (isArray) {
                     type = Types.getArrayType(type);
                 }
@@ -614,10 +569,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
 
-    @Nullable
+    @Nonnull
     protected AnnotationNode parseAnnotation(KalangParser.AnnotationContext ctx) {
         ClassNode anType = requireAst(ctx.annotationType,false);
-        if(anType==null) return null;
         List<Token> vk = ctx.annotationValueKey;
         KalangParser.LiteralContext dv = ctx.annotationDefaultValue;
         AnnotationNode anNode = new AnnotationNode(anType);
@@ -645,8 +599,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         List<AnnotationNode> list = new LinkedList<>();
         if(ctxs!=null){
             for(KalangParser.AnnotationContext an:ctxs){
-                AnnotationNode anNode = parseAnnotation(an);
-                if(anNode!=null) list.add(anNode);
+                list.add(parseAnnotation(an));
             }
         }
         return list;
@@ -708,10 +661,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }else{
             return ae;
         }
-    }
-
-    protected boolean isInConstructor(){
-        return "<init>".equals(this.methodCtx.method.getName());
     }
 
     @Nonnull
@@ -901,7 +850,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     private Type parseWildcardType(KalangParser.WildcardTypeContext ctx){
         ObjectType classType = parseClassType(ctx.classType());
-        if(classType==null) return null;
         Type[] bounds = new Type[]{classType};
         String boundKind = ctx.boundKind.getText();
         if(boundKind.equals("super")){
@@ -912,21 +860,12 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     @Nullable
-    private ClassReference requireClassReference(@Nonnull Token token){
-        ClassNode ast = requireAst(token,false);
-        if(ast==null) return null;
-        return new ClassReference(ast);
-    }
-
-    @Nullable
     private ClassNode getAst(String className) {
-        AstLoader astLoader = compilationUnit.getCompileContext().getAstLoader();
-        return astLoader.getAst(className);
+        return compilationUnit.getCompileContext().getAstLoader().getAst(className);
     }
 
     protected ClassNode loadAst(String className) {
-        AstLoader astLoader = compilationUnit.getCompileContext().getAstLoader();
-        return astLoader.loadAst(className);
+        return compilationUnit.getCompileContext().getAstLoader().loadAst(className);
     }
 
     protected List<MethodDescriptor> getImportedMethods(Map<String, ClassNode> importedMethods, List<ClassNode> importedPaths, String methodName) {

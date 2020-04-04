@@ -40,12 +40,7 @@ public class Kalangc extends ShellBase {
         for (String s : srcs) {
             File srcFile = new File(s);
             if (srcFile.isDirectory()) {
-                try {
-                    fsc.addSourceDir(srcFile);
-                } catch (IOException ex) {//TODO handle ex
-                    System.err.println(ex.getMessage());
-                    return Constant.ERR_IO_EXCEPTION;
-                }
+                fsc.addSourceDir(srcFile);
             } else {
                 fsc.addSource(currentDir, srcFile);
             }

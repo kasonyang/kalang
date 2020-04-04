@@ -175,11 +175,7 @@ public abstract class ShellScript extends Script {
         String command = arguments[0];
         File dir = workingDirectory == null ? null : new File(workingDirectory);
         Process p = Runtime.getRuntime().exec(arguments, null, dir);
-        try {
-            p.waitFor();
-        } catch (InterruptedException ex) {
-            throw ex;
-        }
+        p.waitFor();
         int returnValue = p.exitValue();
         if (returnValue != expectingExitValue) {
             String err = String.format("%s exit with a unexpected value %d , expected %d", command, returnValue, expectingExitValue);

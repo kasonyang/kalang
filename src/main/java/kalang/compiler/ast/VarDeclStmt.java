@@ -20,8 +20,7 @@ public class VarDeclStmt extends Statement{
     
     @Override
     public List<AstNode> getChildren(){
-        List<AstNode> ls = new LinkedList(vars);
-        return ls;
+        return new LinkedList<>(vars);
     }
 
     @Override

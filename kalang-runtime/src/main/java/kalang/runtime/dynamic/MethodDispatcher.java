@@ -24,7 +24,7 @@ public class MethodDispatcher {
     }
 
     public static Object invokeMethodExactly(Object obj,String method,Object[] args,String[] types) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
-        Class<? extends Object> clazz = obj.getClass();
+        Class<?> clazz = obj.getClass();
         Class[] typeClasses = new Class[types.length];
         for(int i=0;i<types.length;i++){
             typeClasses[i] = Class.forName(types[i]);
@@ -40,7 +40,7 @@ public class MethodDispatcher {
         }else if(mds.size()==1){
             return mds.get(0).invoke(object, args);
         }else{
-            throw new MethodAmbiguousException(mds.toArray(new Method[mds.size()]));
+            throw new MethodAmbiguousException(mds.toArray(new Method[0]));
         }
     }
    

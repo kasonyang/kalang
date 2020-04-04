@@ -47,9 +47,8 @@ public class TokenNavigator {
     }
     
     protected void nextIndex(Integer channel,int increment){
-        int nextId = -1;
         int newIdx = currentTokenIndex;
-        while(nextId==-1){
+        for(;;){
             newIdx+=increment;
             if(newIdx>=tokens.length){
                 throw new IndexOutOfBoundsException("index out of bouds:"+newIdx);
