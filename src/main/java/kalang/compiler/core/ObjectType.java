@@ -82,45 +82,45 @@ public abstract class ObjectType extends Type{
         return getMethodDescriptors(caller,null,includeSuperType,includeInterfaces);
     }
 
-    public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller,@Nullable String name,boolean includeSuperType,boolean includeInterfaces){
-        Map<String,MethodDescriptor> descs = new HashMap();
-        List<ObjectType> superList = new LinkedList();
-        if (!ModifierUtil.isInterface(getModifier()) && includeSuperType){
+    public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller, @Nullable String name, boolean includeSuperType, boolean includeInterfaces) {
+        Map<String, MethodDescriptor> descs = new HashMap<>();
+        if (includeSuperType && !ModifierUtil.isInterface(getModifier())) {
             ObjectType superType = getSuperType();
-            if (superType!=null) {
-                superList.add(superType);
+            if (superType != null) {
+                for (MethodDescriptor m: superType.getMethodDescriptors(caller, name, true, includeInterfaces)) {
+                    descs.put(m.getDeclarationKey(), m);
+                }
             }
         }
-        if(includeInterfaces){
-            ObjectType[] itfs = getInterfaces();
-            superList.addAll(Arrays.asList(itfs));
-        }
-        for(ObjectType st:superList){
-            MethodDescriptor[] ms = st.getMethodDescriptors(caller, name,includeSuperType,includeInterfaces);
-            for(MethodDescriptor m:ms){
-                descs.put(m.getDeclarationKey(),m);
+        if (includeInterfaces) {
+            for (ObjectType itf: getInterfaces()) {
+                for (MethodDescriptor m: itf.getMethodDescriptors(caller, name, includeSuperType, true)) {
+                    descs.put(m.getDeclarationKey(), m);
+                }
             }
         }
-        List<MethodNode> mds = Arrays.asList(clazz.getDeclaredMethodNodes());
-        if (ModifierUtil.isInterface(getModifier()) && includeSuperType) {
+        List<MethodNode> mds;
+        if (includeSuperType && ModifierUtil.isInterface(getModifier())) {
             List<MethodNode> objectMds = Arrays.asList(Types.getRootType().getClassNode().getDeclaredMethodNodes());
-            ArrayList<MethodNode> newMds = new ArrayList<>(mds.size() + objectMds.size());
-            newMds.addAll(mds);
-            newMds.addAll(objectMds);
-            mds = newMds;
+            List<MethodNode> clsMds = Arrays.asList(clazz.getDeclaredMethodNodes());
+            mds = new ArrayList<>(clsMds.size() + objectMds.size());
+            mds.addAll(clsMds);
+            mds.addAll(objectMds);
+        } else {
+            mds = Arrays.asList(clazz.getDeclaredMethodNodes());
         }
-        for(MethodNode m: mds){
-            if (!AccessUtil.isAccessible(m.getModifier(), clazz, caller)){
+        for (MethodNode m : mds) {
+            if (!AccessUtil.isAccessible(m.getModifier(), clazz, caller)) {
                 continue;
             }
-            if (name!=null && !name.isEmpty() && !name.equals(m.getName())) {
+            if (name != null && !name.isEmpty() && !name.equals(m.getName())) {
                 continue;
             }
             MethodDescriptor md = new MethodDescriptor(
                     m
-                    ,getParameterDescriptors(m)
-                    ,parseType(m.getType())
-                    ,parseTypes(m.getExceptionTypes())
+                    , getParameterDescriptors(m)
+                    , parseType(m.getType())
+                    , parseTypes(m.getExceptionTypes())
             );
             descs.put(md.getDeclarationKey(), md);
         }
