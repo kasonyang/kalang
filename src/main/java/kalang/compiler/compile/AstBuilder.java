@@ -18,9 +18,8 @@ import kalang.runtime.dynamic.FieldVisitor;
 import kalang.runtime.dynamic.MethodDispatcher;
 import kalang.type.Function0;
 import kalang.type.Function1;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -152,7 +151,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if(targetPhase>=PARSING_PHASE_INIT && parsingPhase < PARSING_PHASE_INIT){
             parsingPhase = PARSING_PHASE_INIT;
             Span span = Profiler.getInstance().beginSpan("parse");
-            CompilationUnitContext cunit = parser.compilationUnit();
+            CompilationUnitContext cunit = buildCompilationUnitContext();
             Profiler.getInstance().endSpan(span);
             this.compilationContext = cunit;
             for(ImportDeclContext ic:cunit.importDecl()){
@@ -2193,6 +2192,24 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return expr;
     }
 
-
+    private CompilationUnitContext buildCompilationUnitContext() {
+        ANTLRErrorStrategy oldErrorHandler = parser.getErrorHandler();
+        List<? extends ANTLRErrorListener> oldErrorListeners = parser.getErrorListeners();
+        parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+        parser.removeErrorListeners();
+        parser.setErrorHandler(new BailErrorStrategy());
+        try {
+            CompilationUnitContext cu = parser.compilationUnit();
+            oldErrorListeners.forEach(parser::addErrorListener);
+            parser.setErrorHandler(oldErrorHandler);
+            return cu;
+        } catch (Throwable throwable) {
+            parser.getInputStream().seek(0);
+            parser.getInterpreter().setPredictionMode(PredictionMode.LL);
+            oldErrorListeners.forEach(parser::addErrorListener);
+            parser.setErrorHandler(oldErrorHandler);
+            return parser.compilationUnit();
+        }
+    }
 
 }
