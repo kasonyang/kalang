@@ -6,6 +6,7 @@ import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.antlr.KalangParser.*;
 import kalang.compiler.antlr.KalangParserVisitor;
+import kalang.compiler.antlr.SLLErrorStrategy;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.analyzer.AstNodeCollector;
 import kalang.compiler.core.*;
@@ -28,6 +29,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 /**
  *  build ast from antlr parse tree
@@ -46,6 +48,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             PARSING_PHASE_INIT = 1,
             PARSING_PHASE_META = 2,
             PARSING_PHASE_ALL = 3;
+
+    private final static Logger LOG = Logger.getLogger(AstBuilder.class.getName());
 
     private ClassNodeInitializer classNodeInitializer;
     private ClassNodeStructureBuilder classNodeStructureBuilder;
@@ -2127,7 +2131,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         List<? extends ANTLRErrorListener> oldErrorListeners = parser.getErrorListeners();
         parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
         parser.removeErrorListeners();
-        parser.setErrorHandler(new BailErrorStrategy());
+        parser.setErrorHandler(new SLLErrorStrategy(compilationUnit));
         try {
             CompilationUnitContext cu = parser.compilationUnit();
             oldErrorListeners.forEach(parser::addErrorListener);

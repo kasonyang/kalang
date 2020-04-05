@@ -10,7 +10,6 @@ import kalang.compiler.profile.Span;
 import kalang.compiler.profile.SpanFormatter;
 import kalang.compiler.tool.KalangShell;
 import kalang.lang.Runtime;
-import lombok.SneakyThrows;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
@@ -21,12 +20,15 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.logging.*;
 
 /**
  *
  * @author Kason Yang
  */
 public abstract class ShellBase {
+
+    private final static Logger LOG = Logger.getLogger(ShellBase.class.getName());
 
     protected final String appName,syntax;
     
@@ -37,13 +39,14 @@ public abstract class ShellBase {
         this.options = options;
         this.syntax = syntax;
         options.addOption("h", "help", false, "show this help message");
-        options.addOption(null, "verbose", false, "show verbose information");
         options.addOption(null, "script-base", true, "specify default script base class");
         options.addOption("l", "libpath", true, "library path");
         options.addOption(null,"classpath", true, "compile classpath");
         options.addOption("s","sourcepath", true, "source directory");
         options.addOption("v","version",false,"show version information");
         options.addOption(null,"profile-out",true,"specify destination for profiler's output");
+        options.addOption(null, "debug", false, "log in debug level");
+        options.addOption(null, "info", false, "log in info level");
     }
     
     public int run(String[] args) {
@@ -66,6 +69,12 @@ public abstract class ShellBase {
             String profileOut = cli.getOptionValue("profile-out","");
             if (!profileOut.isEmpty()) {
                 Profiler.getInstance().startProfile();
+            }
+            if (cli.hasOption("info")) {
+                setLogLevel(Level.INFO);
+            }
+            if (cli.hasOption("debug")) {
+                setLogLevel(Level.ALL);
             }
             int result = execute(cli);
             if (!profileOut.isEmpty()) {
@@ -98,9 +107,10 @@ public abstract class ShellBase {
     }
 
     protected ClassLoader createClassLoader(CommandLine cli) {
-        boolean verbose = cli.hasOption("verbose");
         Set<URL> urls = new HashSet<>();
-        urls.add(Runtime.getRuntimeClassPath());
+        URL runtimeClassPath = Runtime.getRuntimeClassPath();
+        LOG.fine("Runtime class path:" + runtimeClassPath);
+        urls.add(runtimeClassPath);
         String[] libPaths = cli.getOptionValue("libpath", "").split(File.pathSeparator);
         for (String l : libPaths) {
             if (l.isEmpty()) {
@@ -114,12 +124,7 @@ public abstract class ShellBase {
             try {
                 urls.add(cp.toURI().toURL());
             } catch (MalformedURLException ex) {
-                ex.printStackTrace(System.err);
-            }
-        }
-        if (verbose) {
-            for (URL u : urls) {
-                System.out.println("Add class path:" + u);
+                LOG.warning("Invalid class path:" + cp);
             }
         }
         return new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader().getParent());
@@ -144,46 +149,46 @@ public abstract class ShellBase {
         Set<URL> classpaths = new HashSet<>();
         Set<File> sourcepaths = new HashSet<>();
         BufferedReader bufferedReader = new BufferedReader(reader);
-        Consumer<String> optionHandler = new Consumer<String>() {
-            @Override
-            @SneakyThrows
-            public void accept(String line) {
-                if (line.isEmpty()) {
-                    return;
-                }
-                if (line.startsWith("!")) {
-                    return;
-                }
-                String[] parts = line.split(" ",2);
-                String optionName = parts[0];
-                String optionValue = parts.length>1 ? parts[1] : "";
-                if (optionValue.isEmpty()) {
-                    return;
-                }
-                switch (optionName) {
+        Consumer<String> optionHandler = line -> {
+            if (line.isEmpty()) {
+                return;
+            }
+            if (line.startsWith("!")) {
+                return;
+            }
+            String[] parts = line.split(" ",2);
+            String optionName = parts[0];
+            String optionValue = parts.length>1 ? parts[1] : "";
+            if (optionValue.isEmpty()) {
+                return;
+            }
+            switch (optionName) {
 //                case "script":
 //                case "base":
 //                    scriptBase = optionValue;
 //                    break;
-                    case "dependency":
-                        dependencies.add(optionValue);
-                        break;
-                    case "repository":
-                        repositories.add(optionValue);
-                        break;
-                    case "classpath":
+                case "dependency":
+                    dependencies.add(optionValue);
+                    break;
+                case "repository":
+                    repositories.add(optionValue);
+                    break;
+                case "classpath":
+                    try {
                         classpaths.add(new File(optionValue).toURI().toURL());
-                        break;
-                    case "libpath":
-                        addClasspathFromLibPath(classpaths,new File(optionValue));
-                        break;
-                    case "sourcepath":
-                        sourcepaths.add(new File(optionValue));
-                        break;
-                    default:
-                        System.err.println("warn:unknown option:" + optionName);
-                        break;
-                }
+                    } catch (MalformedURLException e) {
+                        LOG.warning("Invalid class path in script option:" + optionValue);
+                    }
+                    break;
+                case "libpath":
+                    addClasspathFromLibPath(classpaths,new File(optionValue));
+                    break;
+                case "sourcepath":
+                    sourcepaths.add(new File(optionValue));
+                    break;
+                default:
+                    LOG.warning("warn:unknown option:" + optionName);
+                    break;
             }
         };
         String line;
@@ -210,6 +215,12 @@ public abstract class ShellBase {
             for(File localFile:resolveResult.getLocalFiles()) {
                 classpaths.add(localFile.toURI().toURL());
             }
+        }
+        for (URL cp: classpaths) {
+            LOG.fine("Add class path for script:" + cp);
+        }
+        for (File sp: sourcepaths) {
+            LOG.fine("Add source path for script:" + sp);
         }
         if (!classpaths.isEmpty()) {
             classLoader = new URLClassLoader(classpaths.toArray(new URL[0]),classLoader);
@@ -260,7 +271,7 @@ public abstract class ShellBase {
                 d = d.trim();
                 String[] dParts = d.split(":");
                 if (dParts.length!=3) {
-                    System.err.println("illegal artifact:" + d);
+                    LOG.warning("illegal artifact:" + d);
                     continue;
                 }
                 artifacts.add(new Artifact(dParts[0],dParts[1],dParts[2]));
@@ -281,6 +292,24 @@ public abstract class ShellBase {
             } catch (MalformedURLException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+    }
+
+    private void setLogLevel(Level logLevel) {
+        Logger rootLogger = LogManager.getLogManager().getLogger("");
+        int oldLevel = rootLogger.getLevel().intValue();
+        int newLevel = logLevel.intValue();
+        rootLogger.setLevel(logLevel);
+        for (Handler h : rootLogger.getHandlers()) {
+            h.setFilter(record -> {
+                int lv = record.getLevel().intValue();
+                if (lv > oldLevel) {
+                    return true;
+                }
+                String ln = record.getLoggerName();
+                return  ln != null && ln.startsWith("kalang.compiler") && lv > newLevel;
+            });
+            h.setLevel(logLevel);
         }
     }
 
