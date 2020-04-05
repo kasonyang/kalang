@@ -14,6 +14,7 @@ import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.plugins.resolver.AbstractResolver;
 import org.apache.ivy.plugins.resolver.IBiblioResolver;
 import org.apache.ivy.util.Message;
+import org.apache.ivy.util.filter.FilterHelper;
 import org.apache.ivy.util.url.URLHandlerRegistry;
 
 import java.io.IOException;
@@ -81,13 +82,11 @@ public class DependencyResolver {
         ResolveOptions ops = new ResolveOptions();
         //confs: [default, master, compile, provided, runtime, test, system, sources, javadoc, optional]
         ops.setConfs(new String[]{"default"});
-        //ops.setArtifactFilter(FilterHelper.getArtifactTypeFilter("jar"));
+        ops.setArtifactFilter(FilterHelper.getArtifactTypeFilter("jar,bundle"));
         ModuleRevisionId[] mrids = new ModuleRevisionId[artifacts.length];
-        Map<ModuleRevisionId,Artifact> revisionId2Artifact = new HashMap<>();
         for(int i=0;i<artifacts.length;i++){
             Artifact art = artifacts[i];
             mrids[i] = ModuleRevisionId.newInstance(art.getGroup(),art.getName(),art.getVersion());
-            revisionId2Artifact.put(mrids[i],art);
         }
         DefaultModuleDescriptor moduleDescriptor = DefaultModuleDescriptor.newCallerInstance(mrids, true, false);
         ResolveReport res = ivy.resolve(moduleDescriptor, ops);
