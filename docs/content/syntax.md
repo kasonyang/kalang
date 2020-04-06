@@ -13,9 +13,21 @@ You don't have to declare package name and class name in the code.Kalang use the
 
 ## Import classes
 
+Import single class:
+
 ```
-import foo.bar.Helloworld;//normal import
-import foo.bar.HelloKalang as KL;//use alias
+import foo.bar.Helloworld;
+```
+
+Import using alias:
+
+```
+import foo.bar.HelloKalang as KL;
+```
+
+Import all classes in package:
+
+```
 import foo.bar.*;
 ```
 
@@ -49,8 +61,7 @@ class extends Object implements List<String>{
 write as a script:
 
 ```
-//declare methods or code statements
-System.out.print("Hello,world");
+println("Hello,world");
 ```
 
 ## Declare method
@@ -63,11 +74,28 @@ int sum(int a,int b){
 
 ## Declare variable
 
+Declare a int variable
+
 ```
-int a;
-int b=2;
-var c = 3;//type is inferred,here the type of c is int
-var d = String.format("%d",4);//type is String
+var a = 1;
+```
+
+Declare a string variable
+
+```
+var b = String.format("%d",2);
+```
+
+Declare a immutable int variable
+
+```
+val ia = 3;
+```
+
+Declare a variable with specified type and initial value
+
+```
+var obj as Object = "hello";
 ```
 
 ## Interpolation
@@ -135,34 +163,32 @@ multi-line comment
 ## Declare array
 
 ```
-int[] arr = new int[10];//length is 10
-int[] arr2 = new int[]{1,2,3};arr2 is initialized and it's length is 3
+var intArray = [1,2,3];                    //int[]
+var integerArray= <Integer>[1,2,3];        //Integer[]
+var stringArray = ["hello","world"];       //String[]
 ```
 
-or
-
 ```
-var intArray = [1,2,3];//int[]
-var integerArray= <Integer>[1,2,3];//Integer[]
-var stringArray = ["hello","world"];//String[]
+int[] arr = new int[10];             //length is 10
+int[] arr2 = new int[]{1,2,3};       //arr2 is initialized and it's length is 3
 ```
 
 ## Declare map
 
 ```
-var objectMap = ["name":"kalang","year":2016];//Map<String,Object>
-var stringMap = ["name":"kalang","type":"language"];//Map<String,String>
-var ov = objectMap.get("name");//ov is Object type
-var sv = stringMap.get("name");//sv is String type
+var objectMap = ["name":"kalang","year":2016];          //Map<String,Object>
+var stringMap = ["name":"kalang","type":"language"];    //Map<String,String>
+var ov = objectMap.get("name");                         //ov is Object type
+var sv = stringMap.get("name");                         //sv is String type
 ```
 
 ## Null safe
 
 ```
 void hello(String? name){
-    name.length();//compile error:name may be null
+    name.length();           //compile error:name may be null
     if(name!=null){
-        name.length();//compile passed:name is null checked
+        name.length();       //compile passed:name is null checked
     }
 }
 ```
@@ -178,12 +204,18 @@ if(s instanceof String){
 
 ## Closures
 
-Closures is only support 8 parameters.
+Closures supports up to 8 parameters.
 
 ```
 void sayHello(String name,&Void(String) callback) {
-    callback.run("Hello,${name}");
+    callback("Hello,${name}");
 }
 
-sayHello("kalang" , { result => println(result); } );
+sayHello("kalang" , result => println(result));
+
+val sayHi as &Void(String) = (name) => {
+    println("Hi,${name}");
+};
+sayHi("kalang");
+
 ```
