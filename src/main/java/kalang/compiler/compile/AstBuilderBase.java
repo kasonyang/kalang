@@ -399,11 +399,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         for (Token p : ctx.paths) {
             classNameParts.add(p.getText());
         }
-        if (ctx.innerClass != null) {
-            classNameParts.add(rawTypeToken.getText() + "$" + ctx.innerClass.getText());
-        } else {
-            classNameParts.add(rawTypeToken.getText());
-        }
+        classNameParts.add(rawTypeToken.getText());
         String rawType = String.join(".", classNameParts);
         for (GenericType gt : getCurrentClass().getGenericTypes()) {
             if (rawType.equals(gt.getName())) {

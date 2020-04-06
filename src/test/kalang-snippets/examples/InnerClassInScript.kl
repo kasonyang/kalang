@@ -12,5 +12,5 @@ class Inner{
 //TODO test inner class
 //var ic = new Inner();
 //ic.hello();
-//var icInIc = new Inner::InnerInInner();
+//var icInIc = new Inner$InnerInInner();
 //icInIc.helloInnerInInner();

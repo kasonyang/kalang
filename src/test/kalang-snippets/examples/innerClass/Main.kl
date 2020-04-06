@@ -1,4 +1,4 @@
-static class MyType implements Model::Type {
+static class MyType implements Model$Type {
 
 }
 var type = new MyType();
