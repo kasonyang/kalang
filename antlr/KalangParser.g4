@@ -222,7 +222,8 @@ forStat:
     stat
 ;
 forEachStat:
-    'foreach' '(' expression 'as' ( Identifier ',' )? Identifier ')' stat
+    FOR '(' valueId=Identifier (',' indexId=Identifier)? IN expression ')' stat
+    | 'foreach' '(' expression 'as' ( indexId=Identifier ',' )? valueId=Identifier ')' stat
 ;
 expressions:
     expression (',' expression)*

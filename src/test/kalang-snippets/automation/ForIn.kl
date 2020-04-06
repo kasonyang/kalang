@@ -1,0 +1,29 @@
+boolean forInArray(){
+    var arr = [4,5,6];
+    int ret = 0;
+    for(a in arr){
+        ret = a;
+        a = 0;
+    }
+    return ret == 6 && Arrays.equals([4,5,6], arr);
+}
+
+int forInArrayKey(){
+    int ret = 0;
+    for(v,i in [4,5,6,7]){
+        ret += i;
+    }
+    return ret;
+}
+
+int forInList(){
+    var arr = new ArrayList<Integer>(3);
+    arr.add(1);
+    arr.add(2);
+    arr.add(3);
+    int ret = 0;
+    for(a,i in arr){
+        ret += a + i;
+    }
+    return ret - 3;
+}

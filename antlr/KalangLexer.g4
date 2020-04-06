@@ -8,6 +8,7 @@ lexer grammar KalangLexer;
 // §3.9 Keywords
 DOUBLE_COLON : '::' ;
 AS:'as';
+IN: 'in';
 CONSTRUCTOR:'constructor';
 VAR:'var';
 VAL: 'val';

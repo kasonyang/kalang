@@ -83,15 +83,18 @@ for loop:
 
 ```
 for(int i=0;i<9;i++){
-    //do Some Thing
+    println(i);
 }
 ```
 
 foreach loop
 
 ```
-foreach([1,2,3] as i,v){
-    println("index:" + i + ",value:"+v);
+for (v in [1,2,3]){
+    println("value:${v}");
+}
+for (v,i in [1,2,3]){
+    println("index:${i},value:${v}");
 }
 ```
 
