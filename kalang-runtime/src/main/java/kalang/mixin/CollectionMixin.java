@@ -166,4 +166,40 @@ public class CollectionMixin {
         return Arrays.asList(array);
     }
 
+    @MixinMethod
+    public static int sumInt(Iterable<Integer> intList) {
+        int result = 0;
+        for (Integer it : intList) {
+            result += it;
+        }
+        return result;
+    }
+
+    @MixinMethod
+    public static long sumLong(Iterable<Long> longList) {
+        long result = 0L;
+        for (Long it : longList) {
+            result += it;
+        }
+        return result;
+    }
+
+    @MixinMethod
+    public static float sumFloat(Iterable<Float> floatList) {
+        float result = 0;
+        for (Float it : floatList) {
+            result += it;
+        }
+        return result;
+    }
+
+    @MixinMethod
+    public static double sumDouble(Iterable<Double> doubleList) {
+        double result = 0;
+        for (Double it : doubleList) {
+            result += it;
+        }
+        return result;
+    }
+
 }

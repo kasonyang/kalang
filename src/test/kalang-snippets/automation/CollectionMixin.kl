@@ -1,0 +1,7 @@
+boolean testSumInt() {
+    return <Integer>[1,2,3].asList().sumInt() == 6;
+}
+
+boolean testSumLong() {
+    return <Long>[1L,2L,3L].asList().sumLong() == 6L;
+}
