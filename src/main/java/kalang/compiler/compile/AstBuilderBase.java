@@ -39,7 +39,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     public AstBuilderBase(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
         this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
-        this.semanticAnalyzer = new SemanticAnalyzer(compilationUnit, compilationUnit.getCompileContext().getAstLoader());
+        this.semanticAnalyzer = new SemanticAnalyzer(compilationUnit);
     }
 
     abstract ClassNode getCurrentClass();
@@ -811,7 +811,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             }else{
                 expr = new ErrorousExpr();
             }
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "not an expression",expression);
+            this.diagnosisReporter.report(Diagnosis.Kind.ERROR, "not an expression",offset(expression));
             return expr;
         }
     }

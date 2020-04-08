@@ -86,8 +86,8 @@ public class CompilationUnit {
         }else if(phase == PHASE_BUILDAST) {
             parseBody(context.getDiagnosisHandler());
         }else if(phase == PHASE_SEMANTIC) {
-            new MethodDeclarationAnalyzer(astBuilder.getDiagnosisReporter()).analyze(getAst());
-            new AssignmentAnalyzer(astBuilder.getDiagnosisReporter()).analyze(getAst());
+            new MethodDeclarationAnalyzer().analyze(this, getAst());
+            new AssignmentAnalyzer().analyze(this);
             AstVerifier astVerifier = new AstVerifier();
             try {
                 astVerifier.visit(getAst());

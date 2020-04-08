@@ -20,7 +20,7 @@ import java.util.*;
 import static kalang.compiler.compile.CompilePhase.PHASE_ALL;
 
 /**
- * The core compile
+ * The core compiler
  *
  * @author Kason Yang
  */
@@ -243,7 +243,7 @@ public abstract class KalangCompiler implements CompileContext {
 
     @Override
     public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return new SemanticAnalyzer(compilationUnit, astLoader);
+        return new SemanticAnalyzer(compilationUnit);
     }
 
     @Override

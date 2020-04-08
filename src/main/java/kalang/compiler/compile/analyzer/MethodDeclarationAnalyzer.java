@@ -2,6 +2,7 @@ package kalang.compiler.compile.analyzer;
 
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.ast.MethodNode;
+import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.compile.Diagnosis;
 import kalang.compiler.compile.DiagnosisReporter;
 import kalang.compiler.core.MethodDescriptor;
@@ -19,13 +20,8 @@ import java.util.Set;
  */
 public class MethodDeclarationAnalyzer {
 
-    private DiagnosisReporter diagnosisReporter;
-
-    public MethodDeclarationAnalyzer(DiagnosisReporter diagnosisReporter) {
-        this.diagnosisReporter = diagnosisReporter;
-    }
-
-    public void analyze(ClassNode clazz) {
+    public void analyze(CompilationUnit compilationUnit, ClassNode clazz) {
+        DiagnosisReporter diagnosisReporter = new DiagnosisReporter(compilationUnit);
         Set<String> declaredMethods = new HashSet<>();
         ObjectType superType = clazz.getSuperType();
         if (superType == null) {//the superType of interface may be null

@@ -39,7 +39,7 @@ public class DefaultCompileContext implements CompileContext{
 
     @Override
     public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return new SemanticAnalyzer(compilationUnit, astLoader);
+        return new SemanticAnalyzer(compilationUnit);
     }
 
     @Override

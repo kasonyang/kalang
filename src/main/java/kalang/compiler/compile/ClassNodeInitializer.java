@@ -21,20 +21,18 @@ public class ClassNodeInitializer extends AstBuilderBase {
 
     private ClassNode thisClazz;
     
-    private Map<ClassNode,ParserRuleContext> defContext = new HashMap();
+    private Map<ClassNode,ParserRuleContext> defContext = new HashMap<>();
 
     private boolean inScriptMode = false;
     
     private boolean isScript = false;
 
     private final CompilationUnit compilationUnit;
-    private final DiagnosisReporter diagnosisReporter;
 
     public ClassNodeInitializer(CompilationUnit compilationUnit) {
         super(compilationUnit);
         className = compilationUnit.getSource().getClassName();
         this.compilationUnit = compilationUnit;
-        this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
     }
 
     @Override
@@ -81,7 +79,7 @@ public class ClassNodeInitializer extends AstBuilderBase {
         String classDefName;
         if (oldClass != null) {
             if (nameIdentifier == null) {
-                diagnosisReporter.report(Diagnosis.Kind.ERROR,"Identifier excepted", ctx);
+                handleSyntaxError("Identifier excepted", offset(ctx));
                 return null;
             }
             classDefName = oldClass.name + "$" + nameIdentifier.getText();

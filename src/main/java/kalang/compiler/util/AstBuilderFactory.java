@@ -3,9 +3,7 @@ package kalang.compiler.util;
 
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
-import kalang.compiler.compile.AstBuilder;
-import kalang.compiler.compile.CompilationUnit;
-import kalang.compiler.compile.Diagnosis;
+import kalang.compiler.compile.*;
 import org.antlr.v4.runtime.*;
 /**
  *
@@ -27,9 +25,10 @@ public class AstBuilderFactory {
         );
     }
         
-    public static AstBuilder createAstBuilder(CompilationUnit source,TokenStream tokens){
+    public static AstBuilder createAstBuilder(CompilationUnit compilationUnit,TokenStream tokens){
         KalangParser p = new KalangParser(tokens);
-        AstBuilder sp = new AstBuilder(source, p);
+        AstBuilder sp = new AstBuilder(compilationUnit, p);
+        DiagnosisReporter diagnosisReporter = new DiagnosisReporter(compilationUnit);
         p.setErrorHandler(new DefaultErrorStrategy() {
 
             @Override
@@ -43,7 +42,8 @@ public class AstBuilderFactory {
                 }else{
                     start = end;
                 }
-                sp.getDiagnosisReporter().report(Diagnosis.Kind.ERROR, msg,start,end);
+                OffsetRange offset = OffsetRangeHelper.getOffsetRange(start, end);
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, msg, offset);
             }
         });
         return sp;

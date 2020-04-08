@@ -1,6 +1,7 @@
 package kalang.compiler.compile.analyzer;
 
 import kalang.compiler.ast.*;
+import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.compile.Diagnosis;
 import kalang.compiler.compile.DiagnosisReporter;
 import kalang.compiler.compile.OffsetRange;
@@ -26,17 +27,14 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
     private VarTable<VarObject, Void> assignedVars;
 
     private DiagnosisReporter diagnosisReporter;
-    
+
     private boolean returned;
 
     private MethodNode method;
 
-    public AssignmentAnalyzer(DiagnosisReporter diagnosisReporter) {
-        this.diagnosisReporter = diagnosisReporter;
-    }
-
-    public void analyze(ClassNode clazz) {
-        visit(clazz);
+    public void analyze(CompilationUnit compilationUnit) {
+        this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
+        visit(compilationUnit.getAst());
     }
 
     @Override

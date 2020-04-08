@@ -1861,10 +1861,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return e;
     }
 
-    public DiagnosisReporter getDiagnosisReporter() {
-        return diagnosisReporter;
-    }
-
     private void createLambdaNode(LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx, ClassType lambdaType){
         MethodDescriptor funcMethod = lambdaExpr.getInterfaceMethod();
         Type returnType = funcMethod.getReturnType();
@@ -1882,7 +1878,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         List<Token> lambdaParams = ctx.lambdaParams;
         if (paramTypes.length < lambdaParams.size()) {
             String msg = String.format("expected %d parameters but got %d",paramTypes.length,lambdaParams.size());
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR,msg,ctx);
+            handleSyntaxError(msg, offset(ctx));
             return;
         }
         for (int i=0;i<paramTypes.length;i++) {

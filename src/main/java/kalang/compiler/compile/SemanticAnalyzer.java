@@ -17,21 +17,12 @@ import java.util.Set;
  */
 public class SemanticAnalyzer extends AstVisitor<Type> {
 
-    private AstLoader astLoader;
-    
-    private ClassNode clazz;
+    private DiagnosisReporter diagnosisReporter;
 
-    private CompilationUnit source;
-    
-    private final DiagnosisReporter diagnosisReporter;
-
-    public SemanticAnalyzer(CompilationUnit source,AstLoader astLoader) {
-        this.astLoader = astLoader;
-        this.source = source;
-        CompileContext ctx = source.getCompileContext();
-        this.diagnosisReporter = new DiagnosisReporter(source);
+    public SemanticAnalyzer(CompilationUnit compilationUnit) {
+        this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
     }
-    
+
     /**
      * checks whether an expression as assignable to another expression , and transform the expression if needed.
      * 

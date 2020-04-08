@@ -33,13 +33,10 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     private List<MissingParamMethodInfo> missParamMethods = new LinkedList<>();
 
     private final CompilationUnit compilationUnit;
-    private DiagnosisReporter diagnosisReporter;
-    
+
     public ClassNodeStructureBuilder(CompilationUnit compilationUnit, KalangParser parser) {
         super(compilationUnit,parser);
         this.compilationUnit = compilationUnit;
-        //this.astBuilder = astBuilder;
-        this.diagnosisReporter = new DiagnosisReporter(this.compilationUnit);
     }
 
     public void build(ClassNode topClass, ClassNode cn,ParserRuleContext ctx) {
@@ -85,12 +82,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             thisClazz.createField(Types.getClassType(parentClass), "this$0", Modifier.PRIVATE | ModifierConstant.SYNTHETIC);
         }
         visitClassBody(ctx.classBody());
-        if (!ModifierUtil.isInterface(thisClazz.modifier) 
-                && !AstUtil.containsConstructor(thisClazz) 
+        if (!ModifierUtil.isInterface(thisClazz.modifier) && !AstUtil.containsConstructor(thisClazz)
                 && !AstUtil.createEmptyConstructor(thisClazz)) {
-            this.diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    , "failed to create constructor with no parameters", ctx
-            );
+            handleSyntaxError("failed to create constructor with no parameters", offset(ctx));
         }
         MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
         for (MethodNode node : methods) {
@@ -164,9 +158,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             if(ModifierUtil.isInterface(thisClazz.modifier)){
                 modifier |= Modifier.ABSTRACT;
             }else if(!Modifier.isAbstract(modifier)){
-                diagnosisReporter.report(Diagnosis.Kind.ERROR, "method body required", ctx);
+                handleSyntaxError("method body required", offset(ctx));
             }else if(!Modifier.isAbstract(thisClazz.modifier)){
-                diagnosisReporter.report(Diagnosis.Kind.ERROR, "declare abstract method in non-abstract class", ctx);
+                handleSyntaxError("declare abstract method in non-abstract class", offset(ctx));
             }
         }
         MethodNode method = thisClazz.createMethodNode(type, name, modifier);
