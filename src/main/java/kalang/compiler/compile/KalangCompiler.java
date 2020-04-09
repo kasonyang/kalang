@@ -243,8 +243,8 @@ public abstract class KalangCompiler implements CompileContext {
     }
 
     @Override
-    public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return new DefaultSemanticAnalyzer();
+    public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit) {
+        return new DefaultSemanticAnalyzer(compilationUnit);
     }
 
     @Override

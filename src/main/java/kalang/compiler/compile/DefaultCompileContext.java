@@ -35,12 +35,12 @@ public class DefaultCompileContext implements CompileContext{
 
     @Override
     public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-        return new Ast2JavaStub();
+        return new Ast2JavaStub(compilationUnit);
     }
 
     @Override
-    public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return new DefaultSemanticAnalyzer();
+    public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit) {
+        return new DefaultSemanticAnalyzer(compilationUnit);
     }
 
     @Override

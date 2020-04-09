@@ -19,7 +19,7 @@ public interface CompileContext {
     
     CodeGenerator createCodeGenerator(CompilationUnit compilationUnit);
 
-    SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader);
+    SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit);
     
     AstLoader getAstLoader();
 

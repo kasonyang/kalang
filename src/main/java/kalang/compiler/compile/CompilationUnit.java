@@ -72,7 +72,7 @@ public class CompilationUnit {
         astBuilder.importMixinMethod(astLoader.loadAst(IOMixin.class.getName()),null);
         astBuilder.importMixinMethod(astLoader.loadAst(DigestMixin.class.getName()),null);
         astBuilder.importMixinMethod(astLoader.loadAst(DataMixin.class.getName()),null);
-        semanticAnalyzer = context.createSemanticAnalyzer(this,astLoader);
+        semanticAnalyzer = context.createSemanticAnalyzer(this);
         compile(PHASE_INITIALIZE);
     }
     
@@ -84,18 +84,18 @@ public class CompilationUnit {
         }else if(phase == PHASE_BUILDAST) {
             parse(AstBuilder.PARSING_PHASE_ALL);
         }else if(phase == PHASE_SEMANTIC) {
-            SemanticAnalyzer smtAnalyzer = context.createSemanticAnalyzer(this, context.getAstLoader());
+            SemanticAnalyzer smtAnalyzer = context.createSemanticAnalyzer(this);
             if (smtAnalyzer == null) {
                 throw new IllegalArgumentException("SemanticAnalyzer is missing");
             }
-            smtAnalyzer.semanticAnalyze(this);
+            smtAnalyzer.semanticAnalyze();
         }else if(phase == PHASE_CLASSGEN){
             CodeGenerator codeGenerator = context.createCodeGenerator(this);
             if(codeGenerator == null){
                 throw new IllegalStateException("CodeGenerator is missing");
             }
             try {
-                codeGenerator.generate(this.getAst());
+                codeGenerator.generateCode();
             } catch (MalformedAstException ex) {
                 this.astBuilder.handleSyntaxError(ex.getMessage(), ex.getMalformedNode().offset);
             }

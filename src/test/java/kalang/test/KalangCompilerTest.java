@@ -31,7 +31,7 @@ public class KalangCompilerTest {
         KalangCompiler kc = new KalangCompiler(){
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-                return new Ast2JavaStub();
+                return new Ast2JavaStub(compilationUnit);
             }
         };
         kc.addSource("Test", "class{  }","Test.kl");
@@ -50,7 +50,7 @@ public class KalangCompilerTest {
         KalangCompiler kc = new KalangCompiler(){
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-                return new Ast2JavaStub();
+                return new Ast2JavaStub(compilationUnit);
             }
         };
         kc.addSource("Test", "class{  }","Test.kl");

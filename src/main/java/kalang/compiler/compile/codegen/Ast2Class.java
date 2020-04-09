@@ -8,6 +8,7 @@ import kalang.compiler.MalformedAstException;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.AstLoader;
 import kalang.compiler.compile.CodeGenerator;
+import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.core.*;
 import kalang.compiler.core.Type;
 import kalang.compiler.exception.Exceptions;
@@ -36,6 +37,7 @@ import static org.objectweb.asm.Opcodes.*;
 public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerator{
 
     private static Logger LOG = Logger.getLogger(Ast2Class.class.getName());
+    private final CompilationUnit compilationUnit;
 
     private ClassWriter classWriter;
     private MethodVisitor md;
@@ -70,9 +72,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private ClassNode clazz;
     private String classInternalName;
 
-    public Ast2Class(OutputManager outputManager, AstLoader astLoader) {
+    public Ast2Class(OutputManager outputManager, AstLoader astLoader, CompilationUnit compilationUnit) {
         this.outputManager = outputManager;
         this.astLoader = astLoader;
+        this.compilationUnit = compilationUnit;
     }
     
     private int getT(Type type){
@@ -1076,7 +1079,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
     
     @Override
-    public void generate(ClassNode classNode){
+    public void generateCode() {
+        ClassNode classNode = compilationUnit.getAst();
         try {
             visitClassNode(classNode);
         } catch (CompileException | MalformedAstException ex) {

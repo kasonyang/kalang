@@ -10,8 +10,14 @@ import kalang.compiler.compile.analyzer.MethodDeclarationAnalyzer;
  */
 public class DefaultSemanticAnalyzer implements SemanticAnalyzer {
 
+    private CompilationUnit compilationUnit;
+
+    public DefaultSemanticAnalyzer(CompilationUnit compilationUnit) {
+        this.compilationUnit = compilationUnit;
+    }
+
     @Override
-    public void semanticAnalyze(CompilationUnit compilationUnit) {
+    public void semanticAnalyze() {
         DiagnosisReporter dnReporter = new DiagnosisReporter(compilationUnit);
         new MethodDeclarationAnalyzer().analyze(compilationUnit);
         new AssignmentAnalyzer().analyze(compilationUnit);

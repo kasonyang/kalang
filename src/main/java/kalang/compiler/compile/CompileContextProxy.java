@@ -41,8 +41,8 @@ public class CompileContextProxy implements CompileContext{
     }
 
     @Override
-    public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return config.createSemanticAnalyzer(compilationUnit, astLoader);
+    public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit) {
+        return config.createSemanticAnalyzer(compilationUnit);
     }
 
     @Override

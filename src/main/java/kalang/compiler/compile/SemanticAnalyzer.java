@@ -5,6 +5,6 @@ package kalang.compiler.compile;
  */
 public interface SemanticAnalyzer {
 
-    void semanticAnalyze(CompilationUnit compilationUnit);
+    void semanticAnalyze();
 
 }

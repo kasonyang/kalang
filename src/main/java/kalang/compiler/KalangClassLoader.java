@@ -1,7 +1,6 @@
 
 package kalang.compiler;
 
-import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.*;
 import kalang.compiler.compile.codegen.Ast2Class;
 import kalang.compiler.tool.FileSystemSourceLoader;
@@ -21,7 +20,7 @@ import java.util.logging.Logger;
  *
  * @author Kason Yang
  */
-public class KalangClassLoader extends URLClassLoader implements CodeGenerator,DiagnosisHandler{
+public class KalangClassLoader extends URLClassLoader implements DiagnosisHandler{
 
     private final KalangCompiler compiler;
     
@@ -39,7 +38,6 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
         Configuration conf = config == null ? new Configuration() : Configuration.copy(config);
         this.parentClassLoader = parentClassLoader;
         sourceLoader = new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding());
-        CodeGenerator cg = this;
         conf.setAstLoader(new JavaAstLoader(conf.getAstLoader(), parentClassLoader));
         compiler = new KalangCompiler(conf){
             @Override
@@ -49,7 +47,7 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
 
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
-                return cg;
+                return () -> generateClasses(compilationUnit);
             }
 
         };
@@ -78,10 +76,9 @@ public class KalangClassLoader extends URLClassLoader implements CodeGenerator,D
         return super.findClass(name);
     }
 
-    @Override
-    public void generate(ClassNode classNode) {
-        Ast2Class ast2Class = new Ast2Class(outputManager, compiler.getAstLoader());
-        ast2Class.generate(classNode);
+    private void generateClasses(CompilationUnit compilationUnit) {
+        Ast2Class ast2Class = new Ast2Class(outputManager, compiler.getAstLoader(), compilationUnit);
+        ast2Class.generateCode();
     }
 
     public void addClassPath(File path) {

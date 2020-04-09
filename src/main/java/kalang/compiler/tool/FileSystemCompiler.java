@@ -54,7 +54,7 @@ public class FileSystemCompiler {
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
                 FileSystemOutputManager om = new FileSystemOutputManager(outputDir, extension);
-                return new ClassWriter(om, this.getAstLoader());
+                return new ClassWriter(om, this.getAstLoader(), compilationUnit);
             }
 
         };

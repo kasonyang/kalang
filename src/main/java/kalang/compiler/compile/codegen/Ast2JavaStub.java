@@ -2,6 +2,7 @@ package kalang.compiler.compile.codegen;
 
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.CodeGenerator;
+import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.core.GenericType;
 import kalang.compiler.util.NameUtil;
 
@@ -16,7 +17,13 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     protected StringBuilder sb;
     
     private boolean isInterface = false;
-    
+
+    private CompilationUnit compilationUnit;
+
+    public Ast2JavaStub(CompilationUnit compilationUnit) {
+        this.compilationUnit = compilationUnit;
+    }
+
     private static String getJavaTypeName(String typeName){
         String type = typeName.replace('$', '.');
         if(type.endsWith("?")){
@@ -119,9 +126,9 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     }
 
     @Override
-    public void generate(ClassNode classNode) {
+    public void generateCode() {
         sb = new StringBuilder();
-        visit(classNode);
+        visit(compilationUnit.getAst());
     }
     
 }
