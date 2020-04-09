@@ -20,7 +20,13 @@ import java.util.Set;
  */
 public class MethodDeclarationAnalyzer {
 
-    public void analyze(CompilationUnit compilationUnit, ClassNode clazz) {
+    public void analyze(CompilationUnit compilationUnit) {
+        doAnalyze(compilationUnit, compilationUnit.getAst());
+    }
+    private void doAnalyze(CompilationUnit compilationUnit, ClassNode clazz) {
+        for (ClassNode clz: clazz.classes) {
+            doAnalyze(compilationUnit, clz);
+        }
         DiagnosisReporter diagnosisReporter = new DiagnosisReporter(compilationUnit);
         Set<String> declaredMethods = new HashSet<>();
         ObjectType superType = clazz.getSuperType();
