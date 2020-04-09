@@ -3,6 +3,7 @@ package kalang.compiler.compile;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.compile.codegen.Ast2JavaStub;
+import kalang.compiler.compile.semantic.DefaultSemanticAnalyzer;
 import kalang.compiler.util.LexerFactory;
 import kalang.compiler.util.TokenStreamFactory;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -39,7 +40,7 @@ public class DefaultCompileContext implements CompileContext{
 
     @Override
     public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return new SemanticAnalyzer(compilationUnit);
+        return new DefaultSemanticAnalyzer();
     }
 
     @Override

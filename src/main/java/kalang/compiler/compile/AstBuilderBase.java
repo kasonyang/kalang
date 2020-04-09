@@ -25,7 +25,7 @@ import java.util.*;
 public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected final DiagnosisReporter diagnosisReporter;
-    protected final SemanticAnalyzer semanticAnalyzer;
+    protected final StatementAnalyzer statementAnalyzer;
     private CompilationUnit compilationUnit;
 
     private Map<FieldNode, MethodNode> privateFieldReaderMap = new HashMap<>();
@@ -39,7 +39,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     public AstBuilderBase(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
         this.diagnosisReporter = new DiagnosisReporter(compilationUnit);
-        this.semanticAnalyzer = new SemanticAnalyzer(compilationUnit);
+        this.statementAnalyzer = new StatementAnalyzer(compilationUnit);
     }
 
     abstract ClassNode getCurrentClass();
@@ -252,7 +252,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             default:
                 throw Exceptions.unexpectedValue(op);
         }
-        semanticAnalyzer.validateBinaryExpr(binExpr);
+        statementAnalyzer.validateBinaryExpr(binExpr);
         return binExpr;
     }
 
@@ -586,7 +586,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             ConstExpr defaultValue = (ConstExpr) parseLiteral(dv);
             anNode.values.put("value", defaultValue);
         }
-        if(!semanticAnalyzer.validateAnnotation(anNode)) return null;
+        if(!statementAnalyzer.validateAnnotation(anNode)) return null;
         //TODO validate annotation's values
         return anNode;
     }

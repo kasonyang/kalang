@@ -4,11 +4,9 @@ import kalang.compiler.MalformedAstException;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.compile.analyzer.AssignmentAnalyzer;
-import kalang.compiler.compile.analyzer.MethodDeclarationAnalyzer;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
-import kalang.helper.*;
+import kalang.helper.PrintHelper;
 import kalang.mixin.*;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -86,13 +84,11 @@ public class CompilationUnit {
         }else if(phase == PHASE_BUILDAST) {
             parse(AstBuilder.PARSING_PHASE_ALL);
         }else if(phase == PHASE_SEMANTIC) {
-            new MethodDeclarationAnalyzer().analyze(this);
-            new AssignmentAnalyzer().analyze(this);
-            try {
-                new AstVerifier().visit(getAst());
-            } catch (MalformedAstException ex) {
-                this.astBuilder.handleSyntaxError(ex.getMessage(), ex.getMalformedNode().offset);
+            SemanticAnalyzer smtAnalyzer = context.createSemanticAnalyzer(this, context.getAstLoader());
+            if (smtAnalyzer == null) {
+                throw new IllegalArgumentException("SemanticAnalyzer is missing");
             }
+            smtAnalyzer.semanticAnalyze(this);
         }else if(phase == PHASE_CLASSGEN){
             CodeGenerator codeGenerator = context.createCodeGenerator(this);
             if(codeGenerator == null){

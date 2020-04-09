@@ -4,6 +4,7 @@ import kalang.compiler.AstNotFoundException;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
+import kalang.compiler.compile.semantic.DefaultSemanticAnalyzer;
 import kalang.compiler.profile.Invocation;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
@@ -243,7 +244,7 @@ public abstract class KalangCompiler implements CompileContext {
 
     @Override
     public SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit, AstLoader astLoader) {
-        return new SemanticAnalyzer(compilationUnit);
+        return new DefaultSemanticAnalyzer();
     }
 
     @Override
