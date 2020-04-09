@@ -79,24 +79,23 @@ public class CompilationUnit {
     }
     
     protected void doCompilePhase(int phase){
-        if(phase==PHASE_INITIALIZE){
-            parseInit(context.getDiagnosisHandler());
-        }else if(phase==PHASE_PARSING){
-            parseMeta(context.getDiagnosisHandler());
+        if(phase == PHASE_INITIALIZE){
+            parse(AstBuilder.PARSING_PHASE_INIT);
+        }else if(phase == PHASE_PARSING){
+            parse(AstBuilder.PARSING_PHASE_META);
         }else if(phase == PHASE_BUILDAST) {
-            parseBody(context.getDiagnosisHandler());
+            parse(AstBuilder.PARSING_PHASE_ALL);
         }else if(phase == PHASE_SEMANTIC) {
             new MethodDeclarationAnalyzer().analyze(this);
             new AssignmentAnalyzer().analyze(this);
-            AstVerifier astVerifier = new AstVerifier();
             try {
-                astVerifier.visit(getAst());
+                new AstVerifier().visit(getAst());
             } catch (MalformedAstException ex) {
                 this.astBuilder.handleSyntaxError(ex.getMessage(), ex.getMalformedNode().offset);
             }
         }else if(phase == PHASE_CLASSGEN){
             CodeGenerator codeGenerator = context.createCodeGenerator(this);
-            if(codeGenerator==null){
+            if(codeGenerator == null){
                 throw new IllegalStateException("CodeGenerator is missing");
             }
             try {
@@ -115,20 +114,8 @@ public class CompilationUnit {
             Profiler.getInstance().endSpan(span);
         }
     }
-    
-    protected void parseInit(DiagnosisHandler semanticErrorHandler){
-        parse(semanticErrorHandler,AstBuilder.PARSING_PHASE_INIT);
-    }
-    
-    protected void parseMeta(DiagnosisHandler semanticErrorHandler){
-        parse(semanticErrorHandler, AstBuilder.PARSING_PHASE_META);
-    }
-    
-    public void parseBody(DiagnosisHandler semanticErrorHandler){
-        parse(semanticErrorHandler, AstBuilder.PARSING_PHASE_ALL);
-    }
 
-    protected void parse(DiagnosisHandler semanticErrorHandler, int targetParsingPhase) {
+    protected void parse(int targetParsingPhase) {
         astBuilder.compile(targetParsingPhase,context.getAstLoader());
     }
 
@@ -140,11 +127,6 @@ public class CompilationUnit {
     @Nonnull
     public AstBuilder getAstBuilder() {
         return astBuilder;
-    }
-
-    @Nonnull
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return semanticAnalyzer;
     }
 
     @Nonnull
