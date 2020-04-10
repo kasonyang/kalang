@@ -44,7 +44,7 @@ public class FileSystemCompiler {
 
     public void compile() throws IOException {
         if (outputDir == null) {
-            throw new IllegalStateException("output diretory is null");
+            throw new IllegalStateException("output directory is null");
         }
         URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]), this.classLoader);
         AstLoader astLoader = new JavaAstLoader(this.parentAstLoader, pathClassLoader);
