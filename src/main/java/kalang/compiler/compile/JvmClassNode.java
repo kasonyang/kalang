@@ -289,7 +289,7 @@ public class JvmClassNode extends ClassNode {
             }
         } else {
             superType = Types.getRootType();
-            interfaces = bounds;
+            interfaces = new ObjectType[0];
         }
         ClassNode classNode = genericClassType.getClassNode();
         classNode.setSuperType(superType);
