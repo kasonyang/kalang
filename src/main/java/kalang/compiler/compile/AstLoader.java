@@ -22,7 +22,7 @@ public class AstLoader {
 
     }
 
-    public AstLoader(@Nonnull AstLoader parent) {
+    public AstLoader(@Nullable AstLoader parent) {
         this.parent = parent;
     }
 

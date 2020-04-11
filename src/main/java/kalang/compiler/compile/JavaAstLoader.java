@@ -16,19 +16,14 @@ import java.util.Objects;
  */
 public class JavaAstLoader extends AstLoader {
 
-    static String ROOT_CLASS = "java.lang.Object";
-
     private ClassLoader javaClassLoader;
 
     private Map<String, ClassNode> loadedClasses = new HashMap<>();
 
-    //TODO unused
-    private final AstLoader parentAstLoader;
-
     public JavaAstLoader(@Nullable AstLoader parentAstLoader, @Nonnull ClassLoader javaClassLoader) {
+        super(parentAstLoader);
         Objects.requireNonNull(javaClassLoader);
         this.javaClassLoader = javaClassLoader;
-        this.parentAstLoader = parentAstLoader;
     }
 
     public JavaAstLoader() {
