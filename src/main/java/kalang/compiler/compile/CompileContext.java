@@ -2,7 +2,6 @@
 package kalang.compiler.compile;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
-import org.antlr.v4.runtime.CommonTokenStream;
 /**
  *
  * @author Kason Yang 
@@ -11,15 +10,13 @@ public interface CompileContext {
     
     KalangLexer createLexer(CompilationUnit compilationUnit,String source);
     
-    CommonTokenStream createTokenStream(CompilationUnit compilationUnit,KalangLexer lexer);
-    
-    KalangParser createParser(CompilationUnit compilationUnit,CommonTokenStream tokenStream);
+    KalangParser createParser(CompilationUnit compilationUnit,KalangLexer lexer);
     
     AstBuilder createAstBuilder(CompilationUnit compilationUnit,KalangParser parser);
-    
-    CodeGenerator createCodeGenerator(CompilationUnit compilationUnit);
 
     SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit);
+
+    CodeGenerator createCodeGenerator(CompilationUnit compilationUnit);
     
     AstLoader getAstLoader();
 

@@ -8,7 +8,6 @@ import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.helper.PrintHelper;
 import kalang.mixin.*;
-import org.antlr.v4.runtime.CommonTokenStream;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -27,10 +26,6 @@ public class CompilationUnit {
     private final KalangLexer lexer;
     private final KalangParser parser;
     private final AstBuilder astBuilder;
-    
-    private final SemanticAnalyzer semanticAnalyzer;
-    
-    private final CommonTokenStream tokens;
     
     private int compilingPhase;
     
@@ -52,8 +47,7 @@ public class CompilationUnit {
         this.source = source;
         this.context = context;
         lexer = context.createLexer(this,source.getText());
-        tokens = context.createTokenStream(this,lexer);
-        parser = context.createParser(this,tokens);
+        parser = context.createParser(this,lexer);
         astBuilder = context.createAstBuilder(this,parser);
         //TODO astBuilder.getAstLoader() != context.getAstLoader?
         AstLoader astLoader = context.getAstLoader();
@@ -72,7 +66,6 @@ public class CompilationUnit {
         astBuilder.importMixinMethod(astLoader.loadAst(IOMixin.class.getName()),null);
         astBuilder.importMixinMethod(astLoader.loadAst(DigestMixin.class.getName()),null);
         astBuilder.importMixinMethod(astLoader.loadAst(DataMixin.class.getName()),null);
-        semanticAnalyzer = context.createSemanticAnalyzer(this);
         compile(PHASE_INITIALIZE);
     }
     
@@ -125,21 +118,12 @@ public class CompilationUnit {
         return astBuilder;
     }
 
-    @Nonnull
-    public CommonTokenStream getTokenStream() {
-        return tokens;
-    }
-
     public KalangLexer getLexer() {
         return lexer;
     }
 
     public KalangParser getParser() {
         return parser;
-    }
-
-    public CommonTokenStream getTokens() {
-        return tokens;
     }
 
     public KalangSource getSource() {

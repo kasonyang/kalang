@@ -38,7 +38,7 @@ public class KalangCompilerTest {
         kc.compile();
         CompilationUnit unit = kc.getCompilationUnit("Test");
         assert unit != null;
-        CommonTokenStream ts = unit.getTokenStream();
+        CommonTokenStream ts = (CommonTokenStream) unit.getParser().getTokenStream();
         //the tokens contains tokens in all channels
         List<Token> tokens = ts.getTokens();
         assertEquals(5, ts.size());

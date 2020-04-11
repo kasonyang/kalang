@@ -211,13 +211,10 @@ public abstract class KalangCompiler implements CompileContext {
         return lexer;
     }
 
-    @Override
-    public CommonTokenStream createTokenStream(CompilationUnit compilationUnit, KalangLexer lexer) {
-        return TokenStreamFactory.createTokenStream(lexer);
-    }
 
     @Override
-    public KalangParser createParser(CompilationUnit compilationUnit, CommonTokenStream tokenStream) {
+    public KalangParser createParser(CompilationUnit compilationUnit, KalangLexer lexer) {
+        CommonTokenStream tokenStream = TokenStreamFactory.createTokenStream(lexer);
         KalangParser parser = new KalangParser(tokenStream);
         parser.setErrorHandler(new DefaultErrorStrategy() {
             @Override
