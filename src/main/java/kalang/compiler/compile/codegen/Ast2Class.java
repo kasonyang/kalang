@@ -1,16 +1,10 @@
 
 package kalang.compiler.compile.codegen;
 
-import kalang.compiler.compile.AstNotFoundException;
-import kalang.compiler.tool.CompileException;
-import kalang.compiler.compile.MalformedAstException;
 import kalang.compiler.ast.*;
-import kalang.compiler.compile.AstLoader;
-import kalang.compiler.compile.CodeGenerator;
-import kalang.compiler.compile.CompilationUnit;
-import kalang.compiler.core.*;
+import kalang.compiler.compile.*;
 import kalang.compiler.core.Type;
-import kalang.compiler.util.Exceptions;
+import kalang.compiler.core.*;
 import kalang.compiler.function.LambdaExpr;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
@@ -1082,7 +1076,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         ClassNode classNode = compilationUnit.getAst();
         try {
             visitClassNode(classNode);
-        } catch (CompileException | MalformedAstException ex) {
+        } catch (MalformedAstException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new CodeGenerationException("fail to generate class:" + classNode.name, classNode, ex);

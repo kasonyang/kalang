@@ -24,8 +24,9 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
     private final KalangCompiler compiler;
     
     private final HashMap<String,Class> loadedClasses = new HashMap<>();
+
     private final FileSystemSourceLoader sourceLoader;
-    private ClassLoader parentClassLoader = KalangClassLoader.class.getClassLoader();
+
     final MemoryOutputManager outputManager = new MemoryOutputManager();
 
     public KalangClassLoader() {
@@ -35,7 +36,6 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
     public KalangClassLoader(File[] sourceDir,@Nullable Configuration config,@Nullable ClassLoader parentClassLoader) {
         super(new URL[0],parentClassLoader==null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader);
         Configuration conf = config == null ? new Configuration() : Configuration.copy(config);
-        this.parentClassLoader = parentClassLoader;
         sourceLoader = new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding());
         conf.setAstLoader(new JvmAstLoader(conf.getAstLoader(), parentClassLoader));
         compiler = new KalangCompiler(conf){
