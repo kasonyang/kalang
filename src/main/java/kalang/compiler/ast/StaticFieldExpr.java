@@ -1,7 +1,7 @@
 
 package kalang.compiler.ast;
 
-import kalang.compiler.FieldNotFoundException;
+import kalang.compiler.compile.semantic.FieldNotFoundException;
 import kalang.compiler.core.FieldDescriptor;
 import kalang.compiler.core.Types;
 import kalang.compiler.util.AstUtil;

@@ -1,8 +1,7 @@
 package kalang.compiler.tool;
 
-import kalang.compiler.KalangClassLoader;
 import kalang.compiler.compile.Configuration;
-import kalang.compiler.exception.Exceptions;
+import kalang.compiler.util.Exceptions;
 import kalang.lang.Script;
 import org.apache.commons.io.FileUtils;
 

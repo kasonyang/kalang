@@ -1,7 +1,7 @@
 package kalang.compiler.core;
 
 import kalang.compiler.ast.ConstExpr;
-import kalang.compiler.exception.Exceptions;
+import kalang.compiler.util.Exceptions;
 
 /**
  * @author lbqh

@@ -1,9 +1,10 @@
 package kalang.compiler.compile.semantic;
 
-import kalang.compiler.MalformedAstException;
+import kalang.compiler.compile.MalformedAstException;
 import kalang.compiler.compile.*;
-import kalang.compiler.compile.analyzer.AssignmentAnalyzer;
-import kalang.compiler.compile.analyzer.MethodDeclarationAnalyzer;
+import kalang.compiler.compile.semantic.analyzer.AssignmentAnalyzer;
+import kalang.compiler.compile.semantic.analyzer.MethodDeclarationAnalyzer;
+import kalang.compiler.compile.util.DiagnosisReporter;
 
 /**
  * @author KasonYang

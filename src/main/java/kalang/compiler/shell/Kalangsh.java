@@ -1,7 +1,7 @@
 package kalang.compiler.shell;
 
-import kalang.compiler.CodeGenerationException;
-import kalang.compiler.CompileException;
+import kalang.compiler.compile.codegen.CodeGenerationException;
+import kalang.compiler.tool.CompileException;
 import kalang.compiler.compile.Configuration;
 import kalang.compiler.tool.KalangShell;
 import kalang.compiler.util.AstOutputUtil;

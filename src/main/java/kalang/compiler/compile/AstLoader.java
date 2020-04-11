@@ -1,7 +1,7 @@
 package kalang.compiler.compile;
 
-import kalang.compiler.AstNotFoundException;
 import kalang.compiler.ast.ClassNode;
+import kalang.compiler.compile.jvm.JvmAstLoader;
 import kalang.compiler.util.AstUtil;
 
 import javax.annotation.Nonnull;
@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class AstLoader {
     
-    public static final AstLoader BASE_AST_LOADER = new JavaAstLoader();
+    public static final AstLoader BASE_AST_LOADER = new JvmAstLoader();
 
     @Nonnull
     private final HashMap<String, ClassNode> cachedAsts = new HashMap();

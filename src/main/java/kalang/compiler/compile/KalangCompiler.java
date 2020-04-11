@@ -1,10 +1,11 @@
 package kalang.compiler.compile;
 
-import kalang.compiler.AstNotFoundException;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
+import kalang.compiler.compile.util.StandardDiagnosisHandler;
 import kalang.compiler.compile.semantic.DefaultSemanticAnalyzer;
+import kalang.compiler.compile.semantic.AstBuilder;
 import kalang.compiler.profile.Invocation;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;

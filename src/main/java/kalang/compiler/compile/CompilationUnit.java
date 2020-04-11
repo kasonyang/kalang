@@ -1,9 +1,10 @@
 package kalang.compiler.compile;
 
-import kalang.compiler.MalformedAstException;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
+import kalang.compiler.compile.semantic.AstBuilder;
+import kalang.compiler.compile.util.DiagnosisReporter;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.helper.PrintHelper;
@@ -70,6 +71,7 @@ public class CompilationUnit {
     }
     
     protected void doCompilePhase(int phase){
+        DiagnosisReporter dnReporter = new DiagnosisReporter(this);
         if(phase == PHASE_INITIALIZE){
             parse(AstBuilder.PARSING_PHASE_INIT);
         }else if(phase == PHASE_PARSING){
@@ -90,7 +92,7 @@ public class CompilationUnit {
             try {
                 codeGenerator.generateCode();
             } catch (MalformedAstException ex) {
-                this.astBuilder.handleSyntaxError(ex.getMessage(), ex.getMalformedNode().offset);
+                dnReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), ex.getMalformedNode().offset);
             }
         }
     }

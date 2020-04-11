@@ -4,7 +4,7 @@ import kalang.compiler.core.NullableKind;
 import kalang.compiler.core.PrimitiveType;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
-import kalang.compiler.exception.Exceptions;
+import kalang.compiler.util.Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.Collections;

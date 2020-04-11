@@ -1,10 +1,9 @@
 package kalang.compiler.util;
 
-import kalang.compiler.AmbiguousMethodException;
-import kalang.compiler.MethodNotFoundException;
+import kalang.compiler.compile.semantic.AmbiguousMethodException;
+import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
-import kalang.compiler.exception.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

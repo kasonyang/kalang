@@ -1,8 +1,8 @@
 package kalang.compiler.util;
 
-import kalang.compiler.AmbiguousMethodException;
-import kalang.compiler.AstNotFoundException;
-import kalang.compiler.MethodNotFoundException;
+import kalang.compiler.compile.semantic.AmbiguousMethodException;
+import kalang.compiler.compile.AstNotFoundException;
+import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.AstLoader;
 import kalang.compiler.core.*;

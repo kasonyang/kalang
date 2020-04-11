@@ -2,6 +2,8 @@
 package kalang.compiler.compile;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
+import kalang.compiler.compile.semantic.AstBuilder;
+
 /**
  *
  * @author Kason Yang 
@@ -12,7 +14,7 @@ public interface CompileContext {
     
     KalangParser createParser(CompilationUnit compilationUnit,KalangLexer lexer);
     
-    AstBuilder createAstBuilder(CompilationUnit compilationUnit,KalangParser parser);
+    AstBuilder createAstBuilder(CompilationUnit compilationUnit, KalangParser parser);
 
     SemanticAnalyzer createSemanticAnalyzer(CompilationUnit compilationUnit);
 

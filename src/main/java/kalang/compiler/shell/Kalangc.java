@@ -1,6 +1,6 @@
 package kalang.compiler.shell;
 
-import kalang.compiler.compile.StandardDiagnosisHandler;
+import kalang.compiler.compile.util.StandardDiagnosisHandler;
 import kalang.compiler.tool.FileSystemCompiler;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;

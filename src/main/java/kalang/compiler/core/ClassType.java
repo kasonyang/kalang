@@ -2,7 +2,7 @@
 package kalang.compiler.core;
 
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.exception.Exceptions;
+import kalang.compiler.util.Exceptions;
 import kalang.compiler.util.ParameterizedUtil;
 
 import java.util.*;

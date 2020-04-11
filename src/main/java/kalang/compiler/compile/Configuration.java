@@ -1,5 +1,6 @@
 package kalang.compiler.compile;
 
+import kalang.compiler.compile.jvm.JvmAstLoader;
 import kalang.lang.Script;
 
 /**
@@ -12,7 +13,7 @@ public class Configuration {
 
     private String encoding = "utf8";
 
-    private AstLoader astLoader = new JavaAstLoader();
+    private AstLoader astLoader = new JvmAstLoader();
 
     public static Configuration copy(Configuration other) {
         Configuration conf = new Configuration();

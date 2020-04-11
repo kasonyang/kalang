@@ -1,8 +1,8 @@
 
 package kalang.compiler.ast;
 
-import kalang.compiler.AmbiguousMethodException;
-import kalang.compiler.MethodNotFoundException;
+import kalang.compiler.compile.semantic.AmbiguousMethodException;
+import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Types;

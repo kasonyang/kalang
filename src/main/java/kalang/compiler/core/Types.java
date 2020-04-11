@@ -1,10 +1,10 @@
 
 package kalang.compiler.core;
 
-import kalang.compiler.AstNotFoundException;
+import kalang.compiler.compile.AstNotFoundException;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.AstLoader;
-import kalang.compiler.exception.Exceptions;
+import kalang.compiler.util.Exceptions;
 import kalang.type.Function;
 import kalang.type.FunctionClasses;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;

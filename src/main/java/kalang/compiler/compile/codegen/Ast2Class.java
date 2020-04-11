@@ -1,17 +1,16 @@
 
 package kalang.compiler.compile.codegen;
 
-import kalang.compiler.AstNotFoundException;
-import kalang.compiler.CodeGenerationException;
-import kalang.compiler.CompileException;
-import kalang.compiler.MalformedAstException;
+import kalang.compiler.compile.AstNotFoundException;
+import kalang.compiler.tool.CompileException;
+import kalang.compiler.compile.MalformedAstException;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.AstLoader;
 import kalang.compiler.compile.CodeGenerator;
 import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.core.*;
 import kalang.compiler.core.Type;
-import kalang.compiler.exception.Exceptions;
+import kalang.compiler.util.Exceptions;
 import kalang.compiler.function.LambdaExpr;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
