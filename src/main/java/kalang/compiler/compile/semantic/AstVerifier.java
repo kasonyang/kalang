@@ -1,6 +1,5 @@
 package kalang.compiler.compile.semantic;
 
-import kalang.compiler.compile.MalformedAstException;
 import kalang.compiler.ast.*;
 import kalang.compiler.core.PrimitiveType;
 import kalang.compiler.core.Type;

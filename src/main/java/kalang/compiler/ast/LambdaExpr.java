@@ -1,11 +1,13 @@
-package kalang.compiler.function;
+package kalang.compiler.ast;
 
-import kalang.compiler.ast.*;
 import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.Type;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  *

@@ -1,4 +1,4 @@
-package kalang.compiler.compile;
+package kalang.compiler.compile.semantic;
 
 import kalang.compiler.ast.AstNode;
 

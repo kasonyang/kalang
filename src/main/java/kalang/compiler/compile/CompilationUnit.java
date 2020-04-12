@@ -4,6 +4,7 @@ import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.semantic.AstBuilder;
+import kalang.compiler.compile.semantic.MalformedAstException;
 import kalang.compiler.compile.util.DiagnosisReporter;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;

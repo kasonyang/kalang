@@ -3,9 +3,10 @@ package kalang.compiler.compile.codegen;
 
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.*;
+import kalang.compiler.compile.semantic.MalformedAstException;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.*;
-import kalang.compiler.function.LambdaExpr;
+import kalang.compiler.ast.LambdaExpr;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
 import org.objectweb.asm.*;

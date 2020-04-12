@@ -1,7 +1,5 @@
 package kalang.compiler.ast;
 
-import kalang.compiler.function.LambdaExpr;
-
 public class AstVisitor<T> extends AbstractAstVisitor<T>{
     
     @Override

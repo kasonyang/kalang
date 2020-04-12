@@ -10,7 +10,7 @@ import kalang.compiler.compile.*;
 import kalang.compiler.compile.semantic.analyzer.AstNodeCollector;
 import kalang.compiler.core.*;
 import kalang.compiler.util.Exceptions;
-import kalang.compiler.function.LambdaExpr;
+import kalang.compiler.ast.LambdaExpr;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
