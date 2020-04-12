@@ -5,6 +5,9 @@ import kalang.compiler.ast.ClassNode;
 import kalang.compiler.ast.FieldNode;
 import kalang.compiler.ast.MethodNode;
 import kalang.compiler.ast.ParameterNode;
+import kalang.compiler.core.impl.StandardFieldDescriptor;
+import kalang.compiler.core.impl.StandardMethodDescriptor;
+import kalang.compiler.core.impl.StandardParameterDescriptor;
 import kalang.compiler.util.AccessUtil;
 import kalang.compiler.util.MethodUtil;
 import kalang.compiler.util.ModifierUtil;
@@ -61,7 +64,7 @@ public abstract class ObjectType extends Type{
         ParameterDescriptor[] pds = new ParameterDescriptor[ptypes.length];
         for(int j=0;j<pds.length;j++){
             ParameterNode p = pms[j];
-            pds[j] = new ParameterDescriptor(p.getName(),ptypes[j],p.modifier);
+            pds[j] = new StandardParameterDescriptor(p.getName(),ptypes[j],p.modifier);
         }
         return pds;
     }
@@ -116,7 +119,7 @@ public abstract class ObjectType extends Type{
             if (name != null && !name.isEmpty() && !name.equals(m.getName())) {
                 continue;
             }
-            MethodDescriptor md = new MethodDescriptor(
+            MethodDescriptor md = new StandardMethodDescriptor(
                     m
                     , getParameterDescriptors(m)
                     , parseType(m.getType())

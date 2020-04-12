@@ -1,12 +1,14 @@
-package kalang.compiler.core;
+package kalang.compiler.core.impl;
 
 import kalang.compiler.ast.FieldNode;
+import kalang.compiler.core.FieldDescriptor;
+import kalang.compiler.core.Type;
 
 /**
  *
  * @author Kason Yang
  */
-public class StandardFieldDescriptor implements FieldDescriptor{
+public class StandardFieldDescriptor implements FieldDescriptor {
     
     private FieldNode field;
     

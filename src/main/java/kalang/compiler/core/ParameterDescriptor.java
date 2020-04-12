@@ -1,32 +1,14 @@
 package kalang.compiler.core;
+
 /**
- *
- * @author Kason Yang
+ * @author KasonYang
  */
-public class ParameterDescriptor {
-    
-    private String name;
+public interface ParameterDescriptor {
 
-    private Type type;
-    
-    private int modifier;
+    String getName();
 
-    public ParameterDescriptor(String name, Type type,int modifier) {
-        this.name = name;
-        this.type = type;
-        this.modifier = modifier;
-    }
+    Type getType();
 
-    public String getName() {
-        return name;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public int getModifier() {
-        return modifier;
-    }
+    int getModifier();
 
 }
