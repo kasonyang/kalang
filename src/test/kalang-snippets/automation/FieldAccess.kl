@@ -10,4 +10,8 @@ class {
         return cb();
     }
 
+    boolean usingStrAsName() {
+        return this."value" == 3;
+    }
+
 }

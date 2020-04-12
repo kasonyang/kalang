@@ -3573,6 +3573,7 @@ public class KalangParser extends Parser {
 			return getRuleContext(ExpressionContext.class,0);
 		}
 		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
+		public TerminalNode StringLiteral() { return getToken(KalangParser.StringLiteral, 0); }
 		public GetFieldExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
@@ -3829,13 +3830,14 @@ public class KalangParser extends Parser {
 		public Token refKey;
 		public ExpressionContext expression;
 		public List<ExpressionContext> params = new ArrayList<ExpressionContext>();
-		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
 		}
 		public ExpressionContext expression(int i) {
 			return getRuleContext(ExpressionContext.class,i);
 		}
+		public TerminalNode Identifier() { return getToken(KalangParser.Identifier, 0); }
+		public TerminalNode StringLiteral() { return getToken(KalangParser.StringLiteral, 0); }
 		public InvokeExprContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
@@ -4968,7 +4970,12 @@ public class KalangParser extends Parser {
 							consume();
 						}
 						setState(821);
-						match(Identifier);
+						_la = _input.LA(1);
+						if ( !(_la==StringLiteral || _la==Identifier) ) {
+						_errHandler.recoverInline(this);
+						} else {
+							consume();
+						}
 						setState(822);
 						match(LPAREN);
 						setState(831);
@@ -5017,7 +5024,12 @@ public class KalangParser extends Parser {
 							consume();
 						}
 						setState(836);
-						match(Identifier);
+						_la = _input.LA(1);
+						if ( !(_la==StringLiteral || _la==Identifier) ) {
+						_errHandler.recoverInline(this);
+						} else {
+							consume();
+						}
 						}
 						break;
 					case 14:
@@ -5430,16 +5442,16 @@ public class KalangParser extends Parser {
 		"\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\3\'\7\'\u0354\n\'\f\'\16\'\u0357"+
 		"\13\'\3(\3(\3(\3(\3(\3(\3(\3(\5(\u0361\n(\3(\3(\5(\u0365\n(\3(\3(\3(\5"+
 		"(\u036a\n(\3)\6)\u036d\n)\r)\16)\u036e\3)\2\4\30L*\2\4\6\b\n\f\16\20\22"+
-		"\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNP\2\17\4\2!!88\13\2"+
+		"\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNP\2\20\4\2!!88\13\2"+
 		"\23\23\25\25\30\30\36\36$$++--\65\65@@\3\2fg\3\2de\3\2XY\4\288;;\4\2h"+
-		"imm\4\2VW^_\4\2\\]`a\3\2bc\4\2UUnx\5\2\n\n\f\17TT\n\2\21\21\"\"..\61\63"+
-		"\66\66::>>AA\u03f3\2U\3\2\2\2\4b\3\2\2\2\6i\3\2\2\2\bo\3\2\2\2\n\u00c9"+
-		"\3\2\2\2\f\u00cd\3\2\2\2\16\u00da\3\2\2\2\20\u00de\3\2\2\2\22\u00ed\3"+
-		"\2\2\2\24\u011a\3\2\2\2\26\u0120\3\2\2\2\30\u0138\3\2\2\2\32\u015e\3\2"+
-		"\2\2\34\u0160\3\2\2\2\36\u0173\3\2\2\2 \u0175\3\2\2\2\"\u0179\3\2\2\2"+
-		"$\u017b\3\2\2\2&\u0183\3\2\2\2(\u019c\3\2\2\2*\u019e\3\2\2\2,\u01a0\3"+
-		"\2\2\2.\u01a2\3\2\2\2\60\u01a8\3\2\2\2\62\u01ac\3\2\2\2\64\u01b5\3\2\2"+
-		"\2\66\u01c7\3\2\2\28\u01cd\3\2\2\2:\u01e3\3\2\2\2<\u01e5\3\2\2\2>\u01e8"+
+		"imm\4\2VW^_\4\2\\]`a\3\2bc\4\2UUnx\5\2\n\n\f\17TT\4\2IIzz\n\2\21\21\""+
+		"\"..\61\63\66\66::>>AA\u03f3\2U\3\2\2\2\4b\3\2\2\2\6i\3\2\2\2\bo\3\2\2"+
+		"\2\n\u00c9\3\2\2\2\f\u00cd\3\2\2\2\16\u00da\3\2\2\2\20\u00de\3\2\2\2\22"+
+		"\u00ed\3\2\2\2\24\u011a\3\2\2\2\26\u0120\3\2\2\2\30\u0138\3\2\2\2\32\u015e"+
+		"\3\2\2\2\34\u0160\3\2\2\2\36\u0173\3\2\2\2 \u0175\3\2\2\2\"\u0179\3\2"+
+		"\2\2$\u017b\3\2\2\2&\u0183\3\2\2\2(\u019c\3\2\2\2*\u019e\3\2\2\2,\u01a0"+
+		"\3\2\2\2.\u01a2\3\2\2\2\60\u01a8\3\2\2\2\62\u01ac\3\2\2\2\64\u01b5\3\2"+
+		"\2\2\66\u01c7\3\2\2\28\u01cd\3\2\2\2:\u01e3\3\2\2\2<\u01e5\3\2\2\2>\u01e8"+
 		"\3\2\2\2@\u01eb\3\2\2\2B\u01f1\3\2\2\2D\u01f9\3\2\2\2F\u0222\3\2\2\2H"+
 		"\u0224\3\2\2\2J\u022c\3\2\2\2L\u0307\3\2\2\2N\u0369\3\2\2\2P\u036c\3\2"+
 		"\2\2RT\5\4\3\2SR\3\2\2\2TW\3\2\2\2US\3\2\2\2UV\3\2\2\2V[\3\2\2\2WU\3\2"+
@@ -5680,11 +5692,11 @@ public class KalangParser extends Parser {
 		"\u032d\f\b\2\2\u032d\u032e\7Z\2\2\u032e\u032f\5L\'\2\u032f\u0330\7[\2"+
 		"\2\u0330\u0331\5L\'\t\u0331\u0354\3\2\2\2\u0332\u0333\f\3\2\2\u0333\u0334"+
 		"\t\f\2\2\u0334\u0354\5L\'\3\u0335\u0336\f\35\2\2\u0336\u0337\t\r\2\2\u0337"+
-		"\u0338\7z\2\2\u0338\u0341\7L\2\2\u0339\u033e\5L\'\2\u033a\u033b\7S\2\2"+
-		"\u033b\u033d\5L\'\2\u033c\u033a\3\2\2\2\u033d\u0340\3\2\2\2\u033e\u033c"+
+		"\u0338\t\16\2\2\u0338\u0341\7L\2\2\u0339\u033e\5L\'\2\u033a\u033b\7S\2"+
+		"\2\u033b\u033d\5L\'\2\u033c\u033a\3\2\2\2\u033d\u0340\3\2\2\2\u033e\u033c"+
 		"\3\2\2\2\u033e\u033f\3\2\2\2\u033f\u0342\3\2\2\2\u0340\u033e\3\2\2\2\u0341"+
 		"\u0339\3\2\2\2\u0341\u0342\3\2\2\2\u0342\u0343\3\2\2\2\u0343\u0354\7M"+
-		"\2\2\u0344\u0345\f\34\2\2\u0345\u0346\t\r\2\2\u0346\u0354\7z\2\2\u0347"+
+		"\2\2\u0344\u0345\f\34\2\2\u0345\u0346\t\r\2\2\u0346\u0354\t\16\2\2\u0347"+
 		"\u0348\f\32\2\2\u0348\u0349\7P\2\2\u0349\u034a\5L\'\2\u034a\u034b\7Q\2"+
 		"\2\u034b\u0354\3\2\2\2\u034c\u034d\f\27\2\2\u034d\u0354\t\5\2\2\u034e"+
 		"\u034f\f\16\2\2\u034f\u0350\7*\2\2\u0350\u0354\7z\2\2\u0351\u0352\f\6"+
@@ -5702,7 +5714,7 @@ public class KalangParser extends Parser {
 		"\2\2\u0366\u0367\7T\2\2\u0367\u036a\7\31\2\2\u0368\u036a\7K\2\2\u0369"+
 		"\u0358\3\2\2\2\u0369\u0359\3\2\2\2\u0369\u035a\3\2\2\2\u0369\u035b\3\2"+
 		"\2\2\u0369\u035c\3\2\2\2\u0369\u035d\3\2\2\2\u0369\u0360\3\2\2\2\u0369"+
-		"\u0368\3\2\2\2\u036aO\3\2\2\2\u036b\u036d\t\16\2\2\u036c\u036b\3\2\2\2"+
+		"\u0368\3\2\2\2\u036aO\3\2\2\2\u036b\u036d\t\17\2\2\u036c\u036b\3\2\2\2"+
 		"\u036d\u036e\3\2\2\2\u036e\u036c\3\2\2\2\u036e\u036f\3\2\2\2\u036fQ\3"+
 		"\2\2\2uU[`gios|\u0080\u0083\u0086\u008a\u0092\u0095\u009e\u00a1\u00a8"+
 		"\u00af\u00b2\u00b6\u00bd\u00c4\u00c7\u00c9\u00d2\u00d8\u00da\u00de\u00e5"+

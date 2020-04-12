@@ -698,7 +698,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         OffsetRange toOffset = offset(to);
         String refKey = to.refKey.getText();
         ExpressionContext exp = to.expression();
-        String fname = to.Identifier().getText();
+        String fname;
+        if (to.Identifier() != null) {
+            fname = to.Identifier().getText();
+        } else {
+            String strLiteral = to.StringLiteral().getText();
+            fname = StringLiteralUtil.parse(strLiteral.substring(1, strLiteral.length() - 1));
+        }
         AstNode expr = (AstNode) visit(exp);
         Objects.requireNonNull(expr);
         Function1<ExprNode, ExprNode> createField = (target) -> requireObjectFieldLikeExpr(target, fname, offset(to) ,fromExprCb == null ? null : fromExprCb.call());
@@ -944,11 +950,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
     
     @Nullable
-    private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,List<ExpressionContext> argumentsCtx,ParserRuleContext ctx){
+    private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,List<ExpressionContext> argumentsCtx,OffsetRange offset){
         List<Object> argsList = visitAll(argumentsCtx);
         if (argsList.contains(null)) return null;
         ExprNode[] args = argsList.toArray(new ExprNode[0]);
-        return getObjectInvokeExpr(target, methodName, args, offset(ctx));
+        return getObjectInvokeExpr(target, methodName, args, offset);
     }
     
     @Nullable
@@ -1028,8 +1034,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public AstNode visitInvokeExpr(InvokeExprContext ctx) {
         OffsetRange offsetRange = offset(ctx);
-        String mdName = ctx.Identifier().getText();
-        Function1<ExprNode, ExprNode> createDotInvoke = (target) -> getObjectInvokeExpr(target, mdName, ctx.params, ctx);
+        String mdName;
+        if (ctx.Identifier() != null) {
+            mdName = ctx.Identifier().getText();
+        } else {
+            String strLiteral = ctx.StringLiteral().getText();
+            mdName = StringLiteralUtil.parse(strLiteral.substring(1, strLiteral.length() - 1));
+        }
+        Function1<ExprNode, ExprNode> createDotInvoke = (target) -> getObjectInvokeExpr(target, mdName, ctx.params, offsetRange);
         Function1<ExprNode, ExprNode> createDynamicInvoke = (target) -> {
             ExprNode[] invokeArgs = new ExprNode[3];
             ExprNode[] params = new ExprNode[ctx.params.size()];
