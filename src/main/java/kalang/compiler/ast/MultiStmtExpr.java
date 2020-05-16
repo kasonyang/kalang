@@ -1,6 +1,8 @@
 package kalang.compiler.ast;
 
+import kalang.annotation.Nullable;
 import kalang.compiler.core.Type;
+import kalang.compiler.core.Types;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -10,9 +12,10 @@ public class MultiStmtExpr extends ExprNode {
 
     private final List<Statement> stmts = new LinkedList<>();
 
+    @Nullable
     public ExprNode reference;
 
-    public MultiStmtExpr(List<Statement> stmts, ExprNode reference) {
+    public MultiStmtExpr(List<Statement> stmts,@Nullable ExprNode reference) {
         this.stmts.addAll(stmts);
         this.reference = reference;
     }
@@ -26,7 +29,7 @@ public class MultiStmtExpr extends ExprNode {
 
     @Override
     public Type getType() {
-        return getType(reference);
+        return reference == null ? Types.VOID_TYPE : getType(reference);
     }
     
     public void addStatement(Statement stat) {

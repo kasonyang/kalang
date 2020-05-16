@@ -2109,13 +2109,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         IfStmt is = new IfStmt(conditionExpr);
         if (isVoidType) {
             is.getFalseBody().statements.add(new ExprStmt(falseExpr));
-            //TODO make MultiStmtExpr.reference nullable and change refVar to null
-            refVar = new ConstExpr(null) {
-                @Override
-                public Type getType() {
-                    return Types.VOID_TYPE;
-                }
-            };
+            refVar = null;
         } else {
             LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
             stmts.add(new VarDeclStmt(vo));
