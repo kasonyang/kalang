@@ -21,7 +21,7 @@ public class ParameterizedUtil {
             Type[] ptTypeArguments = pt.getTypeArguments();
             Type[] parsedTypeArguments = parameterizedType(ptTypeArguments,genericTypes);
             if(Arrays.equals(parsedTypeArguments, ptTypeArguments)) return type;
-            return Types.getClassType(pt.getClassNode(), parsedTypeArguments);
+            return Types.getClassType(pt.getClassNode(), parsedTypeArguments, pt.getNullable());
         }else if(type instanceof PrimitiveType){
             return type;
         }else if(type instanceof WildcardType){

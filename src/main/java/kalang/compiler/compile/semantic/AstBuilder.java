@@ -2104,17 +2104,30 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ExprNode targetTmpExpr = new VarExpr(targetTmpVar, methodCtx.getVarObjectType(targetTmpVar));
             return navigateExprMaker.call(targetTmpExpr);
         });
-        ExprNode trueExpr = Values.getDefaultValue(falseExpr.getType());
-        LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
-        VarDeclStmt vds = new VarDeclStmt(vo);
-        stmts.add(vds);
-        VarExpr ve = new VarExpr(vo);
+        boolean isVoidType = Types.VOID_TYPE.equals(falseExpr.getType());
+        ExprNode refVar;
         IfStmt is = new IfStmt(conditionExpr);
-        is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(ve, trueExpr)));
-        is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve, falseExpr)));
+        if (isVoidType) {
+            is.getFalseBody().statements.add(new ExprStmt(falseExpr));
+            //TODO make MultiStmtExpr.reference nullable and change refVar to null
+            refVar = new ConstExpr(null) {
+                @Override
+                public Type getType() {
+                    return Types.VOID_TYPE;
+                }
+            };
+        } else {
+            LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
+            stmts.add(new VarDeclStmt(vo));
+            VarExpr ve = new VarExpr(vo);
+            ExprNode trueExpr =  Values.getDefaultValue(falseExpr.getType());
+            is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(ve, trueExpr)));
+            is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve, falseExpr)));
+            refVar = ve;
+        }
         stmts.add(is);
-        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
-        mapAst(ve, offsetRange);
+        MultiStmtExpr mse = new MultiStmtExpr(stmts, refVar);
+        mapAst(mse, offsetRange, true);
         return mse;
     }
 

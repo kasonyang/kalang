@@ -38,6 +38,13 @@ class {
         return s?.toString() == null;
     }
 
+    boolean safeInvokeVoid() {
+        val list = <Integer>[1,3,2,4].asList();
+        val sortedList = <Integer>[1,2,3,4].asList();
+        list?.sort(null);
+        return sortedList.equals(list);
+    }
+
     int saveDynamicInvoke() {
         val s as Object? = null;
         if ( s?->length() == null) {
