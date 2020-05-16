@@ -84,7 +84,7 @@ public class JvmClassNode extends ClassNode {
     public MethodNode[] getDeclaredMethodNodes() {
         if (!this.methodsInitialized) {
             this.methodsInitialized = true;
-            List<Executable> methods = new LinkedList();
+            List<Executable> methods = new LinkedList<>();
             methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
             methods.addAll(Arrays.asList(clazz.getDeclaredConstructors()));
             for (Executable m : methods) {

@@ -112,7 +112,7 @@ public class ClassType extends ObjectType {
             Type[] ptTypeArguments = pt.getTypeArguments();
             Type[] parsedTypeArguments = parseGenericType(ptTypeArguments,genericTypes);
             if(Arrays.equals(parsedTypeArguments, ptTypeArguments)) return type;
-            return Types.getClassType(pt.getClassNode(), parsedTypeArguments);
+            return Types.getClassType(pt.getClassNode(), parsedTypeArguments, pt.getNullable());
         }else if(type instanceof PrimitiveType){
             return type;
         }else if(type instanceof WildcardType){
@@ -148,7 +148,7 @@ public class ClassType extends ObjectType {
             ClassType ct = (ClassType) type;
             Type[] typeArgs = ct.getTypeArguments();
             if(typeArgs.length==0) return ct;
-            return Types.getClassType(ct.getClassNode(),new Type[0]);
+            return Types.getClassType(ct.getClassNode(),new Type[0], ct.getNullable());
         }else if(type instanceof WildcardType){
             return eraseGenericType(((WildcardType) type).getSuperType());
         }else if(type instanceof ArrayType){
@@ -211,7 +211,7 @@ public class ClassType extends ObjectType {
             typeArgs[i] = i < typeArguments.length ? typeArguments[i] : declaredGenericTypes[i];
         }
         Type[] newTypeArgs = ParameterizedUtil.parameterizedType(typeArgs, genericTypeTypeMap);
-        return Types.getClassType(clazz,newTypeArgs);
+        return Types.getClassType(clazz,newTypeArgs, nullable);
     }
 
 }
