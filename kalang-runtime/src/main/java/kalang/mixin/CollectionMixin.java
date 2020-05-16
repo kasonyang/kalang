@@ -1,8 +1,8 @@
 package kalang.mixin;
 
+import kalang.annotation.MixinMethod;
 import kalang.annotation.Nonnull;
 import kalang.annotation.Nullable;
-import kalang.annotation.MixinMethod;
 import kalang.type.Function1;
 
 import java.lang.reflect.Array;
@@ -26,6 +26,26 @@ public class CollectionMixin {
     @MixinMethod
     public static <T> T find(T[] list, Function1<Boolean, T> handler) {
         return find(Arrays.asList(list), handler);
+    }
+
+    @MixinMethod
+    public static <T> T at(Collection<T> list, int index, T defaultValue) {
+        int offset = index >= 0 ? index : list.size() + index;
+        if (offset >= 0 && offset < list.size()) {
+            int idx = 0;
+            for (T it : list) {
+                if (idx == offset) {
+                    return it;
+                }
+                idx++;
+            }
+        }
+        return defaultValue;
+    }
+
+    @MixinMethod
+    public static <T> T at(T[] list, int index, T defaultValue) {
+        return at(Arrays.asList(list), index, defaultValue);
     }
 
     @MixinMethod
