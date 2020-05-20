@@ -739,18 +739,18 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             } else {
                 throw new UnknownError("unknown node:" + expr);
             }
-        } else if (refKey.equals("->")) {
+        } else if (refKey.equals("->>")) {
             if (!(expr instanceof ExprNode)) {
                 throw new NodeException("not an expression", expr.offset);
             }
             return createDynamicField.call((ExprNode) expr);
         } else if (refKey.equals("*.")) {
             return createStarNavigateExpr(expr, createField, toOffset);
-        } else if (refKey.equals("*->")) {
+        } else if (refKey.equals("*->>")) {
             return createStarNavigateExpr(expr, createDynamicField, toOffset);
         } else if (refKey.equals("?.")) {
             return createSafeNavigateExpr(expr, createField, toOffset);
-        } else if (refKey.equals("?->")) {
+        } else if (refKey.equals("?->>")) {
             return createSafeNavigateExpr(expr, createDynamicField, toOffset);
         } else {
             throw Exceptions.unknownValue(refKey);
@@ -1068,18 +1068,18 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             } else {
                 throw Exceptions.unexpectedValue(target);
             }
-        } else if (refKey.equals("->")) {
+        } else if (refKey.equals("->>")) {
             if (!(target instanceof ExprNode)) {
                 throw new NodeException("expression required", offset(ctx.expression));
             }
             return createDynamicInvoke.call((ExprNode) target);
         } else if (refKey.equals("*.")) {
             return createStarNavigateExpr(target, createDotInvoke, offsetRange);
-        } else if (refKey.equals("*->")) {
+        } else if (refKey.equals("*->>")) {
             return createStarNavigateExpr(target, createDynamicInvoke, offsetRange);
         } else if (refKey.equals("?.")) {
             return createSafeNavigateExpr(target, createDotInvoke, offsetRange);
-        } else if (refKey.equals("?->")) {
+        } else if (refKey.equals("?->>")) {
             return createSafeNavigateExpr(target, createDynamicInvoke, offsetRange);
         } else {
             throw Exceptions.unexpectedValue(refKey);

@@ -11,8 +11,8 @@ class {
 
     int dynamicField(){
         val that as Object = new ST();
-        that->testField = 6;
-        return (Integer)that->testField;
+        that->>testField = 6;
+        return (Integer)that->>testField;
     }
 
     int fieldTest(){
@@ -39,7 +39,7 @@ class {
 
     int iteratingDynamicField() {
         val arr = [new ST(), new ST()];
-        val fields = arr*->testField;
+        val fields = arr*->>testField;
         return ( (Integer)fields[0] + (Integer)fields[1] ) + 4 ;
     }
 
@@ -50,7 +50,7 @@ class {
 
     int safeDynamicNav() {
         val st as ST? = null;
-        return st?->testField == null ? 6 : 1;
+        return st?->>testField == null ? 6 : 1;
     }
 
 }

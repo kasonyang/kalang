@@ -89,11 +89,11 @@ class{
         var s = q ? "true" : "false";
     }
     void dynamicInvoke() throws Exception{
-        this->questionExpr();
+        this->>questionExpr();
     }
     void dynamicField() throws Exception{
-        this->f1;
-        this->f1 = 1;
+        this->>f1;
+        this->>f1 = 1;
     }
     
     override public String toString(){

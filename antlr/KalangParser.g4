@@ -253,9 +253,9 @@ expression
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
-    |    target=expression refKey=('.'|'->'|'*.'|'*->'|'?.'|'?->') ( Identifier | StringLiteral)
+    |    target=expression refKey=('.'|'->>'|'*.'|'*->>'|'?.'|'?->>') ( Identifier | StringLiteral)
         '(' (params+=expression (',' params+=expression)*)? ')'  #invokeExpr
-    |   expression refKey=('.'|'->'|'*.'|'*->'|'?.'|'?->') (Identifier | StringLiteral) #getFieldExpr
+    |   expression refKey=('.'|'->>'|'*.'|'*->>'|'?.'|'?->>') (Identifier | StringLiteral) #getFieldExpr
     |     (Identifier|key='this'|key='super') 
         '(' (params+=expression (',' params+=expression)*)? ')'   #memberInvocationExpr
     |  expression '[' expression ']' #getArrayElementExpr    

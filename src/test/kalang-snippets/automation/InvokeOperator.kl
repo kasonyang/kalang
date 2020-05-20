@@ -15,7 +15,7 @@ class {
     }
 
     int dynamicInvoke(){
-        return ((Integer)this->hello()).intValue();
+        return ((Integer)this->>hello()).intValue();
     }
 
     boolean iteratingInvoke(){
@@ -24,7 +24,7 @@ class {
     }
 
     boolean iteratingDynamicInvoke(){
-        var ints = getArray()*->intValue();
+        var ints = getArray()*->>intValue();
         return ints.length == 3 && ints[2] == 6 && callGetArrayCount == 1;
     }
 
@@ -47,7 +47,7 @@ class {
 
     int saveDynamicInvoke() {
         val s as Object? = null;
-        if ( s?->length() == null) {
+        if ( s?->>length() == null) {
             return 6;
         }
         return 1;
