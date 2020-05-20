@@ -4,6 +4,8 @@ package kalang.compiler.tool;
 import kalang.compiler.compile.*;
 import kalang.compiler.compile.codegen.Ast2Class;
 import kalang.compiler.compile.jvm.JvmAstLoader;
+import kalang.compiler.util.FilePathUtil;
+import kalang.mixin.CollectionMixin;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
@@ -34,7 +36,10 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
     }
 
     public KalangClassLoader(File[] sourceDir,@Nullable Configuration config,@Nullable ClassLoader parentClassLoader) {
-        super(new URL[0],parentClassLoader==null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader);
+        super(
+          CollectionMixin.map(sourceDir, URL.class, FilePathUtil::toURL),
+          parentClassLoader == null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader
+        );
         Configuration conf = config == null ? new Configuration() : Configuration.copy(config);
         sourceLoader = new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding());
         conf.setAstLoader(new JvmAstLoader(conf.getAstLoader(), parentClassLoader));

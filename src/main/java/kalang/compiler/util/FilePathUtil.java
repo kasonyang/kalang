@@ -1,10 +1,12 @@
 package kalang.compiler.util;
 
+import lombok.SneakyThrows;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  *
@@ -24,6 +26,11 @@ public class FilePathUtil {
             return FilenameUtils.equals(canonicalPath, absPath, true, IOCase.SENSITIVE);
         }
         return false;
+    }
+
+    @SneakyThrows
+    public static URL toURL(File file) {
+        return file.toURI().toURL();
     }
     
 }
