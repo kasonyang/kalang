@@ -17,6 +17,12 @@ boolean continueCheck() {
     return true;
 }
 
+boolean overrideCheck() {
+    var name as String? = null;
+    name = "test";
+    return name.length() == 4;
+}
+
 private String? getNull() {
     return null;
 }
