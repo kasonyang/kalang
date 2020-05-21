@@ -800,6 +800,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 ExprNode from = createBinaryExpr(op, to, () -> visitExpression(fromCtx), offset(ctx));
                 AssignExpr assignExpr = new AssignExpr(to, from);
                 mapAst(assignExpr, offset(ctx));
+                methodCtx.onAssign(to, from);
                 return initStmts.isEmpty() ? assignExpr : mapAst(new MultiStmtExpr(initStmts, assignExpr), offset(ctx));
             }
             if (toCtx instanceof GetFieldExprContext) {
@@ -1176,6 +1177,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 assignValue = requireImplicitCast(ve.getType(), assignValue, offset);
                 result = new AssignExpr(ve, assignValue);
                 mapAst(result, exprOffset);
+                methodCtx.onAssign(ve, assignValue);
             } else {
                 result = ve;
             }
@@ -1190,6 +1192,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (assignValue != null) {
                 result = new AssignExpr(ve, assignValue);
                 mapAst(result, exprOffset);
+                methodCtx.onAssign(ve, assignValue);
             } else {
                 result = ve;
             }
