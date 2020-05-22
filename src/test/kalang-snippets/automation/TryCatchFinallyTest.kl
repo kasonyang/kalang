@@ -70,3 +70,13 @@ int nestedTryFinallyTest() {
     }
 }
 
+boolean testEmptyExec() {
+    var result = false;
+    try {
+
+    } finally {
+        result = true;
+    }
+    return result;
+}
+

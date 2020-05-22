@@ -535,14 +535,20 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitTryStmt(TryStmt node) {
+        BlockStmt execStmt = node.getExecStmt();
+        BlockStmt finallyStmt = node.getFinallyStmt();
+        boolean hasFinallyStmt = finallyStmt!=null && !finallyStmt.statements.isEmpty();
+        if (execStmt.statements.isEmpty()) {
+            if (hasFinallyStmt) {
+                visit(finallyStmt);
+            }
+            return null;
+        }
         this.newFrame();
         Label tryStartLabel = new Label();
         Label tryEndLabel = new Label();
         Label exitLabel = new Label();
         Label finallyStartLabel = new Label();
-        BlockStmt execStmt = node.getExecStmt();
-        BlockStmt finallyStmt = node.getFinallyStmt();
-        boolean hasFinallyStmt = finallyStmt!=null && !finallyStmt.statements.isEmpty();
         CatchContext catchContextOfTry = new CatchContext(tryStartLabel, tryEndLabel, finallyStmt);
         catchContextStack.push(catchContextOfTry);
         md.visitLabel(tryStartLabel);
