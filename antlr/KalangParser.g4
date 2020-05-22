@@ -184,7 +184,9 @@ blockStmt:
     '{' stat* '}'
 ;
 tryStat:
-    'try' exec=blockStmt
+    'try'
+    ('(' resources+=varDecl (';' resources+=varDecl)* ';' ? ')')?
+    exec=blockStmt
     ('catch' '(' catchTypes+=classType catchVarNames+=Identifier ')'
         catchExec += blockStmt
     )*

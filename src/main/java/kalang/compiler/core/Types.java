@@ -208,6 +208,10 @@ public class Types {
         return Types.getClassType(className);
     }
 
+    public static ClassType requireClassType(Class clazz, NullableKind nullableKind) {
+        return requireClassType(clazz.getName(), nullableKind);
+    }
+
     public static ClassType requireClassType(String className,NullableKind nullableKind){
         try {
             return Types.getClassType(className,nullableKind);
@@ -434,6 +438,10 @@ public class Types {
         return requireClassType(ROOT_CLASS_NAME);
     }
 
+    public static ClassType getRootType(NullableKind nullableKind) {
+        return requireClassType(ROOT_CLASS_NAME, nullableKind);
+    }
+
     public static boolean isRootObjectType(ObjectType type) {
         return type.getClassNode().name.equals(ROOT_CLASS_NAME);
     }
@@ -459,6 +467,10 @@ public class Types {
     
     public static ObjectType getIterableClassType(){
         return requireClassType(ITERABLE_CLASS_NAME);
+    }
+
+    public static ObjectType getThrowableClassType(NullableKind nullableKind) {
+        return requireClassType(Throwable.class.getName(), nullableKind);
     }
     
     public static ObjectType requireAssertionErrorClassType() {

@@ -957,9 +957,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ExprNode[] args = argsList.toArray(new ExprNode[0]);
         return getObjectInvokeExpr(target, methodName, args, offset);
     }
-    
-    @Nullable
-    private ExprNode getObjectInvokeExpr(ExprNode target,String methodName,ExprNode[] args,OffsetRange offset){
+
+    private ExprNode getObjectInvokeExpr(ExprNode target,String methodName, ExprNode[] args,OffsetRange offset){
         if("<init>".equals(methodName)){
             throw Exceptions.unexpectedException("Don't get constructor by this method.");
         }
@@ -1369,7 +1368,23 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public AstNode visitTryStat(TryStatContext ctx) {
         //TODO handle multi-branched assign
-        BlockStmt tryExecStmt = requireBlock(ctx.exec);
+        List<VarDeclContext> resources = ctx.resources;
+        boolean hasCatch = ctx.catchTypes != null && !ctx.catchTypes.isEmpty();
+        boolean hasFinally = ctx.finallyExec != null && !ctx.finallyExec.isEmpty();
+        BlockStmt tryExecStmt;
+        if (resources != null && !resources.isEmpty()) {
+            List<Statement> tryWithResStmts = buildTryWithResourceStmt(resources, 0, ctx.exec);
+            if (!hasCatch && !hasFinally) {
+                return new MultiStmt(tryWithResStmts);
+            }
+            tryExecStmt = newBlock(() -> tryWithResStmts);
+        } else {
+            tryExecStmt = requireBlock(ctx.exec);
+            if (!hasCatch && !hasFinally) {
+                handleSyntaxError("'catch' or 'finally' expected", offset(ctx.exec.stop));
+                return tryExecStmt;
+            }
+        }
         boolean tryReturned = this.methodCtx.returned;
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
         if (ctx.catchTypes != null) {
@@ -2157,6 +2172,69 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             parser.setErrorHandler(oldErrorHandler);
             return parser.compilationUnit();
         }
+    }
+
+    private List<Statement> buildTryWithResourceStmt(List<VarDeclContext> resources, int currentIdx, ParserRuleContext execCtx) {
+        List<Statement> stats = new LinkedList<>();
+        VarDeclContext res = resources.get(currentIdx);
+        ExprNode initExpr = visitExpression(res.expression());
+        VarInfo varInfo = varDecl(res, initExpr.getType());
+        LocalVarNode resVar = declareLocalVar(varInfo.name, varInfo.type, varInfo.modifier, offset(res));
+        ClassType autoCloseableType = Types.requireClassType(AutoCloseable.class, NullableKind.UNKNOWN);
+        boolean isResCloseable = autoCloseableType.isAssignableFrom(resVar.getType());
+        if (!isResCloseable) {
+            handleSyntaxError(autoCloseableType.getName() + " type expected", offset(res));
+        }
+        LocalVarNode exVar = declareTempLocalVar(Types.getThrowableClassType(NullableKind.UNKNOWN));
+        stats.add(new VarDeclStmt(resVar));
+        stats.add(new VarDeclStmt(exVar));
+        AssignExpr resAssignExpr = new AssignExpr(new VarExpr(resVar), initExpr);
+        AssignExpr exAssignExpr = new AssignExpr(new VarExpr(exVar), new ConstExpr(null));
+        methodCtx.onAssign(resAssignExpr);
+        methodCtx.onAssign(exAssignExpr);
+        stats.add(new ExprStmt(resAssignExpr));
+        stats.add(new ExprStmt(exAssignExpr));
+        BlockStmt execBlock;
+        if (currentIdx < resources.size() - 1) {
+            execBlock = newBlock(() -> buildTryWithResourceStmt(resources, currentIdx + 1, execCtx));
+        } else {
+            execBlock = requireBlock(execCtx);
+        }
+        methodCtx.newFrame();
+        LocalVarNode catchVar =  declareTempLocalVar(exVar.getType());
+        BlockStmt catchExecStmt = newBlock(()-> Arrays.asList(
+            new ExprStmt(new AssignExpr(new VarExpr(exVar), new VarExpr(catchVar)))
+            ,new ThrowStmt(new VarExpr(exVar))
+        ));
+        List<CatchBlock> catchStmt = Collections.singletonList(new CatchBlock(catchVar,catchExecStmt));
+        methodCtx.popFrame();
+        StatementSupplier closeStmtBuilder = () -> new ExprStmt(
+                getObjectInvokeExpr(new VarExpr(resVar), "close", new ExprNode[0], OffsetRange.NONE)
+        );
+        BlockStmt finallyStmt = !isResCloseable ? null : newBlock(() -> new IfStmt(
+                new CompareBinaryExpr(new VarExpr(resVar), new ConstExpr(null), BinaryExpr.OP_NE)
+                ,newBlock(() -> new IfStmt(
+                        new CompareBinaryExpr(new VarExpr(exVar), new ConstExpr(null), BinaryExpr.OP_NE),
+                        newBlock(() -> {
+                            BlockStmt tryExec = newBlock(closeStmtBuilder);
+                            LocalVarNode catchVarForClose = declareTempLocalVar(exVar.getType());
+                            BlockStmt catchExec = newBlock(() -> new ExprStmt(
+                                    getObjectInvokeExpr(
+                                            new VarExpr(exVar)
+                                            , "addSuppressed"
+                                            , new ExprNode[]{new VarExpr(catchVarForClose)}
+                                            , OffsetRange.NONE)
+                                    )
+                            );
+                            CatchBlock catchBlock = new CatchBlock(catchVarForClose, catchExec);
+                            return new TryStmt(tryExec,Collections.singletonList(catchBlock), null);
+                        }),
+                        newBlock(closeStmtBuilder)
+                    )
+                )
+                , null));
+        stats.add(new TryStmt(execBlock, catchStmt, finallyStmt));
+        return stats;
     }
 
 }

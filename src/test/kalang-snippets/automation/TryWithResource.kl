@@ -1,0 +1,23 @@
+class {
+
+    static class CloseableObj implements Closeable {
+        Ref<Boolean> closed;
+        constructor(Ref<Boolean> closed) {
+            this.closed = closed;
+        }
+        override void close() {
+            closed.set(true);
+        }
+    }
+
+    boolean test() {
+        var closedInBody = true;
+        val closed = new Ref<Boolean>();
+        try (val co = new CloseableObj(closed)) {
+            closed.set(false);
+            closedInBody = closed.get();
+        }
+        return closedInBody == false && closed.get() == true;
+    }
+
+}

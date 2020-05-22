@@ -9,6 +9,10 @@ public class MultiStmt extends Statement{
     public MultiStmt(){
         
     }
+
+    public MultiStmt(List<Statement> stmts) {
+        statements.addAll(stmts);
+    }
     
     @Override
     public List<AstNode> getChildren(){

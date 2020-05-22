@@ -43,6 +43,10 @@ public class MethodContext {
         this.varTables = this.varTables.popStack();
     }
 
+    public void onAssign(AssignExpr ae) {
+        onAssign(ae.getTo(), ae.getFrom());
+    }
+
     public void onAssign(ExprNode to,ExprNode expr){
         removeOverrideType(to);
         if(to instanceof VarExpr){
