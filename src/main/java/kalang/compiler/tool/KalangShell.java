@@ -1,6 +1,7 @@
 package kalang.compiler.tool;
 
 import kalang.compiler.compile.Configuration;
+import kalang.compiler.compile.Diagnosis;
 import kalang.compiler.util.Exceptions;
 import kalang.lang.Script;
 import org.apache.commons.io.FileUtils;
@@ -64,7 +65,21 @@ public class KalangShell {
     }
 
     private KalangClassLoader createClassLoader() {
-        return new KalangClassLoader(sourcePaths.toArray(new File[0]),this.configuration,this.parentClassLoader);
+        return new KalangClassLoader(sourcePaths.toArray(new File[0]),this.configuration,this.parentClassLoader) {
+            @Override
+            public void handleDiagnosis(Diagnosis diagnosis) {
+                if (diagnosis.getKind().isError()) {
+                    super.handleDiagnosis(diagnosis);
+                } else {
+                    System.err.format("%s:%d: %s: %s\n",
+                            diagnosis.getSource().getFileName(),
+                            diagnosis.getOffset().startLine,
+                            diagnosis.getKind().name(),
+                            diagnosis.getDescription()
+                    );
+                }
+            }
+        };
     }
 
     private Script createScriptInstance(Class scriptClass) {
