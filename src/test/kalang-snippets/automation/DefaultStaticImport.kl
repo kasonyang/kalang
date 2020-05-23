@@ -1,9 +1,9 @@
 int testPluginFind() {
     var list = <Integer>[3,4,5,6];
-    return list.find({ it => return it == 5; }) + 1;
+    return list..find(it => it == 5) + 1;
 }
 
 int testMap() {
-    var lens = <Integer>[123456].asList().map({ it => return String.valueOf(it); });
+    var lens = <Integer>[123456]..asList()..map(it => String.valueOf(it));
     return lens.get(0).length();
 }

@@ -322,6 +322,10 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
+    protected void handleSyntaxWarning(String desc, OffsetRange offsetRange) {
+        diagnosisReporter.report(Diagnosis.Kind.WARNING, desc, offsetRange);
+    }
+
     protected void handleSyntaxError(String desc, OffsetRange offsetRange) {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, desc, offsetRange);
     }

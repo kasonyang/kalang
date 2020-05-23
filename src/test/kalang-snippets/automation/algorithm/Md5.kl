@@ -29,7 +29,7 @@ class {
         //construct padding
         byte[] padding = with (new byte[paddingLen]) {
             this[0] = - 0x80;
-            writeLongL(length - 8, (long) msgLen << 3);
+            this..writeLongL(length - 8, (long) msgLen << 3);
         };
         var a = 0x67452301;
         var b = 0xEFCDAB89;
@@ -74,10 +74,10 @@ class {
             d += originalD;
         }
         return with(new byte[16]) {
-            writeIntL(0, a);
-            writeIntL(4, b);
-            writeIntL(8, c);
-            writeIntL(12, d);
+            this..writeIntL(0, a);
+            this..writeIntL(4, b);
+            this..writeIntL(8, c);
+            this..writeIntL(12, d);
         };
     }
 

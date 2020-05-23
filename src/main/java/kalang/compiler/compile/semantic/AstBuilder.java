@@ -6,11 +6,12 @@ import kalang.compiler.antlr.KalangParser.*;
 import kalang.compiler.antlr.KalangParserVisitor;
 import kalang.compiler.antlr.SLLErrorStrategy;
 import kalang.compiler.ast.*;
-import kalang.compiler.compile.*;
+import kalang.compiler.compile.AstLoader;
+import kalang.compiler.compile.CompilationUnit;
+import kalang.compiler.compile.OffsetRange;
+import kalang.compiler.compile.TypeNameResolver;
 import kalang.compiler.compile.semantic.analyzer.AstNodeCollector;
 import kalang.compiler.core.*;
-import kalang.compiler.util.Exceptions;
-import kalang.compiler.ast.LambdaExpr;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
@@ -29,6 +30,8 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
+
+import static kalang.mixin.CollectionMixin.map;
 
 /**
  *  build ast from antlr parse tree
@@ -958,6 +961,19 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return getObjectInvokeExpr(target, methodName, args, offset);
     }
 
+    @Nullable
+    private ExprNode getMixinInvokeExpr(ExprNode target,String methodName, ExprNode[] args,OffsetRange offset){
+        List<MethodDescriptor> mixinMethods = getImportedMixinMethod(methodName);
+        if (mixinMethods.isEmpty()) {
+            return null;
+        }
+        ClassNode mixinCls = mixinMethods.get(0).getMethodNode().getClassNode();
+        ExprNode[] newArgs = new ExprNode[args.length + 1];
+        newArgs[0] = target;
+        System.arraycopy(args, 0, newArgs, 1, args.length);
+        return getStaticInvokeExpr(new ClassReference(mixinCls),methodName, newArgs, offset);
+    }
+
     private ExprNode getObjectInvokeExpr(ExprNode target,String methodName, ExprNode[] args,OffsetRange offset){
         if("<init>".equals(methodName)){
             throw Exceptions.unexpectedException("Don't get constructor by this method.");
@@ -974,13 +990,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ExprNode expr;
         try {
             if (methods.length<=0) {//find mixin method
-                List<MethodDescriptor> mixinMethods = getImportedMixinMethod(methodName);
-                if (!mixinMethods.isEmpty()) {
-                    ClassNode pluginClass = mixinMethods.get(0).getMethodNode().getClassNode();
-                    LinkedList<ExprNode> newArgs = new LinkedList<>();
-                    newArgs.add(target);
-                    newArgs.addAll(Arrays.asList(args));
-                    return getStaticInvokeExpr(new ClassReference(pluginClass),methodName, newArgs.toArray(new ExprNode[0]), offset);
+                ExprNode mixinInvoke = getMixinInvokeExpr(target, methodName, args, offset);
+                if (mixinInvoke != null) {
+                    //TODO enable syntax warning
+                    //handleSyntaxWarning("Invoking mixin method using dot has been deprecated", offset);
+                    return mixinInvoke;
                 }
             }
             InvocationExpr.MethodSelection ms = ObjectInvokeExpr.applyMethod(targetClassType, methodName, args,methods);
@@ -1041,39 +1055,48 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             String strLiteral = ctx.StringLiteral().getText();
             mdName = StringLiteralUtil.parse(strLiteral.substring(1, strLiteral.length() - 1));
         }
+        Function0<ExprNode[]> paramsBuilder = () ->  map(ctx.params, this::visitExpression).toArray(new ExprNode[0]);
         Function1<ExprNode, ExprNode> createDotInvoke = (target) -> getObjectInvokeExpr(target, mdName, ctx.params, offsetRange);
         Function1<ExprNode, ExprNode> createDynamicInvoke = (target) -> {
-            ExprNode[] invokeArgs = new ExprNode[3];
-            ExprNode[] params = new ExprNode[ctx.params.size()];
-            invokeArgs[0] = target;
-            invokeArgs[1] = new ConstExpr(mdName);
-            for (int i = 0; i < params.length; i++) {
-                params[i] = visitExpression(ctx.params.get(i));
-            }
-            invokeArgs[2] = createInitializedArray(Types.getRootType(), params);
+            ExprNode[] invokeArgs = new ExprNode[]{
+                    target, new ConstExpr(mdName), createInitializedArray(Types.getRootType(), paramsBuilder.call())
+            };
             ClassNode dispatcherAst = astLoader.getAst(MethodDispatcher.class.getName());
             if (dispatcherAst == null) {
                 throw Exceptions.unexpectedValue("Runtime library is required!");
             }
             return getStaticInvokeExpr(new ClassReference(dispatcherAst), "invokeMethod", invokeArgs, offset(ctx));
         };
+        Function1<ExprNode, ExprNode> createMixinInvoke = (target) -> {
+            ExprNode mixinInvoke = getMixinInvokeExpr(target, mdName, paramsBuilder.call(), offsetRange);
+            if (mixinInvoke == null) {
+                throw new NodeException("mixin method not found:" + mdName, offsetRange);
+            }
+            return mixinInvoke;
+        };
         AstNode target = (AstNode) visit(ctx.target);
+        Function0<ExprNode> requireTargetAsExpr = () -> {
+            if (!(target instanceof ExprNode)) {
+                throw new NodeException("expression required", offset(ctx.expression));
+            }
+            return (ExprNode) target;
+        };
         if (target == null) return null;
         String refKey = ctx.refKey.getText();
         if (refKey.equals(".")) {
             if (target instanceof ClassReference) {
-                return getStaticInvokeExpr((ClassReference) target, mdName, ctx.params, offset(ctx));
+                return getStaticInvokeExpr((ClassReference) target, mdName, ctx.params, offsetRange);
             } else if (target instanceof ExprNode) {
                 return createDotInvoke.call((ExprNode) target);
             } else {
                 throw Exceptions.unexpectedValue(target);
             }
         } else if (refKey.equals("->>")) {
-            if (!(target instanceof ExprNode)) {
-                throw new NodeException("expression required", offset(ctx.expression));
-            }
-            return createDynamicInvoke.call((ExprNode) target);
-        } else if (refKey.equals("*.")) {
+            return createDynamicInvoke.call(requireTargetAsExpr.call());
+        } else if (refKey.equals("..")) {
+            return createMixinInvoke.call(requireTargetAsExpr.call());
+        }
+        else if (refKey.equals("*.")) {
             return createStarNavigateExpr(target, createDotInvoke, offsetRange);
         } else if (refKey.equals("*->>")) {
             return createStarNavigateExpr(target, createDynamicInvoke, offsetRange);
@@ -1081,6 +1104,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             return createSafeNavigateExpr(target, createDotInvoke, offsetRange);
         } else if (refKey.equals("?->>")) {
             return createSafeNavigateExpr(target, createDynamicInvoke, offsetRange);
+        } else if (refKey.equals("?..")) {
+            return createSafeNavigateExpr(target, createMixinInvoke, offsetRange);
         } else {
             throw Exceptions.unexpectedValue(refKey);
         }

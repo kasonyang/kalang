@@ -11,7 +11,7 @@ class {
         val messageLenInBits = message.length * 8L;
         val padding = with(new byte[ (blockCount << 6) - message.length ]) {
             this[0] = -0x80;
-            writeLongB(length - 8, messageLenInBits);
+            this..writeLongB(length - 8, messageLenInBits);
         };
 
         var offset = 0;
@@ -28,13 +28,13 @@ class {
                     block[availableData] = -0x80;
                 }
                 if (s == blockCount - 1) {
-                    block.writeLongB(56, messageLenInBits);
+                    block..writeLongB(56, messageLenInBits);
                 }
                 blockOffset = 0;
             }
             val buffer = new int[80];
             for (var j=0; j < 16; j++, blockOffset += 4) {
-                buffer[j] = block.readIntB(blockOffset);
+                buffer[j] = block..readIntB(blockOffset);
             }
             for (var j=16; j < 80; j++) {
                 buffer[j] = Integer.rotateLeft(buffer[j-3] ^ buffer[j-8] ^ buffer[j-14] ^ buffer[j-16], 1);
@@ -74,11 +74,11 @@ class {
             h4 += e;
         }
         return with (new byte[20]) {
-            writeIntB(0, h0);
-            writeIntB(4, h1);
-            writeIntB(8, h2);
-            writeIntB(12, h3);
-            writeIntB(16, h4);
+            this..writeIntB(0, h0);
+            this..writeIntB(4, h1);
+            this..writeIntB(8, h2);
+            this..writeIntB(12, h3);
+            this..writeIntB(16, h4);
         };
     }
 

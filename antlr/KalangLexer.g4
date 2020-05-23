@@ -19,6 +19,7 @@ DYNAMIC: '->>';
 STAR_DOT: '*.' ;
 STAR_DYNAMIC: '*->>' ;
 QUESTION_DOT: '?.' ;
+QUESTION_DOTDOT: '?..';
 QUESTION_DYNAMIC: '?->>' ;
 OVERRIDE   : 'override' ;
 ABSTRACT      : 'abstract';
@@ -366,6 +367,7 @@ RBRACK          : ']';
 SEMI            : ';';
 COMMA           : ',';
 DOT             : '.';
+DOTDOT          : '..';
 
 // §3.12 Operators
 ASSIGN          : '=';
