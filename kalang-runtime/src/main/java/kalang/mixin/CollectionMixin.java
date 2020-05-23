@@ -7,6 +7,7 @@ import kalang.type.Function1;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.Function;
 
 public class CollectionMixin {
 
@@ -173,6 +174,13 @@ public class CollectionMixin {
     }
 
     @MixinMethod
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> reverse(List<T> list) {
+        Object[] data = list.toArray();
+        return (List<T>) Arrays.asList(reverse(data));
+    }
+
+    @MixinMethod
     public static String join(Collection list, String delimiter) {
         return String.join(delimiter, list);
     }
@@ -230,6 +238,68 @@ public class CollectionMixin {
             result += it;
         }
         return result;
+    }
+
+    /**
+     * Sorts list
+     * @param list the original list to sort
+     * @param comparator comparator for sorting
+     * @param <T>
+     * @return the new sorted list
+     */
+    @MixinMethod
+    @SuppressWarnings("unchecked")
+    public static <T> List<T> sort(List<T> list, @Nullable Comparator<? super T> comparator) {
+        Object[] data =  list.toArray();
+        Arrays.sort(data, (Comparator) comparator);
+        return (List<T>) Arrays.asList(data);
+    }
+
+    /**
+     * Sorts list
+     * @param list the original list to sort
+     * @param keyExtractor the sort key extractor
+     * @param comparator comparator for sorting
+     * @param <T>
+     * @param <K>
+     * @return the new sorted list
+     */
+    @MixinMethod
+    @SuppressWarnings("unchecked")
+    public static <T,K> List<T> sort(List<T> list, Function<T,K> keyExtractor, @Nullable Comparator<? super K> comparator) {
+        Object[] data = list.toArray();
+        if (comparator == null) {
+            Arrays.sort(data,(e1, e2) -> ((Comparable) keyExtractor.apply((T)e1)).compareTo(keyExtractor.apply((T)e2)));
+        } else {
+            Arrays.sort(data,(Comparator) Comparator.comparing(keyExtractor, comparator));
+        }
+        return (List<T>) Arrays.asList(data);
+    }
+
+    /**
+     * Sorts list in reverse order
+     * @param list the original list to sort
+     * @param comparator the comparator for sorting
+     * @param <T>
+     * @return the new sorted list
+     */
+    @MixinMethod
+    public static <T> List<T> reverseSort(List<T> list, @Nullable Comparator<? super T> comparator) {
+        return sort(list, Collections.reverseOrder(comparator));
+    }
+
+    /**
+     * Sorts list in reverse order
+     * @param list the origin list to sort
+     * @param keyExtractor the sort key extractor
+     * @param comparator the comparator for sorting
+     * @param <T>
+     * @param <K>
+     * @return the new sorted list
+     */
+    @MixinMethod
+    public static <T,K> List<T> reverseSort(List<T> list, Function<T,K> keyExtractor, @Nullable Comparator<? super K> comparator) {
+        return sort(list, keyExtractor, Collections.reverseOrder(comparator));
     }
 
 }
