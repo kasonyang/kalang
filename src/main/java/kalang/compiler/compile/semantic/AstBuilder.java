@@ -1981,7 +1981,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
             mdSelect = virtualSelect == null ? staticSelect : virtualSelect;
         }
-        lambdaExpr.fixType(lambdaType);
+        MethodDescriptor selectedMd = mdSelect.selectedMethod;
+        Type[] declaredFuncTypes = MethodUtil.getReturnAndParamTypes(funcMethod);
+        Type[] actualFuncTypes = MethodUtil.getReturnAndParamTypes(selectedMd.getReturnType(), funcMethod.getParameterTypes());
+        Map<GenericType, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
+        ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
+        lambdaExpr.fixType(parameterizedType);
         lambdaExpr.setInvokeMethod(mdSelect.selectedMethod.getMethodNode());
     }
 
