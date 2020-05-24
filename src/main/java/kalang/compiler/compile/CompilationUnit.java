@@ -68,6 +68,7 @@ public class CompilationUnit {
         astBuilder.importMixinMethod(astLoader.loadAst(IOMixin.class.getName()),null);
         astBuilder.importMixinMethod(astLoader.loadAst(DigestMixin.class.getName()),null);
         astBuilder.importMixinMethod(astLoader.loadAst(DataMixin.class.getName()),null);
+        astBuilder.importMixinMethod(astLoader.loadAst(ObjectMixin.class.getName()), null);
         compile(PHASE_INITIALIZE);
     }
     
