@@ -1,14 +1,15 @@
 package kalang.compiler.compile.semantic;
 
-import kalang.annotation.MixinMethod;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.antlr.KalangParserBaseVisitor;
 import kalang.compiler.ast.*;
-import kalang.compiler.compile.*;
+import kalang.compiler.compile.CompilationUnit;
+import kalang.compiler.compile.Diagnosis;
+import kalang.compiler.compile.OffsetRange;
+import kalang.compiler.compile.TypeNameResolver;
 import kalang.compiler.compile.semantic.analyzer.StatementAnalyzer;
 import kalang.compiler.compile.util.DiagnosisReporter;
 import kalang.compiler.core.*;
-import kalang.compiler.util.Exceptions;
 import kalang.compiler.util.*;
 import kalang.mixin.CollectionMixin;
 import kalang.type.FunctionClasses;
@@ -720,18 +721,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     protected List<MethodDescriptor> getImportedMixinMethod(String methodName) {
-        List<MethodDescriptor> results = new LinkedList<>();
-        Collection<MethodDescriptor> staticImportedMds = getImportedMethods(
+        return getImportedMethods(
                 compilationUnit.importedMixinMethods
                 , compilationUnit.importedMixinPaths
                 , methodName
         );
-        for(MethodDescriptor m:staticImportedMds) {
-            if (AnnotationUtil.has(m.getMethodNode().getAnnotations(), MixinMethod.class.getName())) {
-                results.add(m);
-            }
-        }
-        return results;
     }
 
     protected List<MethodDescriptor> getStaticImportedMethods(String methodName) {
