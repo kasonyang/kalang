@@ -51,6 +51,10 @@ public class ModifierUtil {
         return Modifier.isFinal(modifier);
     }
 
+    public static boolean isVarArgs(int modifier) {
+        return (ModifierConstant.VARARGS & modifier) != 0;
+    }
+
     /**
      *
      * @param modifierString the string of modifier,could be multiple modifier

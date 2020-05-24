@@ -300,5 +300,27 @@ public class AstUtil {
             }
         }
     }
+
+    public static ExprNode createInitializedArray(Type componentType,ExprNode[] exprs){
+        NewArrayExpr ae = new NewArrayExpr(componentType,new ConstExpr(exprs.length));
+        if(exprs.length>0){
+            Statement[] initStmts = new Statement[exprs.length+2];
+            LocalVarNode local = new LocalVarNode(ae.getType(), null);
+            initStmts[0] = new VarDeclStmt(local);
+            VarExpr arrVar = new VarExpr(local);
+            initStmts[1] = new ExprStmt(new AssignExpr(arrVar,ae));
+            for(int i=0;i<exprs.length;i++){
+                initStmts[i+2] =new ExprStmt(
+                        new AssignExpr(
+                                new ElementExpr(arrVar, new ConstExpr(i))
+                                , exprs[i]
+                        )
+                );
+            }
+            return new MultiStmtExpr(Arrays.asList(initStmts), arrVar);
+        }else{
+            return ae;
+        }
+    }
     
 }

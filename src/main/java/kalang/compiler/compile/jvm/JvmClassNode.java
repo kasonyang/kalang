@@ -110,7 +110,7 @@ public class JvmClassNode extends ClassNode {
                 methodNode.setDefaultValue(defaultValue);
                 for (Parameter p : m.getParameters()) {
                     NullableKind pnullable = getNullable(p.getAnnotations());
-                    methodNode.createParameter(getType(p.getParameterizedType(), gTypeMap, p.getType(), pnullable), p.getName());
+                    methodNode.createParameter(getType(p.getParameterizedType(), gTypeMap, p.getType(), pnullable), p.getName(), p.getModifiers());
                 }
                 for (Class e : m.getExceptionTypes()) {
                     methodNode.addExceptionType(getType(e,gTypeMap, e, NullableKind.NONNULL));

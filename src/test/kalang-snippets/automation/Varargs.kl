@@ -1,0 +1,3 @@
+boolean varargs() {
+    return Arrays.asList(1,2,3) == <Integer>[1,2,3].asList();
+}
