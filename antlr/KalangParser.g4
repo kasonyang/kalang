@@ -60,14 +60,14 @@ classDef:
 
 importDecl:
    (
-        'import' (importMode='static' | 'mixin' )? (root='\\')?
+        'import' (importMode=('static' | 'mixin') )? (root='\\')?
         path+=Identifier ('\\' path+=Identifier)*
         delim='\\' ( 
             (name=Identifier ('as' alias=Identifier)? )
             |(name='*')
         ) 
     |
-        'import' (importMode='static')?
+        'import' (importMode=('static' | 'mixin') )?
         path+=Identifier ('.' path+=Identifier)*
         delim='.' ( 
             (name=Identifier ('as' alias=Identifier)? )
