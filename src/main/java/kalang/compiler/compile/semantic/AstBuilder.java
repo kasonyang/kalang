@@ -293,15 +293,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     private BlockStmt newBlock(Supplier<List<Statement>> blockStmtConstructor) {
         BlockStmt bs = new BlockStmt();
-        methodCtx.newFrame();
-        try {
-            if (blockStmtConstructor != null) {
-                bs.statements.addAll(blockStmtConstructor.get());
-            }
-            return bs;
-        } finally {
-            methodCtx.popFrame();
+        if (blockStmtConstructor != null) {
+            methodCtx.newFrame(() -> bs.statements.addAll(blockStmtConstructor.get()));
         }
+        return bs;
     }
 
     @Nonnull
@@ -1414,16 +1409,17 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
-                methodCtx.newFrame();
-                this.methodCtx.returned = false;
-                String vName = ctx.catchVarNames.get(i).getText();
-                String vType = ctx.catchTypes.get(i).getText();
-                LocalVarNode vo = this.declareLocalVar(vName,requireClassType(vType, ctx.catchTypes.get(i).start),Modifier.FINAL,offset(ctx));
-                BlockStmt catchExecStmt = requireBlock(ctx.catchExec.get(i));
-                CatchBlock catchStmt = new CatchBlock(vo,catchExecStmt); 
-                tryCatchBlocks.add(catchStmt);
-                this.methodCtx.returned = this.methodCtx.returned && tryReturned;
-                methodCtx.popFrame();
+                final int catchIdx = i;
+                methodCtx.newFrame(() -> {
+                    this.methodCtx.returned = false;
+                    String vName = ctx.catchVarNames.get(catchIdx).getText();
+                    String vType = ctx.catchTypes.get(catchIdx).getText();
+                    LocalVarNode vo = this.declareLocalVar(vName, requireClassType(vType, ctx.catchTypes.get(catchIdx).start), Modifier.FINAL, offset(ctx));
+                    BlockStmt catchExecStmt = requireBlock(ctx.catchExec.get(catchIdx));
+                    CatchBlock catchStmt = new CatchBlock(vo, catchExecStmt);
+                    tryCatchBlocks.add(catchStmt);
+                    this.methodCtx.returned = this.methodCtx.returned && tryReturned;
+                });
             }
         }
         BlockStmt tryFinallyStmt = null;
@@ -1903,12 +1899,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         List<Statement> initStmts = new LinkedList<>();
         initStmts.add(new VarDeclStmt(thisVar));
         initStmts.add(new ExprStmt(new AssignExpr(new VarExpr(thisVar),targetExpr)));
-        methodCtx.newFrame();
-        for (StatContext s: ctx.stat()) {
-            Statement statement = visitStat(s);
-            initStmts.add(statement);
-        }
-        methodCtx.popFrame();
+        methodCtx.newFrame(() -> {
+            for (StatContext s: ctx.stat()) {
+                Statement statement = visitStat(s);
+                initStmts.add(statement);
+            }
+        });
         MultiStmtExpr e = new MultiStmtExpr(initStmts, new VarExpr(thisVar));
         mapAst(e, ctx);
         thisVar = oldThisVar;
@@ -2225,14 +2221,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         } else {
             execBlock = requireBlock(execCtx);
         }
-        methodCtx.newFrame();
-        LocalVarNode catchVar =  declareTempLocalVar(exVar.getType());
-        BlockStmt catchExecStmt = newBlock(()-> Arrays.asList(
-            new ExprStmt(new AssignExpr(new VarExpr(exVar), new VarExpr(catchVar)))
-            ,new ThrowStmt(new VarExpr(exVar))
-        ));
-        List<CatchBlock> catchStmt = Collections.singletonList(new CatchBlock(catchVar,catchExecStmt));
-        methodCtx.popFrame();
+        List<CatchBlock> catchBlocks =  methodCtx.newFrame(() -> {
+            LocalVarNode catchVar =  declareTempLocalVar(exVar.getType());
+            BlockStmt catchExecStmt = newBlock(()-> Arrays.asList(
+                    new ExprStmt(new AssignExpr(new VarExpr(exVar), new VarExpr(catchVar)))
+                    ,new ThrowStmt(new VarExpr(exVar))
+            ));
+            return Collections.singletonList(new CatchBlock(catchVar,catchExecStmt));
+        });
         StatementSupplier closeStmtBuilder = () -> new ExprStmt(
                 getObjectInvokeExpr(new VarExpr(resVar), "close", new ExprNode[0], OffsetRange.NONE)
         );
@@ -2258,7 +2254,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     )
                 )
                 , null));
-        stats.add(new TryStmt(execBlock, catchStmt, finallyStmt));
+        stats.add(new TryStmt(execBlock, catchBlocks, finallyStmt));
         return stats;
     }
 

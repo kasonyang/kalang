@@ -35,11 +35,27 @@ public class MethodContext {
         this.method = methodNode;
     }
 
-    public void newFrame(){
+    private void newFrame(){
         this.varTables = varTables.newStack();
     }
 
-    public void popFrame(){
+    public void newFrame(Runnable callback) {
+        newFrame(() -> {
+            callback.run();
+            return null;
+        });
+    }
+
+    public <T> T newFrame(Supplier<T> callback) {
+        newFrame();
+        try {
+            return callback.get();
+        } finally {
+            popFrame();
+        }
+    }
+
+    private void popFrame(){
         this.varTables = this.varTables.popStack();
     }
 
