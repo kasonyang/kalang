@@ -258,6 +258,7 @@ expression
     |    target=expression refKey=('.'|'->>'|'..'|'*.'|'*->>'|'?.'|'?->>'|'?..') ( Identifier | StringLiteral)
         '(' (params+=expression (',' params+=expression)*)? ')'  #invokeExpr
     |   expression refKey=('.'|'->>'|'*.'|'*->>'|'?.'|'?->>') (Identifier | StringLiteral) #getFieldExpr
+    |   expression '::' Identifier                                                         #methodRefExpr
     |     (Identifier|key='this'|key='super') 
         '(' (params+=expression (',' params+=expression)*)? ')'   #memberInvocationExpr
     |  expression '[' expression ']' #getArrayElementExpr    

@@ -9,6 +9,7 @@ import kalang.compiler.core.*;
 import kalang.compiler.ast.LambdaExpr;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
+import kalang.mixin.CollectionMixin;
 import org.objectweb.asm.*;
 
 import javax.annotation.Nonnull;
@@ -1417,20 +1418,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitLambdaExpr(LambdaExpr node) {
         MethodNode invokeMethod = node.getInvokeMethod();
         boolean isStatic = ModifierUtil.isStatic(invokeMethod.getModifier());
-        if (!isStatic) {
-            md.visitVarInsn(ALOAD, 0);
-        }
         for (ExprNode arg: node.getCaptureArguments()) {
             visit(arg);
         }
         MethodDescriptor interfaceMd = node.getInterfaceMethod();
-        List<Type> invokeTypes = new LinkedList<>();
-        if (!isStatic){
-            invokeTypes.add(Types.getClassType(invokeMethod.getClassNode()));
-        }
-        for (ExprNode arg: node.getCaptureArguments()) {
-            invokeTypes.add(arg.getType());
-        }
+        List<Type> invokeTypes = CollectionMixin.map(node.getCaptureArguments(), ExprNode::getType);
         String invokeMdDesc = getMethodDescriptor(Types.getClassType(interfaceMd.getMethodNode().getClassNode()), invokeTypes.toArray(new Type[0]));
         String mdDesc = getMethodDescriptor(interfaceMd.getReturnType(), interfaceMd.getParameterTypes());
         String metafactoryDesc = org.objectweb.asm.Type.getMethodDescriptor(
@@ -1442,7 +1434,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 , org.objectweb.asm.Type.getType(MethodHandle.class)
                 , org.objectweb.asm.Type.getType(MethodType.class)
         );
-        int invokeTag = isStatic ? H_INVOKESTATIC : H_INVOKESPECIAL;
+        int invokeTag;
+        if (isStatic) {
+            invokeTag = H_INVOKESTATIC;
+        } else if (invokeMethod.getClassNode().equals(clazz)) {
+            invokeTag = H_INVOKESPECIAL;
+        } else {
+            invokeTag = H_INVOKEVIRTUAL;
+        }
         Object[] bootstrapArgs = new Object[] {
                 org.objectweb.asm.Type.getMethodType(getMethodDescriptor(interfaceMd.getMethodNode()))
                 , new Handle(invokeTag, internalName(invokeMethod.getClassNode()), invokeMethod.getName(), getMethodDescriptor(invokeMethod), false)

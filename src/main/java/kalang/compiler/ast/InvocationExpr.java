@@ -45,9 +45,9 @@ public abstract class InvocationExpr extends ExprNode {
      * @param methodName
      * @param args
      * @param candidates
-     * @return the selected method,or null
+     * @return the applied result
      * @throws MethodNotFoundException
-     * @throws AmbiguousMethodException 
+     * @throws AmbiguousMethodException
      */
     public static MethodSelection applyMethod(ObjectType clazz,String methodName, @Nullable ExprNode[] args,MethodDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
         if(args == null) args = new ExprNode[0];

@@ -307,6 +307,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return expr;
     }
 
+    @SuppressWarnings("unchecked")
+    protected <T> T requireExprWithType(ExprNode expr,Class<T> expected, String errMsg) {
+        Type type = expr.getType();
+        if (!expected.isAssignableFrom(type.getClass())) {
+            throw new NodeException(errMsg, expr.offset);
+        }
+        return (T) type;
+    }
+
     protected int parseModifier(KalangParser.VarModifierContext modifier) {
         int defaultModifier = Modifier.PUBLIC;
         if (modifier == null) {

@@ -15,6 +15,7 @@ import kalang.compiler.core.*;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
+import kalang.mixin.CollectionMixin;
 import kalang.runtime.dynamic.FieldVisitor;
 import kalang.runtime.dynamic.MethodDispatcher;
 import kalang.type.Function0;
@@ -56,7 +57,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private ClassNodeInitializer classNodeInitializer;
     private ClassNodeStructureBuilder classNodeStructureBuilder;
 
-    private Map<LambdaExpr,KalangParser.LambdaExprContext> lambdaExprCtxMap = new HashMap();
+    private Map<LambdaExpr,ParserRuleContext> lambdaExprCtxMap = new HashMap();
     
     private int anonymousClassCounter = 0;
 
@@ -1112,6 +1113,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
+    public ExprNode visitMethodRefExpr(MethodRefExprContext ctx) {
+        LambdaExpr le = new LambdaExpr(new LambdaType(0));
+        lambdaExprCtxMap.put(le, ctx);
+        return le;
+    }
+
+    @Override
     public ExprNode visitUnaryExpr(UnaryExprContext ctx) {
         String op = ctx.getChild(0).getText();
         ExpressionContext exprCtx = ctx.expression();
@@ -1911,6 +1919,72 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return e;
     }
 
+    private void createLambdaForMethodRef(LambdaExpr lambdaExpr, MethodRefExprContext ctx, ClassType lambdaType) {
+        MethodDescriptor funcMethod = lambdaExpr.getInterfaceMethod();
+        ExprNode[] fakeParams = map(funcMethod.getParameterDescriptors(), ExprNode.class, t -> new VarExpr(
+                new LocalVarNode(t.getType(), t.getName())
+        ));
+        ExprNode[] fakeParamsWithoutFirst = CollectionMixin.slice(fakeParams, 1);
+        Type[] paramTypes = funcMethod.getParameterTypes();
+        Object target = visit(ctx.expression());
+        String method = ctx.Identifier().getText();
+        ExprNode targetExpr = null;
+        ClassType targetType;
+        InvocationExpr.MethodSelection mdSelect;
+        if (target instanceof ExprNode) {
+            targetExpr = (ExprNode) target;
+            targetType = requireExprWithType(targetExpr, ClassType.class, "class type expected");
+        } else if (target instanceof ClassReference) {
+            ClassReference targetCr = (ClassReference) target;
+            targetType = Types.getClassType(targetCr.getReferencedClassNode(), NullableKind.UNKNOWN);
+        } else {
+            throw new NodeException("class type expected", offset(ctx.expression()));
+        }
+        MethodDescriptor[] md = targetType.getMethodDescriptors(thisClazz, method, true, true);
+        if (md.length <= 0) {
+            throw new NodeException(method + " not found", offset(ctx));
+        }
+        MethodDescriptor[] staticMds = CollectionMixin.findAll(md, it -> ModifierUtil.isStatic(it.getModifier()));
+        MethodDescriptor[] virtualMds = CollectionMixin.findAll(md, it -> !ModifierUtil.isStatic(it.getModifier()));
+        if (targetExpr != null) {
+            try {
+                mdSelect = InvocationExpr.applyMethod(targetType, method, fakeParams, virtualMds);
+            } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                handleSyntaxError(ex.getMessage(), offset(ctx));
+                return;
+            }
+            lambdaExpr.getCaptureArguments().add(targetExpr);
+        } else {
+            InvocationExpr.MethodSelection virtualSelect;
+            InvocationExpr.MethodSelection staticSelect;
+            try {
+                try {
+                    virtualSelect = InvocationExpr.applyMethod(targetType, method, fakeParamsWithoutFirst , virtualMds);
+                } catch (MethodNotFoundException ex) {
+                    virtualSelect = null;
+                }
+                try {
+                    staticSelect = InvocationExpr.applyMethod(targetType, method, fakeParams, staticMds);
+                } catch (MethodNotFoundException ex) {
+                    staticSelect = null;
+                }
+            } catch (AmbiguousMethodException ex) {
+                handleSyntaxError(ex.getMessage(), offset(ctx));
+                return;
+            }
+            if (staticSelect != null && virtualSelect != null) {
+                handleSyntaxError(method + "is ambiguous", offset(ctx));
+                return;
+            } else if (staticSelect == null && virtualSelect == null) {
+                handleSyntaxError("method not found:" + MethodUtil.toString(targetType.getName(), method, paramTypes), offset(ctx));
+                return;
+            }
+            mdSelect = virtualSelect == null ? staticSelect : virtualSelect;
+        }
+        lambdaExpr.fixType(lambdaType);
+        lambdaExpr.setInvokeMethod(mdSelect.selectedMethod.getMethodNode());
+    }
+
     private void createLambdaNode(LambdaExpr lambdaExpr,KalangParser.LambdaExprContext ctx, ClassType lambdaType){
         MethodDescriptor funcMethod = lambdaExpr.getInterfaceMethod();
         Type returnType = funcMethod.getReturnType();
@@ -1985,6 +2059,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         lambdaExpr.setInvokeMethod(methodNode);
         List<ExprNode> captureArgs = lambdaExpr.getCaptureArguments();
+        //TODO fix captureArgs in static method
+        captureArgs.add(new ThisExpr(getThisType()));
         for (ParameterNode p: methodNode.getParameters()) {
             if (!ModifierUtil.isSynthetic(p.modifier)) {
                 break;
@@ -2076,14 +2152,21 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 return;
             }
             ClassType lambdaType = (ClassType) inferredLambdaType;
-            LambdaExprContext ctx = lambdaExprCtxMap.get(lambdaExpr);
             MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(lambdaType);
             if (funcMethod == null) {
                 handleSyntaxError(errorMsg, lambdaExpr.offset);
                 return;
             }
             lambdaExpr.setInterfaceMethod(funcMethod);
-            createLambdaNode(lambdaExpr, ctx, lambdaType);
+            ParserRuleContext ctx = lambdaExprCtxMap.get(lambdaExpr);
+            //TODO check unprocessed lambda context
+            if (ctx instanceof LambdaExprContext) {
+                createLambdaNode(lambdaExpr, (LambdaExprContext) ctx, lambdaType);
+            } else if (ctx instanceof MethodRefExprContext) {
+                createLambdaForMethodRef(lambdaExpr, (MethodRefExprContext) ctx, lambdaType);
+            } else {
+                throw Exceptions.unexpectedValue(ctx);
+            }
         }
     }
 

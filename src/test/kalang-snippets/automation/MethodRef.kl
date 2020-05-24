@@ -1,0 +1,10 @@
+boolean typeMethodRef() {
+    val list = [new Date(1), new Date(2), new Date(3)]..asList();
+    return list..map(Date::getTime) == <Long>[1,2,3]..asList();
+}
+
+boolean objectMethodRef() {
+    val list = ["1","2"].asList();
+    val testStr = "1";
+    return list..map(testStr::equals) == <Boolean>[true,false]..asList();
+}
