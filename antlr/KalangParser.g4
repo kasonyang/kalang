@@ -248,10 +248,10 @@ expression
             (('{' stat* '}') | expression)
          )
       ) #lambdaExpr
-    | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=expression ':' values+=expression ( ',' keys+=expression ':' values+=expression)*  ']'
+    | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=expression ':' values+=expression ( ',' keys+=expression ':' values+=expression)*  ','? ']'
           | '[' ':' ']'
       ) #mapExpr
-    | ('<' type '>')? '[' ( expression ( ',' expression )* )? ']'  # arrayExpr
+    | ('<' type '>')? '[' ( expression ( ',' expression )* )? ','? ']'  # arrayExpr
     //|   expression '.' 'this'
     //|   expression '.' 'new' nonWildcardTypeArguments? innerCreator
     //|   expression '.' 'super' superSuffix
