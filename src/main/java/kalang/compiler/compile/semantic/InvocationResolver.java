@@ -1,6 +1,5 @@
 package kalang.compiler.compile.semantic;
 
-import kalang.annotation.Nullable;
 import kalang.compiler.ast.ExprNode;
 import kalang.compiler.core.*;
 import kalang.compiler.util.AstUtil;
@@ -8,6 +7,7 @@ import kalang.compiler.util.BoxUtil;
 import kalang.compiler.util.Exceptions;
 import kalang.compiler.util.ModifierUtil;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -114,14 +114,16 @@ public class InvocationResolver {
             if (equalsType(t1, t2)) {
                 continue;
             }
+            Type at;
             if (t1 instanceof ArrayType || t2 instanceof ArrayType) {
+                at = null;
+            } else {
+                at = arguments[i].getType();
+            }
+            if (isMorePreciseType(t2, t1, at)) {
                 return false;
             }
-            ExprNode at = arguments[i];
-            if (isMorePreciseType(at, t2, t1)) {
-                return false;
-            }
-            if (isMorePreciseType(at, t1, t2)) {
+            if (isMorePreciseType(t1, t2, at)) {
                 isMorePrecise = true;
             }
         }
@@ -154,18 +156,19 @@ public class InvocationResolver {
         return m.getParameterTypes();
     }
 
-    protected boolean isMorePreciseType(ExprNode arg, Type t1, Type t2) {
-        Type actualType = arg.getType();
+    protected boolean isMorePreciseType(Type t1, Type t2, @Nullable Type actualType) {
         if (t1.isAssignableFrom(t2)) return false;
         if (t2.isAssignableFrom(t1)) return true;
-        if (actualType.equals(t1) && !actualType.equals(t2)) return true;
-        if (actualType.equals(t2) && !actualType.equals(t1)) return false;
-        if (actualType instanceof ClassType) {
-            if ((t1 instanceof ClassType) && (t2 instanceof PrimitiveType)) return true;
-        } else if (actualType instanceof PrimitiveType) {
-            if ((t1 instanceof PrimitiveType) && (t2 instanceof ClassType)) return true;
-            if (t1 instanceof PrimitiveType && t2 instanceof PrimitiveType) {
-                return Types.isPrimitiveCastable((PrimitiveType) t1, (PrimitiveType) t2);
+        if (actualType != null) {
+            if (actualType.equals(t1) && !actualType.equals(t2)) return true;
+            if (actualType.equals(t2) && !actualType.equals(t1)) return false;
+            if (actualType instanceof ClassType) {
+                if ((t1 instanceof ClassType) && (t2 instanceof PrimitiveType)) return true;
+            } else if (actualType instanceof PrimitiveType) {
+                if ((t1 instanceof PrimitiveType) && (t2 instanceof ClassType)) return true;
+                if (t1 instanceof PrimitiveType && t2 instanceof PrimitiveType) {
+                    return Types.isPrimitiveCastable((PrimitiveType) t1, (PrimitiveType) t2);
+                }
             }
         }
         //TODO imcomplete isMorePreciseType
