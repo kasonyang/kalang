@@ -205,6 +205,60 @@ public class CollectionMixin {
     }
 
     @MixinMethod
+    public static List<Byte> asList(byte... array) {
+        List<Byte> list = new ArrayList<>(array.length);
+        for (byte a : array) {
+            list.add(a);
+        }
+        return list;
+    }
+
+    @MixinMethod
+    public static List<Short> asList(short... array) {
+        List<Short> list = new ArrayList<>(array.length);
+        for (short a : array) {
+            list.add(a);
+        }
+        return list;
+    }
+
+    @MixinMethod
+    public static List<Integer> asList(int... array) {
+        List<Integer> list = new ArrayList<>(array.length);
+        for (int a : array) {
+            list.add(a);
+        }
+        return list;
+    }
+
+    @MixinMethod
+    public static List<Long> asList(long... array) {
+        List<Long> list = new ArrayList<>(array.length);
+        for (long a : array) {
+            list.add(a);
+        }
+        return list;
+    }
+
+    @MixinMethod
+    public static List<Float> asList(float... array) {
+        List<Float> list = new ArrayList<>(array.length);
+        for (float a : array) {
+            list.add(a);
+        }
+        return list;
+    }
+
+    @MixinMethod
+    public static List<Double> asList(double... array) {
+        List<Double> list = new ArrayList<>(array.length);
+        for (double a : array) {
+            list.add(a);
+        }
+        return list;
+    }
+
+    @MixinMethod
     public static int sumInt(Iterable<Integer> intList) {
         int result = 0;
         for (Integer it : intList) {
