@@ -1,3 +1,7 @@
 boolean varargs() {
     return Arrays.asList(1,2,3) == <Integer>[1,2,3].asList();
 }
+
+boolean testTypeInference() {
+    return Arrays.asList("a","ab")..map(it => it.length()) == Arrays.asList(1,2);
+}

@@ -2,13 +2,12 @@ package kalang.compiler.compile.semantic;
 
 import kalang.compiler.ast.ExprNode;
 import kalang.compiler.core.*;
-import kalang.compiler.util.AstUtil;
-import kalang.compiler.util.BoxUtil;
-import kalang.compiler.util.Exceptions;
-import kalang.compiler.util.ModifierUtil;
+import kalang.compiler.util.*;
 
 import javax.annotation.Nullable;
 import java.util.*;
+
+import static kalang.mixin.CollectionMixin.map;
 
 /**
  * @author KasonYang
@@ -70,7 +69,10 @@ public class InvocationResolver {
                 }
                 tailArgs[i] = tailApplyRes.appliedArgs;
             }
-            result[parameters.length - 1] = new ApplyResult(3, AstUtil.createInitializedArray(lastComponentType, tailArgs));
+            Type tailComponentType = tailArgs.length == 0
+                    ? lastComponentType
+                    : TypeUtil.getCommonType(map(tailArgs, Type.class, ExprNode::getType));
+            result[parameters.length - 1] = new ApplyResult(3, AstUtil.createInitializedArray(tailComponentType, tailArgs));
             return result;
         } else {
             if (parameters.length != args.length) {
