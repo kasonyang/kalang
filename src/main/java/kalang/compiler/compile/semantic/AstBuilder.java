@@ -988,8 +988,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (methods.length<=0) {//find mixin method
                 ExprNode mixinInvoke = getMixinInvokeExpr(target, methodName, args, offset);
                 if (mixinInvoke != null) {
-                    //TODO enable syntax warning
-                    //handleSyntaxWarning("Invoking mixin method using dot has been deprecated", offset);
+                    handleSyntaxWarning("Invoking mixin method using dot has been deprecated", offset);
                     return mixinInvoke;
                 }
             }
