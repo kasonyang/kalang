@@ -15,10 +15,10 @@ import java.util.*;
  */
 public class InvocationResolver {
 
-    public List<Resolution> resolve(MethodDescriptor[] mds, String name, ExprNode... args) {
-        List<Resolution> matched = new ArrayList<>(mds.length);
-        for (MethodDescriptor m : mds) {
-            if (!name.equals(m.getName())) {
+    public List<Resolution> resolve(MethodDescriptor[] methods, String methodName, ExprNode... args) {
+        List<Resolution> matched = new ArrayList<>(methods.length);
+        for (MethodDescriptor m : methods) {
+            if (!methodName.equals(m.getName())) {
                 continue;
             }
             ApplyResult[] applyRes = applyArgsToParams(m.getParameterDescriptors(), args, ModifierUtil.isVarArgs(m.getModifier()));
@@ -111,7 +111,7 @@ public class InvocationResolver {
         for (int i = 0; i < typesToCompare1.length; i++) {
             Type t1 = typesToCompare1[i];
             Type t2 = typesToCompare2[i];
-            if (equalsType(t1, t2)) {
+            if (Objects.equals(t1, t2)) {
                 continue;
             }
             Type at;
@@ -130,30 +130,26 @@ public class InvocationResolver {
         return isMorePrecise;
     }
 
-    private List<Resolution> selectMostPrecise(List<Resolution> mds, ExprNode[] args) {
-        int size = mds.size();
+    private List<Resolution> selectMostPrecise(List<Resolution> resolutions, ExprNode[] args) {
+        int size = resolutions.size();
         if (size == 0) {
             return new ArrayList<>();
         }
-        Resolution ret = mds.get(0);
+        Resolution best = resolutions.get(0);
         for (int i = 1; i < size; i++) {
-            Resolution m = mds.get(i);
-            Type[] mpts = getMethodParameterTypes(m.method);
-            Type[] retTypes = getMethodParameterTypes(ret.method);
-            if (isMorePreciseTypes(args, mpts, retTypes)) {
-                ret = m;
+            Resolution current = resolutions.get(i);
+            Type[] ptsOfCurrent = current.method.getParameterTypes();
+            Type[] ptsOfBest = best.method.getParameterTypes();
+            if (isMorePreciseTypes(args, ptsOfCurrent, ptsOfBest)) {
+                best = current;
                 continue;
             }
-            if (isMorePreciseTypes(args, retTypes, mpts)) {
+            if (isMorePreciseTypes(args, ptsOfBest, ptsOfCurrent)) {
                 continue;
             }
-            return Arrays.asList(ret, m);
+            return Arrays.asList(best, current);
         }
-        return Collections.singletonList(ret);
-    }
-
-    protected Type[] getMethodParameterTypes(MethodDescriptor m) {
-        return m.getParameterTypes();
+        return Collections.singletonList(best);
     }
 
     protected boolean isMorePreciseType(Type t1, Type t2, @Nullable Type actualType) {
@@ -175,23 +171,18 @@ public class InvocationResolver {
         return false;
     }
 
-    protected boolean equalsType(Type type1, Type type2) {
-        return type1.equals(type2);
-    }
-
     @Nullable
     protected Integer getMatchScore(int castMethod) {
         switch (castMethod) {
-            case BoxUtil.CAST_CONST:
-                return 0;
             case BoxUtil.CAST_UNSUPPORTED:
                 return null;
+            case BoxUtil.CAST_CONST:
+                return 0;
             case BoxUtil.CAST_NOTHING:
-                return 1;
             case BoxUtil.CAST_PRIMITIVE_TO_OBJECT:
             case BoxUtil.CAST_OBJECT_TO_PRIMITIVE:
             case BoxUtil.CAST_PRIMITIVE:
-                return 2;
+                return 1;
             default:
                 throw Exceptions.unknownValue(castMethod);
 
