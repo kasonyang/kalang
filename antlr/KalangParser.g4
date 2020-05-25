@@ -102,7 +102,7 @@ methodDecl:
    ( blockStmt | ';')
 ;
 paramDecl:
-    paramType=type paramId=Identifier  ( '=' paramDefVal=expression)?
+    paramType=type (VARARGS='...')? paramId=Identifier  ( '=' paramDefVal=expression)?
 ;
 annotation:
     '@' annotationType=Identifier 

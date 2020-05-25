@@ -14,10 +14,7 @@ import org.antlr.v4.runtime.Token;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -165,8 +162,21 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             }
         }
         MethodNode method = thisClazz.createMethodNode(type, name, modifier);
-        for (KalangParser.ParamDeclContext t : ctx.params) {
-            method.createParameter(parseType(t.paramType), t.paramId.getText());
+        List<KalangParser.ParamDeclContext> params = ctx.params;
+        for (int i = 0; i < params.size(); i++) {
+            KalangParser.ParamDeclContext p = params.get(i);
+            Type pt;
+            if (p.VARARGS != null) {
+                if (i == params.size() - 1) {
+                    method.addModifier(ModifierConstant.VARARGS);
+                } else {
+                    handleSyntaxError("Vararg parameter must be the last parameter", offset(p));
+                }
+                pt = Types.getArrayType(parseType(p.paramType));
+            } else {
+                pt = parseType(p.paramType);
+            }
+            method.createParameter(pt, p.paramId.getText());
         }
         if (isOverriding) {
             method.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));

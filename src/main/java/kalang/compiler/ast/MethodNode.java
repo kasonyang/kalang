@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public class MethodNode extends AstNode implements Annotationable{
     
-    private final int modifier;
+    private int modifier;
     
     private Type type;
     
@@ -116,6 +116,10 @@ public class MethodNode extends AstNode implements Annotationable{
 
     public int getModifier() {
         return modifier;
+    }
+
+    public void addModifier(int modifier) {
+        this.modifier |= modifier;
     }
 
     public BlockStmt getBody() {

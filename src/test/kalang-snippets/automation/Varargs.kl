@@ -5,3 +5,11 @@ boolean varargs() {
 boolean testTypeInference() {
     return Arrays.asList("a","ab")..map(it => it.length()) == Arrays.asList(1,2);
 }
+
+boolean testDeclaration() {
+    return integerList(1,2) == Arrays.asList(1,2);
+}
+
+private List<Integer> integerList(Integer... args) {
+    return Arrays.asList(args);
+}
