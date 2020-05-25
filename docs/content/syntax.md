@@ -231,15 +231,15 @@ val array = <Integer>[1,2,3];
 
 // change an Integer array to an Integer list.
 // same as: val list = CollectionMixin.asList(array);
-val list = array.asList();
+val list = array..asList();
 
 // sum an Integer list.
 // same as: val sum = CollectionMixin.sumInt(list);
-val sum = list.sumInt();
+val sum = list..sumInt();
 
 // read text from a file.
 // same as: val text = IOMixin.readToString(new File("hello.txt"), "utf8");
-val text = new File("hello.txt").readToString("utf8");
+val text = new File("hello.txt")..readToString("utf8");
 ```
 
 All built-in mixin methods could be found in [kalang.mixin](https://github.com/kasonyang/kalang/tree/master/kalang-runtime/src/main/java/kalang/mixin) package.
