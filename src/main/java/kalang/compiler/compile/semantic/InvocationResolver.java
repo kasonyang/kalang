@@ -14,114 +14,132 @@ import static kalang.mixin.CollectionMixin.map;
  */
 public class InvocationResolver {
 
+    private final static int SCORE_EQUALS = 0;
+    private final static int SCORE_SUBTYPE = 1;
+    private final static int SCORE_CASTABLE = 2;
+
+
     public List<Resolution> resolve(MethodDescriptor[] methods, String methodName, ExprNode... args) {
-        List<Resolution> matched = new ArrayList<>(methods.length);
+        List<ArgsApplyResult> appliedList = new ArrayList<>(methods.length);
         for (MethodDescriptor m : methods) {
             if (!methodName.equals(m.getName())) {
                 continue;
             }
-            ApplyResult[] applyRes = applyArgsToParams(m.getParameterDescriptors(), args, ModifierUtil.isVarArgs(m.getModifier()));
-            if (applyRes == null) {
+            ArgsApplyResult argsApplyRes = applyArgsToParams(m, args);
+            if (argsApplyRes == null) {
                 continue;
             }
-            Resolution rr = new Resolution(m, getAppliedArgs(applyRes));
-            if (isFullMatchScore(applyRes)) {
-                return Collections.singletonList(rr);
+            if (isFullMatchScore(argsApplyRes.scores)) {
+                return Collections.singletonList(new Resolution(m, argsApplyRes.appliedArgs));
             } else {
-                matched.add(rr);
+                appliedList.add(argsApplyRes);
             }
         }
-        if (matched.isEmpty()) {
+        if (appliedList.isEmpty()) {
             return Collections.emptyList();
         }
-        return selectMostPrecise(matched, args);
+        return selectMostPrecise(appliedList, args);
     }
 
     @Nullable
-    private ApplyResult[] applyArgsToParams(ParameterDescriptor[] parameters, ExprNode[] args, boolean isVarArgs) {
+    private ArgsApplyResult applyArgsToParams(MethodDescriptor method, ExprNode[] args) {
+        ParameterDescriptor[] parameters = method.getParameterDescriptors();
+        boolean isVarArgs = ModifierUtil.isVarArgs(method.getModifier());
         if (parameters.length == 0) {
-            return args.length == 0 ? new ApplyResult[0] : null;
+            return args.length == 0 ? new ArgsApplyResult(method, new int[0],new ExprNode[0], new Type[0]) : null;
         }
-        ParameterDescriptor lastParam = parameters[parameters.length - 1];
+        int[] scores = new int[args.length];
+        Type[] matchTypes = new Type[args.length];
+        ExprNode[] appliedArgs = new ExprNode[parameters.length];
+        int lastParamIndex = parameters.length - 1;
+        ParameterDescriptor lastParam = parameters[lastParamIndex];
         if (isVarArgs) {
             if (args.length < parameters.length - 1) {
                 return null;
             }
-            ApplyResult[] result = new ApplyResult[parameters.length];
             ExprNode[] tailArgs = new ExprNode[args.length - parameters.length + 1];
-            for (int i = 0; i < result.length - 1; i++) {
-                result[i] = applyArgToParam(args[i], parameters[i].getType());
-                if (result[i] == null) {
+            for (int i = 0; i < parameters.length - 1; i++) {
+                SingleApplyResult r = applyArgToParam(args[i], parameters[i].getType());
+                if (r == null) {
                     return null;
                 }
+                scores[i] = r.score;
+                appliedArgs[i] = r.appliedArg;
+                matchTypes[i] = parameters[i].getType();
             }
             if (args.length == parameters.length) {
-                result[result.length - 1] = applyArgToParam(args[result.length - 1], parameters[result.length - 1].getType());
-                if (result[result.length - 1] != null) {
-                    return result;
+                SingleApplyResult r = applyArgToParam(args[lastParamIndex], parameters[lastParamIndex].getType());
+                if (r != null) {
+                    scores[lastParamIndex] = r.score;
+                    appliedArgs[lastParamIndex] = r.appliedArg;
+                    matchTypes[lastParamIndex] = parameters[lastParamIndex].getType();
+                    return new ArgsApplyResult(method, scores, appliedArgs, matchTypes);
                 }
             }
             Type lastComponentType = ((ArrayType) lastParam.getType()).getComponentType();
             for (int i = 0; i < tailArgs.length; i++) {
-                ApplyResult tailApplyRes = applyArgToParam(args[parameters.length - 1 + i], lastComponentType);
+                SingleApplyResult tailApplyRes = applyArgToParam(args[lastParamIndex + i], lastComponentType);
                 if (tailApplyRes == null) {
                     return null;
                 }
-                tailArgs[i] = tailApplyRes.appliedArgs;
+                tailArgs[i] = tailApplyRes.appliedArg;
+                scores[lastParamIndex + i] = tailApplyRes.score;
+                matchTypes[lastParamIndex + i] = lastComponentType;
             }
             Type tailComponentType = tailArgs.length == 0
                     ? lastComponentType
                     : TypeUtil.getCommonType(map(tailArgs, Type.class, ExprNode::getType));
-            result[parameters.length - 1] = new ApplyResult(3, AstUtil.createInitializedArray(tailComponentType, tailArgs));
-            return result;
+            appliedArgs[lastParamIndex] = AstUtil.createInitializedArray(tailComponentType, tailArgs);
         } else {
             if (parameters.length != args.length) {
                 return null;
             }
-            ApplyResult[] result = new ApplyResult[args.length];
-            for (int i = 0; i < result.length; i++) {
-                result[i] = applyArgToParam(args[i], parameters[i].getType());
-                if (result[i] == null) {
+            for (int i = 0; i < args.length; i++) {
+                SingleApplyResult r = applyArgToParam(args[i], parameters[i].getType());
+                if (r == null) {
                     return null;
                 }
+                scores[i] = r.score;
+                appliedArgs[i] = r.appliedArg;
+                matchTypes[i] = parameters[i].getType();
             }
-            return result;
         }
+        return new ArgsApplyResult(method, scores, appliedArgs, matchTypes);
     }
 
     @Nullable
-    private ApplyResult applyArgToParam(ExprNode arg, Type paramType) {
+    private SingleApplyResult applyArgToParam(ExprNode arg, Type paramType) {
         Type argType = arg.getType();
         if (argType.equals(paramType)) {
-            return new ApplyResult(0, arg);
+            return new SingleApplyResult(0, arg);
         }
         int castMethod = BoxUtil.getCastMethod(arg, paramType);
         Integer score = getMatchScore(castMethod);
         if (score == null) {
             return null;
         }
-        ExprNode appliedExpr = BoxUtil.assign(arg, paramType);
-        Objects.requireNonNull(appliedExpr);
-        return new ApplyResult(score, appliedExpr);
+        ExprNode appliedArg = BoxUtil.assign(arg, paramType);
+        Objects.requireNonNull(appliedArg);
+        return new SingleApplyResult(score, appliedArg);
     }
 
-    private boolean isMorePreciseTypes(ExprNode[] arguments, Type[] typesToCompare1, Type[] typesToCompare2) {
-        if (typesToCompare1.length != typesToCompare2.length) {
-            return false;
-        }
+    private boolean isMorePreciseTypes(ExprNode[] args,int[] scores1,int[] scores2, Type[] paramTypes1, Type[] paramTypes2) {
         boolean isMorePrecise = false;
-        for (int i = 0; i < typesToCompare1.length; i++) {
-            Type t1 = typesToCompare1[i];
-            Type t2 = typesToCompare2[i];
+        for (int i = 0; i < args.length; i++) {
+            int s1 = scores1[i];
+            int s2 = scores2[i];
+            if (s1 < s2) {
+                isMorePrecise = true;
+                continue;
+            } else if (s1 > s2) {
+                return false;
+            }
+            Type t1 = paramTypes1[i];
+            Type t2 = paramTypes2[i];
             if (Objects.equals(t1, t2)) {
                 continue;
             }
-            Type at;
-            if (t1 instanceof ArrayType || t2 instanceof ArrayType) {
-                at = null;
-            } else {
-                at = arguments[i].getType();
-            }
+            Type  at = args[i].getType();
             if (isMorePreciseType(t2, t1, at)) {
                 return false;
             }
@@ -129,29 +147,34 @@ public class InvocationResolver {
                 isMorePrecise = true;
             }
         }
+        if (!isMorePrecise && paramTypes1.length == args.length && paramTypes2.length > args.length) {
+            return true;
+        }
         return isMorePrecise;
     }
 
-    private List<Resolution> selectMostPrecise(List<Resolution> resolutions, ExprNode[] args) {
-        int size = resolutions.size();
+    private List<Resolution> selectMostPrecise(List<ArgsApplyResult> argsApplyResults, ExprNode[] args) {
+        int size = argsApplyResults.size();
         if (size == 0) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-        Resolution best = resolutions.get(0);
+        ArgsApplyResult best = argsApplyResults.get(0);
         for (int i = 1; i < size; i++) {
-            Resolution current = resolutions.get(i);
-            Type[] ptsOfCurrent = current.method.getParameterTypes();
-            Type[] ptsOfBest = best.method.getParameterTypes();
-            if (isMorePreciseTypes(args, ptsOfCurrent, ptsOfBest)) {
+            ArgsApplyResult current = argsApplyResults.get(i);
+            Type[] pTypesOfCurrent = current.method.getParameterTypes();
+            int[] scoresOfCurrent = current.scores;
+            Type[] pTypesOfBest = best.method.getParameterTypes();
+            int[] scoresOfBest = best.scores;
+            if (isMorePreciseTypes(args,scoresOfCurrent, scoresOfBest,  pTypesOfCurrent, pTypesOfBest)) {
                 best = current;
                 continue;
             }
-            if (isMorePreciseTypes(args, ptsOfBest, ptsOfCurrent)) {
+            if (isMorePreciseTypes(args,scoresOfBest, scoresOfCurrent, pTypesOfBest, pTypesOfCurrent)) {
                 continue;
             }
-            return Arrays.asList(best, current);
+            return Arrays.asList(new Resolution(best.method, best.appliedArgs),new Resolution(current.method, current.appliedArgs));
         }
-        return Collections.singletonList(best);
+        return Collections.singletonList(new Resolution(best.method, best.appliedArgs));
     }
 
     protected boolean isMorePreciseType(Type t1, Type t2, @Nullable Type actualType) {
@@ -179,42 +202,50 @@ public class InvocationResolver {
             case BoxUtil.CAST_UNSUPPORTED:
                 return null;
             case BoxUtil.CAST_CONST:
-                return 0;
+                return SCORE_EQUALS;
             case BoxUtil.CAST_NOTHING:
+                return SCORE_SUBTYPE;
             case BoxUtil.CAST_PRIMITIVE_TO_OBJECT:
             case BoxUtil.CAST_OBJECT_TO_PRIMITIVE:
             case BoxUtil.CAST_PRIMITIVE:
-                return 1;
+                return SCORE_CASTABLE;
             default:
                 throw Exceptions.unknownValue(castMethod);
 
         }
     }
 
-    private boolean isFullMatchScore(ApplyResult[] applyResult) {
-        for (ApplyResult res : applyResult) {
-            if (res.score != 0) {
+    private boolean isFullMatchScore(int[] scores) {
+        for (int s : scores) {
+            if (s != SCORE_EQUALS) {
                 return false;
             }
         }
         return true;
     }
 
-    private ExprNode[] getAppliedArgs(ApplyResult[] results) {
-        ExprNode[] exprs = new ExprNode[results.length];
-        for (int i = 0; i < results.length; i++) {
-            exprs[i] = results[i].appliedArgs;
+    private static class ArgsApplyResult {
+        MethodDescriptor method;
+        int[] scores;
+        Type[] matchTypes;
+        ExprNode[] appliedArgs;
+
+        public ArgsApplyResult(MethodDescriptor method, int[] scores, ExprNode[] appliedArgs,Type[] matchTypes) {
+            this.method = method;
+            this.scores = scores;
+            this.appliedArgs = appliedArgs;
+            this.matchTypes = matchTypes;
         }
-        return exprs;
+
     }
 
-    private static class ApplyResult {
+    private static class SingleApplyResult {
         int score;
-        ExprNode appliedArgs;
+        ExprNode appliedArg;
 
-        public ApplyResult(int score, ExprNode appliedArgs) {
+        public SingleApplyResult(int score, ExprNode appliedArg) {
             this.score = score;
-            this.appliedArgs = appliedArgs;
+            this.appliedArg = appliedArg;
         }
     }
 
