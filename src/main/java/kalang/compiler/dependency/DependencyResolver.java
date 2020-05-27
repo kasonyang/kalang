@@ -69,7 +69,7 @@ public class DependencyResolver {
         eventManager.addIvyListener(event -> {
             if (event instanceof StartArtifactDownloadEvent) {
                 ArtifactOrigin origin = ((StartArtifactDownloadEvent) event).getOrigin();
-                System.out.println("Downloading:" +origin.getLocation());
+                System.err.println("Downloading:" +origin.getLocation());
             }
         });
         Collection<org.apache.ivy.plugins.resolver.DependencyResolver> resolvers = settings.getResolvers();
