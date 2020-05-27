@@ -507,10 +507,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitReturnStmt(ReturnStmt node) {
         int lnsn = RETURN;
+        int returnVar = -1;
+        Type returnType = null;
         if(node.expr!=null){
             visit(node.expr);
-            Type type = node.expr.getType();
-            lnsn = asmType(type).getOpcode(IRETURN);
+            returnType = node.expr.getType();
+            lnsn = asmType(returnType).getOpcode(IRETURN);
+            returnVar = declareNewVar(returnType);
+            md.visitVarInsn(asmType(returnType).getOpcode(ISTORE), returnVar);
         }
         Stack<CatchContext> ccStack = new Stack<>();
         while (!catchContextStack.isEmpty()){
@@ -524,11 +528,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 md.visitLabel(startLabel);
                 visit(finallyStmt);
                 md.visitLabel(endLabel);
+                popFrame();
                 catchContext.addExclude(startLabel, endLabel);
             }
         }
         while(!ccStack.isEmpty()) {
             catchContextStack.push(ccStack.pop());
+        }
+        if (returnVar > -1) {
+            md.visitVarInsn(asmType(returnType).getOpcode(ILOAD), returnVar);
         }
         md.visitInsn(lnsn);
         return null;

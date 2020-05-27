@@ -80,3 +80,12 @@ boolean testEmptyExec() {
     return result;
 }
 
+int testReturn() {
+    int a = 0;
+    try (val fis = new ByteArrayOutputStream()) {
+        return 6;
+    } finally {
+        a = 1;
+    }
+}
+
