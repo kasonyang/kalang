@@ -30,23 +30,28 @@ public class CollectionMixin {
     }
 
     @MixinMethod
-    public static <T> T at(Collection<T> list, int index, T defaultValue) {
+    public static <T> T at(List<T> list, int index, T defaultValue) {
         int offset = index >= 0 ? index : list.size() + index;
         if (offset >= 0 && offset < list.size()) {
-            int idx = 0;
-            for (T it : list) {
-                if (idx == offset) {
-                    return it;
-                }
-                idx++;
-            }
+            return list.get(offset);
         }
         return defaultValue;
     }
 
     @MixinMethod
+    public static <T> T at(List<T> list, int index) {
+        int offset = index >= 0 ? index : list.size() + index;
+        return list.get(offset);
+    }
+
+    @MixinMethod
     public static <T> T at(T[] list, int index, T defaultValue) {
         return at(Arrays.asList(list), index, defaultValue);
+    }
+
+    @MixinMethod
+    public static <T> T at(T[] list, int index) {
+        return at(Arrays.asList(list), index);
     }
 
     @MixinMethod
