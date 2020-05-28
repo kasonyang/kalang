@@ -97,7 +97,7 @@ public class DependencyResolver {
         }
         IvyNode[] uds = res.getUnresolvedDependencies();
         if (uds!=null && uds.length>0) {
-            throw new ResolveException("failed to resolve artifact:" + uds[0].getId().toString());
+            throw new ResolveException("failed to resolve artifact " + uds[0].getId().toString() + ": " + uds[0].getProblemMessage());
         }
         return result;
     }
