@@ -10,6 +10,7 @@ import kalang.compiler.profile.Span;
 import kalang.compiler.profile.SpanFormatter;
 import kalang.compiler.tool.KalangShell;
 import kalang.lang.Runtime;
+import kalang.type.Function0;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
@@ -20,7 +21,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.logging.*;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  *
@@ -142,7 +146,7 @@ public abstract class ShellBase {
         return new File[0];
     }
 
-    protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader,@Nullable Reader optionsReader) throws IOException {
+    protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader,@Nullable Reader optionsReader,boolean enableDepCache) throws IOException {
         //String scriptBase = "";
         Set<String> dependencies = new HashSet<>();
         Set<String> repositories = new HashSet<>();
@@ -210,7 +214,7 @@ public abstract class ShellBase {
 //        }
         if (!dependencies.isEmpty()) {
             Span rdSpan = Profiler.getInstance().beginSpan("resolving dependencies");
-            ResolveResult resolveResult = resolveDependencies(dependencies,repositories);
+            ResolveResult resolveResult = resolveDependencies(dependencies,repositories, enableDepCache);
             Profiler.getInstance().endSpan(rdSpan);
             for(File localFile:resolveResult.getLocalFiles()) {
                 classpaths.add(localFile.toURI().toURL());
@@ -262,10 +266,8 @@ public abstract class ShellBase {
 
 
 
-    private ResolveResult resolveDependencies(Set<String> dependencies,Set<String> repositories) throws IOException {
-        File cacheFile = new File(getAppHomeDir("cache", true), "dependencies.cache");
-        DependenciesCache dc = new DependenciesCache(cacheFile);
-        return dc.get(dependencies,() -> {
+    private ResolveResult resolveDependencies(Set<String> dependencies,Set<String> repositories, boolean enableCache) throws IOException {
+        Function0<ResolveResult> depResolver = () -> {
             List<Artifact> artifacts = new LinkedList<>();
             for(String d:dependencies){
                 d = d.trim();
@@ -278,7 +280,13 @@ public abstract class ShellBase {
             }
             DependencyResolver resolver =new DependencyResolver(repositories);
             return resolver.resolve(artifacts.toArray(new Artifact[0]));
-        });
+        };
+        if (enableCache) {
+            File cacheFile = new File(getAppHomeDir("cache", true), "dependencies.cache");
+            DependenciesCache dc = new DependenciesCache(cacheFile);
+            return dc.get(dependencies, depResolver);
+        }
+        return depResolver.call();
     }
 
     private void addClasspathFromLibPath(Set<URL> list,File libpath) {

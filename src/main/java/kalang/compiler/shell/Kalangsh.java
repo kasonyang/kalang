@@ -42,9 +42,10 @@ public class Kalangsh extends ShellBase {
         try {
             Class clazz;
             String[] scriptArgs;
+            boolean enableDepCache = ! cli.hasOption("disable-dependency-cache");
             if (cli.hasOption("code")) {
                 String code = cli.getOptionValue("code");
-                KalangShell sh = this.createKalangShell(config, classLoader,new StringReader(code), null);
+                KalangShell sh = this.createKalangShell(config, classLoader,new StringReader(code), null, enableDepCache);
                 scriptArgs = new String[0];
                 clazz = sh.parse("Temp",code, "Tmp.kl");
             } else {
@@ -61,7 +62,7 @@ public class Kalangsh extends ShellBase {
                 File optionsFile = new File(sourceDir, "kalangsh.options");
                 Reader fileReader = new InputStreamReader(new FileInputStream(file), config.getEncoding());
                 FileReader optionsReader = optionsFile.exists() ? new FileReader(optionsFile) : null;
-                KalangShell sh = this.createKalangShell(config, classLoader, fileReader, optionsReader);
+                KalangShell sh = this.createKalangShell(config, classLoader, fileReader, optionsReader, enableDepCache);
                 fileReader.close();
                 if (optionsReader != null) {
                     optionsReader.close();
@@ -95,6 +96,7 @@ public class Kalangsh extends ShellBase {
         Options options = new Options();
         options.addOption("c", "code", true, "run code from code option");
         options.addOption(null, "check", false, "don't run,just check");
+        options.addOption(null, "disable-dependency-cache", false, "disable dependency cache");
         return options;
     }
 
