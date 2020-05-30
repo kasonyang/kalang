@@ -1,0 +1,9 @@
+unreachable statement@7
+String test(boolean c) {
+    if (c) {
+        return "true";
+    } else {
+        return "false";
+    }
+    return "null";
+}

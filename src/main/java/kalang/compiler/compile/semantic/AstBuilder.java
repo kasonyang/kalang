@@ -11,6 +11,7 @@ import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.compile.OffsetRange;
 import kalang.compiler.compile.TypeNameResolver;
 import kalang.compiler.compile.semantic.analyzer.AstNodeCollector;
+import kalang.compiler.compile.semantic.analyzer.TerminalStatementAnalyzer;
 import kalang.compiler.core.*;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
@@ -186,12 +187,18 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         thisClazz = clazz;
         for(MethodNode m:thisClazz.getDeclaredMethodNodes()){
             StatContext[] stats = classNodeStructureBuilder.getStatContexts(m);
+            TerminalStatementAnalyzer terminalStatAnalyzer = new TerminalStatementAnalyzer();
             if(stats!=null){
                 BlockStmt mbody = m.getBody();
                 assert mbody != null;
                 enterMethod(m);
+                Statement prevStmt = null;
                 for (StatContext s: stats) {
-                    mbody.statements.add(visitStat(s));
+                    if (terminalStatAnalyzer.isTerminalStatement(prevStmt)) {
+                        handleSyntaxError("unreachable statement", offset(s));
+                    }
+                    prevStmt = visitStat(s);
+                    mbody.statements.add(prevStmt);
                 }
                 checkMethod();
             }
@@ -278,15 +285,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return parseLambdaType(ctx);
     }
 
-    @Override
-    public Object visit(ParseTree tree) {
-        Objects.requireNonNull(tree);
-        if(tree instanceof StatContext && methodCtx.returned){
-            handleSyntaxError("unreachable statement", offset((StatContext)tree));
-        }
-        return super.visit(tree);
-    }
-
     private BlockStmt newBlock(StatementSupplier statementSupplier) {
         List<Statement> list = statementSupplier == null ? Collections.emptyList() : Collections.singletonList(statementSupplier.get());
         return newBlock(() -> list);
@@ -309,7 +307,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public ThrowStmt visitThrowStat(KalangParser.ThrowStatContext ctx) {
         ThrowStmt ts = new ThrowStmt(visitExpression(ctx.expression()));
         mapAst(ts, ctx);
-        this.methodCtx.returned = true;
         return ts;
     }
 
@@ -459,16 +456,16 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         this.methodCtx.nullState = trueAssigned = this.methodCtx.nullState.newStack();
         BlockStmt trueBody = ctx.trueStmt == null ? null : methodCtx.doInCondition(expr, true, () -> requireBlock(ctx.trueStmt));
         this.methodCtx.nullState = this.methodCtx.nullState.popStack();
-        boolean trueReturned = this.methodCtx.returned;
-        this.methodCtx.returned = false;
         this.methodCtx.nullState = falseAssigned = this.methodCtx.nullState.newStack();
         BlockStmt falseBody = ctx.falseStmt == null ? null : methodCtx.doInCondition(expr,false, () -> requireBlock(ctx.falseStmt));
         this.methodCtx.nullState = this.methodCtx.nullState.popStack();
         methodCtx.handleMultiBranchedAssign(trueAssigned.vars(),falseAssigned.vars());
-        boolean falseReturned = this.methodCtx.returned;
-        if(trueReturned) methodCtx.onIf(expr,false);
-        if(falseReturned) methodCtx.onIf(expr,true);
-        this.methodCtx.returned = falseReturned && trueReturned;
+        if(terminalStmtAnalyzer.isTerminalStatement(trueBody)){
+            methodCtx.onIf(expr,false);
+        }
+        if(terminalStmtAnalyzer.isTerminalStatement(falseBody)){
+            methodCtx.onIf(expr,true);
+        }
         IfStmt ifStmt = new IfStmt(expr,trueBody,falseBody);
         mapAst(ifStmt,ctx);
         return ifStmt;
@@ -542,7 +539,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitBreakStat(BreakStatContext ctx) {
-        this.methodCtx.returned = true;
         BreakStmt bs = new BreakStmt();
         mapAst(bs,ctx);
         return bs;
@@ -550,7 +546,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitContinueStat(ContinueStatContext ctx) {
-        this.methodCtx.returned = true;
         ContinueStmt cs = new ContinueStmt();
         mapAst(cs,ctx);
         return cs;
@@ -558,79 +553,64 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitWhileStat(WhileStatContext ctx) {
-        boolean oldReturned = this.methodCtx.returned;
-        try {
-            ExprNode preConditionExpr = visitExpression(ctx.expression());
-            BlockStmt loopBody = null;
-            if (ctx.stat() != null) {
-                loopBody = requireBlock(ctx.stat());
-            }
-            LoopStmt ws = new LoopStmt(preConditionExpr,null, loopBody,null);
-            mapAst(ws,ctx);
-            return ws;
-        } finally {
-            this.methodCtx.returned = oldReturned;
+        ExprNode preConditionExpr = visitExpression(ctx.expression());
+        BlockStmt loopBody = null;
+        if (ctx.stat() != null) {
+            loopBody = requireBlock(ctx.stat());
         }
+        LoopStmt ws = new LoopStmt(preConditionExpr,null, loopBody,null);
+        mapAst(ws,ctx);
+        return ws;
     }
 
     @Override
     public AstNode visitDoWhileStat(DoWhileStatContext ctx) {
-        boolean oldReturned = this.methodCtx.returned;
-        try {
-            BlockStmt loopBody = null;
-            if (ctx.blockStmt() != null) {
-                loopBody = requireBlock(ctx.blockStmt());
-            }
-            ExprNode postConditionExpr = visitExpression(ctx.expression());
-            LoopStmt ls = new LoopStmt(null, postConditionExpr, loopBody, null);
-            mapAst(ls, ctx);
-            return ls;
-        } finally {
-            this.methodCtx.returned = oldReturned;
+        BlockStmt loopBody = null;
+        if (ctx.blockStmt() != null) {
+            loopBody = requireBlock(ctx.blockStmt());
         }
+        ExprNode postConditionExpr = visitExpression(ctx.expression());
+        LoopStmt ls = new LoopStmt(null, postConditionExpr, loopBody, null);
+        mapAst(ls, ctx);
+        return ls;
     }
 
     @Override
     public AstNode visitForStat(ForStatContext ctx) {
         //TODO It seems that here lacks of var stack
-        boolean oldReturned = methodCtx.returned;
-        try {
-            return newBlock(() -> {
-                List<Statement> statements = new LinkedList<>();
-                if (ctx.localVarDecl() != null) {
-                    Statement vars = visitLocalVarDecl(ctx.localVarDecl());
-                    statements.add(vars);
-                }
-                if (ctx.initExpressions != null) {
-                    statements.addAll(visitExpressions(ctx.initExpressions));
-                }
-                ExprNode preConditionExpr = ctx.condition != null ? visitExpression(ctx.condition) : null;
-                BlockStmt bs = newBlock(() -> {
-                    LinkedList<Statement> ubStatements = new LinkedList<>();
-                    if (ctx.stat() != null) {
-                        Statement st = visitStat(ctx.stat());
-                        if (st instanceof BlockStmt) {
-                            ubStatements.addAll(((BlockStmt) st).statements);
-                        } else if (st != null) {
-                            ubStatements.add(st);
-                        }
+        return newBlock(() -> {
+            List<Statement> statements = new LinkedList<>();
+            if (ctx.localVarDecl() != null) {
+                Statement vars = visitLocalVarDecl(ctx.localVarDecl());
+                statements.add(vars);
+            }
+            if (ctx.initExpressions != null) {
+                statements.addAll(visitExpressions(ctx.initExpressions));
+            }
+            ExprNode preConditionExpr = ctx.condition != null ? visitExpression(ctx.condition) : null;
+            BlockStmt bs = newBlock(() -> {
+                LinkedList<Statement> ubStatements = new LinkedList<>();
+                if (ctx.stat() != null) {
+                    Statement st = visitStat(ctx.stat());
+                    if (st instanceof BlockStmt) {
+                        ubStatements.addAll(((BlockStmt) st).statements);
+                    } else if (st != null) {
+                        ubStatements.add(st);
                     }
-                    return ubStatements;
-                });
-                BlockStmt updateBs = newBlock(() -> {
-                    if (ctx.updateExpressions != null) {
-                        return visitExpressions(ctx.updateExpressions);
-                    }
-                    return Collections.emptyList();
-                });
-                LoopStmt ls = new LoopStmt(preConditionExpr, null, bs, updateBs);
-                mapAst(ls, ctx);
-                statements.add(ls);
-                return statements;
+                }
+                return ubStatements;
             });
-        } finally {
-            methodCtx.returned = oldReturned;
-        }
+            BlockStmt updateBs = newBlock(() -> {
+                if (ctx.updateExpressions != null) {
+                    return visitExpressions(ctx.updateExpressions);
+                }
+                return Collections.emptyList();
+            });
+            LoopStmt ls = new LoopStmt(preConditionExpr, null, bs, updateBs);
+            mapAst(ls, ctx);
+            statements.add(ls);
+            return statements;
+        });
     }
 
     @Override
@@ -1412,20 +1392,17 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 return tryExecStmt;
             }
         }
-        boolean tryReturned = this.methodCtx.returned;
         List<CatchBlock> tryCatchBlocks = new LinkedList<>();
         if (ctx.catchTypes != null) {
             for (int i = 0; i < ctx.catchTypes.size(); i++) {
                 final int catchIdx = i;
                 methodCtx.newFrame(() -> {
-                    this.methodCtx.returned = false;
                     String vName = ctx.catchVarNames.get(catchIdx).getText();
                     String vType = ctx.catchTypes.get(catchIdx).getText();
                     LocalVarNode vo = this.declareLocalVar(vName, requireClassType(vType, ctx.catchTypes.get(catchIdx).start), Modifier.FINAL, offset(ctx));
                     BlockStmt catchExecStmt = requireBlock(ctx.catchExec.get(catchIdx));
                     CatchBlock catchStmt = new CatchBlock(vo, catchExecStmt);
                     tryCatchBlocks.add(catchStmt);
-                    this.methodCtx.returned = this.methodCtx.returned && tryReturned;
                 });
             }
         }
@@ -1706,117 +1683,112 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public Object visitForEachStat(KalangParser.ForEachStatContext ctx) {
-        boolean oldReturned = methodCtx.returned;
-        try {
-            return newBlock(() -> {
-                ExprNode expr = this.visitExpression(ctx.expression());
-                Type exprType = expr.getType();
-                VarExpr indexVarExpr = null;
-                List<Statement> blockStatements = new LinkedList<>();
-                Token varId = ctx.valueId;
-                Token indexId = ctx.indexId;
-                if (indexId != null) {
-                    LocalVarNode indexVar = this.declareLocalVar(indexId.getText(), Types.INT_TYPE, 0, offset(ctx));
-                    blockStatements.add(new VarDeclStmt(indexVar));
-                    indexVarExpr = new VarExpr(indexVar);
-                }
-                LoopStmt loopStmt;
-                if (exprType instanceof ArrayType) {
-                    LocalVarNode localVarNode = this.declareLocalVar(varId.getText(), ((ArrayType) exprType).getComponentType(), 0, offset(ctx));
-                    VarExpr localVariable = new VarExpr(localVarNode);
-                    blockStatements.add(new VarDeclStmt(localVarNode));
-                    LocalVarNode lenVar = this.declareTempLocalVar(Types.INT_TYPE);
-                    LocalVarNode counterVar = this.declareTempLocalVar(Types.INT_TYPE);
-                    blockStatements.add(new VarDeclStmt(lenVar));//var len
-                    blockStatements.add(new VarDeclStmt(counterVar));//var i
-                    VarExpr counterVarExpr = new VarExpr(counterVar);
-                    VarExpr lenVarExpr = new VarExpr(lenVar);
-                    blockStatements.add(new ExprStmt(new AssignExpr(lenVarExpr, new ArrayLengthExpr(expr))));//l = array.length
-                    blockStatements.add(new ExprStmt(new AssignExpr(counterVarExpr, new ConstExpr(0))));//i=0
-                    ExprNode cnd = new CompareBinaryExpr(counterVarExpr, lenVarExpr, CompareBinaryExpr.OP_LT);
-                    VarExpr theIndexVarExpr = indexVarExpr;
+        return newBlock(() -> {
+            ExprNode expr = this.visitExpression(ctx.expression());
+            Type exprType = expr.getType();
+            VarExpr indexVarExpr = null;
+            List<Statement> blockStatements = new LinkedList<>();
+            Token varId = ctx.valueId;
+            Token indexId = ctx.indexId;
+            if (indexId != null) {
+                LocalVarNode indexVar = this.declareLocalVar(indexId.getText(), Types.INT_TYPE, 0, offset(ctx));
+                blockStatements.add(new VarDeclStmt(indexVar));
+                indexVarExpr = new VarExpr(indexVar);
+            }
+            LoopStmt loopStmt;
+            if (exprType instanceof ArrayType) {
+                LocalVarNode localVarNode = this.declareLocalVar(varId.getText(), ((ArrayType) exprType).getComponentType(), 0, offset(ctx));
+                VarExpr localVariable = new VarExpr(localVarNode);
+                blockStatements.add(new VarDeclStmt(localVarNode));
+                LocalVarNode lenVar = this.declareTempLocalVar(Types.INT_TYPE);
+                LocalVarNode counterVar = this.declareTempLocalVar(Types.INT_TYPE);
+                blockStatements.add(new VarDeclStmt(lenVar));//var len
+                blockStatements.add(new VarDeclStmt(counterVar));//var i
+                VarExpr counterVarExpr = new VarExpr(counterVar);
+                VarExpr lenVarExpr = new VarExpr(lenVar);
+                blockStatements.add(new ExprStmt(new AssignExpr(lenVarExpr, new ArrayLengthExpr(expr))));//l = array.length
+                blockStatements.add(new ExprStmt(new AssignExpr(counterVarExpr, new ConstExpr(0))));//i=0
+                ExprNode cnd = new CompareBinaryExpr(counterVarExpr, lenVarExpr, CompareBinaryExpr.OP_LT);
+                VarExpr theIndexVarExpr = indexVarExpr;
+                BlockStmt loopBodyBs = this.newBlock(() -> {
+                    List<Statement> loopBodyStatements = new LinkedList<>();
+                    loopBodyStatements.add(new ExprStmt(
+                            new AssignExpr(localVariable, new ElementExpr(expr, counterVarExpr))
+                    ));
+                    if (theIndexVarExpr != null) {
+                        loopBodyStatements.add(new ExprStmt(new AssignExpr(theIndexVarExpr, counterVarExpr)));
+                    }
+                    loopBodyStatements.add(visitStat(ctx.stat()));
+                    return loopBodyStatements;
+                });
+                BlockStmt updateBs = newBlock(() -> {
+                    //increment counter
+                    return new ExprStmt(
+                            new AssignExpr(
+                                    counterVarExpr, new ArithmeticBinaryExpr(counterVarExpr, new ConstExpr(1), ArithmeticBinaryExpr.OP_ADD)
+                            )
+                    );
+                });
+                loopStmt = new LoopStmt(cnd, null, loopBodyBs, updateBs);
+            } else {
+                ObjectType iterType = Types.getIterableClassType();
+                if (iterType.isAssignableFrom(exprType)) {
+                    ObjectInvokeExpr getIterableExpr;
+                    try {
+                        getIterableExpr = ObjectInvokeExpr.create(expr, "iterator", null);
+                    } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                        throw Exceptions.unexpectedException(ex);
+                    }
+                    LocalVarNode iterableVarNode = this.declareTempLocalVar(getIterableExpr.getType());
+                    blockStatements.add(new VarDeclStmt(iterableVarNode));
+                    VarExpr iterableVarExpr = new VarExpr(iterableVarNode);
+                    blockStatements.add(new ExprStmt(new AssignExpr(iterableVarExpr, getIterableExpr)));
+                    //set index = 0
+                    if (indexVarExpr != null) {
+                        blockStatements.add(new ExprStmt(new AssignExpr(indexVarExpr, new ConstExpr(0))));
+                    }
+                    ObjectInvokeExpr cnd;
+                    try {
+                        cnd = ObjectInvokeExpr.create(iterableVarExpr, "hasNext", null);
+                    } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                        throw Exceptions.unexpectedException(ex);
+                    }
                     BlockStmt loopBodyBs = this.newBlock(() -> {
                         List<Statement> loopBodyStatements = new LinkedList<>();
-                        loopBodyStatements.add(new ExprStmt(
-                                new AssignExpr(localVariable, new ElementExpr(expr, counterVarExpr))
-                        ));
-                        if (theIndexVarExpr != null) {
-                            loopBodyStatements.add(new ExprStmt(new AssignExpr(theIndexVarExpr, counterVarExpr)));
+                        ObjectInvokeExpr nextInvokeExpr;
+                        try {
+                            nextInvokeExpr = ObjectInvokeExpr.create(iterableVarExpr, "next", null);
+                        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
+                            throw Exceptions.unexpectedException(ex);
                         }
+                        LocalVarNode localVarNode = this.declareLocalVar(varId.getText(), nextInvokeExpr.getType(), 0, offset(ctx));
+                        VarExpr localVariable = new VarExpr(localVarNode);
+                        loopBodyStatements.add(new VarDeclStmt(localVarNode));
+                        loopBodyStatements.add(new ExprStmt(
+                                new AssignExpr(localVariable, new CastExpr(localVariable.getType(), nextInvokeExpr))
+                        ));
                         loopBodyStatements.add(visitStat(ctx.stat()));
                         return loopBodyStatements;
                     });
-                    BlockStmt updateBs = newBlock(() -> {
-                        //increment counter
+                    VarExpr theIndexVarExpr = indexVarExpr;
+                    BlockStmt updateBs = theIndexVarExpr == null ? null : newBlock(() -> {
+                        //do index++
                         return new ExprStmt(
                                 new AssignExpr(
-                                        counterVarExpr, new ArithmeticBinaryExpr(counterVarExpr, new ConstExpr(1), ArithmeticBinaryExpr.OP_ADD)
+                                        theIndexVarExpr
+                                        , new ArithmeticBinaryExpr(theIndexVarExpr, new ConstExpr(1), BinaryExpr.OP_ADD)
                                 )
                         );
                     });
                     loopStmt = new LoopStmt(cnd, null, loopBodyBs, updateBs);
                 } else {
-                    ObjectType iterType = Types.getIterableClassType();
-                    if (iterType.isAssignableFrom(exprType)) {
-                        ObjectInvokeExpr getIterableExpr;
-                        try {
-                            getIterableExpr = ObjectInvokeExpr.create(expr, "iterator", null);
-                        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-                            throw Exceptions.unexpectedException(ex);
-                        }
-                        LocalVarNode iterableVarNode = this.declareTempLocalVar(getIterableExpr.getType());
-                        blockStatements.add(new VarDeclStmt(iterableVarNode));
-                        VarExpr iterableVarExpr = new VarExpr(iterableVarNode);
-                        blockStatements.add(new ExprStmt(new AssignExpr(iterableVarExpr, getIterableExpr)));
-                        //set index = 0
-                        if (indexVarExpr != null) {
-                            blockStatements.add(new ExprStmt(new AssignExpr(indexVarExpr, new ConstExpr(0))));
-                        }
-                        ObjectInvokeExpr cnd;
-                        try {
-                            cnd = ObjectInvokeExpr.create(iterableVarExpr, "hasNext", null);
-                        } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-                            throw Exceptions.unexpectedException(ex);
-                        }
-                        BlockStmt loopBodyBs = this.newBlock(() -> {
-                            List<Statement> loopBodyStatements = new LinkedList<>();
-                            ObjectInvokeExpr nextInvokeExpr;
-                            try {
-                                nextInvokeExpr = ObjectInvokeExpr.create(iterableVarExpr, "next", null);
-                            } catch (MethodNotFoundException | AmbiguousMethodException ex) {
-                                throw Exceptions.unexpectedException(ex);
-                            }
-                            LocalVarNode localVarNode = this.declareLocalVar(varId.getText(), nextInvokeExpr.getType(), 0, offset(ctx));
-                            VarExpr localVariable = new VarExpr(localVarNode);
-                            loopBodyStatements.add(new VarDeclStmt(localVarNode));
-                            loopBodyStatements.add(new ExprStmt(
-                                    new AssignExpr(localVariable, new CastExpr(localVariable.getType(), nextInvokeExpr))
-                            ));
-                            loopBodyStatements.add(visitStat(ctx.stat()));
-                            return loopBodyStatements;
-                        });
-                        VarExpr theIndexVarExpr = indexVarExpr;
-                        BlockStmt updateBs = theIndexVarExpr == null ? null : newBlock(() -> {
-                            //do index++
-                            return new ExprStmt(
-                                    new AssignExpr(
-                                            theIndexVarExpr
-                                            , new ArithmeticBinaryExpr(theIndexVarExpr, new ConstExpr(1), BinaryExpr.OP_ADD)
-                                    )
-                            );
-                        });
-                        loopStmt = new LoopStmt(cnd, null, loopBodyBs, updateBs);
-                    } else {
-                        this.handleSyntaxError("require array type or iterable type", offset(ctx.expression()));
-                        loopStmt = null;
-                    }
+                    this.handleSyntaxError("require array type or iterable type", offset(ctx.expression()));
+                    loopStmt = null;
                 }
-                if (loopStmt != null) blockStatements.add(loopStmt);
-                return blockStatements;
-            });
-        } finally {
-            methodCtx.returned = oldReturned;
-        }
+            }
+            if (loopStmt != null) blockStatements.add(loopStmt);
+            return blockStatements;
+        });
     }
 
     @Override
@@ -2039,7 +2011,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
             if (returnType.equals(Types.getVoidClassType())) {
                 bsStatements.add(onReturnStmt(new ReturnStmt(new ConstExpr(null))));
-                methodCtx.returned = true;
             }
             return bsStatements;
         });
@@ -2110,7 +2081,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     private ReturnStmt onReturnStmt(ReturnStmt rs) {
-        this.methodCtx.returned = true;
         if(rs.expr != null) {
             Type eType = rs.expr.getType();
             Type oldType = methodCtx.method.inferredReturnType;

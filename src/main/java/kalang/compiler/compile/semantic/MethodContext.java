@@ -22,8 +22,6 @@ public class MethodContext {
 
     public final MethodNode method;
 
-    public boolean returned = false;
-
     public VarTable<String,LocalVarNode> varTables = new VarTable();
 
     public VarTable<VarObject, Type> overrideTypes = new VarTable();

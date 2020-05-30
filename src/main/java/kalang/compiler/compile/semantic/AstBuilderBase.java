@@ -8,6 +8,7 @@ import kalang.compiler.compile.Diagnosis;
 import kalang.compiler.compile.OffsetRange;
 import kalang.compiler.compile.TypeNameResolver;
 import kalang.compiler.compile.semantic.analyzer.StatementAnalyzer;
+import kalang.compiler.compile.semantic.analyzer.TerminalStatementAnalyzer;
 import kalang.compiler.compile.util.DiagnosisReporter;
 import kalang.compiler.core.*;
 import kalang.compiler.util.*;
@@ -32,6 +33,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     private Map<FieldNode, MethodNode> privateFieldReaderMap = new HashMap<>();
 
     private Map<FieldNode, MethodNode> privateFieldWriterMap = new HashMap<>();
+
+    protected TerminalStatementAnalyzer terminalStmtAnalyzer = new TerminalStatementAnalyzer();
 
     protected MethodContext methodCtx;
 
@@ -167,7 +170,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         MethodNode m = this.methodCtx.method;
         boolean needReturn = m.getType() != null && !m.getType().equals(Types.VOID_TYPE);
         BlockStmt mbody = m.getBody();
-        if (mbody != null && needReturn && !methodCtx.returned) {
+        if (mbody != null && needReturn && !terminalStmtAnalyzer.isTerminalStatement(mbody)) {
             ConstExpr defaultVal = m.getDefaultReturnValue();
             if (defaultVal!=null) {
                 mbody.statements.add(new ReturnStmt(defaultVal));
@@ -203,7 +206,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected void enterMethod(MethodNode method) {
         methodCtx = new MethodContext(this.getCurrentClass(),method);
-        methodCtx.returned = false;
     }
 
     @Nullable
