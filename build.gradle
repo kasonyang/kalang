@@ -17,7 +17,7 @@ dependencies{
   compile 'org.antlr:antlr4-runtime:4.5.1'
   compile 'org.apache.commons:commons-collections4:4.1'
   testCompile 'junit:junit:4.12'
-  compile 'org.ow2.asm:asm:7.0'
+  compile 'org.ow2.asm:asm:7.3.1'
   compile 'com.google.code.findbugs:jsr305:3.0.1'
   compile project(":kalang-runtime")
   compile 'commons-io:commons-io:2.5'

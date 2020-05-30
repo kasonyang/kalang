@@ -2,15 +2,22 @@
 package kalang.compiler.compile.codegen;
 
 import kalang.compiler.ast.*;
-import kalang.compiler.compile.*;
+import kalang.compiler.compile.AstLoader;
+import kalang.compiler.compile.AstNotFoundException;
+import kalang.compiler.compile.CodeGenerator;
+import kalang.compiler.compile.CompilationUnit;
+import kalang.compiler.compile.codegen.op.*;
 import kalang.compiler.compile.semantic.MalformedAstException;
-import kalang.compiler.core.Type;
+import kalang.compiler.compile.semantic.analyzer.TerminalStatementAnalyzer;
 import kalang.compiler.core.*;
-import kalang.compiler.ast.LambdaExpr;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
 import kalang.mixin.CollectionMixin;
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,6 +26,7 @@ import java.io.OutputStream;
 import java.lang.invoke.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,26 +43,26 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private final CompilationUnit compilationUnit;
 
     private ClassWriter classWriter;
-    private MethodVisitor md;
+    private OpCollector opCollector;
     
     private OutputManager outputManager;
 
     private final AstLoader astLoader;
     
-    private Map<Integer,Label> lineLabels = new HashMap();
+    private Map<Integer, LabelOp> lineLabels = new HashMap<>();
     
     private Map<VarObject,Integer> varIds = new HashMap<>();
     
-    private Stack<Integer> varStartIndexOfFrame = new Stack();
+    private Stack<Integer> varStartIndexOfFrame = new Stack<>();
     
-    private Map<VarObject,Label> varStartLabels = new HashMap();
+    private Map<VarObject, LabelOp> varStartLabels = new HashMap<>();
     
-    private VarTable<Integer,LocalVarNode> varTables = new VarTable();
+    private VarTable<Integer,LocalVarNode> varTables = new VarTable<>();
     
     private int varIdCounter = 0;
     
-    private Stack<Label> breakLabels = new Stack<>();
-    private Stack<Label> continueLabels = new Stack<>();
+    private Stack<LabelOp> breakLabels = new Stack<>();
+    private Stack<LabelOp> continueLabels = new Stack<>();
 
     private Stack<CatchContext> catchContextStack = new Stack<>();
 
@@ -65,7 +73,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             T_D = 3,
             T_A = 4;
     private ClassNode clazz;
+    private TerminalStatementAnalyzer terminalStmtAnalyzer = new TerminalStatementAnalyzer(true);
     private String classInternalName;
+
 
     public Ast2Class(OutputManager outputManager, AstLoader astLoader, CompilationUnit compilationUnit) {
         this.outputManager = outputManager;
@@ -247,10 +257,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
         //clinit
         if(!node.staticInitStmts.isEmpty()){
-            md = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+            MethodVisitor method = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+            opCollector = new OpCollector();
             visitAll(node.staticInitStmts);
-            md.visitInsn(RETURN);
-            md.visitMaxs(1, 1);
+            opCollector.visitInsn(RETURN);
+            applyOp(method, opCollector);
+            method.visitMaxs(1, 1);
         }
         if(node.enclosingClass!=null){
             this.classWriter.visitInnerClass(this.internalName(node), this.internalName(node.enclosingClass), NameUtil.getSimpleClassName(node.name), node.modifier);
@@ -279,13 +291,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMethodNode(MethodNode node) {
         int access = node.getModifier();
-        md = classWriter.visitMethod(access, internalName(node.getName()),getMethodDescriptor(node),methodSignature(node),internalName(node.getExceptionTypes()) );
+        MethodVisitor method = classWriter.visitMethod(access, internalName(node.getName()), getMethodDescriptor(node), methodSignature(node), internalName(node.getExceptionTypes()));
+        opCollector = new OpCollector();
         if(node.getType() instanceof ObjectType){
-            annotationNullable(md,(ObjectType)node.getType());
+            annotationNullable(method,(ObjectType)node.getType());
         }
-        annotation(md, node.getAnnotations());
-        Label methodStartLabel = new Label();
-        Label methodEndLabel = new Label();
+        annotation(method, node.getAnnotations());
+        //Label methodStartLabel = new Label();
+        //Label methodEndLabel = new Label();
         if(AstUtil.isStatic(node.getModifier())){
             varIdCounter = 0;
         }else{
@@ -295,29 +308,31 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         ParameterNode[] parameters = node.getParameters();
         for(int i=0;i<parameters.length;i++){
             ParameterNode p = parameters[i];
-            visit(p);
+            method.visitParameter(p.getName(), p.modifier);
+            this.declareNewVar(p);
             if(p.getType() instanceof ObjectType){
                 String nullableAnnotation = getNullableAnnotation((ObjectType)p.getType());
                 if (nullableAnnotation!=null && nullableAnnotation.isEmpty()) {
-                    md.visitParameterAnnotation(i,getClassDescriptor(nullableAnnotation), true).visitEnd();
+                    method.visitParameterAnnotation(i,getClassDescriptor(nullableAnnotation), true).visitEnd();
                 }
             }
         }
-        md.visitLabel(methodStartLabel);
+        //opCollector.visitLabel(methodStartLabel);
         if(body!=null){
             visit(body);
             if(node.getType().equals(VOID_TYPE)){
-                md.visitInsn(RETURN);
+                opCollector.visitInsn(RETURN);
             }
-            md.visitLabel(methodEndLabel);
+            //opCollector.visitLabel(methodEndLabel);
+            applyOp(method, opCollector);
             try{
-                md.visitMaxs(0, 0);
+                method.visitMaxs(0, 0);
             }catch(Exception ex){
                 ex.printStackTrace(System.err);
                 //throw new RuntimeException("exception when visit method:" + node.name, ex);
             }
         }
-        md.visitEnd();
+        method.visitEnd();
         return null;
     }
     
@@ -349,8 +364,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         varIdCounter+= vSize;
         varIds.put(vo, vid);          
-        Label startLabel = new Label();
-        md.visitLabel(startLabel);
+        LabelOp startLabel = new LabelOp();
+        opCollector.visitLabel(startLabel);
         this.varStartLabels.put(vo,startLabel);
         if(vo instanceof LocalVarNode){
             this.varTables.put(vid, (LocalVarNode) vo);
@@ -363,12 +378,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 //        if(vid==null){
 //            throw Exceptions.unexpectedValue(vid);
 //        }
-        Label endLabel = new Label();
-        md.visitLabel(endLabel);
+        LabelOp endLabel = new LabelOp();
+        opCollector.visitLabel(endLabel);
         this.varIds.remove(var);
         String name = var.getName();
         if(vid!=null && name!=null && !name.isEmpty()){
-            md.visitLocalVariable(name, getTypeDescriptor(var.getType()),null ,varStartLabels.get(var), endLabel, vid);
+            opCollector.visitLocalVariable(name, getTypeDescriptor(var.getType()),null ,varStartLabels.get(var), endLabel, vid);
         }
     }
 
@@ -385,7 +400,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if (breakLabels.isEmpty()) {
             throw new MalformedAstException("break outside of loop", node);
         }
-        md.visitJumpInsn(GOTO, breakLabels.peek());
+        opCollector.visitJumpInsn(GOTO, breakLabels.peek());
         return null;
     }
 
@@ -394,16 +409,16 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if (continueLabels.isEmpty()) {
             throw new MalformedAstException("continue outside of loop", node);
         }
-        md.visitJumpInsn(GOTO, continueLabels.peek());
+        opCollector.visitJumpInsn(GOTO, continueLabels.peek());
         return null;
     }
     
     private void pop(Type type){
         int size =  asmType(type).getSize();
         if(size==1){
-            md.visitInsn(POP);
+            opCollector.visitInsn(POP);
         }else if(size==2){
-            md.visitInsn(POP2);
+            opCollector.visitInsn(POP2);
         }else{
             throw new UnsupportedOperationException("It is unsupported to pop for the type:" + type);
         }
@@ -419,7 +434,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
     
-    private void ifExpr(boolean jumpOnTrue,ExprNode condition,Label label){
+    private void ifExpr(boolean jumpOnTrue, ExprNode condition, LabelOp label){
         if(condition instanceof LogicBinaryExpr){
             LogicBinaryExpr be = (LogicBinaryExpr) condition;
             ExprNode e1 = be.getExpr1();
@@ -428,11 +443,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             switch(op){
                 case "&&":
                     if(jumpOnTrue){
-                        Label stopLabel = new Label();
+                        LabelOp stopLabel = new LabelOp();
                         ifExpr(false,e1,stopLabel);
                         ifExpr(false,e2,stopLabel);
-                        md.visitJumpInsn(GOTO, label);
-                        md.visitLabel(stopLabel);
+                        opCollector.visitJumpInsn(GOTO, label);
+                        opCollector.visitLabel(stopLabel);
                     }else{
                         ifExpr(false, e1, label);
                         ifExpr(false, e2, label);
@@ -443,11 +458,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                         ifExpr(true, e1, label);
                         ifExpr(true, e2, label);
                     }else{
-                        Label stopLabel = new Label();
+                        LabelOp stopLabel = new LabelOp();
                         ifExpr(true, e1, stopLabel);
                         ifExpr(true, e2, stopLabel);
-                        md.visitJumpInsn(GOTO, label);
-                        md.visitLabel(stopLabel);
+                        opCollector.visitJumpInsn(GOTO, label);
+                        opCollector.visitLabel(stopLabel);
                     }
                     break;
                 default:
@@ -459,46 +474,46 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             ifExpr(!jumpOnTrue, ((UnaryExpr)condition).getExpr(), label);
         }else{
             visit(condition);
-            md.visitJumpInsn(jumpOnTrue ? IFNE : IFEQ, label);
+            opCollector.visitJumpInsn(jumpOnTrue ? IFNE : IFEQ, label);
         }
     }
 
     @Override
     public Object visitIfStmt(IfStmt node) {
-        Label stopLabel = new Label();
-        Label falseLabel = new Label();
+        LabelOp stopLabel = new LabelOp();
+        LabelOp falseLabel = new LabelOp();
         ExprNode condition = node.getConditionExpr();
         Statement trueBody = node.getTrueBody();
         Statement falseBody = node.getFalseBody();    
         ifExpr(false,condition,falseLabel);
         visit(trueBody);
-        md.visitJumpInsn(GOTO, stopLabel);
-        md.visitLabel(falseLabel);
+        opCollector.visitJumpInsn(GOTO, stopLabel);
+        opCollector.visitLabel(falseLabel);
         visit(falseBody);
-        md.visitLabel(stopLabel);
+        opCollector.visitLabel(stopLabel);
         return null;
     }
 
     @Override
     public Object visitLoopStmt(LoopStmt node) {
         //visitAll(node.initStmts);
-        Label startLabel = new Label();
-        Label continueLabel = new Label();
-        Label stopLabel = new Label();
+        LabelOp startLabel = new LabelOp();
+        LabelOp continueLabel = new LabelOp();
+        LabelOp stopLabel = new LabelOp();
         continueLabels.push(continueLabel);
         breakLabels.push(stopLabel);
-        md.visitLabel(startLabel);
+        opCollector.visitLabel(startLabel);
         if(node.getPreConditionExpr()!=null){
             ifExpr(false, node.getPreConditionExpr(),stopLabel);
         }
         visit(node.getLoopBody());
-        md.visitLabel(continueLabel);
+        opCollector.visitLabel(continueLabel);
         visit(node.getUpdateStmt());
         if(node.getPostConditionExpr()!=null){
             ifExpr(false, node.getPostConditionExpr(),stopLabel);
         }
-        md.visitJumpInsn(GOTO, startLabel);
-        md.visitLabel(stopLabel);
+        opCollector.visitJumpInsn(GOTO, startLabel);
+        opCollector.visitLabel(stopLabel);
         continueLabels.pop();
         breakLabels.pop();
         return null;
@@ -514,7 +529,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             returnType = node.expr.getType();
             lnsn = asmType(returnType).getOpcode(IRETURN);
             returnVar = declareNewVar(returnType);
-            md.visitVarInsn(asmType(returnType).getOpcode(ISTORE), returnVar);
+            opCollector.visitVarInsn(asmType(returnType).getOpcode(ISTORE), returnVar);
         }
         Stack<CatchContext> ccStack = new Stack<>();
         while (!catchContextStack.isEmpty()){
@@ -523,11 +538,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             Statement finallyStmt = catchContext.getFinallyStatement();
             if (finallyStmt!=null) {
                 this.newFrame();
-                Label startLabel = new Label();
-                Label endLabel = new Label();
-                md.visitLabel(startLabel);
+                LabelOp startLabel = new LabelOp();
+                LabelOp endLabel = new LabelOp();
+                opCollector.visitLabel(startLabel);
                 visit(finallyStmt);
-                md.visitLabel(endLabel);
+                opCollector.visitLabel(endLabel);
                 popFrame();
                 catchContext.addExclude(startLabel, endLabel);
             }
@@ -536,9 +551,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             catchContextStack.push(ccStack.pop());
         }
         if (returnVar > -1) {
-            md.visitVarInsn(asmType(returnType).getOpcode(ILOAD), returnVar);
+            opCollector.visitVarInsn(asmType(returnType).getOpcode(ILOAD), returnVar);
         }
-        md.visitInsn(lnsn);
+        opCollector.visitInsn(lnsn);
         return null;
     }
 
@@ -554,69 +569,73 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             return null;
         }
         this.newFrame();
-        Label tryStartLabel = new Label();
-        Label tryEndLabel = new Label();
-        Label exitLabel = new Label();
-        Label finallyStartLabel = new Label();
+        LabelOp tryStartLabel = new LabelOp();
+        LabelOp tryEndLabel = new LabelOp();
+        LabelOp exitLabel = new LabelOp();
+        LabelOp finallyStartLabel = new LabelOp();
         CatchContext catchContextOfTry = new CatchContext(tryStartLabel, tryEndLabel, finallyStmt);
         catchContextStack.push(catchContextOfTry);
-        md.visitLabel(tryStartLabel);
+        opCollector.visitLabel(tryStartLabel);
         visit(execStmt);
-        md.visitLabel(tryEndLabel);
+        opCollector.visitLabel(tryEndLabel);
         this.popFrame();
         catchContextStack.pop();
-        if (finallyStmt!=null) {
-            this.newFrame();
-            visit(finallyStmt);
-            this.popFrame();
+        if (!terminalStmtAnalyzer.isTerminalStatement(execStmt)) {
+            if (finallyStmt!=null) {
+                this.newFrame();
+                visit(finallyStmt);
+                this.popFrame();
+            }
+            opCollector.visitJumpInsn(GOTO,exitLabel);
         }
-        md.visitJumpInsn(GOTO,exitLabel);
-        Label[] catchLabelsOfTry = catchContextOfTry.getCatchLabels();
+        LabelOp[] catchLabelsOfTry = catchContextOfTry.getCatchLabels();
         if(node.getCatchStmts()!=null){
             for(CatchBlock s:node.getCatchStmts()){
                 this.newFrame();
-                Label catchStartLabel = new Label();
-                Label catchStopLabel = new Label();
+                LabelOp catchStartLabel = new LabelOp();
+                LabelOp catchStopLabel = new LabelOp();
                 CatchContext catchContextOfCatch = new CatchContext(catchStartLabel,catchStopLabel,finallyStmt);
                 catchContextStack.push(catchContextOfCatch);
-                md.visitLabel(catchStartLabel);
+                opCollector.visitLabel(catchStartLabel);
                 visit(s);
-                md.visitLabel(catchStopLabel);
+                opCollector.visitLabel(catchStopLabel);
                 this.popFrame();
                 catchContextStack.pop();
-                if (finallyStmt!=null) {
-                    this.newFrame();
-                    visit(finallyStmt);
-                    this.popFrame();
+                if (!terminalStmtAnalyzer.isTerminalStatement(s.execStmt)) {
+                    if (finallyStmt!=null) {
+                        this.newFrame();
+                        visit(finallyStmt);
+                        this.popFrame();
+                    }
+                    opCollector.visitJumpInsn(GOTO,exitLabel);
                 }
-                md.visitJumpInsn(GOTO,exitLabel);
-                Label[] catchLabelsOfCatch = catchContextOfCatch.getCatchLabels();
+                LabelOp[] catchLabelsOfCatch = catchContextOfCatch.getCatchLabels();
                 String type = asmType(s.catchVar.getType()).getInternalName();
                 for(int j=0;j<catchLabelsOfTry.length;j+=2) {
-                    md.visitTryCatchBlock(catchLabelsOfTry[j],catchLabelsOfTry[j+1],catchStartLabel,type);
+                    opCollector.visitTryCatchBlock(catchLabelsOfTry[j],catchLabelsOfTry[j+1],catchStartLabel,type);
                 }
                 if (hasFinallyStmt) {
                     for(int j=0;j<catchLabelsOfCatch.length;j+=2) {
-                        md.visitTryCatchBlock(catchLabelsOfCatch[j],catchLabelsOfCatch[j+1],finallyStartLabel,null);
+                        opCollector.visitTryCatchBlock(catchLabelsOfCatch[j],catchLabelsOfCatch[j+1],finallyStartLabel,null);
                     }
                 }
             }
         }
         if(hasFinallyStmt){//any exception handler
             for(int i=0;i<catchLabelsOfTry.length-1;i+=2) {
-                md.visitTryCatchBlock(catchLabelsOfTry[i],catchLabelsOfTry[i+1],finallyStartLabel,null);
+                opCollector.visitTryCatchBlock(catchLabelsOfTry[i],catchLabelsOfTry[i+1],finallyStartLabel,null);
             }
             this.newFrame();
-            md.visitLabel(finallyStartLabel);
+            opCollector.visitLabel(finallyStartLabel);
             int exVarId = this.declareNewVar(Types.getRootType());
-            md.visitVarInsn(ASTORE,exVarId);
+            opCollector.visitVarInsn(ASTORE,exVarId);
             visit(finallyStmt);
-            md.visitVarInsn(ALOAD,exVarId);
-            md.visitInsn(ATHROW);
+            opCollector.visitVarInsn(ALOAD,exVarId);
+            opCollector.visitInsn(ATHROW);
             this.popFrame();
         }
-        md.visitLabel(exitLabel);
-        md.visitInsn(NOP);
+        opCollector.visitLabel(exitLabel);
+        opCollector.visitInsn(NOP);
         return null;
     }
 
@@ -624,7 +643,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitCatchBlock(CatchBlock node) {
         visit(node.catchVar);
         int exVarId = getVarId(node.catchVar);
-        md.visitVarInsn(ASTORE, exVarId);
+        opCollector.visitVarInsn(ASTORE, exVarId);
         visit(node.execStmt);
         return null;
     }
@@ -632,14 +651,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitThrowStmt(ThrowStmt node) {
         visit(node.expr);
-        md.visitInsn(ATHROW);
+        opCollector.visitInsn(ATHROW);
         return null;
     }
     
     private void assignVarObject(VarObject to,ExprNode from){
         visit(from);
         int vid = getVarId(to);
-        md.visitVarInsn(getOpcode(to.getType(),ISTORE), vid);
+        opCollector.visitVarInsn(getOpcode(to.getType(),ISTORE), vid);
     }
     
     private void assignField(FieldNode fn,ExprNode target, ExprNode from, int valueVar){
@@ -651,8 +670,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         visit(from);
         dupX(from.getType());
-        md.visitVarInsn(getOpcode(from.getType(),ISTORE), valueVar);
-        md.visitFieldInsn(opc,
+        opCollector.visitVarInsn(getOpcode(from.getType(),ISTORE), valueVar);
+        opCollector.visitFieldInsn(opc,
                 asmType(Types.getClassType(fn.getClassNode())).getInternalName(), fn.getName(), getTypeDescriptor(fn.getType()));
     }
     
@@ -669,7 +688,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private void astore(ExprNode expr){
         visit(expr);
         org.objectweb.asm.Type type = asmType(expr.getType());
-        md.visitInsn(type.getOpcode(IASTORE));
+        opCollector.visitInsn(type.getOpcode(IASTORE));
     }
     
     private void assignArrayElement(ExprNode array,ExprNode key,ExprNode from, int valueVar){
@@ -679,9 +698,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         visit(key);
         visit(from);
         dupX(from.getType());
-        md.visitVarInsn(getOpcode(from.getType(), ISTORE), valueVar);
+        opCollector.visitVarInsn(getOpcode(from.getType(), ISTORE), valueVar);
         ArrayType arrayType = (ArrayType) array.getType();
-        md.visitInsn(getOpcode(arrayType.getComponentType(),IASTORE));
+        opCollector.visitInsn(getOpcode(arrayType.getComponentType(),IASTORE));
     }
 
     @Override
@@ -707,7 +726,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         } else {
             throw new UnknownError("unknown expression:" + to);
         }
-        md.visitVarInsn(getOpcode(from.getType(),ILOAD), valueVar);
+        opCollector.visitVarInsn(getOpcode(from.getType(),ILOAD), valueVar);
         return null;
     }
 
@@ -743,19 +762,19 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             case BinaryExpr.OP_SHIFT_RIGHT:op = ISHR;break;
             case BinaryExpr.OP_UNSIGNED_SHIFT_RIGHT: op = IUSHR;break;
             default://logic expression
-                Label trueLabel = new Label();
-                Label stopLabel = new Label();
+                LabelOp trueLabel = new LabelOp();
+                LabelOp stopLabel = new LabelOp();
                 ifExpr(true,node, trueLabel);
                 constFalse();
-                md.visitJumpInsn(GOTO, stopLabel);
-                md.visitLabel(trueLabel);
+                opCollector.visitJumpInsn(GOTO, stopLabel);
+                opCollector.visitLabel(trueLabel);
                 constTrue();
-                md.visitLabel(stopLabel);
+                opCollector.visitLabel(stopLabel);
                 return null;
         }
         visit(e1);
         visit(e2);
-        md.visitInsn(at.getOpcode(op));
+        opCollector.visitInsn(at.getOpcode(op));
         return null;
     }
     
@@ -783,10 +802,42 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitConstExpr(ConstExpr node) {
         Object v = getJavaConst(node);
-        if(v==null){
-            md.visitInsn(ACONST_NULL);
+        if(v == null) {
+            opCollector.visitInsn(ACONST_NULL);
+        } else if (v instanceof Integer) {
+            int iv = (int) v;
+            if (iv >= 0 && iv <= 5) {
+                opCollector.visitInsn(ICONST_0 + iv);
+            } else {
+                opCollector.visitLdcInsn(iv);
+            }
+        } else if (v instanceof Long) {
+            long lv = (long) v;
+            if (lv == 0 || lv == 1) {
+                opCollector.visitInsn(LCONST_0 + (int) lv);
+            } else {
+                opCollector.visitLdcInsn(lv);
+            }
+        } else if (v instanceof Float) {
+            float fv = (float) v;
+            if (fv == 0) {
+                opCollector.visitInsn(FCONST_0);
+            } else if (fv == 1) {
+                opCollector.visitInsn(FCONST_1);
+            } else {
+                opCollector.visitLdcInsn(fv);
+            }
+        } else if (v instanceof Double) {
+            double dv = (double) v;
+            if (dv == 0) {
+                opCollector.visitInsn(DCONST_0);
+            } else if (dv == 1) {
+                opCollector.visitInsn(DCONST_1);
+            } else {
+                opCollector.visitLdcInsn(dv);
+            }
         }else{
-            md.visitLdcInsn(v);
+            opCollector.visitLdcInsn(v);
         }
         return null;
     }
@@ -796,7 +847,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         visit(node.getArrayExpr());
         visit(node.getIndex());
         org.objectweb.asm.Type t = asmType(node.getType());
-        md.visitInsn(t.getOpcode(IALOAD));
+        opCollector.visitInsn(t.getOpcode(IALOAD));
         return null;
     }
 
@@ -813,7 +864,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else{
             throw new UnsupportedOperationException("unsupported field type:" + node);
         }
-        md.visitFieldInsn(opc
+        opCollector.visitFieldInsn(opc
                 ,owner
                 , node.getField().getName()
                 ,getTypeDescriptor(node.getType()));
@@ -844,16 +895,17 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             throw Exceptions.unsupportedTypeException(node);
         }
         visitAll(node.getArguments());
-        md.visitMethodInsn(
+        opCollector.visitMethodInsn(
                 opc 
                 ,ownerClass
                 ,method.getName()
                 ,getMethodDescriptor(method.getMethodNode())
+                , opc == INVOKEINTERFACE
         );
         String expectedReturnType = internalName(method.getReturnType());
         String actualReturnType = internalName(method.getMethodNode().getType());
         if (!expectedReturnType.equals(actualReturnType)) {
-            md.visitTypeInsn(CHECKCAST,expectedReturnType);
+            opCollector.visitTypeInsn(CHECKCAST,expectedReturnType);
         }
         return null;
     }
@@ -867,23 +919,23 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             case UnaryExpr.OPERATION_POS:
                 break;
             case UnaryExpr.OPERATION_NEG:
-                md.visitInsn(t.getOpcode(INEG));
+                opCollector.visitInsn(t.getOpcode(INEG));
                 break;
             case UnaryExpr.OPERATION_NOT:
                 //TODO here I am not sure
                 constX(exprType, -1);
-                md.visitInsn(t.getOpcode(IXOR));
+                opCollector.visitInsn(t.getOpcode(IXOR));
                 break;
-                //md.visitInsn(ICONST_M1);
+                //opCollector.visitInsn(ICONST_M1);
            case UnaryExpr.OPERATION_LOGIC_NOT:
-               Label falseLabel = new Label();
-               Label stopLabel = new Label();
-               md.visitJumpInsn(IFEQ, falseLabel);
+               LabelOp falseLabel = new LabelOp();
+               LabelOp stopLabel = new LabelOp();
+               opCollector.visitJumpInsn(IFEQ, falseLabel);
                constFalse();
-               md.visitJumpInsn(GOTO, stopLabel);
-               md.visitLabel(falseLabel);
+               opCollector.visitJumpInsn(GOTO, stopLabel);
+               opCollector.visitLabel(falseLabel);
                constTrue();
-               md.visitLabel(stopLabel);
+               opCollector.visitLabel(stopLabel);
                break;
            default:
                throw new UnsupportedOperationException("unsupported unary operation:" + node.getOperation());
@@ -906,7 +958,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitCastExpr(CastExpr node) {
         visit(node.getExpr());
-        md.visitTypeInsn(CHECKCAST, internalName(node.getToType()));
+        opCollector.visitTypeInsn(CHECKCAST, internalName(node.getToType()));
         return null;
     }
 
@@ -941,19 +993,19 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 op = ANEWARRAY;
             }
             if(op == NEWARRAY){
-                md.visitIntInsn(op, opr);
+                opCollector.visitIntInsn(op, opr);
             }else{
-                md.visitTypeInsn(ANEWARRAY, internalName(ct));
+                opCollector.visitTypeInsn(ANEWARRAY, internalName(ct));
             }
         } else {
-            md.visitMultiANewArrayInsn(getTypeDescriptor(node.getType()), sizes.length);
+            opCollector.visitMultiANewArrayInsn(getTypeDescriptor(node.getType()), sizes.length);
         }
         return null;
     }
 
     @Override
     public Object visitThisExpr(ThisExpr node) {
-        md.visitVarInsn(ALOAD, 0);
+        opCollector.visitVarInsn(ALOAD, 0);
         return null;
     }
 
@@ -1055,7 +1107,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private void visitVarObject(VarObject vo){
         org.objectweb.asm.Type type = asmType(vo.getType());
         int vid = getVarId(vo);
-        md.visitVarInsn(type.getOpcode(ILOAD),vid);
+        opCollector.visitVarInsn(type.getOpcode(ILOAD),vid);
     }
     
     @Nonnull
@@ -1119,7 +1171,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     case INT_NAME:
                     case SHORT_NAME:
                     case CHAR_NAME:
-                        md.visitInsn(I2B);
+                        opCollector.visitInsn(I2B);
                         return;
                 }
             } else if (CHAR_NAME.equals(tn)) {
@@ -1131,7 +1183,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     case INT_NAME:
                     case SHORT_NAME:
                     case BYTE_NAME:
-                        md.visitInsn(I2C);
+                        opCollector.visitInsn(I2C);
                         return;
                 }
             } else if (SHORT_NAME.equals(tn)) {
@@ -1143,7 +1195,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     case INT_NAME:
                     case CHAR_NAME:
                     case BYTE_NAME:
-                        md.visitInsn(I2S);
+                        opCollector.visitInsn(I2S);
                         return;
                 }
             } else if (INT_NAME.equals(tn)) {
@@ -1153,13 +1205,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     case SHORT_NAME:
                         return;
                     case FLOAT_NAME:
-                        md.visitInsn(F2I);
+                        opCollector.visitInsn(F2I);
                         return;
                     case LONG_NAME:
-                        md.visitInsn(L2I);
+                        opCollector.visitInsn(L2I);
                         return;
                     case DOUBLE_NAME:
-                        md.visitInsn(D2I);
+                        opCollector.visitInsn(D2I);
                         return;
                 }
             } else if (FLOAT_NAME.equals(tn)) {
@@ -1168,13 +1220,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     case CHAR_NAME:
                     case SHORT_NAME:
                     case INT_NAME:
-                        md.visitInsn(I2F);
+                        opCollector.visitInsn(I2F);
                         return;
                     case LONG_NAME:
-                        md.visitInsn(L2F);
+                        opCollector.visitInsn(L2F);
                         return;
                     case DOUBLE_NAME:
-                        md.visitInsn(D2F);
+                        opCollector.visitInsn(D2F);
                         return;
                 }
             } else if (LONG_NAME.equals(tn)) {
@@ -1183,13 +1235,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     case CHAR_NAME:
                     case SHORT_NAME:
                     case INT_NAME:
-                        md.visitInsn(I2L);
+                        opCollector.visitInsn(I2L);
                         return;
                     case FLOAT_NAME:
-                        md.visitInsn(F2L);
+                        opCollector.visitInsn(F2L);
                         return;
                     case DOUBLE_NAME:
-                        md.visitInsn(D2L);
+                        opCollector.visitInsn(D2L);
                         return;
                 }
             } else if (DOUBLE_NAME.equals(tn)) {
@@ -1198,13 +1250,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     case CHAR_NAME:
                     case SHORT_NAME:
                     case INT_NAME:
-                        md.visitInsn(I2D);
+                        opCollector.visitInsn(I2D);
                         return;
                     case LONG_NAME:
-                        md.visitInsn(L2D);
+                        opCollector.visitInsn(L2D);
                         return;
                     case FLOAT_NAME:
-                        md.visitInsn(F2D);
+                        opCollector.visitInsn(F2D);
                         return;
                     }
             }
@@ -1230,9 +1282,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitParameterNode(ParameterNode parameterNode) {
-        md.visitParameter(parameterNode.getName(), parameterNode.modifier);
-        this.declareNewVar(parameterNode);
-        return null;
+        throw Exceptions.unexpectedException("visit parameter node");
     }
 
     @Override
@@ -1244,10 +1294,10 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitNewObjectExpr(NewObjectExpr node) {
         org.objectweb.asm.Type t = asmType(node.getObjectType());
-        md.visitTypeInsn(NEW, t.getInternalName());
-        md.visitInsn(DUP);
+        opCollector.visitTypeInsn(NEW, t.getInternalName());
+        opCollector.visitInsn(DUP);
         visitAll(node.getConstructor().getArguments());
-        md.visitMethodInsn(
+        opCollector.visitMethodInsn(
                 INVOKESPECIAL
                 , t.getInternalName()
                 , "<init>"
@@ -1258,8 +1308,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     private void dupX(Type type){
         int size = asmType(type).getSize();
-        if(size==1) md.visitInsn(DUP);
-        else if(size==2) md.visitInsn(DUP2);
+        if(size==1) opCollector.visitInsn(DUP);
+        else if(size==2) opCollector.visitInsn(DUP2);
         else throw new UnsupportedOperationException("unsupported type:" + type);
     }
     
@@ -1285,7 +1335,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return new ConstExpr(obj);
     }
     private void constX(Object x){
-        md.visitLdcInsn(x);
+        opCollector.visitLdcInsn(x);
     }
 
     private void constX(Type type,int i) {
@@ -1296,9 +1346,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visit(AstNode node) {
         int lineNum = node.offset.startLine;
         if(lineNum>0 && (node instanceof Statement || node instanceof ExprNode) &&  !lineLabels.containsKey(lineNum)){
-            Label lb = new Label();
-            md.visitLabel(lb);
-            md.visitLineNumber(lineNum, lb);
+            LabelOp lb = new LabelOp();
+            opCollector.visitLabel(lb);
+            opCollector.visitLineNumber(lineNum, lb);
             lineLabels.put(lineNum, lb);
         }
         return super.visit(node);
@@ -1307,7 +1357,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitArrayLengthExpr(ArrayLengthExpr node) {
         visit(node.getArrayExpr());
-        md.visitInsn(ARRAYLENGTH);
+        opCollector.visitInsn(ARRAYLENGTH);
         return null;
     }
     
@@ -1337,7 +1387,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitSuperExpr(SuperExpr node) {
-        md.visitVarInsn(ALOAD, 0);
+        opCollector.visitVarInsn(ALOAD, 0);
         return null;
     }
 
@@ -1349,11 +1399,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitInstanceOfExpr(InstanceOfExpr node) {
         visit(node.getExpr());
-        md.visitTypeInsn(INSTANCEOF, internalName(node.getTarget().getReferencedClassNode()));
+        opCollector.visitTypeInsn(INSTANCEOF, internalName(node.getTarget().getReferencedClassNode()));
         return null;
     }
 
-    private void ifCompare(boolean jumpOnTrue,ExprNode expr1, ExprNode expr2, String op, Label label) {
+    private void ifCompare(boolean jumpOnTrue,ExprNode expr1, ExprNode expr2, String op, LabelOp label) {
         Type type = expr1.getType();
         visit(expr1);
         visit(expr2);
@@ -1382,22 +1432,22 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 default:
                     throw  new UnsupportedOperationException("Unsupported operation:" + op);
             }
-            md.visitJumpInsn(opc, label);
+            opCollector.visitJumpInsn(opc, label);
         }else if(T_A==t){//object type
              if(op.equals("==")){
-                md.visitJumpInsn(jumpOnTrue ? IF_ACMPEQ : IF_ACMPNE,label);
+                opCollector.visitJumpInsn(jumpOnTrue ? IF_ACMPEQ : IF_ACMPNE,label);
             }else if(op.equals("!=")){
-                md.visitJumpInsn(jumpOnTrue ? IF_ACMPNE:IF_ACMPEQ,label);
+                opCollector.visitJumpInsn(jumpOnTrue ? IF_ACMPNE:IF_ACMPEQ,label);
             }else{
                 throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
             }
         }else{//type is not int,not object            
             if(T_L==t){
-                md.visitInsn(LCMP);
+                opCollector.visitInsn(LCMP);
             }else if(T_F==t){
-                md.visitInsn(FCMPL);
+                opCollector.visitInsn(FCMPL);
             }else if(T_D==t){
-                md.visitInsn(DCMPL);
+                opCollector.visitInsn(DCMPL);
             }else{
                throw new UnsupportedOperationException("It is unsupported to compare object type:" + type);
             }
@@ -1412,7 +1462,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 default:
                     throw  new UnsupportedOperationException("Unsupported operation:" + op);
             }
-            md.visitJumpInsn(opc, label);
+            opCollector.visitJumpInsn(opc, label);
         }
     }
 
@@ -1456,7 +1506,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 , org.objectweb.asm.Type.getMethodType(mdDesc)
         };
         Handle bootstrapMd = new Handle(H_INVOKESTATIC, internalName(LambdaMetafactory.class.getName()), "metafactory", metafactoryDesc, false);
-        md.visitInvokeDynamicInsn(interfaceMd.getName(), invokeMdDesc, bootstrapMd, bootstrapArgs);
+        opCollector.visitInvokeDynamicInsn(interfaceMd.getName(), invokeMdDesc, bootstrapMd, bootstrapArgs);
         return null;
     }
 
@@ -1543,6 +1593,61 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 } while (!t1.isAssignableFrom(t2));
                 return t1.getName().replace('.', '/');
             }
+        }
+    }
+
+    private void applyOp(MethodVisitor mv, OpCollector opCollector) {
+        new OpOptimizer().optimize(opCollector);
+        Map<LabelOp, Label> labelMap = new HashMap<>();
+        Function<LabelOp, Label> labelMapper = lb -> labelMap.computeIfAbsent(lb, (k) -> new Label());
+        for (OpBase code : opCollector) {
+            if (code instanceof FieldInsnOp) {
+                FieldInsnOp fio = (FieldInsnOp) code;
+                mv.visitFieldInsn(fio.opcode, fio.owner, fio.name, fio.descriptor);
+            } else if (code instanceof InsnOp) {
+                mv.visitInsn(((InsnOp) code).opcode);
+            } else if (code instanceof IntInsnOp) {
+                IntInsnOp iio = (IntInsnOp) code;
+                mv.visitIntInsn(iio.opcode, iio.operand);
+            } else if (code instanceof InvokeDynamicInsnOp) {
+                InvokeDynamicInsnOp op = (InvokeDynamicInsnOp) code;
+                mv.visitInvokeDynamicInsn(op.name, op.descriptor, op.bootstrapMethodHandle, op.bootstrapMethodArguments);
+            } else if (code instanceof JumpInsnOp) {
+                JumpInsnOp op = (JumpInsnOp) code;
+                mv.visitJumpInsn(op.opcode, labelMapper.apply(op.label));
+            } else if (code instanceof LabelOp) {
+                mv.visitLabel(labelMapper.apply((LabelOp)code));
+            } else if (code instanceof LdcInsnOp) {
+                mv.visitLdcInsn(((LdcInsnOp) code).value);
+            } else if (code instanceof MethodInsnOp) {
+                MethodInsnOp op = (MethodInsnOp) code;
+                mv.visitMethodInsn(op.opcode, op.owner, op.name, op.descriptor, op.isInterface);
+            } else if (code instanceof MultiANewArrayInsnOp) {
+                MultiANewArrayInsnOp op = (MultiANewArrayInsnOp) code;
+                mv.visitMultiANewArrayInsn(op.descriptor, op.numDimensions);
+            } else if (code instanceof TypeInsnOp) {
+                TypeInsnOp op = (TypeInsnOp) code;
+                mv.visitTypeInsn(op.opcode, op.type);
+            } else if (code instanceof VarInsnOp) {
+                VarInsnOp op = (VarInsnOp) code;
+                mv.visitVarInsn(op.opcode, op.var);
+            } else {
+                throw Exceptions.unexpectedValue(code);
+            }
+        }
+        for (LocalVariable lv: opCollector.getLocalVariables()) {
+            mv.visitLocalVariable(lv.name, lv.descriptor, lv.signature, labelMapper.apply(lv.start), labelMapper.apply(lv.end), lv.index);
+        }
+        for (LineNumber ln : opCollector.getLineNumbers()) {
+            mv.visitLineNumber(ln.lineNum, labelMapper.apply(ln.label));
+        }
+        for (TryCatchBlock tcb : opCollector.getTryCatchBlocks()) {
+            mv.visitTryCatchBlock(
+                    labelMapper.apply(tcb.start),
+                    labelMapper.apply(tcb.end),
+                    labelMapper.apply(tcb.handler),
+                    tcb.type
+            );
         }
     }
 
