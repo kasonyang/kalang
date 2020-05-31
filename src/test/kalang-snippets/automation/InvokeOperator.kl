@@ -2,6 +2,8 @@ class {
 
     private int callGetArrayCount = 0;
 
+    private String name;
+
     int hello() {
         return 6;
     }
@@ -51,6 +53,11 @@ class {
             return 6;
         }
         return 1;
+    }
+
+    boolean testSafeInvoke() {
+        val obj = new InvokeOperator();
+        return obj?.name == null;
     }
 
     private Integer[] getArray() {

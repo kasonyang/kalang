@@ -2206,10 +2206,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             is.getFalseBody().statements.add(new ExprStmt(falseExpr));
             refVar = null;
         } else {
-            LocalVarNode vo = this.declareTempLocalVar(falseExpr.getType());
+            ExprNode trueExpr =  Values.getDefaultValue(falseExpr.getType());
+            Type commonType = TypeUtil.getCommonType(trueExpr.getType(), falseExpr.getType());
+            LocalVarNode vo = this.declareTempLocalVar(commonType);
             stmts.add(new VarDeclStmt(vo));
             VarExpr ve = new VarExpr(vo);
-            ExprNode trueExpr =  Values.getDefaultValue(falseExpr.getType());
             is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(ve, trueExpr)));
             is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve, falseExpr)));
             refVar = ve;
