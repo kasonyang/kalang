@@ -119,6 +119,12 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitLocalVarDecl(KalangParser.LocalVarDeclContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KalangParser#destructuringLocalVarDecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDestructuringLocalVarDecl(KalangParser.DestructuringLocalVarDeclContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KalangParser#ifStat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

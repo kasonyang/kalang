@@ -232,6 +232,18 @@ public class KalangParserBaseListener implements KalangParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDestructuringLocalVarDecl(KalangParser.DestructuringLocalVarDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDestructuringLocalVarDecl(KalangParser.DestructuringLocalVarDeclContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterIfStat(KalangParser.IfStatContext ctx) { }
 	/**
 	 * {@inheritDoc}

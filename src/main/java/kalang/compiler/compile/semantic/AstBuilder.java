@@ -497,10 +497,60 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public Statement visitVarDeclStat(VarDeclStatContext ctx) {
-        Statement vars = visitLocalVarDecl(ctx.localVarDecl());
-        mapAst(vars,ctx);            
-        return vars;
+    public Object visitVarDeclStat(VarDeclStatContext ctx) {
+        if (ctx.localVarDecl() != null) {
+            return visit(ctx.localVarDecl());
+        } else {
+            return visit(ctx.destructuringLocalVarDecl());
+        }
+    }
+
+    @Override
+    public Object visitDestructuringLocalVarDecl(DestructuringLocalVarDeclContext ctx) {
+        List<Statement> initStats = new LinkedList<>();
+        ExprNode expr = visitExpression(ctx.expression());
+        Type exprType = expr.getType();
+        TypeValidator.requireNonVoidType(expr);
+        LocalVarNode tmpVarForExpr = declareTempLocalVar(exprType);
+        initStats.add(new VarDeclStmt(tmpVarForExpr));
+        initStats.add(new ExprStmt(new AssignExpr(new VarExpr(tmpVarForExpr), expr)));
+        String op = ctx.op.getText();
+        int modifier = ctx.key.getText().equals("val") ? Modifier.FINAL : 0;
+        List<TerminalNode> idList = ctx.Identifier();
+        for (int i = 0; i < idList.size(); i++) {
+            TerminalNode id = idList.get(i);
+            String varName = id.getText();
+            checkVarName(varName, offset(id.getSymbol()));
+            if (op.equals("[")) {
+                Type eleType = TypeValidator.requireType(exprType, ArrayType.class, "array type expected", expr.offset)
+                        .getComponentType();
+                LocalVarNode varNode = declareLocalVar(varName, eleType, modifier, offset(id.getSymbol()));
+                initStats.add(new VarDeclStmt(varNode));
+                AssignExpr assignExpr = new AssignExpr(
+                        new VarExpr(varNode),
+                        new ElementExpr(new VarExpr(tmpVarForExpr), new ConstExpr(i))
+                );
+                methodCtx.onAssign(assignExpr);
+                initStats.add(new ExprStmt(assignExpr));
+            } else if (op.equals("{")) {
+                ClassType clsType = TypeValidator.requireType(exprType, ClassType.class, "class type expected", expr.offset);
+                MethodDescriptor getter = AstUtil.findGetterByPropertyName(clsType, varName, thisClazz);
+                if (getter == null) {
+                    handleSyntaxError("no method found for name:" + varName, offset(id.getSymbol()));
+                    continue;
+                }
+                LocalVarNode varNode = declareLocalVar(varName, getter.getReturnType(), modifier, offset(id.getSymbol()));
+                initStats.add(new VarDeclStmt(varNode));
+                AssignExpr assignExpr = new AssignExpr(
+                        new VarExpr(varNode),
+                        new ObjectInvokeExpr(new VarExpr(tmpVarForExpr), getter, new ExprNode[0]));
+                methodCtx.onAssign(assignExpr);
+                initStats.add(new ExprStmt(assignExpr));
+            }
+        }
+        MultiStmt ms = new MultiStmt(initStats);
+        mapAst(ms, offset(ctx), true);
+        return ms;
     }
 
     @Override
@@ -518,9 +568,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             type = ctx.type();
         }
         Type declType = type != null ? parseType(type) : inferedType;
-        if (isDefinedId(name)) {
-            handleSyntaxError("the name is defined already:" + name, offset(ctx));
-        }
+        checkVarName(name, offset(ctx));
         vds.name = name;
         vds.type = declType;
         vds.modifier = ctx.valToken != null ? Modifier.FINAL : 0;

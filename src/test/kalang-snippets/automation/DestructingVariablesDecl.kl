@@ -1,0 +1,9 @@
+boolean objDestructuring() {
+    val {length,bytes} = "ABCD";
+    return length == 4 && Arrays.equals("ABCD".getBytes(), bytes);
+}
+
+boolean arrayDestructuring() {
+    val [a,b] = [2,3];
+    return a == 2 && b == 3;
+}

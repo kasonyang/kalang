@@ -1,8 +1,9 @@
 package kalang.compiler.util;
 
-import kalang.compiler.compile.semantic.AmbiguousMethodException;
-import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.ast.*;
+import kalang.compiler.compile.semantic.AmbiguousMethodException;
+import kalang.compiler.compile.semantic.InvocationResolver;
+import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.core.*;
 
 import javax.annotation.Nonnull;
@@ -201,6 +202,30 @@ public class AstUtil {
         ClassType type = Types.getClassType(clazz);
         MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "get" + NameUtil.firstCharToUpperCase(field.getName()) , null);
         return md != null;
+    }
+
+    @Nullable
+    public static MethodDescriptor findGetterByPropertyName(ClassType clazz, String propName, ClassNode caller) {
+        InvocationResolver methodResolver = new InvocationResolver();
+        List<String> nameList = new LinkedList<>();
+        nameList.add(propName);
+        String ucName = NameUtil.firstCharToUpperCase(propName);
+        if (!propName.startsWith("get")) {
+            nameList.add("get" + ucName);
+        }
+        if (!propName.startsWith("is")) {
+            nameList.add("is" + ucName);
+        }
+        MethodDescriptor[] methods = clazz.getMethodDescriptors(caller, true, true);
+        for (String name : nameList) {
+            List<InvocationResolver.Resolution> res = methodResolver.resolve(methods, name);
+            if (res.isEmpty()) {
+                continue;
+            }
+            assert  res.size() == 1;
+            return res.get(0).method;
+        }
+        return null;
     }
     
     public static void createGetter(ClassNode clazz,FieldDescriptor field,int accessModifier){

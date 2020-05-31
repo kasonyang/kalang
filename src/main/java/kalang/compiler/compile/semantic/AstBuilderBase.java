@@ -204,6 +204,14 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 (methodCtx.getNamedLocalVar(id) != null || methodCtx.getNamedParameter(id) != null);
     }
 
+    protected boolean checkVarName(String name, OffsetRange offset) {
+        if (isDefinedId(name)) {
+            handleSyntaxError("the name is defined already:" + name, offset);
+            return false;
+        }
+        return true;
+    }
+
     protected void enterMethod(MethodNode method) {
         methodCtx = new MethodContext(this.getCurrentClass(),method);
     }

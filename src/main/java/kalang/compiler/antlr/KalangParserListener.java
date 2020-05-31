@@ -188,6 +188,16 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitLocalVarDecl(KalangParser.LocalVarDeclContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#destructuringLocalVarDecl}.
+	 * @param ctx the parse tree
+	 */
+	void enterDestructuringLocalVarDecl(KalangParser.DestructuringLocalVarDeclContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#destructuringLocalVarDecl}.
+	 * @param ctx the parse tree
+	 */
+	void exitDestructuringLocalVarDecl(KalangParser.DestructuringLocalVarDeclContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#ifStat}.
 	 * @param ctx the parse tree
 	 */

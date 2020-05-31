@@ -145,6 +145,12 @@ localVarDecl:
    varDecl (',' varDecl)*
 ;
 
+destructuringLocalVarDecl:
+    key=('val'|'var')
+    ( op='{' Identifier (',' Identifier)* '}' | op='[' Identifier (',' Identifier)* ']')
+    '=' expression
+;
+
 ifStat:
     IF '(' expression ')' trueStmt=stat ( ELSE falseStmt=stat)?
     ;
@@ -197,6 +203,7 @@ returnStat:
 ;
 varDeclStat:
   localVarDecl ';'
+  | destructuringLocalVarDecl ';'
 ;
 varDecl:
   (
