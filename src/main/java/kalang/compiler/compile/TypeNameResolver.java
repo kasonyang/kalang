@@ -45,7 +45,7 @@ public class TypeNameResolver {
      */
     @Nullable
     public String resolve(String id,ClassNode topClass, ClassNode declaringClass) {
-        String key = String.format("%s|%s|%s",id,topClass.name,declaringClass.name);
+        String key = String.format("%s|%s|%s",id, topClass.getName(), declaringClass.getName());
         Optional<String> val = resolvedIdMap.get(key);
         if (val==null) {
             String className = doResolve(id, topClass, declaringClass);
@@ -73,7 +73,7 @@ public class TypeNameResolver {
             return outerClassName + "$" + idParts[1];
         }else {
             String[] innerClassesNames = AstUtil.listInnerClassesNames(topClass, true);
-            String path = declaringClass.name;
+            String path = declaringClass.getName();
             while(!path.isEmpty()) {
                 String name = path + "$" + id;
                 for(String c:innerClassesNames) {
@@ -86,7 +86,7 @@ public class TypeNameResolver {
             }
             List<String> paths = new ArrayList<>(importPackages.size() + 1);
             paths.addAll(importPackages);
-            paths.add(NameUtil.getPackageName(topClass.name));
+            paths.add(NameUtil.getPackageName(topClass.getName()));
             int pathSize = paths.size();
             for (int i=pathSize-1;i>=0;i--) {
                 String p = paths.get(i);

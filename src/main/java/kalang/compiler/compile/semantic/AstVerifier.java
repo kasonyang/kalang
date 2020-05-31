@@ -26,12 +26,12 @@ public class AstVerifier extends AstVisitor {
     @Override
     public Object visitReturnStmt(ReturnStmt node) {
         Type retType = method.getType();
-        if (node.expr == null) {
+        if (node.getExpr() == null) {
             if(!retType.equals(Types.VOID_TYPE)){
                 throw new MalformedAstException("missing return value", node);
             }
         }else{
-            checkAssignable(node.expr, method.getType(), node);
+            checkAssignable(node.getExpr(), method.getType(), node);
         }
         return super.visitReturnStmt(node);
     }

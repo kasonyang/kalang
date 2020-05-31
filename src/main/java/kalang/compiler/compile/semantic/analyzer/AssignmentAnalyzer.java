@@ -60,7 +60,7 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
             assignedVars.put(varObj, null);
         } else if (to instanceof FieldExpr) {
             FieldNode varObj = ((FieldExpr) to).getField().getFieldNode();
-            if (ModifierUtil.isFinal(varObj.modifier)) {
+            if (ModifierUtil.isFinal(varObj.getModifier())) {
                 if (AstUtil.isConstructor(method)) {
                     validateModifier(varObj, node.offset);
                 } else {
@@ -70,7 +70,7 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
             assignedVars.put(varObj, null);
         } else if (to instanceof ParameterExpr) {
             ParameterNode varObj = ((ParameterExpr) to).getParameter();
-            if (ModifierUtil.isFinal(varObj.modifier)) {
+            if (ModifierUtil.isFinal(varObj.getModifier())) {
                 reportAssignFinalVarError(varObj, node.offset);
             }
         } else if (to instanceof ElementExpr) {
@@ -198,7 +198,7 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
     }
 
     private void validateModifier(VarObject toVarObj, OffsetRange offset) {
-        if (ModifierUtil.isFinal(toVarObj.modifier) && assignedVars.exist(toVarObj)) {
+        if (ModifierUtil.isFinal(toVarObj.getModifier()) && assignedVars.exist(toVarObj)) {
             reportAssignFinalVarError(toVarObj, offset);
         }
     }

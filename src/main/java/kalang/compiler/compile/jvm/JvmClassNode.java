@@ -36,8 +36,8 @@ public class JvmClassNode extends ClassNode {
     public JvmClassNode(Class clazz, JvmAstLoader astLoader) {
         this.astLoader = astLoader;
         this.clazz = clazz;
-        this.name = clazz.getName();
-        this.modifier = clazz.getModifiers();
+        this.setName(clazz.getName());
+        this.setModifier(clazz.getModifiers());
     }
 
     @Override

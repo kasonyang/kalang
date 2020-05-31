@@ -116,7 +116,7 @@ public class MethodContext {
             if (args==null || args.length != 2) {
                 return;
             }
-            String invokeClass = sie.getInvokeClass().getReferencedClassNode().name;
+            String invokeClass = sie.getInvokeClass().getReferencedClassNode().getName();
             if (!Objects.class.getName().equals(invokeClass)) {
                 return;
             }

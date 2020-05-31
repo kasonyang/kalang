@@ -51,7 +51,7 @@ public class MethodDeclarationAnalyzer {
             }
             declaredMethods.add(declarationKey);
             // check override
-            boolean isOverriding = CollectionMixin.find(node.getAnnotations(), a -> Override.class.getName().equals(a.getAnnotationType().name)) != null;
+            boolean isOverriding = CollectionMixin.find(node.getAnnotations(), a -> Override.class.getName().equals(a.getAnnotationType().getName())) != null;
             MethodDescriptor overriddenMd = parentMethodsMap.get(declarationKey);
             if (isOverriding && overriddenMd == null) {
                 diagnosisReporter.report(Diagnosis.Kind.ERROR, "method " + MethodUtil.toString(node) + " does not override or implement a method from a supertype", node.offset);

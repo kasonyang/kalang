@@ -152,7 +152,7 @@ public abstract class KalangCompiler implements CompileContext {
 
     private ClassNode findInnerClass(ClassNode topClass, String className) {
         for (ClassNode c : topClass.classes) {
-            if (className.equals(c.name)) {
+            if (className.equals(c.getName())) {
                 return c;
             }
             ClassNode ic = findInnerClass(c, className);

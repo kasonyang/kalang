@@ -27,7 +27,7 @@ public class AstLoader {
     }
 
     public void add(@Nonnull ClassNode clazz) {
-        cachedAsts.put(clazz.name, clazz);
+        cachedAsts.put(clazz.getName(), clazz);
     }
 
     @Nonnull
@@ -51,7 +51,7 @@ public class AstLoader {
         if(className.endsWith("[]")){
             String name = className;
             name = name.substring(0,name.length()-2);
-            ast = AstUtil.createArrayAst(loadAst(name).name);
+            ast = AstUtil.createArrayAst(loadAst(name).getName());
         }else{
             ast = findAst(className);
         }

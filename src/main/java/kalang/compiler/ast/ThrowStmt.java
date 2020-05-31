@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 public class ThrowStmt extends Statement{
     
-    public ExprNode expr;
+    private ExprNode expr;
     
     public ThrowStmt(ExprNode expr){
             this.expr = expr;
@@ -19,5 +19,13 @@ public class ThrowStmt extends Statement{
     @Override
     public String toString() {
         return "throw " + expr;
+    }
+
+    public ExprNode getExpr() {
+        return expr;
+    }
+
+    public void setExpr(ExprNode expr) {
+        this.expr = expr;
     }
 }

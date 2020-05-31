@@ -41,7 +41,7 @@ public class ClassType extends ObjectType {
 
     @Override
     public String getDeclarationKey() {
-        return clazz.name;
+        return clazz.getName();
     }
 
     @Override
@@ -55,7 +55,7 @@ public class ClassType extends ObjectType {
         if(nullable.equals(NullableKind.NULLABLE)){
             suffix += "?";
         }
-        return  clazz.name + suffix;
+        return  clazz.getName() + suffix;
     }
 
     @Override

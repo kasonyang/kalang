@@ -34,7 +34,7 @@ public abstract class ObjectType extends Type{
 
     @Override
     public String getName() {
-        return clazz.name;
+        return clazz.getName();
     }
 
     public ClassNode getClassNode() {
@@ -64,7 +64,7 @@ public abstract class ObjectType extends Type{
         ParameterDescriptor[] pds = new ParameterDescriptor[ptypes.length];
         for(int j=0;j<pds.length;j++){
             ParameterNode p = pms[j];
-            pds[j] = new StandardParameterDescriptor(p.getName(),ptypes[j],p.modifier);
+            pds[j] = new StandardParameterDescriptor(p.getName(),ptypes[j], p.getModifier());
         }
         return pds;
     }
@@ -147,7 +147,7 @@ public abstract class ObjectType extends Type{
         FieldNode[] fields = clazz.getFields();
         List<FieldDescriptor> ret = new LinkedList();
         for (FieldNode f : fields) {
-            if (AccessUtil.isAccessible(f.modifier, clazz, caller)) {
+            if (AccessUtil.isAccessible(f.getModifier(), clazz, caller)) {
                 ret.add(new StandardFieldDescriptor(f, parseType(f.getType())));
             }
         }
@@ -204,7 +204,7 @@ public abstract class ObjectType extends Type{
     }
     
     public int getModifier(){
-        return clazz.modifier;
+        return clazz.getModifier();
     }
     
 }

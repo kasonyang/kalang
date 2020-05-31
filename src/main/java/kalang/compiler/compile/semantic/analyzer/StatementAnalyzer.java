@@ -102,16 +102,16 @@ public class StatementAnalyzer extends AstVisitor<Type> {
 
     public boolean validateReturnStmt(MethodNode method,ReturnStmt node) {
         Type retType = method.getType();
-        if (node.expr == null) {
+        if (node.getExpr() == null) {
             if(!retType.equals(Types.VOID_TYPE)){
                 diagnosisReporter.report(Diagnosis.Kind.ERROR, "missing return value",node.offset);
                 return false;
             }
             return true;
         }else{
-            Type exType = node.expr.getType();
-            node.expr = this.checkAssign(node.expr, exType, retType, node);
-            if(node.expr==null) return false;
+            Type exType = node.getExpr().getType();
+            node.setExpr(this.checkAssign(node.getExpr(), exType, retType, node));
+            if(node.getExpr() ==null) return false;
             return true;
         }
     }

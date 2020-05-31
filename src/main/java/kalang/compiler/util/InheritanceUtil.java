@@ -35,11 +35,11 @@ public class InheritanceUtil {
     }
 
     public static boolean isInnerClassOf(ClassNode innerClass, ClassNode outerClass) {
-        return innerClass.name.startsWith(outerClass.name) && innerClass.name.length() != outerClass.name.length();
+        return innerClass.getName().startsWith(outerClass.getName()) && innerClass.getName().length() != outerClass.getName().length();
     }
 
     public static boolean isInSamePackage(ClassNode class1, ClassNode class2) {
-        return Objects.equals(NameUtil.getPackageName(class1.name), NameUtil.getPackageName(class2.name));
+        return Objects.equals(NameUtil.getPackageName(class1.getName()), NameUtil.getPackageName(class2.getName()));
     }
 
 }

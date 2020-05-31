@@ -41,7 +41,7 @@ public class LambdaType extends ObjectType {
 
     private static ClassNode buildClassNode() {
         ClassNode cn = new ClassNode();
-        cn.name = "kalang.compiler.internal.FunctionClass" + (functionTypeCounter++);
+        cn.setName("kalang.compiler.internal.FunctionClass" + (functionTypeCounter++));
         cn.setSuperType(Types.getRootType());
         return cn;
     }

@@ -427,7 +427,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
     
     private boolean isNonStaticInnerClass(ClassNode clazz){
-        return clazz.enclosingClass!=null && !Modifier.isStatic(clazz.modifier);
+        return clazz.enclosingClass!=null && !Modifier.isStatic(clazz.getModifier());
     }
 
     @Override
@@ -488,9 +488,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         mapAst(rs,ctx);
         if (ctx.expression() != null) {
             ExprNode expr = visitExpression(ctx.expression());
-            rs.expr = requireImplicitCast(methodCtx.method.getType(), expr, offset(ctx));
+            rs.setExpr(requireImplicitCast(methodCtx.method.getType(), expr, offset(ctx)));
         } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
-            rs.expr = new ConstExpr(null);
+            rs.setExpr(new ConstExpr(null));
         }
         // if(!statementAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
         return this.onReturnStmt(rs);
@@ -1060,7 +1060,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         try {
             expr = onInvocationExpr(StaticInvokeExpr.create(clazz, methodName, argumentsCtx));
         } catch (MethodNotFoundException ex) {
-            throw createMethodNotFoundException(offset, clazz.getReferencedClassNode().name, methodName, argumentsCtx);
+            throw createMethodNotFoundException(offset, clazz.getReferencedClassNode().getName(), methodName, argumentsCtx);
         } catch(AmbiguousMethodException ex){
             throw new NodeException(ex.getMessage(), offset);
         }
@@ -2072,7 +2072,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         Set<ParameterNode> usedParamNodes = new HashSet<>();
         new AstNodeCollector().collect(methodNode, ParameterExpr.class).forEach(it -> usedParamNodes.add(it.getParameter()));
         for (ParameterNode p: methodNode.getParameters()) {
-            if (!ModifierUtil.isSynthetic(p.modifier)) {
+            if (!ModifierUtil.isSynthetic(p.getModifier())) {
                 break;
             }
             if (!usedParamNodes.contains(p)) {
@@ -2084,7 +2084,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         //TODO fix captureArgs in static method
         captureArgs.add(new ThisExpr(getThisType()));
         for (ParameterNode p: methodNode.getParameters()) {
-            if (!ModifierUtil.isSynthetic(p.modifier)) {
+            if (!ModifierUtil.isSynthetic(p.getModifier())) {
                 break;
             }
             VarObject captureVar = accessibleVars.get(p.getName());
@@ -2128,8 +2128,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     private ReturnStmt onReturnStmt(ReturnStmt rs) {
-        if(rs.expr != null) {
-            Type eType = rs.expr.getType();
+        if(rs.getExpr() != null) {
+            Type eType = rs.getExpr().getType();
             Type oldType = methodCtx.method.inferredReturnType;
             methodCtx.method.inferredReturnType = oldType == null ? eType : TypeUtil.getCommonType(oldType, eType);
         }

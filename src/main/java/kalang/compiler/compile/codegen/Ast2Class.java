@@ -142,7 +142,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 ptypes.append(typeSignature(p));
             }
             if(ptypes.length() > 0) ptypes = new StringBuilder("<" + ptypes + ">");
-            return "L" + pt.getClassNode().name.replace('.', '/') + ptypes + ";";
+            return "L" + pt.getClassNode().getName().replace('.', '/') + ptypes + ";";
         }else if(type instanceof PrimitiveType){
             return getTypeDescriptor(type);
         }else if(type instanceof ArrayType){
@@ -238,9 +238,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if(node.getInterfaces().length>0){
             interfaces = internalName(node.getInterfaces());
         }
-        int access = node.modifier;
-        classWriter.visit(V1_8, access,internalName(node.name),classSignature(node), internalName(parentName),interfaces);
-        String fileName = node.fileName;
+        int access = node.getModifier();
+        classWriter.visit(V1_8, access,internalName(node.getName()),classSignature(node), internalName(parentName),interfaces);
+        String fileName = node.getFileName();
         if(fileName!=null && !fileName.isEmpty()){
             classWriter.visitSource(fileName, null);
         }
@@ -264,15 +264,15 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             method.visitMaxs(1, 1);
         }
         if(node.enclosingClass!=null){
-            this.classWriter.visitInnerClass(this.internalName(node), this.internalName(node.enclosingClass), NameUtil.getSimpleClassName(node.name), node.modifier);
+            this.classWriter.visitInnerClass(this.internalName(node), this.internalName(node.enclosingClass), NameUtil.getSimpleClassName(node.getName()), node.getModifier());
         }
         for(ClassNode ic:node.classes){
-            classWriter.visitInnerClass(internalName(ic), internalName(node), NameUtil.getSimpleClassName(ic.name), ic.modifier);
+            classWriter.visitInnerClass(internalName(ic), internalName(node), NameUtil.getSimpleClassName(ic.getName()), ic.getModifier());
         }
         classWriter.visitEnd();
         if(outputManager!=null){
             try {
-                try (OutputStream os = outputManager.createOutputStream(node.name)) {
+                try (OutputStream os = outputManager.createOutputStream(node.getName())) {
                     os.write(this.classWriter.toByteArray());
                 }
             } catch (IOException ex) {
@@ -309,7 +309,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         ParameterNode[] parameters = node.getParameters();
         for(int i=0;i<parameters.length;i++){
             ParameterNode p = parameters[i];
-            method.visitParameter(p.getName(), p.modifier);
+            method.visitParameter(p.getName(), p.getModifier());
             this.declareNewVar(p);
             if(p.getType() instanceof ObjectType){
                 String nullableAnnotation = getNullableAnnotation((ObjectType)p.getType());
@@ -527,9 +527,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         int lnsn = RETURN;
         int returnVar = -1;
         Type returnType = null;
-        if(node.expr!=null){
-            visit(node.expr);
-            returnType = node.expr.getType();
+        if(node.getExpr() !=null){
+            visit(node.getExpr());
+            returnType = node.getExpr().getType();
             lnsn = asmType(returnType).getOpcode(IRETURN);
             returnVar = declareNewVar(returnType);
             opCollector.visitVarInsn(asmType(returnType).getOpcode(ISTORE), returnVar);
@@ -645,7 +645,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitThrowStmt(ThrowStmt node) {
-        visit(node.expr);
+        visit(node.getExpr());
         opCollector.visitInsn(ATHROW);
         return null;
     }
@@ -658,7 +658,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private void assignField(FieldNode fn,ExprNode target, ExprNode from, int valueVar){
         int opc = PUTFIELD;
-        if (AstUtil.isStatic(fn.modifier)) {
+        if (AstUtil.isStatic(fn.getModifier())) {
             opc = PUTSTATIC;
         } else {
             visit(target);
@@ -883,7 +883,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             if (Modifier.isPrivate(method.getModifier()) || (target instanceof SuperExpr) || method.getName().equals("<init>")) {
                 opc = INVOKESPECIAL;
             } else {
-                opc = ModifierUtil.isInterface(targetType.getClassNode().modifier) ?
+                opc = ModifierUtil.isInterface(targetType.getClassNode().getModifier()) ?
                         INVOKEINTERFACE : INVOKEVIRTUAL;
             }
         }else{
@@ -1007,8 +1007,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitMultiStmtExpr(MultiStmtExpr node) {
         visitAll(node.getStatements());
-        if (node.reference != null) {
-            visit(node.reference);
+        if (node.getReference() != null) {
+            visit(node.getReference());
         }
         return null;
     }
@@ -1059,7 +1059,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }
             return getTypeDescriptor(st);
         }else if(t instanceof ClassType){
-            return "L" + internalName(((ClassType) t).getClassNode().name) + ";";
+            return "L" + internalName(((ClassType) t).getClassNode().getName()) + ";";
         }else if(t instanceof WildcardType){
             return getTypeDescriptor(((WildcardType) t).getSuperType());
         }else{
@@ -1144,7 +1144,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         } catch (MalformedAstException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new CodeGenerationException("fail to generate class:" + classNode.name, classNode, ex);
+            throw new CodeGenerationException("fail to generate class:" + classNode.getName(), classNode, ex);
         }
     }
 
@@ -1282,7 +1282,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitFieldNode(FieldNode fieldNode) {
-        classWriter.visitField(fieldNode.modifier, fieldNode.getName(), getTypeDescriptor(fieldNode.getType()), null, null);
+        classWriter.visitField(fieldNode.getModifier(), fieldNode.getName(), getTypeDescriptor(fieldNode.getType()), null, null);
         return null;
     }
 
@@ -1516,7 +1516,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         MethodVisitor methodVisitor = classWriter.visitMethod(access, name, desc, methodSignature(interfaceMethod), null);
         ParameterNode[] params = interfaceMethod.getParameters();
         for(ParameterNode p : params) {
-            methodVisitor.visitParameter(p.getName(),p.modifier);
+            methodVisitor.visitParameter(p.getName(), p.getModifier());
         }
         ParameterNode[] implementedParams = implementMethod.getParameters();
         methodVisitor.visitVarInsn(ALOAD,0);
@@ -1579,7 +1579,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             if (t2.isAssignableFrom(t1)) {
                 return type2;
             }
-            if (ModifierUtil.isInterface(cn1.modifier) || ModifierUtil.isInterface(cn2.modifier)) {
+            if (ModifierUtil.isInterface(cn1.getModifier()) || ModifierUtil.isInterface(cn2.getModifier())) {
                 return "java/lang/Object";
             } else {
                 do {

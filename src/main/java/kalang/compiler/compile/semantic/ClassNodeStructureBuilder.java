@@ -59,7 +59,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         if (ctx.parentClass != null) {
             superType = parseClassType(ctx.parentClass);
         }
-        if (Modifier.isInterface(thisClazz.modifier)) {
+        if (Modifier.isInterface(thisClazz.getModifier())) {
             //TODO update syntax to support:interface extends T1,T2...
             if (superType!=null) {
                 thisClazz.addInterface(superType);
@@ -80,7 +80,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             thisClazz.createField(Types.getClassType(parentClass), "this$0", Modifier.PRIVATE | ModifierConstant.SYNTHETIC);
         }
         visitClassBody(ctx.classBody());
-        if (!ModifierUtil.isInterface(thisClazz.modifier) && !AstUtil.containsConstructor(thisClazz)
+        if (!ModifierUtil.isInterface(thisClazz.getModifier()) && !AstUtil.containsConstructor(thisClazz)
                 && !AstUtil.createEmptyConstructor(thisClazz)) {
             handleSyntaxError("failed to create constructor with no parameters", offset(ctx));
         }
@@ -107,7 +107,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             }
         }
         for (FieldNode fieldNode : thisClazz.getFields()) {
-            int mdf = fieldNode.modifier;
+            int mdf = fieldNode.getModifier();
             if (Modifier.isStatic(mdf)){
                 continue;
             }
@@ -120,13 +120,13 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             if (!AstUtil.hasSetter(thisClazz, fieldNode)) {
                 AstUtil.createSetter(thisClazz, fieldNode, mdf);
             }
-            fieldNode.modifier = ModifierUtil.setPrivate(mdf);
+            fieldNode.setModifier(ModifierUtil.setPrivate(mdf));
         }
         return null;
     }
 
     private boolean isNonStaticInnerClass(ClassNode clazz) {
-        return clazz.enclosingClass != null && !Modifier.isStatic(clazz.modifier) && !Modifier.isInterface(clazz.modifier);
+        return clazz.enclosingClass != null && !Modifier.isStatic(clazz.getModifier()) && !Modifier.isInterface(clazz.getModifier());
     }
 
     private boolean isDeclaringNonStaticInnerClass() {
@@ -153,11 +153,11 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         //check method duplicated before generate java stub
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();
         if(blockStmt==null){
-            if(ModifierUtil.isInterface(thisClazz.modifier)){
+            if(ModifierUtil.isInterface(thisClazz.getModifier())){
                 modifier |= Modifier.ABSTRACT;
             }else if(!Modifier.isAbstract(modifier)){
                 handleSyntaxError("method body required", offset(ctx));
-            }else if(!Modifier.isAbstract(thisClazz.modifier)){
+            }else if(!Modifier.isAbstract(thisClazz.getModifier())){
                 handleSyntaxError("declare abstract method in non-abstract class", offset(ctx));
             }
         }
@@ -203,7 +203,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             if (p.paramDefVal != null) {
                 MethodNode m = thisClazz.createMethodNode(method.getType(), method.getName(), method.getModifier());
                 for (int j = 0; j < i - 1; j++) {
-                    m.createParameter(methodParams[j].getType(), methodParams[j].getName(), methodParams[j].modifier);
+                    m.createParameter(methodParams[j].getType(), methodParams[j].getName(), methodParams[j].getModifier());
                 }
                 for (AnnotationNode a: m.getAnnotations()) {
                     m.addAnnotation(a);

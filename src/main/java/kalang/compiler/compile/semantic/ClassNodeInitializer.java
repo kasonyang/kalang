@@ -57,7 +57,7 @@ public class ClassNodeInitializer extends AstBuilderBase {
         this.inScriptMode = true;
         int modifier = Modifier.PUBLIC;
         topClass = thisClazz = new ClassNode(className, modifier);
-        thisClazz.fileName = this.compilationUnit.getSource().getFileName();
+        thisClazz.setFileName(this.compilationUnit.getSource().getFileName());
         this.defContext.put(topClass, ctx);
         super.visitScriptDef(ctx);
         return null;
@@ -83,7 +83,7 @@ public class ClassNodeInitializer extends AstBuilderBase {
                 handleSyntaxError("Identifier excepted", offset(ctx));
                 return null;
             }
-            classDefName = oldClass.name + "$" + nameIdentifier.getText();
+            classDefName = oldClass.getName() + "$" + nameIdentifier.getText();
         } else {
             classDefName = className;
         }
@@ -95,7 +95,7 @@ public class ClassNodeInitializer extends AstBuilderBase {
             oldClass.classes.add(thisClazz);
             thisClazz.enclosingClass = oldClass;
         }
-        thisClazz.fileName = compilationUnit.getSource().getFileName();
+        thisClazz.setFileName(compilationUnit.getSource().getFileName());
         boolean oldScriptMode = this.inScriptMode;
         this.inScriptMode = false;
         visit(ctx.classBody());

@@ -13,7 +13,7 @@ public class MultiStmtExpr extends ExprNode {
     private final List<Statement> stmts = new LinkedList<>();
 
     @Nullable
-    public ExprNode reference;
+    private ExprNode reference;
 
     public MultiStmtExpr(List<Statement> stmts,@Nullable ExprNode reference) {
         this.stmts.addAll(stmts);
@@ -38,5 +38,13 @@ public class MultiStmtExpr extends ExprNode {
 
     public List<Statement> getStatements() {
         return new ArrayList(stmts);
+    }
+
+    public ExprNode getReference() {
+        return reference;
+    }
+
+    public void setReference(ExprNode reference) {
+        this.reference = reference;
     }
 }

@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 public class ReturnStmt extends Statement{
     
-    public ExprNode expr = null;
+    private ExprNode expr = null;
     
     
     public ReturnStmt(){
@@ -27,5 +27,13 @@ public class ReturnStmt extends Statement{
     @Override
     public String toString() {
         return "return " + (expr == null ? "" : expr);
+    }
+
+    public ExprNode getExpr() {
+        return expr;
+    }
+
+    public void setExpr(ExprNode expr) {
+        this.expr = expr;
     }
 }

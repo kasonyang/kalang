@@ -281,7 +281,7 @@ public class Types {
         if (!(type instanceof ObjectType)) {
             return false;
         }
-        return Types.getStringClassType().getClassNode().name.equals(((ObjectType) type).getClassNode().name);
+        return Types.getStringClassType().getClassNode().getName().equals(((ObjectType) type).getClassNode().getName());
     }
     
     public static boolean isExactNumber(Type type) {
@@ -443,7 +443,7 @@ public class Types {
     }
 
     public static boolean isRootObjectType(ObjectType type) {
-        return type.getClassNode().name.equals(ROOT_CLASS_NAME);
+        return type.getClassNode().getName().equals(ROOT_CLASS_NAME);
     }
     
     public static ObjectType getScriptType(){

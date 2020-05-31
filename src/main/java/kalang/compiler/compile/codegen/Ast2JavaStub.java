@@ -35,7 +35,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
 
     @Override
     public Void visitFieldNode(FieldNode fieldNode) {
-        sb.append(modifier2String(fieldNode.modifier))
+        sb.append(modifier2String(fieldNode.getModifier()))
                 .append(" ")
                 .append(getJavaTypeName(fieldNode.getType().getName()))
                 .append(" ")
@@ -50,7 +50,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
                 .append(" ");
         boolean isConstructor = "<init>".equals(node.getName());
         if(isConstructor){
-            sb.append(NameUtil.getSimpleClassName(node.getClassNode().name));
+            sb.append(NameUtil.getSimpleClassName(node.getClassNode().getName()));
         }else{
             sb.append(this.isInterface ? "" : "native ")
                 .append(getJavaTypeName(node.getType().getName()))
@@ -93,8 +93,8 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
     @Override
     public Void visitClassNode(ClassNode node) {
         //TODO maybe inner class
-        this.isInterface = Modifier.isInterface(node.modifier);
-        String clsName = node.name;
+        this.isInterface = Modifier.isInterface(node.getModifier());
+        String clsName = node.getName();
         boolean isInnerClass = node.enclosingClass!=null;
         if(!isInnerClass){
             String pkgName = NameUtil.getPackageName(clsName);
@@ -102,7 +102,7 @@ public class Ast2JavaStub extends AstVisitor<Void> implements CodeGenerator{
                 sb.append("package ").append(pkgName).append(";\n");
             }
         }
-        sb.append(modifier2String(node.modifier))
+        sb.append(modifier2String(node.getModifier()))
                 .append(this.isInterface ? " " : " class ")        
                 .append(NameUtil.getSimpleClassName(clsName));
         GenericType[] genTypes = node.getGenericTypes();

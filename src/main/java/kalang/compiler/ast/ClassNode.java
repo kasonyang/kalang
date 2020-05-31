@@ -14,12 +14,12 @@ import java.util.*;
  */
 public class ClassNode extends AstNode implements Annotationable{
     
-    public int modifier;
+    private int modifier;
     
-    public String name;
+    private String name;
     
     @Nullable
-    public String fileName = null;
+    private String fileName = null;
     
     @Nullable
     private ObjectType superType;
@@ -119,5 +119,30 @@ public class ClassNode extends AstNode implements Annotationable{
     @Override
     public String toString() {
         return "ClassNode " + this.name;
+    }
+
+    public int getModifier() {
+        return modifier;
+    }
+
+    public void setModifier(int modifier) {
+        this.modifier = modifier;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Nullable
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(@Nullable String fileName) {
+        this.fileName = fileName;
     }
 }

@@ -35,7 +35,7 @@ public class StandardFieldDescriptor implements FieldDescriptor {
 
     @Override
     public int getModifier() {
-        return field.modifier;
+        return field.getModifier();
     }
 
     @Override

@@ -712,7 +712,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         for(ClassNode c:clazz.classes) {
             checkAndBuildInterfaceMethods(c);
         }
-        if (Modifier.isAbstract(clazz.modifier)) {
+        if (Modifier.isAbstract(clazz.getModifier())) {
             return;
         }
         Map<MethodDescriptor, MethodNode> implementationMap = InterfaceUtil.getImplementationMap(clazz);
@@ -723,7 +723,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 String msg = String.format(
                         "please override abstract method %s in %s",
                         interfaceMethod.toString()
-                        ,interfaceMethod.getMethodNode().getClassNode().name
+                        , interfaceMethod.getMethodNode().getClassNode().getName()
                 );
                 diagnosisReporter.report(Diagnosis.Kind.ERROR,msg, clazz.offset);
             }

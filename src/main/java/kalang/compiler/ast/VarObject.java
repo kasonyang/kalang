@@ -4,7 +4,7 @@ import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
 public abstract class VarObject extends AstNode{
     
-    public int modifier;
+    private int modifier;
     
     private final Type type;
     
@@ -29,5 +29,12 @@ public abstract class VarObject extends AstNode{
     public String toString() {
         return name==null ? "[temp]" : name;
     }
-    
+
+    public int getModifier() {
+        return modifier;
+    }
+
+    public void setModifier(int modifier) {
+        this.modifier = modifier;
+    }
 }
