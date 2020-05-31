@@ -90,6 +90,10 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         if(node instanceof CatchBlock){
             return visitCatchBlock((CatchBlock)node);
         }
+
+        if (node instanceof FinallyBlock) {
+            return visitFinallyBlock((FinallyBlock) node);
+        }
         
         if(node instanceof ThrowStmt){
             return visitThrowStmt((ThrowStmt)node);

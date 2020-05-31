@@ -8,16 +8,14 @@ import kalang.compiler.compile.CodeGenerator;
 import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.compile.codegen.op.*;
 import kalang.compiler.compile.semantic.MalformedAstException;
+import kalang.compiler.compile.semantic.analyzer.ParentAnalyzer;
 import kalang.compiler.compile.semantic.analyzer.TerminalStatementAnalyzer;
+import kalang.compiler.core.Type;
 import kalang.compiler.core.*;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
 import kalang.mixin.CollectionMixin;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,10 +39,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     private static Logger LOG = Logger.getLogger(Ast2Class.class.getName());
     private final CompilationUnit compilationUnit;
+    private ParentAnalyzer parentAnalyzer;
 
     private ClassWriter classWriter;
     private OpCollector opCollector;
-    
+
     private OutputManager outputManager;
 
     private final AstLoader astLoader;
@@ -64,7 +63,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private Stack<LabelOp> breakLabels = new Stack<>();
     private Stack<LabelOp> continueLabels = new Stack<>();
 
-    private Stack<CatchContext> catchContextStack = new Stack<>();
+    private Map<TryStmt, CatchContext> catchContextMap = new HashMap<>();
 
     private final static int
             T_I = 0,
@@ -293,6 +292,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         int access = node.getModifier();
         MethodVisitor method = classWriter.visitMethod(access, internalName(node.getName()), getMethodDescriptor(node), methodSignature(node), internalName(node.getExceptionTypes()));
         opCollector = new OpCollector();
+        parentAnalyzer = new ParentAnalyzer();
+        parentAnalyzer.analyse(node);
         if(node.getType() instanceof ObjectType){
             annotationNullable(method,(ObjectType)node.getType());
         }
@@ -531,12 +532,16 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             returnVar = declareNewVar(returnType);
             opCollector.visitVarInsn(asmType(returnType).getOpcode(ISTORE), returnVar);
         }
-        Stack<CatchContext> ccStack = new Stack<>();
-        while (!catchContextStack.isEmpty()){
-            CatchContext catchContext  = catchContextStack.pop();
-            ccStack.push(catchContext);
-            Statement finallyStmt = catchContext.getFinallyStatement();
-            if (finallyStmt!=null) {
+        @SuppressWarnings("unchecked")
+        LinkedList<TryStmt> outerTryStmts = (LinkedList) parentAnalyzer.getParents(node, it -> it instanceof TryStmt);
+        AstNode parent = parentAnalyzer.getParent(node, it -> it instanceof FinallyBlock || it instanceof TryStmt);
+        if (parent instanceof FinallyBlock) {
+            outerTryStmts.removeFirst();
+        }
+        for (TryStmt tryStmt : outerTryStmts) {
+            CatchContext catchContext  = catchContextMap.get(tryStmt);
+            FinallyBlock finallyStmt = tryStmt.getFinallyBlock();
+            if (finallyStmt != null) {
                 this.newFrame();
                 LabelOp startLabel = new LabelOp();
                 LabelOp endLabel = new LabelOp();
@@ -546,9 +551,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 popFrame();
                 catchContext.addExclude(startLabel, endLabel);
             }
-        }
-        while(!ccStack.isEmpty()) {
-            catchContextStack.push(ccStack.pop());
         }
         if (returnVar > -1) {
             opCollector.visitVarInsn(asmType(returnType).getOpcode(ILOAD), returnVar);
@@ -560,8 +562,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitTryStmt(TryStmt node) {
         BlockStmt execStmt = node.getExecStmt();
-        BlockStmt finallyStmt = node.getFinallyStmt();
-        boolean hasFinallyStmt = finallyStmt!=null && !finallyStmt.statements.isEmpty();
+        FinallyBlock finallyStmt = node.getFinallyBlock();
+        boolean hasFinallyStmt = finallyStmt!=null && !finallyStmt.getExecStmt().statements.isEmpty();
         if (execStmt.statements.isEmpty()) {
             if (hasFinallyStmt) {
                 visit(finallyStmt);
@@ -573,13 +575,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         LabelOp tryEndLabel = new LabelOp();
         LabelOp exitLabel = new LabelOp();
         LabelOp finallyStartLabel = new LabelOp();
-        CatchContext catchContextOfTry = new CatchContext(tryStartLabel, tryEndLabel, finallyStmt);
-        catchContextStack.push(catchContextOfTry);
+        CatchContext catchContextOfTry = new CatchContext(tryStartLabel, tryEndLabel);
+        catchContextMap.put(node, catchContextOfTry);
         opCollector.visitLabel(tryStartLabel);
         visit(execStmt);
         opCollector.visitLabel(tryEndLabel);
         this.popFrame();
-        catchContextStack.pop();
         if (!terminalStmtAnalyzer.isTerminalStatement(execStmt)) {
             if (finallyStmt!=null) {
                 this.newFrame();
@@ -594,13 +595,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 this.newFrame();
                 LabelOp catchStartLabel = new LabelOp();
                 LabelOp catchStopLabel = new LabelOp();
-                CatchContext catchContextOfCatch = new CatchContext(catchStartLabel,catchStopLabel,finallyStmt);
-                catchContextStack.push(catchContextOfCatch);
+                CatchContext catchContextOfCatch = new CatchContext(catchStartLabel,catchStopLabel);
+                catchContextMap.put(node, catchContextOfCatch);
                 opCollector.visitLabel(catchStartLabel);
                 visit(s);
                 opCollector.visitLabel(catchStopLabel);
                 this.popFrame();
-                catchContextStack.pop();
                 if (!terminalStmtAnalyzer.isTerminalStatement(s.execStmt)) {
                     if (finallyStmt!=null) {
                         this.newFrame();
@@ -645,6 +645,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         int exVarId = getVarId(node.catchVar);
         opCollector.visitVarInsn(ASTORE, exVarId);
         visit(node.execStmt);
+        return null;
+    }
+
+    @Override
+    public Object visitFinallyBlock(FinallyBlock node) {
+        visit(node.getExecStmt());
         return null;
     }
 

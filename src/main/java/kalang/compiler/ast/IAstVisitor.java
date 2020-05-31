@@ -40,6 +40,8 @@ public interface IAstVisitor<T> {
 
     T visitCatchBlock(CatchBlock node);
 
+    T visitFinallyBlock(FinallyBlock node);
+
     T visitThrowStmt(ThrowStmt node);
 
     T visitAssignExpr(AssignExpr node);

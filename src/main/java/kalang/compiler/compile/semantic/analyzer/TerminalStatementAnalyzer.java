@@ -55,7 +55,8 @@ public class TerminalStatementAnalyzer {
             return true;
         } else if (statement instanceof TryStmt) {
             TryStmt tryStmt = (TryStmt) statement;
-            if (isTerminalStatement(tryStmt.getFinallyStmt())) {
+            FinallyBlock finallyBlock = tryStmt.getFinallyBlock();
+            if (finallyBlock != null && isTerminalStatement(finallyBlock.getExecStmt())) {
                 return true;
             }
             List<Statement> branches = new LinkedList<>();

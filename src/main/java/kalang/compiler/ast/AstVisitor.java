@@ -73,7 +73,13 @@ public class AstVisitor<T> extends AbstractAstVisitor<T>{
         this.visitChildren(node);
         return null;
     }
-    
+
+    @Override
+    public T visitFinallyBlock(FinallyBlock node) {
+        this.visitChildren(node);
+        return null;
+    }
+
     @Override
     public T visitThrowStmt(ThrowStmt node){
         this.visitChildren(node);

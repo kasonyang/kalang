@@ -50,7 +50,7 @@ public class VarExpr extends AssignableExpr{
 
     @Override
     public List<AstNode> getChildren() {
-        return Collections.singletonList(var);
+        return Collections.emptyList();
     }
 
 }

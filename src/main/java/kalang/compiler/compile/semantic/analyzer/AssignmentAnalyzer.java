@@ -97,7 +97,7 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
             exitFrame();
         }
         addIntersectedAssignedVar(assignedList);
-        Statement finallyStmt = node.getFinallyStmt();
+        FinallyBlock finallyStmt = node.getFinallyBlock();
         if (finallyStmt != null) {
             visit(finallyStmt);
         }

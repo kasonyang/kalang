@@ -1,6 +1,5 @@
 package kalang.compiler.compile.codegen;
 
-import kalang.compiler.ast.Statement;
 import kalang.compiler.compile.codegen.op.LabelOp;
 
 import java.util.LinkedList;
@@ -10,14 +9,11 @@ public class CatchContext {
 
     private final LabelOp startLabel,stopLabel;
 
-    private final Statement finallyStatement;
-
     private final List<LabelOp> excludeLabels = new LinkedList<>();
 
-    public CatchContext(LabelOp startLabel, LabelOp stopLabel, Statement finallyStatement) {
+    public CatchContext(LabelOp startLabel, LabelOp stopLabel) {
         this.startLabel = startLabel;
         this.stopLabel = stopLabel;
-        this.finallyStatement = finallyStatement;
     }
 
     public void addExclude(LabelOp startLabel, LabelOp stopLabel) {
@@ -34,10 +30,6 @@ public class CatchContext {
         labels[0] = startLabel;
         labels[labels.length-1] = stopLabel;
         return labels;
-    }
-
-    public Statement getFinallyStatement() {
-        return finallyStatement;
     }
 
 }

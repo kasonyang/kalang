@@ -10,22 +10,21 @@ public class TryStmt extends Statement{
     protected final List<CatchBlock> catchStmts = new LinkedList<>();
     
     @Nullable
-    protected BlockStmt finallyStmt;
+    protected FinallyBlock finallyBlock;
     
-    
-    public TryStmt(BlockStmt execStmt,List<CatchBlock> catchStmts,@Nullable BlockStmt finallyStmt){
-        if(catchStmts == null) catchStmts = new LinkedList();
+    public TryStmt(BlockStmt execStmt,List<CatchBlock> catchStmts,@Nullable FinallyBlock finallyBlock){
+        if(catchStmts == null) catchStmts = new LinkedList<>();
         this.execStmt = execStmt;
         this.catchStmts.addAll(catchStmts);
-        this.finallyStmt = finallyStmt;
+        this.finallyBlock = finallyBlock;
     }
     
     @Override
     public List<AstNode> getChildren(){
-        List<AstNode> ls = new LinkedList();
-        addChild(ls, getExecStmt());
-        addChild(ls, getCatchStmts());
-        addChild(ls, getFinallyStmt());
+        List<AstNode> ls = new LinkedList<>();
+        addChild(ls, execStmt);
+        addChild(ls, catchStmts);
+        addChild(ls, finallyBlock);
         return ls;
     }
 
@@ -46,8 +45,8 @@ public class TryStmt extends Statement{
     /**
      * @return the finallyStmt
      */
-    public BlockStmt getFinallyStmt() {
-        return finallyStmt;
+    public FinallyBlock getFinallyBlock() {
+        return finallyBlock;
     }
     
 }
