@@ -47,6 +47,12 @@ public class ParentAnalyzer {
         return parent;
     }
 
+    @SuppressWarnings("unchecked")
+    @Nullable
+    public <T> T getParent(AstNode node, Class<T> parentType) {
+        return (T) getParent(node, it -> parentType.isAssignableFrom(it.getClass()));
+    }
+
     public LinkedList<AstNode> getParents(AstNode node, Predicate<AstNode> filter) {
         LinkedList<AstNode> parents = new LinkedList<>();
         AstNode parent = node;
@@ -54,6 +60,15 @@ public class ParentAnalyzer {
             parents.add(parent);
         }
         return parents;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> LinkedList<T> getParents(AstNode node, Class<T> parentType) {
+        return (LinkedList<T>) getParents(node, it -> parentType.isAssignableFrom(it.getClass()));
+    }
+
+    public boolean isParentOf(AstNode parent, AstNode child) {
+        return getParent(child, it -> it == parent) != null;
     }
 
 }

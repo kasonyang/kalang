@@ -89,3 +89,15 @@ int testReturn() {
     }
 }
 
+int testBreak() {
+    int sum = 0;
+    for (int i = 0; i < 2; i++) {
+        try {
+            sum++;
+            break;
+        } finally {
+            sum++;
+        }
+    }
+    return sum + 4;
+}

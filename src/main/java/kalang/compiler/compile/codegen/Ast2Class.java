@@ -59,9 +59,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private VarTable<Integer,LocalVarNode> varTables = new VarTable<>();
     
     private int varIdCounter = 0;
-    
-    private Stack<LabelOp> breakLabels = new Stack<>();
-    private Stack<LabelOp> continueLabels = new Stack<>();
+
+    private Map<LoopStmt, LabelOp> breakLabelMap = new HashMap<>();
+    private Map<LoopStmt, LabelOp> continueLabelMap = new HashMap<>();
 
     private Map<TryStmt, CatchContext> catchContextMap = new HashMap<>();
 
@@ -398,19 +398,23 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitBreakStmt(BreakStmt node) {
-        if (breakLabels.isEmpty()) {
+        LoopStmt loopStmt = parentAnalyzer.getParent(node, LoopStmt.class);
+        if (loopStmt == null) {
             throw new MalformedAstException("break outside of loop", node);
         }
-        opCollector.visitJumpInsn(GOTO, breakLabels.peek());
+        processFinallyBlockBeforeJump(loopStmt, node);
+        opCollector.visitJumpInsn(GOTO, breakLabelMap.get(loopStmt));
         return null;
     }
 
     @Override
     public Object visitContinueStmt(ContinueStmt node) {
-        if (continueLabels.isEmpty()) {
+        LoopStmt loopStmt = (LoopStmt) parentAnalyzer.getParent(node, it -> it instanceof LoopStmt);
+        if (loopStmt == null) {
             throw new MalformedAstException("continue outside of loop", node);
         }
-        opCollector.visitJumpInsn(GOTO, continueLabels.peek());
+        processFinallyBlockBeforeJump(loopStmt, node);
+        opCollector.visitJumpInsn(GOTO, continueLabelMap.get(loopStmt));
         return null;
     }
     
@@ -501,8 +505,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         LabelOp startLabel = new LabelOp();
         LabelOp continueLabel = new LabelOp();
         LabelOp stopLabel = new LabelOp();
-        continueLabels.push(continueLabel);
-        breakLabels.push(stopLabel);
+        continueLabelMap.put(node, continueLabel);
+        breakLabelMap.put(node, stopLabel);
         opCollector.visitLabel(startLabel);
         if(node.getPreConditionExpr()!=null){
             ifExpr(false, node.getPreConditionExpr(),stopLabel);
@@ -515,8 +519,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         opCollector.visitJumpInsn(GOTO, startLabel);
         opCollector.visitLabel(stopLabel);
-        continueLabels.pop();
-        breakLabels.pop();
         return null;
     }
 
@@ -538,20 +540,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if (parent instanceof FinallyBlock) {
             outerTryStmts.removeFirst();
         }
-        for (TryStmt tryStmt : outerTryStmts) {
-            CatchContext catchContext  = catchContextMap.get(tryStmt);
-            FinallyBlock finallyStmt = tryStmt.getFinallyBlock();
-            if (finallyStmt != null) {
-                this.newFrame();
-                LabelOp startLabel = new LabelOp();
-                LabelOp endLabel = new LabelOp();
-                opCollector.visitLabel(startLabel);
-                visit(finallyStmt);
-                opCollector.visitLabel(endLabel);
-                popFrame();
-                catchContext.addExclude(startLabel, endLabel);
-            }
-        }
+        outerTryStmts.forEach(this::processFinallyBlock);
         if (returnVar > -1) {
             opCollector.visitVarInsn(asmType(returnType).getOpcode(ILOAD), returnVar);
         }
@@ -1654,6 +1643,35 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                     labelMapper.apply(tcb.handler),
                     tcb.type
             );
+        }
+    }
+
+    private void processFinallyBlock(TryStmt tryStmt) {
+        CatchContext catchContext  = catchContextMap.get(tryStmt);
+        FinallyBlock finallyStmt = tryStmt.getFinallyBlock();
+        if (finallyStmt != null) {
+            this.newFrame();
+            LabelOp startLabel = new LabelOp();
+            LabelOp endLabel = new LabelOp();
+            opCollector.visitLabel(startLabel);
+            visit(finallyStmt);
+            opCollector.visitLabel(endLabel);
+            popFrame();
+            catchContext.addExclude(startLabel, endLabel);
+        }
+    }
+
+    private void processFinallyBlockBeforeJump(Statement outerStmt, AstNode jumpPoint) {
+        LinkedList<TryStmt> parentTryStmts = parentAnalyzer.getParents(jumpPoint, TryStmt.class);
+        AstNode exitParent = parentAnalyzer.getParent(jumpPoint, it -> it instanceof FinallyBlock || it instanceof TryStmt);
+        if (exitParent instanceof FinallyBlock) {
+            parentTryStmts.removeFirst();
+        }
+        for (TryStmt tryStmt: parentTryStmts) {
+            if (!parentAnalyzer.isParentOf(outerStmt, tryStmt)) {
+                break;
+            }
+            processFinallyBlock(tryStmt);
         }
     }
 
