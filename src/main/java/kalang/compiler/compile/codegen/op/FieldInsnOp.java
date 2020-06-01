@@ -4,7 +4,7 @@ package kalang.compiler.compile.codegen.op;
  * @author KasonYang
  */
 public class FieldInsnOp extends OpBase {
-    public int opcode;
+
     public String owner;
     public String name;
     public String descriptor;

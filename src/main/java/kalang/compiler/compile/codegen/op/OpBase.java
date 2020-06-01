@@ -5,6 +5,8 @@ package kalang.compiler.compile.codegen.op;
  */
 public class OpBase {
 
+    public int opcode = -1;
+
     public final static String[] OPC_DESC = new String[200];
 
     static {

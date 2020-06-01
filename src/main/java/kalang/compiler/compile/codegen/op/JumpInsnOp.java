@@ -5,8 +5,6 @@ package kalang.compiler.compile.codegen.op;
  */
 public class JumpInsnOp extends OpBase {
 
-    public int opcode;
-
     public LabelOp label;
 
     public JumpInsnOp(int opcode, LabelOp label) {

@@ -5,7 +5,6 @@ package kalang.compiler.compile.codegen.op;
  */
 public class MethodInsnOp extends OpBase {
 
-    public int opcode;
     public String owner;
     public String name;
     public String descriptor;

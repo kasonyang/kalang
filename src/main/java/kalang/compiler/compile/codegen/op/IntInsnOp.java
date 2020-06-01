@@ -5,7 +5,6 @@ package kalang.compiler.compile.codegen.op;
  */
 public class IntInsnOp extends OpBase {
 
-    public int opcode;
     public int operand;
 
     public IntInsnOp(int opcode, int operand) {

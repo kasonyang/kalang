@@ -1,5 +1,7 @@
 package kalang.compiler.compile.codegen.op;
 
+import static org.objectweb.asm.Opcodes.MULTIANEWARRAY;
+
 /**
  * @author KasonYang
  */
@@ -9,6 +11,7 @@ public class MultiANewArrayInsnOp extends OpBase {
     public int numDimensions;
 
     public MultiANewArrayInsnOp(String descriptor, int numDimensions) {
+        this.opcode = MULTIANEWARRAY;
         this.descriptor = descriptor;
         this.numDimensions = numDimensions;
     }

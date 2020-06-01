@@ -624,7 +624,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             this.popFrame();
         }
         opCollector.visitLabel(exitLabel);
-        opCollector.visitInsn(NOP);
         return null;
     }
 

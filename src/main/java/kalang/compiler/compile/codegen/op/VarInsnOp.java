@@ -5,8 +5,6 @@ package kalang.compiler.compile.codegen.op;
  */
 public class VarInsnOp extends OpBase {
 
-    public int opcode;
-
     public int var;
 
     public VarInsnOp(int opcode, int var) {

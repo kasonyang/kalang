@@ -4,7 +4,6 @@ package kalang.compiler.compile.codegen.op;
  * @author KasonYang
  */
 public class TypeInsnOp extends OpBase {
-    public int opcode;
     public String type;
     public TypeInsnOp(int opcode, String type) {
         this.opcode = opcode;
