@@ -659,30 +659,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return scStaticMethods;
     }
 
-    protected ExprNode createInitializedArray(Type type,ExprNode[] exprs){
-        NewArrayExpr ae = new NewArrayExpr(type,new ConstExpr(exprs.length));
-        if(exprs.length>0){
-            Statement[] initStmts = new Statement[exprs.length+2];
-            //TODO create a method for temp var creation
-            //TODO localVarNode should add a type parameter
-            LocalVarNode local = this.declareTempLocalVar(ae.getType());
-            initStmts[0] = new VarDeclStmt(local);
-            VarExpr arrVar = new VarExpr(local);
-            initStmts[1] = new ExprStmt(new AssignExpr(arrVar,ae));
-            for(int i=0;i<exprs.length;i++){
-                initStmts[i+2] =new ExprStmt(
-                        new AssignExpr(
-                                new ElementExpr(arrVar, new ConstExpr(i))
-                                , exprs[i]
-                        )
-                );
-            }
-            return new MultiStmtExpr(Arrays.asList(initStmts), arrVar);
-        }else{
-            return ae;
-        }
-    }
-
     @Nonnull
     protected ExprNode createBinaryBoolOperateExpr(ExprNode expr1,ExprNode expr2,String op) {
         expr1 = requireCastToPrimitiveDataType(expr1,expr1.offset);
@@ -742,31 +718,29 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return getImportedMethods(compilationUnit.staticImportMembers, compilationUnit.staticImportPaths, methodName);
     }
 
-    protected AssignableExpr getSafeAccessibleAssignableExpr(AssignableExpr expr,List<Statement> initStmtsHolder) {
+    protected AstNodeMaker<AssignableExpr> getSafeAccessorForAssignableExpr(AssignableExpr expr, List<Statement> initStmtsHolder) {
+        OffsetRange offset = expr.offset;
         if (expr instanceof ObjectFieldExpr) {
             ObjectFieldExpr fe = (ObjectFieldExpr) expr;
             ExprNode originTarget = fe.getTarget();
-            if (isSafeAccessibleExpr(originTarget)) {
-                return expr;
-            }
-            ExprNode safeTarget = createSafeAccessibleExpr(originTarget, initStmtsHolder);
-            return new ObjectFieldExpr(safeTarget, fe.getField());
+            AstNodeMaker<VarExpr> targetAccessor = createSafeAccessor(originTarget, initStmtsHolder);
+            return () -> mapAst(new ObjectFieldExpr(targetAccessor.make(), fe.getField()), offset);
         } else if (expr instanceof ElementExpr) {
             //element execute order:array -> index
             ElementExpr eleExpr = (ElementExpr) expr;
             ExprNode arrayExpr = eleExpr.getArrayExpr();
             ExprNode indexExpr = eleExpr.getIndex();
-            boolean isArraySafeAccessible = isSafeAccessibleExpr(arrayExpr);
-            boolean isIndexSafeAccessible = isSafeAccessibleExpr(indexExpr);
-            if (isArraySafeAccessible && isIndexSafeAccessible) {
-                return expr;
-            }
-            ExprNode safeArrayExpr = isArraySafeAccessible ? arrayExpr : createSafeAccessibleExpr(arrayExpr, initStmtsHolder);
-            ExprNode safeIndexExpr = isIndexSafeAccessible ? indexExpr : createSafeAccessibleExpr(indexExpr, initStmtsHolder);
-            return new ElementExpr(safeArrayExpr, safeIndexExpr);
-        } else if (isSafeAccessibleExpr(expr)) {
-            return expr;
-        } else {
+            AstNodeMaker<VarExpr> arrayAccessor = createSafeAccessor(arrayExpr, initStmtsHolder);
+            AstNodeMaker<VarExpr> indexAccessor = createSafeAccessor(indexExpr, initStmtsHolder);
+            return () -> mapAst(new ElementExpr(arrayAccessor.make(), indexAccessor.make()),offset);
+        } else if (expr instanceof VarExpr) {
+            return () -> mapAst(new VarExpr(((VarExpr) expr).getVar(), expr.getType()), offset);
+        } else if (expr instanceof ParameterExpr) {
+            return () -> mapAst(new ParameterExpr(((ParameterExpr) expr).getParameter(), expr.getType()), offset);
+        } else if (expr instanceof StaticFieldExpr) {
+            StaticFieldExpr se = (StaticFieldExpr) expr;
+            return () -> mapAst(new StaticFieldExpr(se.getClassReference(), se.getField()), offset);
+        }  else {
             throw Exceptions.unexpectedValue(expr);
         }
     }
@@ -809,11 +783,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
-    protected VarExpr createSafeAccessibleExpr(ExprNode target, List<Statement> initStmtsHolder) {
+    protected AstNodeMaker<VarExpr> createSafeAccessor(ExprNode target, List<Statement> initStmtsHolder) {
         LocalVarNode tmpTarget = declareTempLocalVar(target.getType());
         initStmtsHolder.add(new VarDeclStmt(tmpTarget));
         initStmtsHolder.add(new ExprStmt(new AssignExpr(new VarExpr(tmpTarget),target)));
-        return new VarExpr(tmpTarget);
+        return () -> mapAst(new VarExpr(tmpTarget), target.offset);
     }
 
     @Nonnull

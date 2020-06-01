@@ -341,16 +341,15 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         List<Statement> stmts = new LinkedList<>();
         stmts.add(vds);
         stmts.add(new ExprStmt(new AssignExpr(new VarExpr(vo), newExpr)));
-        VarExpr ve = new VarExpr(vo);
         for(int i=0;i<keyExprs.length;i++) {
             ExprNode[] args = new ExprNode[]{keyExprs[i],valuesExprs[i]};
             try {
-                stmts.add(new ExprStmt(ObjectInvokeExpr.create(ve, "put",args)));
+                stmts.add(new ExprStmt(ObjectInvokeExpr.create(new VarExpr(vo), "put",args)));
             } catch (MethodNotFoundException|AmbiguousMethodException ex) {
                 throw Exceptions.unexpectedException(ex);
             }
         }
-        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
+        MultiStmtExpr mse = new MultiStmtExpr(stmts, new VarExpr(vo));
         mapAst(mse,ctx);
         return mse;
     }
@@ -374,7 +373,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             for(int i=0;i<initExprs.length;i++){
                 initExprs[i] = visitExpression(ctx.initExpr.get(i));
             }
-            ret= createInitializedArray(type, initExprs);
+            ret= AstUtil.createInitializedArray(type, initExprs);
         }
         mapAst(ret, ctx);
         return ret;
@@ -394,13 +393,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         LocalVarNode vo = this.declareTempLocalVar(type);
         VarDeclStmt vds = new VarDeclStmt(vo);
         stmts.add(vds);
-        VarExpr ve = new VarExpr(vo);
         IfStmt is = new IfStmt(conditionExpr);
-        is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(ve, trueExpr)));
-        is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve,falseExpr)));
+        is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(new VarExpr(vo), trueExpr)));
+        is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(new VarExpr(vo),falseExpr)));
         stmts.add(is);
-        MultiStmtExpr mse = new MultiStmtExpr(stmts, ve);
-        mapAst(ve, offset(ctx), true);
+        MultiStmtExpr mse = new MultiStmtExpr(stmts, new VarExpr(vo));
+        mapAst(mse, offset(ctx), true);
         return mse;
     }
 
@@ -822,12 +820,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             String op = assignOp.substring(0, assignOp.length() - 1);
             List<Statement> initStmts = new LinkedList<>();
             if (toValue instanceof AssignableExpr) {
-                AssignableExpr to = (AssignableExpr) toValue;
-                to = getSafeAccessibleAssignableExpr(to, initStmts);
-                ExprNode from = createBinaryExpr(op, to, () -> visitExpression(fromCtx), offset(ctx));
-                AssignExpr assignExpr = new AssignExpr(to, from);
+                AstNodeMaker<AssignableExpr> toMaker = getSafeAccessorForAssignableExpr((AssignableExpr) toValue, initStmts);
+                ExprNode from = createBinaryExpr(op, toMaker.make(), () -> visitExpression(fromCtx), offset(ctx));
+                AssignExpr assignExpr = new AssignExpr(toMaker.make(), from);
                 mapAst(assignExpr, offset(ctx));
-                methodCtx.onAssign(to, from);
+                methodCtx.onAssign(assignExpr);
                 return initStmts.isEmpty() ? assignExpr : mapAst(new MultiStmtExpr(initStmts, assignExpr), offset(ctx));
             }
             if (toCtx instanceof GetFieldExprContext) {
@@ -848,13 +845,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Nonnull
-    private ExprNode createBinaryExpr(String op, ExprNode expr1, ExprCreator expr2Creator, OffsetRange offset){
+    private ExprNode createBinaryExpr(String op, ExprNode expr1, AstNodeMaker<ExprNode> expr2Maker, OffsetRange offset){
         ExprNode expr2;
         if ("&&".equals(op) || "||".equals(op)) {
             expr1 = requireCastToPrimitiveDataType(expr1,expr1.offset);
-            expr2 = methodCtx.doInCondition(expr1,"&&".equals(op), expr2Creator::createExpr);
+            expr2 = methodCtx.doInCondition(expr1,"&&".equals(op), expr2Maker::make);
         } else {
-            expr2 = expr2Creator.createExpr();
+            expr2 = expr2Maker.make();
         }
         Type type1 = expr1.getType();
         Type type2 = expr2.getType();
@@ -1082,7 +1079,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         Function1<ExprNode, ExprNode> createDotInvoke = (target) -> getObjectInvokeExpr(target, mdName, ctx.params, offsetRange);
         Function1<ExprNode, ExprNode> createDynamicInvoke = (target) -> {
             ExprNode[] invokeArgs = new ExprNode[]{
-                    target, new ConstExpr(mdName), createInitializedArray(Types.getRootType(), paramsBuilder.call())
+                    target, new ConstExpr(mdName), AstUtil.createInitializedArray(Types.getRootType(), paramsBuilder.call())
             };
             ClassNode dispatcherAst = astLoader.getAst(MethodDispatcher.class.getName());
             if (dispatcherAst == null) {
@@ -1584,17 +1581,18 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         boolean isDesc = op.equals("--");
         ExprNode reference;
         List<Statement> initStmts = new LinkedList<>();
-        AssignableExpr safeTo = getSafeAccessibleAssignableExpr((AssignableExpr) expr, initStmts);
+        AstNodeMaker<AssignableExpr> toMaker = getSafeAccessorForAssignableExpr((AssignableExpr) expr, initStmts);
         if (!isOperatorFirst) {
-            LocalVarNode tmpVar = declareTempLocalVar(safeTo.getType());
+            LocalVarNode tmpVar = declareTempLocalVar(expr.getType());
             initStmts.add(new VarDeclStmt(tmpVar));
-            initStmts.add(new ExprStmt(new AssignExpr(new VarExpr(tmpVar), safeTo)));
+            initStmts.add(new ExprStmt(new AssignExpr(new VarExpr(tmpVar), toMaker.make())));
             reference = new VarExpr(tmpVar);
         } else {
-            reference = safeTo;
+            reference = toMaker.make();
         }
-        ExprNode addOneExpr = createBinaryMathExpr(safeTo, new ConstExpr(1), isDesc ? "-" : "+", safeTo.offset);
-        initStmts.add(new ExprStmt(new AssignExpr(safeTo, addOneExpr)));
+        AssignableExpr toRight = toMaker.make();
+        ExprNode addOneExpr = createBinaryMathExpr(toRight, new ConstExpr(1), isDesc ? "-" : "+", toRight.offset);
+        initStmts.add(new ExprStmt(new AssignExpr(toMaker.make(), addOneExpr)));
         return new  MultiStmtExpr(initStmts, reference);
     }
 
@@ -1732,10 +1730,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public Object visitForEachStat(KalangParser.ForEachStatContext ctx) {
         return newBlock(() -> {
-            ExprNode expr = this.visitExpression(ctx.expression());
-            Type exprType = expr.getType();
-            LocalVarNode indexVar = null;
+            ExprNode exprToLoop = this.visitExpression(ctx.expression());
+            Type exprType = exprToLoop.getType();
             List<Statement> blockStatements = new LinkedList<>();
+            AstNodeMaker<VarExpr> exprAccessor = createSafeAccessor(exprToLoop, blockStatements);
+            LocalVarNode indexVar = null;
             Token varId = ctx.valueId;
             Token indexId = ctx.indexId;
             if (indexId != null) {
@@ -1745,25 +1744,22 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             LoopStmt loopStmt;
             if (exprType instanceof ArrayType) {
                 LocalVarNode localVarNode = this.declareLocalVar(varId.getText(), ((ArrayType) exprType).getComponentType(), 0, offset(ctx));
-                VarExpr localVariable = new VarExpr(localVarNode);
                 blockStatements.add(new VarDeclStmt(localVarNode));
                 LocalVarNode lenVar = this.declareTempLocalVar(Types.INT_TYPE);
                 LocalVarNode counterVar = this.declareTempLocalVar(Types.INT_TYPE);
                 blockStatements.add(new VarDeclStmt(lenVar));//var len
                 blockStatements.add(new VarDeclStmt(counterVar));//var i
-                VarExpr counterVarExpr = new VarExpr(counterVar);
-                VarExpr lenVarExpr = new VarExpr(lenVar);
-                blockStatements.add(new ExprStmt(new AssignExpr(lenVarExpr, new ArrayLengthExpr(expr))));//l = array.length
-                blockStatements.add(new ExprStmt(new AssignExpr(counterVarExpr, new ConstExpr(0))));//i=0
-                ExprNode cnd = new CompareBinaryExpr(counterVarExpr, lenVarExpr, CompareBinaryExpr.OP_LT);
+                blockStatements.add(new ExprStmt(new AssignExpr(new VarExpr(lenVar), new ArrayLengthExpr(exprAccessor.make()))));//l = array.length
+                blockStatements.add(new ExprStmt(new AssignExpr(new VarExpr(counterVar), new ConstExpr(0))));//i=0
+                ExprNode cnd = new CompareBinaryExpr(new VarExpr(counterVar), new VarExpr(lenVar), CompareBinaryExpr.OP_LT);
                 LocalVarNode theIndexVar = indexVar;
                 BlockStmt loopBodyBs = this.newBlock(() -> {
                     List<Statement> loopBodyStatements = new LinkedList<>();
                     loopBodyStatements.add(new ExprStmt(
-                            new AssignExpr(localVariable, new ElementExpr(expr, counterVarExpr))
+                            new AssignExpr(new VarExpr(localVarNode), new ElementExpr(exprAccessor.make(), new VarExpr(counterVar)))
                     ));
                     if (theIndexVar != null) {
-                        loopBodyStatements.add(new ExprStmt(new AssignExpr(new VarExpr(theIndexVar), counterVarExpr)));
+                        loopBodyStatements.add(new ExprStmt(new AssignExpr(new VarExpr(theIndexVar), new VarExpr(counterVar))));
                     }
                     loopBodyStatements.add(visitStat(ctx.stat()));
                     return loopBodyStatements;
@@ -1772,7 +1768,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     //increment counter
                     return new ExprStmt(
                             new AssignExpr(
-                                    counterVarExpr, new ArithmeticBinaryExpr(counterVarExpr, new ConstExpr(1), ArithmeticBinaryExpr.OP_ADD)
+                                    new VarExpr(counterVar), new ArithmeticBinaryExpr(new VarExpr(counterVar), new ConstExpr(1), ArithmeticBinaryExpr.OP_ADD)
                             )
                     );
                 });
@@ -1782,21 +1778,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 if (iterType.isAssignableFrom(exprType)) {
                     ObjectInvokeExpr getIterableExpr;
                     try {
-                        getIterableExpr = ObjectInvokeExpr.create(expr, "iterator", null);
+                        getIterableExpr = ObjectInvokeExpr.create(exprAccessor.make(), "iterator", null);
                     } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                         throw Exceptions.unexpectedException(ex);
                     }
                     LocalVarNode iterableVarNode = this.declareTempLocalVar(getIterableExpr.getType());
                     blockStatements.add(new VarDeclStmt(iterableVarNode));
-                    VarExpr iterableVarExpr = new VarExpr(iterableVarNode);
-                    blockStatements.add(new ExprStmt(new AssignExpr(iterableVarExpr, getIterableExpr)));
+                    blockStatements.add(new ExprStmt(new AssignExpr(new VarExpr(iterableVarNode), getIterableExpr)));
                     //set index = 0
                     if (indexVar != null) {
                         blockStatements.add(new ExprStmt(new AssignExpr(new VarExpr(indexVar), new ConstExpr(0))));
                     }
                     ObjectInvokeExpr cnd;
                     try {
-                        cnd = ObjectInvokeExpr.create(iterableVarExpr, "hasNext", null);
+                        cnd = ObjectInvokeExpr.create(new VarExpr(iterableVarNode), "hasNext", null);
                     } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                         throw Exceptions.unexpectedException(ex);
                     }
@@ -1804,7 +1799,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                         List<Statement> loopBodyStatements = new LinkedList<>();
                         ObjectInvokeExpr nextInvokeExpr;
                         try {
-                            nextInvokeExpr = ObjectInvokeExpr.create(iterableVarExpr, "next", null);
+                            nextInvokeExpr = ObjectInvokeExpr.create(new VarExpr(iterableVarNode), "next", null);
                         } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                             throw Exceptions.unexpectedException(ex);
                         }
@@ -1860,7 +1855,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         for(int i=0;i<initExprs.length;i++){
             initExprs[i] = requireImplicitCast(type, initExprs[i], OffsetRangeHelper.getOffsetRange(exprCtx.get(i)));
         }
-        ExprNode arrExpr = createInitializedArray(type, initExprs);
+        ExprNode arrExpr = AstUtil.createInitializedArray(type, initExprs);
         mapAst(arrExpr, ctx);
         return arrExpr;
     }
@@ -2202,31 +2197,28 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             throw new NodeException("array required", target.offset);
         }
         List<Statement> stats = new LinkedList<>();
-        targetExpr = createSafeAccessibleExpr(targetExpr, stats);
+        AstNodeMaker<VarExpr> targetAccessor = createSafeAccessor(targetExpr, stats);
         LocalVarNode varArrLen = this.declareTempLocalVar(Types.INT_TYPE);
         LocalVarNode varCounter = this.declareTempLocalVar(Types.INT_TYPE);
         stats.add(new VarDeclStmt(Arrays.asList(varArrLen, varCounter)));
-        VarExpr varArrLenExpr = new VarExpr(varArrLen);
-        VarExpr varCounterExpr = new VarExpr(varCounter);
-        stats.add(new ExprStmt(new AssignExpr(varArrLenExpr, new ArrayLengthExpr(targetExpr))));
-        stats.add(new ExprStmt(new AssignExpr(varCounterExpr, new ConstExpr(0))));
-        CompareBinaryExpr conditionExpr = new CompareBinaryExpr(varCounterExpr, varArrLenExpr, CompareBinaryExpr.OP_LT);
-        ExprNode targetEleExpr = new ElementExpr(targetExpr, varCounterExpr);
+        stats.add(new ExprStmt(new AssignExpr(new VarExpr(varArrLen), new ArrayLengthExpr(targetAccessor.make()))));
+        stats.add(new ExprStmt(new AssignExpr(new VarExpr(varCounter), new ConstExpr(0))));
+        CompareBinaryExpr conditionExpr = new CompareBinaryExpr(new VarExpr(varCounter), new VarExpr(varArrLen), CompareBinaryExpr.OP_LT);
+        ExprNode targetEleExpr = new ElementExpr(targetAccessor.make(), new VarExpr(varCounter));
         ExprNode invokeExpr = navigateExprMaker.call(targetEleExpr);
         assert invokeExpr != null;
         LocalVarNode varRet = this.declareTempLocalVar(Types.getArrayType(invokeExpr.getType()));
-        VarExpr varRetExpr = new VarExpr(varRet);
         stats.add(new VarDeclStmt(varRet));
-        stats.add(new ExprStmt(new AssignExpr(varRetExpr, new NewArrayExpr(invokeExpr.getType(), varArrLenExpr))));
+        stats.add(new ExprStmt(new AssignExpr(new VarExpr(varRet), new NewArrayExpr(invokeExpr.getType(), new VarExpr(varArrLen)))));
         BlockStmt loopBody = this.newBlock(() ->
-                new ExprStmt(new AssignExpr(new ElementExpr(varRetExpr, varCounterExpr), invokeExpr))
+                new ExprStmt(new AssignExpr(new ElementExpr(new VarExpr(varRet), new VarExpr(varCounter)), invokeExpr))
         );
         BlockStmt updateBody = newBlock(() ->
-                new ExprStmt(new AssignExpr(varCounterExpr, new ArithmeticBinaryExpr(varCounterExpr, new ConstExpr(1), ArithmeticBinaryExpr.OP_ADD)))
+                new ExprStmt(new AssignExpr(new VarExpr(varCounter), new ArithmeticBinaryExpr(new VarExpr(varCounter), new ConstExpr(1), ArithmeticBinaryExpr.OP_ADD)))
         );
         LoopStmt loopStmt = new LoopStmt(conditionExpr, null, loopBody, updateBody);
         stats.add(loopStmt);
-        MultiStmtExpr expr = new MultiStmtExpr(stats, varRetExpr);
+        MultiStmtExpr expr = new MultiStmtExpr(stats, new VarExpr(varRet));
         mapAst(expr, offset);
         return expr;
     }
@@ -2258,10 +2250,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             Type commonType = TypeUtil.getCommonType(trueExpr.getType(), falseExpr.getType());
             LocalVarNode vo = this.declareTempLocalVar(commonType);
             stmts.add(new VarDeclStmt(vo));
-            VarExpr ve = new VarExpr(vo);
-            is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(ve, trueExpr)));
-            is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(ve, falseExpr)));
-            refVar = ve;
+            is.getTrueBody().statements.add(new ExprStmt(new AssignExpr(new VarExpr(vo), trueExpr)));
+            is.getFalseBody().statements.add(new ExprStmt(new AssignExpr(new VarExpr(vo), falseExpr)));
+            refVar = new VarExpr(vo);
         }
         stmts.add(is);
         MultiStmtExpr mse = new MultiStmtExpr(stmts, refVar);

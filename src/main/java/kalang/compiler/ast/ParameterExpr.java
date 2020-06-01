@@ -39,7 +39,7 @@ public class ParameterExpr extends AssignableExpr{
 
     @Override
     public List<AstNode> getChildren() {
-        return Collections.singletonList(parameter);
+        return Collections.emptyList();
     }
 
 }

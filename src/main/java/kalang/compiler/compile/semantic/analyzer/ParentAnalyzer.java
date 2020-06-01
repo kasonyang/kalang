@@ -22,8 +22,7 @@ public class ParentAnalyzer {
             for (AstNode c : node.getChildren()) {
                 AstNode oldParent = parentMap.put(c, node);
                 if (oldParent != null) {
-                    //TODO report error
-                    //throw new IllegalArgumentException("two parent found");
+                    throw new IllegalArgumentException("two parent found");
                 }
             }
             return super.visit(node);
