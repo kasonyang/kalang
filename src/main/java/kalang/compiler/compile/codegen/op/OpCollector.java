@@ -1,11 +1,13 @@
 package kalang.compiler.compile.codegen.op;
 
 
+import kalang.compiler.util.Exceptions;
 import org.objectweb.asm.Handle;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * @author KasonYang
@@ -96,4 +98,20 @@ public class OpCollector extends LinkedList<OpBase> {
     public List<TryCatchBlock> getTryCatchBlocks() {
         return tryCatchBlocks;
     }
+
+    public boolean isSamePosition(LabelOp start, LabelOp end) {
+        int startPos = indexOf(start);
+        ListIterator<OpBase> iter = listIterator(startPos);
+        OpBase next;
+        while (null != (next = iter.next())) {
+            if (next == end) {
+                return true;
+            } else if (next instanceof LabelOp) {
+                continue;
+            }
+            return false;
+        }
+        throw Exceptions.illegalArgument("end label not found");
+    }
+
 }

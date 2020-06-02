@@ -17,4 +17,8 @@ public class IincOp extends OpBase {
         this.increment = increment;
     }
 
+    @Override
+    public String toString() {
+        return OPC_DESC[opcode] + " " + varId + "," + increment;
+    }
 }

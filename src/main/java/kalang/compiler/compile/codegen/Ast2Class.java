@@ -540,7 +540,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if (parent instanceof FinallyBlock) {
             outerTryStmts.removeFirst();
         }
-        outerTryStmts.forEach(this::processFinallyBlock);
+        for (TryStmt ts : outerTryStmts) {
+            processFinallyBlock(ts);
+            FinallyBlock fb = ts.getFinallyBlock();
+            if (fb != null && terminalStmtAnalyzer.isTerminalStatement(fb.getExecStmt())) {
+                return null;
+            }
+        }
         if (returnVar > -1) {
             opCollector.visitVarInsn(asmType(returnType).getOpcode(ILOAD), returnVar);
         }
@@ -551,11 +557,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     @Override
     public Object visitTryStmt(TryStmt node) {
         BlockStmt execStmt = node.getExecStmt();
-        FinallyBlock finallyStmt = node.getFinallyBlock();
-        boolean hasFinallyStmt = finallyStmt!=null && !finallyStmt.getExecStmt().statements.isEmpty();
+        FinallyBlock finallyBlock = node.getFinallyBlock();
+        boolean hasFinallyStmt = finallyBlock!=null && !finallyBlock.getExecStmt().statements.isEmpty();
         if (execStmt.statements.isEmpty()) {
             if (hasFinallyStmt) {
-                visit(finallyStmt);
+                visit(finallyBlock);
             }
             return null;
         }
@@ -571,9 +577,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         opCollector.visitLabel(tryEndLabel);
         this.popFrame();
         if (!terminalStmtAnalyzer.isTerminalStatement(execStmt)) {
-            if (finallyStmt!=null) {
+            if (finallyBlock!=null) {
                 this.newFrame();
-                visit(finallyStmt);
+                visit(finallyBlock);
                 this.popFrame();
             }
             opCollector.visitJumpInsn(GOTO,exitLabel);
@@ -591,9 +597,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 opCollector.visitLabel(catchStopLabel);
                 this.popFrame();
                 if (!terminalStmtAnalyzer.isTerminalStatement(s.execStmt)) {
-                    if (finallyStmt!=null) {
+                    if (finallyBlock!=null) {
                         this.newFrame();
-                        visit(finallyStmt);
+                        visit(finallyBlock);
                         this.popFrame();
                     }
                     opCollector.visitJumpInsn(GOTO,exitLabel);
@@ -618,9 +624,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             opCollector.visitLabel(finallyStartLabel);
             int exVarId = this.declareNewVar(Types.getRootType());
             opCollector.visitVarInsn(ASTORE,exVarId);
-            visit(finallyStmt);
-            opCollector.visitVarInsn(ALOAD,exVarId);
-            opCollector.visitInsn(ATHROW);
+            visit(finallyBlock);
+            if (!terminalStmtAnalyzer.isTerminalStatement(finallyBlock.getExecStmt())) {
+                opCollector.visitVarInsn(ALOAD,exVarId);
+                opCollector.visitInsn(ATHROW);
+            }
             this.popFrame();
         }
         opCollector.visitLabel(exitLabel);
@@ -1692,12 +1700,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             mv.visitLineNumber(ln.lineNum, labelMapper.apply(ln.label));
         }
         for (TryCatchBlock tcb : opCollector.getTryCatchBlocks()) {
-            mv.visitTryCatchBlock(
-                    labelMapper.apply(tcb.start),
-                    labelMapper.apply(tcb.end),
-                    labelMapper.apply(tcb.handler),
-                    tcb.type
-            );
+            if (!opCollector.isSamePosition(tcb.start, tcb.end)) {
+                mv.visitTryCatchBlock(
+                        labelMapper.apply(tcb.start),
+                        labelMapper.apply(tcb.end),
+                        labelMapper.apply(tcb.handler),
+                        tcb.type
+                );
+            }
         }
     }
 
