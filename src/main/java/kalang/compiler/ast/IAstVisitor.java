@@ -84,4 +84,6 @@ public interface IAstVisitor<T> {
 
     T visitLambdaExpr(LambdaExpr node);
 
+    T visitIncExpr(IncExpr node);
+
 }

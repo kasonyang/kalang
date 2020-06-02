@@ -42,10 +42,16 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
         if (node == null) {
             return null;
         }
+        VarObject varObject = null;
         if (node instanceof VarExpr) {
-            if (!assignedVars.exist(((VarExpr) node).getVar(), true)) {
-                this.diagnosisReporter.report(Diagnosis.Kind.ERROR
-                        , ((VarExpr) node).getVar().getName() + " is uninitialized!", ((VarExpr) node).offset);
+            varObject = ((VarExpr) node).getVar();
+        } else if (node instanceof IncExpr) {
+            varObject = ((IncExpr) node).getVar();
+        }
+        if (varObject != null) {
+            if (!assignedVars.exist(varObject, true)) {
+                String msg = varObject.getName() + " is uninitialized!";
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, msg , node.offset);
             }
         }
         return super.visit(node);

@@ -168,6 +168,9 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         if (node instanceof LambdaExpr) {
             return visitLambdaExpr((LambdaExpr) node);
         }
+        if (node instanceof IncExpr) {
+            return visitIncExpr((IncExpr) node);
+        }
         
         throw new IllegalArgumentException("BUG!Unknown node type:"+node.getClass());
     }

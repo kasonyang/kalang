@@ -1504,6 +1504,59 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
 
+    @Override
+    public Object visitIncExpr(IncExpr node) {
+        if (tryIncUsingIincOp(node)) {
+            return null;
+        }
+        VarObject vo = node.getVar();
+        ExprNode increment = node.getIncrement();
+        if (!node.isOperatorPrefixed()) {
+            visitVarObject(vo);
+        }
+        ExprNode voExpr;
+        if (vo instanceof LocalVarNode) {
+            voExpr = new VarExpr((LocalVarNode) vo);
+        } else if (vo instanceof ParameterNode) {
+            voExpr = new ParameterExpr((ParameterNode) vo);
+        } else {
+            throw Exceptions.unexpectedValue(vo);
+        }
+        visitBinaryExpr(new ArithmeticBinaryExpr(voExpr, increment, BinaryExpr.OP_ADD));
+        org.objectweb.asm.Type asmType = asmType(vo.getType());
+        opCollector.visitVarInsn(asmType.getOpcode(ISTORE), getVarId(vo));
+        if (node.isOperatorPrefixed()) {
+            visitVarObject(vo);
+        }
+        return null;
+    }
+
+    private boolean tryIncUsingIincOp(IncExpr incExpr) {
+        VarObject varObj = incExpr.getVar();
+        ExprNode increment = incExpr.getIncrement();
+        boolean isOpPrefixed = incExpr.isOperatorPrefixed();
+        if (!INT_TYPE.equals(varObj.getType())) {
+            return false;
+        }
+        if (!(increment instanceof ConstExpr)) {
+            return false;
+        }
+        Integer constValue =(Integer) ((ConstExpr) increment).getValue();
+        Objects.requireNonNull(constValue);
+        if (constValue < -128 || constValue > 127) {
+            return false;
+        }
+        int varId = getVarId(varObj);
+        if (!isOpPrefixed) {
+            visitVarObject(varObj);
+        }
+        opCollector.visitIincOp(varId, constValue);
+        if (isOpPrefixed) {
+            visitVarObject(varObj);
+        }
+        return true;
+    }
+
     private void createInterfaceBridgeMethodIfNeed(MethodNode interfaceMethod,MethodNode implementMethod) {
         String desc = getMethodDescriptor(interfaceMethod);
         String implementDesc = getMethodDescriptor(implementMethod);
@@ -1625,6 +1678,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             } else if (code instanceof VarInsnOp) {
                 VarInsnOp op = (VarInsnOp) code;
                 mv.visitVarInsn(op.opcode, op.var);
+            } else if (code instanceof IincOp) {
+                IincOp op = (IincOp) code;
+                mv.visitIincInsn(op.varId, op.increment);
             } else {
                 throw Exceptions.unexpectedValue(code);
             }

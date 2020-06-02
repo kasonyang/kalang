@@ -78,6 +78,10 @@ public class OpOptimizer {
                     w--;
                     r++;
                     continue;
+                } else if (prevOpCode == IINC && r >= 2 && isLoad1(ops[r - 2].opcode)) {
+                    ops[w - 2] = ops[w - 1];
+                    w--;
+                    r++;
                 }
             } else if (opCode == POP2) {
                 if (isLoad2(prevOpCode)) {

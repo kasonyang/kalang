@@ -73,6 +73,10 @@ public class OpCollector extends LinkedList<OpBase> {
         add(new InvokeDynamicInsnOp(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments));
     }
 
+    public void visitIincOp(int varId, int increment) {
+        add(new IincOp(varId, increment));
+    }
+
     public void visitLocalVariable(String name, String descriptor, String signature, LabelOp start, LabelOp end, int index) {
         localVariables.add(new LocalVariable(name, descriptor, signature, start, end, index));
     }

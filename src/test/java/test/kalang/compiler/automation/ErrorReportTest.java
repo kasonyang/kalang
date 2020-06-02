@@ -37,7 +37,7 @@ public class ErrorReportTest {
         String source = fileContent.substring(newLinePos+1);
         try {
             shell.parse(FilenameUtils.getBaseName(file.getName()), source, file.getName());
-            fail("invalid file compile passed");
+            fail("invalid file compile passed:" + file.getName());
         } catch (CompileException ce) {
             String actualErrorMsg = ce.getDescription() + "@" + ce.getLine();
             Assert.assertEquals("unexpected error message in file:" + file.getName(), expectedErrorMsg, actualErrorMsg);
