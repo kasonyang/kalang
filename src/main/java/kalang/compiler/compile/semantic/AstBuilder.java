@@ -1579,7 +1579,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             throw new NodeException("require assignable expression", offset(expressionContext));
         }
         boolean isDesc = op.equals("--");
-        if (expr instanceof VarExpr) {
+        if (expr instanceof VarExpr && Types.INT_TYPE.equals(expr.getType())) {
             ConstExpr increment = isDesc ? new ConstExpr(-1) : new ConstExpr(1);
             return mapAst(new IncExpr(((VarExpr) expr).getVar(),increment , isOperatorFirst), offset(expressionContext));
         }
