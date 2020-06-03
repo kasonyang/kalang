@@ -14,11 +14,8 @@ public class OpOptimizer {
     public void optimize(OpCollector opCollector) {
         OpBase[] ops = opCollector.toArray(new OpBase[0]);
         int opsLen = ops.length;
-        List<TryCatchBlock> tryCatchBlocks = opCollector.getTryCatchBlocks();
-        List<LocalVariable> localVariables = opCollector.getLocalVariables();
         for (;;) {
             int newOpsLen = opsLen;
-            newOpsLen = removeUnusedLabels(tryCatchBlocks, localVariables, ops, newOpsLen);
             newOpsLen = removeUnreachableOp(ops, newOpsLen);
             newOpsLen = removeUnnecessaryLoadPop(ops, newOpsLen);
             if (newOpsLen > opsLen) {
