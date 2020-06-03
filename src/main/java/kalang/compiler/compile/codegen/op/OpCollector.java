@@ -99,11 +99,19 @@ public class OpCollector extends LinkedList<OpBase> {
         return tryCatchBlocks;
     }
 
+    public boolean isEndLabel(LabelOp label) {
+        OpBase lastOp = getLast();
+        if (!(lastOp instanceof LabelOp)) {
+            return false;
+        }
+        return isSamePosition(label, (LabelOp)lastOp);
+    }
+
     public boolean isSamePosition(LabelOp start, LabelOp end) {
         int startPos = indexOf(start);
         ListIterator<OpBase> iter = listIterator(startPos);
-        OpBase next;
-        while (null != (next = iter.next())) {
+        while (iter.hasNext()) {
+            OpBase next = iter.next();
             if (next == end) {
                 return true;
             } else if (next instanceof LabelOp) {

@@ -513,13 +513,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
         visit(node.getLoopBody());
         opCollector.visitLabel(continueLabel);
-        if (!terminalStmtAnalyzer.isTerminalStatement(node.getLoopBody())) {
-            visit(node.getUpdateStmt());
-            if(node.getPostConditionExpr()!=null){
-                ifExpr(false, node.getPostConditionExpr(),stopLabel);
-            }
-            opCollector.visitJumpInsn(GOTO, startLabel);
+        visit(node.getUpdateStmt());
+        if(node.getPostConditionExpr()!=null){
+            ifExpr(false, node.getPostConditionExpr(),stopLabel);
         }
+        opCollector.visitJumpInsn(GOTO, startLabel);
         opCollector.visitLabel(stopLabel);
         return null;
     }
@@ -1655,6 +1653,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     private void applyOp(MethodVisitor mv, OpCollector opCollector) {
         new OpOptimizer().optimize(opCollector);
+        //System.out.println(OpUtil.toString(opCollector));
         Map<LabelOp, Label> labelMap = new HashMap<>();
         Function<LabelOp, Label> labelMapper = lb -> labelMap.computeIfAbsent(lb, (k) -> new Label());
         for (OpBase code : opCollector) {
