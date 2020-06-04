@@ -23,17 +23,17 @@ public class LambdaExpr extends ExprNode{
 
     private List<ExprNode> captureArguments = new LinkedList<>();
 
-    private final Map<String, VarObject> accessibleVarObjects = new HashMap();
+    private final Map<String, AssignableObject> accessibleVarObjects = new HashMap();
 
     public LambdaExpr(Type type) {
         this.type = type;
     }
 
-    public void putAccessibleVarObject(String name, VarObject var) {
+    public void putAccessibleVarObject(String name, AssignableObject var) {
         accessibleVarObjects.put(name, var);
     }
 
-    public Map<String, VarObject> getAccessibleVarObjects() {
+    public Map<String, AssignableObject> getAccessibleVarObjects() {
         return new HashMap(accessibleVarObjects);
     }
 

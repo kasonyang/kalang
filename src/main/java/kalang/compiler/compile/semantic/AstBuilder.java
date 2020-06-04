@@ -210,7 +210,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             enterMethod(m);
             ExprNode[] callParams = new ExprNode[originParams.length];
             for (int i = 0; i < mnParams.length; i++) {
-                callParams[i] = new ParameterExpr(mnParams[i]);
+                callParams[i] = new VarExpr(mnParams[i]);
             }
             for (int i = mnParams.length; i < originParams.length; i++) {
                 ParamDeclContext pCtx = mdCtx.params.get(i);
@@ -549,7 +549,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public VarObject visitVarDecl(VarDeclContext ctx) {
+    public AssignableObject visitVarDecl(VarDeclContext ctx) {
         throw Exceptions.unexpectedException("It should never be executed");
     }
     
@@ -918,7 +918,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Nullable
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
         AstNode namedNode = this.accessNamedNode(methodName, offset(ctx.start), null, null);
-        if (namedNode instanceof ParameterExpr || namedNode instanceof VarExpr) {
+        if (namedNode instanceof VarExpr) {
             return this.getLambdaCall(methodName,(ExprNode) namedNode,args,ctx);
         }
         ExprNode expr;
@@ -1235,7 +1235,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ParameterNode paramNode = methodCtx==null ? null : methodCtx.getNamedParameter(name);
         if(paramNode!=null){
             ExprNode result;
-            ParameterExpr ve = new ParameterExpr(paramNode,methodCtx.getVarObjectType(paramNode, paramNode.getType()));
+            VarExpr ve = new VarExpr(paramNode,methodCtx.getVarObjectType(paramNode, paramNode.getType()));
             mapAst(ve, offset);
             if (assignValue != null) {
                 result = new AssignExpr(ve, assignValue);
@@ -1648,7 +1648,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         int lambdaParamsCount = lambdaParams == null ? 0 : lambdaParams.size();
         Type type = functionType!=null ? functionType : new LambdaType(lambdaParamsCount);
         LambdaExpr ms = new LambdaExpr(type);
-        Map<String,VarObject> accessibleVars = new HashMap();
+        Map<String, AssignableObject> accessibleVars = new HashMap();
         VarTable<String, LocalVarNode> vtb = this.methodCtx.varTables;
         while(vtb!=null) {
             for(Map.Entry<String, LocalVarNode> v:vtb.vars().entrySet()) {
@@ -1667,7 +1667,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 accessibleVars.put(name, p);
             }
         }
-        for(Map.Entry<String, VarObject> e:accessibleVars.entrySet()) {
+        for(Map.Entry<String, AssignableObject> e:accessibleVars.entrySet()) {
             ms.putAccessibleVarObject(e.getKey(), e.getValue());
         }
         if (functionType!=null){
@@ -2012,10 +2012,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         MethodContext oldMethodCtx = this.methodCtx;
         MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , Modifier.PUBLIC);
         enterMethod(methodNode);
-        Map<String, VarObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
-        for( Map.Entry<String, VarObject> v:accessibleVars.entrySet()) {
+        Map<String, AssignableObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
+        for( Map.Entry<String, AssignableObject> v:accessibleVars.entrySet()) {
             String name = v.getKey();
-            VarObject var = v.getValue();
+            AssignableObject var = v.getValue();
             methodNode.createParameter(var.getType(), name, Modifier.FINAL | ModifierConstant.SYNTHETIC);
         }
         List<Token> lambdaParams = ctx.lambdaParams;
@@ -2065,13 +2065,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
         lambdaExpr.fixType(parameterizedType);
         //TODO check return
-        Set<ParameterNode> usedParamNodes = new HashSet<>();
-        new AstNodeCollector().collect(methodNode, ParameterExpr.class).forEach(it -> usedParamNodes.add(it.getParameter()));
+        Set<VarObject> usedVars = new HashSet<>();
+        new AstNodeCollector().collect(methodNode, VarExpr.class).forEach(it -> usedVars.add(it.getVar()));
         for (ParameterNode p: methodNode.getParameters()) {
             if (!ModifierUtil.isSynthetic(p.getModifier())) {
                 break;
             }
-            if (!usedParamNodes.contains(p)) {
+            if (!usedVars.contains(p)) {
                 methodNode.removeParameter(p);
             }
         }
@@ -2083,13 +2083,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (!ModifierUtil.isSynthetic(p.getModifier())) {
                 break;
             }
-            VarObject captureVar = accessibleVars.get(p.getName());
+            AssignableObject captureVar = accessibleVars.get(p.getName());
             Objects.requireNonNull(captureVar);
-            if (captureVar instanceof LocalVarNode) {
-                captureArgs.add(new VarExpr((LocalVarNode) captureVar));
-            } else if (captureVar instanceof ParameterNode) {
-                captureArgs.add(new ParameterExpr((ParameterNode) captureVar));
-            } else {
+            if (captureVar instanceof VarObject) {
+                captureArgs.add(new VarExpr((VarObject) captureVar));
+            }  else {
                 throw Exceptions.unexpectedValue(captureVar);
             }
         }

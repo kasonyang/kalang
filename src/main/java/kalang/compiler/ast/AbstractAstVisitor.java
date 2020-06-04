@@ -131,10 +131,6 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
             return visitVarExpr((VarExpr)node);
         }
         
-        if(node instanceof ParameterExpr){
-            return visitParameterExpr((ParameterExpr)node);
-        }
-        
         if(node instanceof CastExpr){
             return visitCastExpr((CastExpr)node);
         }

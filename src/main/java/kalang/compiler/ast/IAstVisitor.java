@@ -60,8 +60,6 @@ public interface IAstVisitor<T> {
 
     T visitVarExpr(VarExpr node);
 
-    T visitParameterExpr(ParameterExpr node);
-
     T visitCastExpr(CastExpr node);
 
     T visitPrimitiveCastExpr(PrimitiveCastExpr node);

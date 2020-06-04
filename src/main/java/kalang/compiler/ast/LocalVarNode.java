@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
  *
  * @author Kason Yang 
  */
-public class LocalVarNode extends VarObject{
+public class LocalVarNode extends VarObject {
     
     public LocalVarNode(Type type,@Nullable String name){
         this(type,name,0);

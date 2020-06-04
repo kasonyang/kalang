@@ -9,16 +9,16 @@ import java.util.Objects;
 
 public class VarExpr extends AssignableExpr{
     
-    protected final LocalVarNode var;
+    protected final VarObject var;
     
     @Nullable
     protected Type overrideType;
     
-    public VarExpr(LocalVarNode var){
+    public VarExpr(VarObject var){
         this.var = var;
     }
 
-    public VarExpr(LocalVarNode var,@Nullable Type overrideType) {
+    public VarExpr(VarObject var, @Nullable Type overrideType) {
         this.var = var;
         this.overrideType = overrideType;
     }
@@ -31,7 +31,7 @@ public class VarExpr extends AssignableExpr{
     /**
      * @return the var
      */
-    public LocalVarNode getVar() {
+    public VarObject getVar() {
         return var;
     }
 

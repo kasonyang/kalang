@@ -5,7 +5,7 @@ import kalang.compiler.core.Type;
  *
  * @author Kason Yang 
  */
-public class ParameterNode extends VarObject{
+public class ParameterNode extends VarObject {
     
     private final MethodNode method;
 

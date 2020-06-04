@@ -51,7 +51,7 @@ public class LambdaUtil {
         }
         ExprNode[] argExprs = new ExprNode[methodParamCount];
         for (int j = 0; j < argExprs.length; j++) {
-            argExprs[j] = new ParameterExpr(pNodes[j]);
+            argExprs[j] = new VarExpr(pNodes[j]);
         }
         ObjectInvokeExpr invokeExpr;
         try {

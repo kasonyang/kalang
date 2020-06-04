@@ -50,11 +50,11 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private Map<Integer, LabelOp> lineLabels = new HashMap<>();
     
-    private Map<VarObject,Integer> varIds = new HashMap<>();
+    private Map<AssignableObject,Integer> varIds = new HashMap<>();
     
     private Stack<Integer> varStartIndexOfFrame = new Stack<>();
     
-    private Map<VarObject, LabelOp> varStartLabels = new HashMap<>();
+    private Map<AssignableObject, LabelOp> varStartLabels = new HashMap<>();
     
     private VarTable<Integer,LocalVarNode> varTables = new VarTable<>();
     
@@ -357,7 +357,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return vid;
     }
     
-    private void declareNewVar(VarObject vo){
+    private void declareNewVar(AssignableObject vo){
         int vid = varIdCounter;
         int vSize = asmType(vo.getType()).getSize();
         if(vSize==0){
@@ -657,7 +657,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
     
-    private void assignVarObject(VarObject to,ExprNode from){
+    private void assignVarObject(AssignableObject to, ExprNode from){
         visit(from);
         int vid = getVarId(to);
         opCollector.visitVarInsn(getOpcode(to.getType(),ISTORE), vid);
@@ -714,17 +714,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             valueVar = declareNewVar(from.getType());
             assignField((FieldExpr) to, from, valueVar);
         } else if (to instanceof VarExpr) {
-            LocalVarNode toVar = ((VarExpr) to).getVar();
+            VarObject toVar = ((VarExpr) to).getVar();
             assignVarObject(toVar, from);
             valueVar = getVarId(toVar);
         } else if (to instanceof ElementExpr) {
             ElementExpr elementExpr = (ElementExpr) to;
             valueVar = declareNewVar(from.getType());
             assignArrayElement(elementExpr.getArrayExpr(), elementExpr.getIndex(), from, valueVar);
-        } else if (to instanceof ParameterExpr) {
-            ParameterNode toParam = ((ParameterExpr) to).getParameter();
-            assignVarObject(toParam, from);
-            valueVar = getVarId(toParam);
         } else {
             throw new UnknownError("unknown expression:" + to);
         }
@@ -952,12 +948,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
 
     @Override
-    public Object visitParameterExpr(ParameterExpr node) {
-        visitVarObject(node.getParameter());
-        return null;
-    }
-
-    @Override
     public Object visitCastExpr(CastExpr node) {
         visit(node.getExpr());
         opCollector.visitTypeInsn(CHECKCAST, internalName(node.getToType()));
@@ -1098,7 +1088,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return org.objectweb.asm.Type.getType(typeDesc);
     }
 
-    private int getVarId(VarObject var) {
+    private int getVarId(AssignableObject var) {
         Integer vid = varIds.get(var);
         if(vid==null){
             throw new UnknownError("unknown var:" + var);
@@ -1106,7 +1096,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return vid;
     }
     
-    private void visitVarObject(VarObject vo){
+    private void visitVarObject(AssignableObject vo){
         org.objectweb.asm.Type type = asmType(vo.getType());
         int vid = getVarId(vo);
         opCollector.visitVarInsn(type.getOpcode(ILOAD),vid);
@@ -1522,14 +1512,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         if (!node.isOperatorPrefixed()) {
             visitVarObject(vo);
         }
-        ExprNode voExpr;
-        if (vo instanceof LocalVarNode) {
-            voExpr = new VarExpr((LocalVarNode) vo);
-        } else if (vo instanceof ParameterNode) {
-            voExpr = new ParameterExpr((ParameterNode) vo);
-        } else {
-            throw Exceptions.unexpectedValue(vo);
-        }
+        ExprNode voExpr = new VarExpr(vo);
         visitBinaryExpr(new ArithmeticBinaryExpr(voExpr, increment, BinaryExpr.OP_ADD));
         org.objectweb.asm.Type asmType = asmType(vo.getType());
         opCollector.visitVarInsn(asmType.getOpcode(ISTORE), getVarId(vo));
@@ -1540,7 +1523,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     }
 
     private boolean tryIncUsingIincOp(IncExpr incExpr) {
-        VarObject varObj = incExpr.getVar();
+        AssignableObject varObj = incExpr.getVar();
         ExprNode increment = incExpr.getIncrement();
         boolean isOpPrefixed = incExpr.isOperatorPrefixed();
         if (!INT_TYPE.equals(varObj.getType())) {

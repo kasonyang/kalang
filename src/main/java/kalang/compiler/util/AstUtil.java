@@ -64,7 +64,7 @@ public class AstUtil {
             ParameterNode[] parameters = mm.getParameters();
             ExprNode[] params = new ExprNode[parameters.length];
             for (int i = 0; i < params.length; i++) {
-                params[i] = new ParameterExpr(parameters[i]);
+                params[i] = new VarExpr(parameters[i]);
             }
             body.statements.add(
                     new ExprStmt(
@@ -260,7 +260,7 @@ public class AstUtil {
         ParameterNode param = setter.createParameter(field.getType(), field.getName());
         BlockStmt body = setter.getBody();
         FieldExpr fe;
-        ExprNode paramVal = new ParameterExpr(param);
+        ExprNode paramVal = new VarExpr(param);
         ClassReference cr = new ClassReference(clazz);
         if(isStatic){
             fe = new StaticFieldExpr(cr, field);
@@ -318,7 +318,7 @@ public class AstUtil {
             BlockStmt body = m.getBody();
             try{
                 NewObjectExpr newScriptExpr = new NewObjectExpr(clazzType);
-                ObjectInvokeExpr invokeExpr = ObjectInvokeExpr.create(newScriptExpr, "run", new ExprNode[]{new ParameterExpr(p)});
+                ObjectInvokeExpr invokeExpr = ObjectInvokeExpr.create(newScriptExpr, "run", new ExprNode[]{new VarExpr(p)});
                 body.statements.add(new ExprStmt(invokeExpr));
             } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                 throw Exceptions.unexpectedException(ex);

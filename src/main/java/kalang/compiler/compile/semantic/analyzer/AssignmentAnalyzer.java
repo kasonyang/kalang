@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class AssignmentAnalyzer extends AstVisitor<Object> {
 
-    private VarTable<VarObject, Void> assignedVars;
+    private VarTable<AssignableObject, Void> assignedVars;
 
     private DiagnosisReporter diagnosisReporter;
 
@@ -42,13 +42,13 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
         if (node == null) {
             return null;
         }
-        VarObject varObject = null;
+        AssignableObject varObject = null;
         if (node instanceof VarExpr) {
             varObject = ((VarExpr) node).getVar();
         } else if (node instanceof IncExpr) {
             varObject = ((IncExpr) node).getVar();
         }
-        if (varObject != null) {
+        if (varObject instanceof LocalVarNode) {
             if (!assignedVars.exist(varObject, true)) {
                 String msg = varObject.getName() + " is uninitialized!";
                 diagnosisReporter.report(Diagnosis.Kind.ERROR, msg , node.offset);
@@ -61,9 +61,17 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
     public Object visitAssignExpr(AssignExpr node) {
         AssignableExpr to = node.getTo();
         if (to instanceof VarExpr) {
-            LocalVarNode varObj = ((VarExpr) to).getVar();
-            validateModifier(varObj, node.offset);
-            assignedVars.put(varObj, null);
+            VarObject varObj = ((VarExpr) to).getVar();
+            if (varObj instanceof LocalVarNode) {
+                validateModifier(varObj, node.offset);
+                assignedVars.put(varObj, null);
+            } else if (varObj instanceof ParameterNode) {
+                if (ModifierUtil.isFinal(varObj.getModifier())) {
+                    reportAssignFinalVarError(varObj, node.offset);
+                }
+            } else {
+                throw Exceptions.unexpectedValue(varObj);
+            }
         } else if (to instanceof FieldExpr) {
             FieldNode varObj = ((FieldExpr) to).getField().getFieldNode();
             if (ModifierUtil.isFinal(varObj.getModifier())) {
@@ -74,11 +82,6 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
                 }
             }
             assignedVars.put(varObj, null);
-        } else if (to instanceof ParameterExpr) {
-            ParameterNode varObj = ((ParameterExpr) to).getParameter();
-            if (ModifierUtil.isFinal(varObj.getModifier())) {
-                reportAssignFinalVarError(varObj, node.offset);
-            }
         } else if (to instanceof ElementExpr) {
             //do nothing
         } else {
@@ -89,7 +92,7 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
 
     @Override
     public Type visitTryStmt(TryStmt node) {
-        List<VarTable<VarObject, Void>> assignedList = new ArrayList(node.getCatchStmts().size() + 1);
+        List<VarTable<AssignableObject, Void>> assignedList = new ArrayList(node.getCatchStmts().size() + 1);
         enterNewFrame();
         if (!visitAndCheckReturned(node.getExecStmt())){
             assignedList.add(assignedVars);
@@ -112,7 +115,7 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
 
     @Override
     public Type visitIfStmt(IfStmt node) {
-        List<VarTable<VarObject, Void>> assignedVarsList = new ArrayList(2);
+        List<VarTable<AssignableObject, Void>> assignedVarsList = new ArrayList(2);
         enterNewFrame();
         if (!visitAndCheckReturned(node.getTrueBody())){
             assignedVarsList.add(assignedVars);
@@ -156,22 +159,22 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
         assignedVars = assignedVars.getParent();
     }
 
-    protected void addIntersectedAssignedVar(List<VarTable<VarObject, Void>> assignedVarsList) {
+    protected void addIntersectedAssignedVar(List<VarTable<AssignableObject, Void>> assignedVarsList) {
         if (assignedVarsList.isEmpty()){
             return;
         }
         if (assignedVarsList.size()==1){
-            for(Map.Entry<VarObject, Void> s:assignedVarsList.get(0).vars().entrySet()){
+            for(Map.Entry<AssignableObject, Void> s:assignedVarsList.get(0).vars().entrySet()){
                 assignedVars.put(s.getKey(), null);
             }
             return;
         }
-        Set<VarObject>[] assigned = new Set[assignedVarsList.size()];
+        Set<AssignableObject>[] assigned = new Set[assignedVarsList.size()];
         for (int i = 0; i < assigned.length; i++) {
             assigned[i] = assignedVarsList.get(i).keySet();
         }
-        Set<VarObject> sets = CollectionsUtil.getIntersection(assigned);
-        for (VarObject s : sets) {
+        Set<AssignableObject> sets = CollectionsUtil.getIntersection(assigned);
+        for (AssignableObject s : sets) {
             assignedVars.put(s, null);
         }
     }
@@ -203,13 +206,13 @@ public class AssignmentAnalyzer extends AstVisitor<Object> {
         return ret;
     }
 
-    private void validateModifier(VarObject toVarObj, OffsetRange offset) {
+    private void validateModifier(AssignableObject toVarObj, OffsetRange offset) {
         if (ModifierUtil.isFinal(toVarObj.getModifier()) && assignedVars.exist(toVarObj)) {
             reportAssignFinalVarError(toVarObj, offset);
         }
     }
 
-    private void reportAssignFinalVarError(VarObject toVarObj, OffsetRange offset) {
+    private void reportAssignFinalVarError(AssignableObject toVarObj, OffsetRange offset) {
         diagnosisReporter.report(Diagnosis.Kind.ERROR, "cannot assign a value to final variable " + toVarObj.getName(), offset);
     }
     

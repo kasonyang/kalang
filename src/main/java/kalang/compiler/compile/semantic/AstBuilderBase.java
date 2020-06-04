@@ -735,8 +735,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             return () -> mapAst(new ElementExpr(arrayAccessor.make(), indexAccessor.make()),offset);
         } else if (expr instanceof VarExpr) {
             return () -> mapAst(new VarExpr(((VarExpr) expr).getVar(), expr.getType()), offset);
-        } else if (expr instanceof ParameterExpr) {
-            return () -> mapAst(new ParameterExpr(((ParameterExpr) expr).getParameter(), expr.getType()), offset);
         } else if (expr instanceof StaticFieldExpr) {
             StaticFieldExpr se = (StaticFieldExpr) expr;
             return () -> mapAst(new StaticFieldExpr(se.getClassReference(), se.getField()), offset);
@@ -809,7 +807,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     private boolean isSafeAccessibleExpr(ExprNode expr) {
         return expr instanceof VarExpr
-                || expr instanceof ParameterExpr
                 || expr instanceof StaticFieldExpr
                 || expr instanceof ConstExpr
                 ;
@@ -883,14 +880,14 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             ParameterNode valuePn = mn.createParameter(field.getType(), "value");
             mn.getBody().statements.add(new ExprStmt(
                     new AssignExpr(
-                            new ObjectFieldExpr(new ParameterExpr(objPn), field)
-                            , new ParameterExpr(valuePn)
+                            new ObjectFieldExpr(new VarExpr(objPn), field)
+                            , new VarExpr(valuePn)
                     )
             ));
-            mn.getBody().statements.add(new ReturnStmt(new ParameterExpr(valuePn)));
+            mn.getBody().statements.add(new ReturnStmt(new VarExpr(valuePn)));
         } else {
             mn.getBody().statements.add(new ReturnStmt(
-                    new ObjectFieldExpr(new ParameterExpr(objPn), field)
+                    new ObjectFieldExpr(new VarExpr(objPn), field)
             ));
         }
         accessorMap.put(field, mn);

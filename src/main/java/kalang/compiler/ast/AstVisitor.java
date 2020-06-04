@@ -135,12 +135,6 @@ public class AstVisitor<T> extends AbstractAstVisitor<T>{
     }
     
     @Override
-    public T visitParameterExpr(ParameterExpr node){
-        this.visitChildren(node);
-        return null;
-    }
-    
-    @Override
     public T visitCastExpr(CastExpr node){
         this.visitChildren(node);
         return null;

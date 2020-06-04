@@ -101,7 +101,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                         if (parentFieldExpr == null) {
                             throw Exceptions.unexpectedValue(null);
                         }
-                        body.statements.add(1, new ExprStmt(new AssignExpr(parentFieldExpr, new ParameterExpr(outerInstanceParam))));
+                        body.statements.add(1, new ExprStmt(new AssignExpr(parentFieldExpr, new VarExpr(outerInstanceParam))));
                     }
                 }
             }

@@ -78,11 +78,11 @@ public class InterfaceUtil {
         ExprNode[] params = new ExprNode[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {
             if (!paramTypes[i].equals(oldParamTypes[i])) {
-                CastExpr castExpr = new CastExpr(oldParamTypes[i], new ParameterExpr(paramNodes[i]));
-                AssignExpr assignExpr = new AssignExpr(new ParameterExpr(paramNodes[i]), castExpr);
+                CastExpr castExpr = new CastExpr(oldParamTypes[i], new VarExpr(paramNodes[i]));
+                AssignExpr assignExpr = new AssignExpr(new VarExpr(paramNodes[i]), castExpr);
                 mb.statements.add(new ExprStmt(assignExpr));
             }
-            params[i] = new ParameterExpr(paramNodes[i]);
+            params[i] = new VarExpr(paramNodes[i]);
         }
         ObjectInvokeExpr invokeExpr = new ObjectInvokeExpr(new ThisExpr(clazz), targetMethod, params);
         if (!Types.VOID_TYPE.equals(returnType)) {

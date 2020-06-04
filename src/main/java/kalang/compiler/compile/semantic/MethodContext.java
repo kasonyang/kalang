@@ -66,8 +66,6 @@ public class MethodContext {
         removeOverrideType(to);
         if(to instanceof VarExpr){
             ((VarExpr)to).removeOverrideType();
-        }else if(to instanceof ParameterExpr){
-            ((ParameterExpr) to).removeOverrideType();
         }
         Object key = getOverrideTypeKey(to);
         if(key!=null){
@@ -258,8 +256,6 @@ public class MethodContext {
     private Object getOverrideTypeKey(ExprNode expr){
         if(expr instanceof VarExpr){
             return ((VarExpr) expr).getVar();
-        }else if(expr instanceof ParameterExpr) {
-            return ((ParameterExpr) expr).getParameter();
         } else if (expr instanceof FieldExpr) {
             FieldExpr fe = (FieldExpr) expr;
             FieldDescriptor fd = fe.getField();
@@ -279,8 +275,6 @@ public class MethodContext {
     private Object getTargetKey(ExprNode target) {
         if (target instanceof VarExpr) {
             return ((VarExpr) target).getVar();
-        } else if (target instanceof ParameterExpr) {
-            return ((ParameterExpr) target).getParameter();
         } else if (target instanceof ThisExpr) {
             return ((ClassType) target.getType()).getClassNode();
         } else if (target instanceof SuperExpr) {

@@ -6,7 +6,7 @@ import kalang.compiler.core.Type;
  *
  * @author Kason Yang
  */
-public class FieldNode extends VarObject implements FieldDescriptor{
+public class FieldNode extends AssignableObject implements FieldDescriptor{
     
     private final ClassNode classNode;
 
