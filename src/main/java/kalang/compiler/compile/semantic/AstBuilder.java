@@ -31,7 +31,6 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 import static kalang.mixin.CollectionMixin.map;
 
@@ -52,8 +51,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             PARSING_PHASE_INIT = 1,
             PARSING_PHASE_META = 2,
             PARSING_PHASE_ALL = 3;
-
-    private final static Logger LOG = Logger.getLogger(AstBuilder.class.getName());
 
     private ClassNodeInitializer classNodeInitializer;
     private ClassNodeStructureBuilder classNodeStructureBuilder;
@@ -450,14 +447,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public AstNode visitIfStat(IfStatContext ctx) {
         ExprNode expr  = requireImplicitCast(Types.BOOLEAN_TYPE, visitExpression(ctx.expression()), offset(ctx));
-        VarTable<VarObject,Integer> trueAssigned,falseAssigned;
-        this.methodCtx.nullState = trueAssigned = this.methodCtx.nullState.newStack();
+        VarTable<Object,Integer> trueNullState,falseNullState;
+        this.methodCtx.nullState = trueNullState = this.methodCtx.nullState.newStack();
         BlockStmt trueBody = ctx.trueStmt == null ? null : methodCtx.doInCondition(expr, true, () -> requireBlock(ctx.trueStmt));
         this.methodCtx.nullState = this.methodCtx.nullState.popStack();
-        this.methodCtx.nullState = falseAssigned = this.methodCtx.nullState.newStack();
+        this.methodCtx.nullState = falseNullState = this.methodCtx.nullState.newStack();
         BlockStmt falseBody = ctx.falseStmt == null ? null : methodCtx.doInCondition(expr,false, () -> requireBlock(ctx.falseStmt));
         this.methodCtx.nullState = this.methodCtx.nullState.popStack();
-        methodCtx.handleMultiBranchedAssign(trueAssigned.vars(),falseAssigned.vars());
+        methodCtx.handleMultiBranchedNullState(trueNullState.vars(),falseNullState.vars());
         if(terminalStmtAnalyzer.isTerminalStatement(trueBody)){
             methodCtx.onIf(expr,false);
         }
@@ -1238,7 +1235,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ParameterNode paramNode = methodCtx==null ? null : methodCtx.getNamedParameter(name);
         if(paramNode!=null){
             ExprNode result;
-            ParameterExpr ve = new ParameterExpr(paramNode,methodCtx.getVarObjectType(paramNode));
+            ParameterExpr ve = new ParameterExpr(paramNode,methodCtx.getVarObjectType(paramNode, paramNode.getType()));
             mapAst(ve, offset);
             if (assignValue != null) {
                 result = new AssignExpr(ve, assignValue);
@@ -2240,7 +2237,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ExprNode conditionExpr = new CompareBinaryExpr(new VarExpr(targetTmpVar), new ConstExpr(null), "==");
         methodCtx.doInCondition(conditionExpr, true, null);
         ExprNode falseExpr = methodCtx.doInCondition(conditionExpr, false, () -> {
-            ExprNode targetTmpExpr = new VarExpr(targetTmpVar, methodCtx.getVarObjectType(targetTmpVar));
+            ExprNode targetTmpExpr = new VarExpr(targetTmpVar, methodCtx.getVarObjectType(targetTmpVar, targetTmpVar.getType()));
             return navigateExprMaker.call(targetTmpExpr);
         });
         boolean isVoidType = Types.VOID_TYPE.equals(falseExpr.getType());

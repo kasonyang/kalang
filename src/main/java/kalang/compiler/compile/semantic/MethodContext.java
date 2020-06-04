@@ -6,6 +6,7 @@ import kalang.compiler.util.Exceptions;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -22,11 +23,11 @@ public class MethodContext {
 
     public final MethodNode method;
 
-    public VarTable<String,LocalVarNode> varTables = new VarTable();
+    public VarTable<String,LocalVarNode> varTables = new VarTable<>();
 
-    public VarTable<VarObject, Type> overrideTypes = new VarTable();
+    public VarTable<Object, Type> overrideTypes = new VarTable<>();
 
-    public VarTable<VarObject,Integer> nullState = new VarTable();
+    public VarTable<Object,Integer> nullState = new VarTable<>();
 
     public MethodContext(ClassNode classNode, MethodNode methodNode) {
         this.classNode = classNode;
@@ -68,7 +69,7 @@ public class MethodContext {
         }else if(to instanceof ParameterExpr){
             ((ParameterExpr) to).removeOverrideType();
         }
-        VarObject key = getOverrideTypeKey(to);
+        Object key = getOverrideTypeKey(to);
         if(key!=null){
             Type toType = to.getType();
             if(toType instanceof ObjectType){
@@ -150,9 +151,9 @@ public class MethodContext {
 
     @Nullable
     public Type getOverrideType(ExprNode expr) {
-        VarObject key = getOverrideTypeKey(expr);
+        Object key = getOverrideTypeKey(expr);
         if (key != null) {
-            Type type = getVarObjectType(key);
+            Type type = getVarObjectType(key, expr.getType());
             if (!expr.getType().equals(type)) {
                 return type;
             }
@@ -160,9 +161,9 @@ public class MethodContext {
         return null;
     }
 
-    public Type getVarObjectType(VarObject p) {
+    public Type getVarObjectType(Object p, Type originType) {
         Type type = overrideTypes.get(p);
-        if(type==null) type = p.getType();
+        if(type==null) type = originType;
         //TODO handle other object type
         if(type instanceof ClassType){
             Integer ns = nullState.get(p);
@@ -184,15 +185,15 @@ public class MethodContext {
         }
     }
 
-    public void handleMultiBranchedAssign(Map<VarObject,Integer>... assignedTable){
+    public void handleMultiBranchedNullState(Map<Object,Integer>... assignedTable){
         if(assignedTable.length<2){
             throw Exceptions.illegalArgument(assignedTable);
         }
-        HashMap<VarObject, Integer> ret = new HashMap(assignedTable[0]);
+        HashMap<Object, Integer> ret = new HashMap<>(assignedTable[0]);
         for(int i=1;i<assignedTable.length;i++){
-            Map<VarObject,Integer> current = new HashMap(ret);
-            Map<VarObject,Integer> other = assignedTable[i];
-            for(Map.Entry<VarObject,Integer> e: current.entrySet()){
+            Map<Object,Integer> current = new HashMap<>(ret);
+            Map<Object,Integer> other = assignedTable[i];
+            for(Map.Entry<Object,Integer> e: current.entrySet()){
                 Integer oneNullable = e.getValue();
                 Integer otherNullable = other.get(e.getKey());
                 if(oneNullable.equals(otherNullable)) continue;
@@ -210,7 +211,7 @@ public class MethodContext {
                 }
             }
         }
-        for(Map.Entry<VarObject,Integer> e:ret.entrySet()){
+        for(Map.Entry<Object,Integer> e:ret.entrySet()){
             nullState.put(e.getKey(), e.getValue());
         }
     }
@@ -239,7 +240,7 @@ public class MethodContext {
     }
 
     private void changeTypeTemporarilyIfCould(ExprNode expr,Type type){
-        VarObject key = getOverrideTypeKey(expr);
+        Object key = getOverrideTypeKey(expr);
         if(key!=null){
             overrideTypes.put(key, type);
         }
@@ -247,14 +248,14 @@ public class MethodContext {
 
     private void onNull(ExprNode expr,boolean onTrue,boolean isEQ){
         boolean mustNull = (onTrue && isEQ) || (!onTrue && !isEQ);
-        VarObject key = this.getOverrideTypeKey(expr);
+        Object key = this.getOverrideTypeKey(expr);
         if(key!=null){
             nullState.put(key,mustNull ? NULLSTATE_MUST_NULL : NULLSTATE_MUST_NONNULL);
         }
     }
 
     @Nullable
-    private VarObject getOverrideTypeKey(ExprNode expr){
+    private Object getOverrideTypeKey(ExprNode expr){
         if(expr instanceof VarExpr){
             return ((VarExpr) expr).getVar();
         }else if(expr instanceof ParameterExpr) {
@@ -265,13 +266,36 @@ public class MethodContext {
             if (!Modifier.isFinal(fd.getModifier())) {//It isn't supported to override type of non-final field because it is not safe
                 return null;
             }
-            return fd.getFieldNode();
+            if (expr instanceof StaticFieldExpr) {
+                return fd.getFieldNode();
+            } else if (expr instanceof ObjectFieldExpr) {
+                Object targetKey = getTargetKey(expr);
+                return targetKey == null ? null : Arrays.asList(targetKey, fd);
+            }
         }
         return null;
     }
 
+    private Object getTargetKey(ExprNode target) {
+        if (target instanceof VarExpr) {
+            return ((VarExpr) target).getVar();
+        } else if (target instanceof ParameterExpr) {
+            return ((ParameterExpr) target).getParameter();
+        } else if (target instanceof ThisExpr) {
+            return ((ClassType) target.getType()).getClassNode();
+        } else if (target instanceof SuperExpr) {
+            return ((ClassType) target.getType()).getClassNode();
+        } else if (target instanceof CastExpr) {
+            return getTargetKey(((CastExpr) target).getExpr());
+        } else if (target instanceof FieldExpr) {
+            return getOverrideTypeKey(target);
+        } else {
+            return null;
+        }
+    }
+
     private void removeOverrideType(ExprNode expr){
-        VarObject key = getOverrideTypeKey(expr);
+        Object key = getOverrideTypeKey(expr);
         if(key!=null) overrideTypes.remove(key, true);
     }
 
