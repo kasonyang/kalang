@@ -4,6 +4,8 @@ import org.apache.ivy.Ivy;
 import org.apache.ivy.core.cache.ArtifactOrigin;
 import org.apache.ivy.core.event.EventManager;
 import org.apache.ivy.core.event.download.StartArtifactDownloadEvent;
+import org.apache.ivy.core.module.descriptor.Configuration;
+import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.core.report.ArtifactDownloadReport;
@@ -20,6 +22,8 @@ import org.apache.ivy.util.filter.FilterHelper;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
+
+import static org.apache.ivy.core.module.descriptor.ModuleDescriptor.DEFAULT_CONFIGURATION;
 
 public class DependencyResolver {
 
@@ -91,7 +95,18 @@ public class DependencyResolver {
             Artifact art = artifacts[i];
             mrids[i] = ModuleRevisionId.newInstance(art.getGroup(),art.getName(),art.getVersion());
         }
-        DefaultModuleDescriptor moduleDescriptor = DefaultModuleDescriptor.newCallerInstance(mrids, true, false);
+        DefaultModuleDescriptor moduleDescriptor = new DefaultModuleDescriptor(
+                ModuleRevisionId.newInstance("caller", "all-caller", "working"), "integration",
+                null, true);
+        moduleDescriptor.addConfiguration(new Configuration(DEFAULT_CONFIGURATION));
+        moduleDescriptor.setLastModified(System.currentTimeMillis());
+        for (ModuleRevisionId mrid : mrids) {
+            DefaultDependencyDescriptor dd = new DefaultDependencyDescriptor(moduleDescriptor,
+                    mrid, true, false, true);
+            dd.addDependencyConfiguration(DEFAULT_CONFIGURATION, "master");
+            dd.addDependencyConfiguration(DEFAULT_CONFIGURATION, "compile");
+            moduleDescriptor.addDependency(dd);
+        }
         ResolveReport res = ivy.resolve(moduleDescriptor, ops);
         ResolveResult result = new ResolveResult();
         ArtifactDownloadReport[] reports = res.getAllArtifactsReports();
