@@ -1,21 +1,20 @@
 package kalang.compiler.dependency;
 
+import kalang.mixin.IOMixin;
 import org.apache.ivy.util.CopyProgressListener;
+import org.apache.ivy.util.Message;
 import org.apache.ivy.util.url.BasicURLHandler;
 import org.apache.ivy.util.url.URLHandler;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ExtendURLHandler extends BasicURLHandler {
-
-    private Map<URL,URL> resolvedFinalUrlMap = new HashMap<>();
 
     public ExtendURLHandler() {
         setRequestMethod(URLHandler.REQUEST_METHOD_GET);
@@ -23,62 +22,69 @@ public class ExtendURLHandler extends BasicURLHandler {
 
     @Override
     public URLInfo getURLInfo(URL url, int timeout) {
-        URLInfo urlInfo = super.getURLInfo(url, timeout);
-        if (!urlInfo.isReachable()) {
-            URL finalUrl = this.getFinalURL(url);
-            if (!finalUrl.equals(url)) {
-                urlInfo = super.getURLInfo(finalUrl);
+        URLConnection con = null;
+        try {
+            url = normalizeToURL(url);
+            boolean useHead = getRequestMethod() == URLHandler.REQUEST_METHOD_HEAD;
+            con = getURLConnection(url, useHead);
+            if (con instanceof HttpURLConnection) {
+                HttpURLConnection httpCon = (HttpURLConnection) con;
+                int responseCode = httpCon.getResponseCode();
+                if (responseCode == 200 || (useHead && responseCode == 204)) {
+                    String bodyCharset = getCharSetFromContentType(con.getContentType());
+                    return new URLInfo(true, httpCon.getContentLength(), con.getLastModified(), bodyCharset){};
+                }
+            } else {
+                int contentLength = con.getContentLength();
+                if (contentLength <= 0) {
+                    return UNAVAILABLE;
+                } else {
+                    String bodyCharset = getCharSetFromContentType(con.getContentType());
+                    return new URLInfo(true, contentLength, con.getLastModified(), bodyCharset){};
+                }
             }
+        } catch (IOException e) {
+            Message.error("Server access error at url " + url, e);
+        } finally {
+            disconnect(con);
         }
-        return urlInfo;
+        return UNAVAILABLE;
     }
 
     @Override
     public InputStream openStream(URL url) throws IOException {
-        URL finalUrl = getFinalURL(url);
-        return super.openStream(finalUrl);
+        return getURLConnection(url, false).getInputStream();
     }
 
     @Override
     public void download(URL src, File dest, CopyProgressListener l) throws IOException {
-        URL finalUrl = getFinalURL(src);
-        super.download(finalUrl, dest, l);
-    }
-
-    private URL getFinalURL(URL url) {
-        URL resolvedUrl = resolvedFinalUrlMap.get(url);
-        if (resolvedUrl != null) {
-            return resolvedUrl;
+        try (InputStream is = openStream(src)) {
+            IOMixin.writeFrom(new FileOutputStream(dest), is);
         }
-        URL finalUrl = this.doGetFinalURL(url);
-        resolvedFinalUrlMap.put(url, finalUrl);
-        return finalUrl;
     }
 
-    private URL doGetFinalURL(URL url) {
+    private URLConnection getURLConnection(URL url, boolean useHead) throws IOException {
+        URLConnection con = url.openConnection();
+        if (!(con instanceof HttpURLConnection)) {
+            return con;
+        }
+        HttpURLConnection httpCon = (HttpURLConnection) con;
+        httpCon.setRequestProperty("User-Agent", getUserAgent());
+        if (useHead) {
+            httpCon.setRequestMethod("HEAD");
+        }
+        int status = httpCon.getResponseCode();
+        if (status != 301 && status != 302){
+            return con;
+        }
+        String location = httpCon.getHeaderField("Location");
+        if (location == null || location.isEmpty()) {
+            return con;
+        }
         try {
-            URLConnection conn = url.openConnection();
-            try {
-                if (!(conn instanceof HttpURLConnection)) {
-                    return url;
-                }
-                HttpURLConnection httpConn = (HttpURLConnection) conn;
-                //httpConn.setRequestMethod("HEAD");
-                int respCode = httpConn.getResponseCode();
-                if (respCode != 301 && respCode != 302) {
-                    return url;
-                }
-                String location = httpConn.getHeaderField("Location");
-                if (location == null || location.isEmpty()) {
-                    return url;
-                }
-                return doGetFinalURL(new URL(location));
-            } finally {
-                disconnect(conn);
-            }
-
-        } catch (IOException ex) {
-            return url;
+            return getURLConnection(new URL(location), useHead);
+        } finally {
+            disconnect(con);
         }
     }
 
