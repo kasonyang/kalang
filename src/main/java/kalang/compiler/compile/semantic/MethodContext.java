@@ -265,7 +265,7 @@ public class MethodContext {
             if (expr instanceof StaticFieldExpr) {
                 return fd.getFieldNode();
             } else if (expr instanceof ObjectFieldExpr) {
-                Object targetKey = getTargetKey(expr);
+                Object targetKey = getTargetKey(((ObjectFieldExpr) expr).getTarget());
                 return targetKey == null ? null : Arrays.asList(targetKey, fd);
             }
         }
