@@ -12,10 +12,10 @@ import org.apache.ivy.core.resolve.IvyNode;
 import org.apache.ivy.core.resolve.ResolveOptions;
 import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.plugins.resolver.AbstractResolver;
+import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.apache.ivy.plugins.resolver.IBiblioResolver;
 import org.apache.ivy.util.Message;
 import org.apache.ivy.util.filter.FilterHelper;
-import org.apache.ivy.util.url.URLHandlerRegistry;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -49,21 +49,24 @@ public class DependencyResolver {
 
     private ResolveResult doResolve(Artifact[] artifacts) throws IOException, ParseException {
         Message.setDefaultLogger(new NoMessageLogger());
-        URLHandlerRegistry.setDefault(new ExtendURLHandler());
+        //URLHandlerRegistry.setDefault(new ExtendURLHandler());
         IvySettings settings = new IvySettings();
         if (!this.repositories.isEmpty()) {
+            ChainResolver chainResolver = new ChainResolver();
+            chainResolver.setName("user-repo");
             int repoSize = repositories.size();
             for(int i=0;i<repoSize;i++) {
                 IBiblioResolver dr = new IBiblioResolver();
                 dr.setName("user-repo" + (i+1));
                 dr.setM2compatible(true);
                 dr.setRoot(repositories.get(i));
-                settings.addResolver(dr);
+                chainResolver.add(dr);
             }
+            settings.addResolver(chainResolver);
         }
         settings.loadDefault();
         if (!this.repositories.isEmpty()) {
-            settings.setDefaultResolver("user-repo1");
+            settings.setDefaultResolver("user-repo");
         }
         EventManager eventManager = new EventManager();
         eventManager.addIvyListener(event -> {
