@@ -687,12 +687,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
     }
     
-    private void astore(ExprNode expr){
-        visit(expr);
-        org.objectweb.asm.Type type = asmType(expr.getType());
-        opCollector.visitInsn(type.getOpcode(IASTORE));
-    }
-    
     private void assignArrayElement(ExprNode array,ExprNode key,ExprNode from, int valueVar){
         Parameters.requireNonNull(array);
         Parameters.requireNonNull(key);

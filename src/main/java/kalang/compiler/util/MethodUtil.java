@@ -5,7 +5,6 @@ import kalang.compiler.ast.ParameterNode;
 import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.Type;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,23 +15,6 @@ import java.util.List;
  * @author Kason Yang
  */
 public class MethodUtil {
-
-    @Nonnull
-    public static String[] getParameterNames(@Nonnull ParameterNode[] parameterNodes) {
-        String[] names = new String[parameterNodes.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = parameterNodes[i].getName();
-        }
-        return names;
-    }
-    
-    public static String getDeclarationKey(String name,ParameterNode[] params){
-        Type[] types = new Type[params.length];
-        for(int i=0;i<types.length; i++){
-            types[i] = params[i].getType();
-        }
-        return getDeclarationKey(name, types);
-    }
 
     public static String getDeclarationKey(String name, String... paramTypes) {
         return name + "(" + String.join(",", paramTypes) + ")";

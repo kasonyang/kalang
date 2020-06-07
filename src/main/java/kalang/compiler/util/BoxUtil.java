@@ -1,10 +1,8 @@
 package kalang.compiler.util;
 
-import kalang.compiler.compile.semantic.AmbiguousMethodException;
-import kalang.compiler.compile.AstNotFoundException;
-import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.ast.*;
-import kalang.compiler.compile.AstLoader;
+import kalang.compiler.compile.semantic.AmbiguousMethodException;
+import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.core.*;
 
 import javax.annotation.Nonnull;
@@ -94,10 +92,6 @@ public class BoxUtil {
             default:
                 throw new IllegalStateException("unknown cast type:" + fromType + "=>" + toType);
         }
-    }
-
-    public static boolean assignable(ExprNode fromType, Type toType) {
-        return getCastMethod(fromType, toType) > 0;
     }
 
     public static int getCastMethod(ExprNode from, Type toType) {
@@ -226,20 +220,6 @@ public class BoxUtil {
         try {
             inv = ObjectInvokeExpr.create(expr,toType + "Value",null);
         } catch (MethodNotFoundException|AmbiguousMethodException ex) {
-            throw new RuntimeException(ex);
-        }
-        return inv;
-    }
-
-    private static ExprNode castPrimitive2String(ExprNode expr, PrimitiveType fromType) {
-        return castObject2String(castPrimitive2Object(expr, fromType));
-    }
-
-    private static ExprNode castObject2String(ExprNode expr) {
-        InvocationExpr inv;
-        try {
-            inv = StaticInvokeExpr.create(new ClassReference(AstLoader.BASE_AST_LOADER.loadAst("java.util.Objects")), "toString", new ExprNode[]{expr});
-        } catch (MethodNotFoundException|AmbiguousMethodException|AstNotFoundException ex) {
             throw new RuntimeException(ex);
         }
         return inv;

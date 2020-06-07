@@ -3,49 +3,14 @@ package kalang.compiler.util;
 import kalang.compiler.ast.*;
 import kalang.compiler.core.*;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Kason Yang
  */
 public class InterfaceUtil {
-
-    @Deprecated
-    public static List<MethodDescriptor> checkAndBuildInterfaceMethods(ClassNode clazz) {
-        ObjectType[] interfaces = clazz.getInterfaces();
-        List<MethodDescriptor> unimplements = new LinkedList();
-        for (ObjectType itf : interfaces) {
-            unimplements.addAll(checkAndBuildInterfaceMethods(clazz, itf));
-        }
-        return unimplements;
-    }
-
-    @Deprecated
-    public static List<MethodDescriptor> checkAndBuildInterfaceMethods(ClassNode clazz, ObjectType interfaceType) {
-        MethodDescriptor[] interfaceMethods = interfaceType.getMethodDescriptors(interfaceType.getClassNode(), true, true);
-        ClassType clazzType = Types.getClassType(clazz, new Type[0]);
-        MethodDescriptor[] clazzMethods = clazzType.getMethodDescriptors(null, true, false);
-        List<MethodDescriptor> unimplements = new LinkedList();
-        for (MethodDescriptor im : interfaceMethods) {
-            String imDeclKey = im.getDeclarationKey();
-            MethodDescriptor cm = MethodUtil.getMethodDescriptor(clazzMethods, imDeclKey);
-            if (cm == null) {
-                if (Modifier.isAbstract(im.getModifier())) {
-                    unimplements.add(im);
-                }
-                continue;
-            }
-            Type[] descriptorParamsTypes = im.getParameterTypes();
-            MethodNode imMethodNode = im.getMethodNode();
-            Type[] interfaceMethodParamsTypes = MethodUtil.getParameterTypes(imMethodNode);
-            if (!Arrays.equals(descriptorParamsTypes, interfaceMethodParamsTypes)) {
-                createBridgeMethod(clazz, imMethodNode.getType(),interfaceMethodParamsTypes, cm);
-            }
-        }
-        return unimplements;
-    }
 
     public static Map<MethodDescriptor,MethodNode> getImplementationMap(ClassNode clazz) {
         ObjectType[] interfaces = clazz.getInterfaces();

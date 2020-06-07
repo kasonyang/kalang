@@ -7,45 +7,13 @@ import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.core.*;
 import kalang.mixin.CollectionMixin;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 public class AstUtil {
-
-    @Nonnull
-    public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass){
-        List<MethodDescriptor> list = new LinkedList();
-        for(ObjectType i:theClass.getInterfaces()){
-            list.addAll(getUnimplementedMethod(theClass,i));
-        }
-        return list;
-    }
-    
-    @Nonnull
-    public static List<MethodDescriptor> getUnimplementedMethod(ClassNode theClass, ObjectType theInterface) {
-        ClassType theType = Types.getClassType(theClass);
-        MethodDescriptor[] implementedMethods = theType.getMethodDescriptors(theClass, true, false);
-        List<MethodDescriptor> list = new LinkedList();
-        for (MethodDescriptor m : theInterface.getMethodDescriptors(theClass, false,true)) {
-            if(ModifierUtil.isDefault(m.getModifier())) continue;
-            String name = m.getName();
-            Type[] types = m.getParameterTypes();
-            MethodDescriptor overridingMd = MethodUtil.getMethodDescriptor(implementedMethods,name,types);
-            if (overridingMd == null 
-                    //TODO move check to where method declare
-                    || !OverrideUtil.overridingCompatible(overridingMd.getModifier(), m.getModifier()) 
-                    || !OverrideUtil.returnTypeCompatible(overridingMd.getReturnType(), m.getReturnType())
-                    ) {
-                list.add(m);
-            }
-        }
-        return list;
-    }
     
     public static boolean createEmptyConstructor(ClassNode clazzNode){
         ObjectType supType = clazzNode.getSuperType();
@@ -87,66 +55,6 @@ public class AstUtil {
             if("<init>".equals(m.getName())) return true;
         }
         return false;
-    }
-
-    public static MethodDescriptor[] filterMethodByName(MethodDescriptor[] mds, String methodName) {
-        List<MethodDescriptor> methods = new ArrayList(mds.length);
-        for (MethodDescriptor m : mds) {
-            if (m.getName().equals(methodName)) {
-                methods.add(m);
-            }
-        }
-        return methods.toArray(new MethodDescriptor[0]);
-    }
-
-    public static ExprNode matchType(Type from, Type target, ExprNode expr) {
-        if (from.equals(target)) {
-            return expr;
-        }
-        return BoxUtil.assign(expr, from, target);
-    }
-
-    /**
-     * 
-     * @param args
-     * @param from
-     * @param target
-     * @return array when matched,null when not
-     */
-    @Nullable
-    public static ExprNode[] matchTypes(ExprNode[] args,Type[] from, Type[] target) {
-        if(args==null) return null;
-        if(from==null || from.length==0){
-            if(target==null || target.length==0){
-                return args;
-            }else{
-                return null;
-            }
-        }
-        if (from.length != target.length || from.length!=args.length) {
-            return null;
-        }
-        ExprNode[] newParams = new ExprNode[from.length];
-        for (int i = 0; i < from.length; i++) {
-            Type f = from[i];
-            Type t = target[i];
-            newParams[i] = matchType(f, t, args[i]);
-            if(newParams[i]==null) return null;
-        }
-        return newParams;
-    }
-    
-    @Nullable
-    public static MethodDescriptor getExactedMethod(ObjectType targetType,MethodDescriptor[] candidates,String methodName,@Nullable Type[] types){
-        MethodDescriptor[] methods = filterMethodByName(candidates, methodName);
-        for(MethodDescriptor m:methods){
-           Type[] mdTypes = m.getParameterTypes();
-           if(Arrays.equals(mdTypes, types)) return m;
-           if(mdTypes==null || mdTypes.length==0){
-               if(types==null || types.length==0) return m;
-           }
-        }
-        return null;
     }
 
     @Nullable

@@ -3,42 +3,14 @@ package kalang.compiler.util;
 import kalang.compiler.core.*;
 import kalang.mixin.CollectionMixin;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  *
  * @author Kason Yang
  */
 public class TypeUtil {
-    public static boolean equalTypes(Type[] declaredTypes,Type[] argTypes,@Nullable Map<GenericType,Type> genericTypes){
-        if(declaredTypes.length!=argTypes.length) return false;
-        if(declaredTypes.length==0) return true;
-        for(int i=0;i<declaredTypes.length;i++){
-            Type dt = declaredTypes[i];
-            if(dt instanceof GenericType){
-                if(genericTypes!=null){
-                    dt = genericTypes.get(dt);
-                    Objects.requireNonNull(dt);
-                }
-            }
-            if(!equalType(dt,argTypes[i],genericTypes)) return false;
-        }
-        return true;
-    }
-
-    public static  boolean equalType(Type declaredType, Type argType,@Nullable Map<GenericType,Type> genericTypes) {
-        if(declaredType instanceof GenericType){
-            if(genericTypes!=null){
-                declaredType = genericTypes.get(declaredType);
-                Objects.requireNonNull(declaredType);
-            }
-        }
-        return declaredType.equals(argType);
-    }
     
     public static String toString(Type[] types,String delimiter){
         List<String> list = new ArrayList(types.length);

@@ -26,10 +26,6 @@ public class AstLoader {
         this.parent = parent;
     }
 
-    public void add(@Nonnull ClassNode clazz) {
-        cachedAsts.put(clazz.getName(), clazz);
-    }
-
     @Nonnull
     protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
         throw new AstNotFoundException(className);
