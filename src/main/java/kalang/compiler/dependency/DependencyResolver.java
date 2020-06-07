@@ -27,14 +27,17 @@ import static org.apache.ivy.core.module.descriptor.ModuleDescriptor.DEFAULT_CON
 
 public class DependencyResolver {
 
-    private final List<String> repositories;
+    private final static String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2/";
+
+    private final List<String> repositories = new LinkedList<>();
 
     public DependencyResolver() {
-        this.repositories = Collections.EMPTY_LIST;
+        repositories.add(MAVEN_CENTRAL_URL);
     }
 
-    public DependencyResolver(Set<String> repositories){
-        this.repositories = new LinkedList<>(repositories);
+    public DependencyResolver(List<String> userRepositories){
+        this.repositories.addAll(userRepositories);
+        this.repositories.add(MAVEN_CENTRAL_URL);
     }
 
     /**
@@ -53,25 +56,20 @@ public class DependencyResolver {
 
     private ResolveResult doResolve(Artifact[] artifacts) throws IOException, ParseException {
         Message.setDefaultLogger(new NoMessageLogger());
-        //URLHandlerRegistry.setDefault(new ExtendURLHandler());
         IvySettings settings = new IvySettings();
-        if (!this.repositories.isEmpty()) {
-            ChainResolver chainResolver = new ChainResolver();
-            chainResolver.setName("user-repo");
-            int repoSize = repositories.size();
-            for(int i=0;i<repoSize;i++) {
-                IBiblioResolver dr = new IBiblioResolver();
-                dr.setName("user-repo" + (i+1));
-                dr.setM2compatible(true);
-                dr.setRoot(repositories.get(i));
-                chainResolver.add(dr);
-            }
-            settings.addResolver(chainResolver);
+        ChainResolver chainResolver = new ChainResolver();
+        chainResolver.setName("user-repo");
+        int repoSize = repositories.size();
+        for(int i=0;i<repoSize;i++) {
+            IBiblioResolver dr = new IBiblioResolver();
+            dr.setName("user-repo" + (i+1));
+            dr.setM2compatible(true);
+            dr.setRoot(repositories.get(i));
+            chainResolver.add(dr);
         }
+        settings.addResolver(chainResolver);
         settings.loadDefault();
-        if (!this.repositories.isEmpty()) {
-            settings.setDefaultResolver("user-repo");
-        }
+        settings.setDefaultResolver("user-repo");
         EventManager eventManager = new EventManager();
         eventManager.addIvyListener(event -> {
             if (event instanceof StartArtifactDownloadEvent) {

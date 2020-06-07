@@ -150,7 +150,7 @@ public abstract class ShellBase {
     protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader,@Nullable Reader optionsReader,boolean enableDepCache) throws IOException {
         //String scriptBase = "";
         Set<String> dependencies = new HashSet<>();
-        Set<String> repositories = new HashSet<>();
+        List<String> repositories = new LinkedList<>();
         Set<URL> classpaths = new HashSet<>();
         Set<File> sourcepaths = new HashSet<>();
         BufferedReader bufferedReader = new BufferedReader(reader);
@@ -176,7 +176,7 @@ public abstract class ShellBase {
                     dependencies.add(optionValue);
                     break;
                 case "repository":
-                    repositories.add(optionValue);
+                    repositories.add(0,optionValue);
                     break;
                 case "classpath":
                     try {
@@ -267,7 +267,7 @@ public abstract class ShellBase {
 
 
 
-    private ResolveResult resolveDependencies(Set<String> dependencies,Set<String> repositories, boolean enableCache) throws IOException {
+    private ResolveResult resolveDependencies(Set<String> dependencies,List<String> repositories, boolean enableCache) throws IOException {
         Function0<ResolveResult> depResolver = () -> {
             List<Artifact> artifacts = new LinkedList<>();
             for(String d:dependencies){
