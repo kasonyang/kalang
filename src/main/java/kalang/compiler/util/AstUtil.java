@@ -5,6 +5,7 @@ import kalang.compiler.compile.semantic.AmbiguousMethodException;
 import kalang.compiler.compile.semantic.InvocationResolver;
 import kalang.compiler.compile.semantic.MethodNotFoundException;
 import kalang.compiler.core.*;
+import kalang.mixin.CollectionMixin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -190,18 +191,24 @@ public class AstUtil {
                 ObjectInvokeExpr.create(thisExpr, "<init>", null,clazz)
         );
     }
-    
-    
+
     public static boolean hasSetter(ClassNode clazz,FieldNode field){
         ClassType type = Types.getClassType(clazz);
-        MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "set" + NameUtil.firstCharToUpperCase(field.getName()),new Type[]{ field.getType()});
-        return md !=null;
+        return !findSetterByPropertyName(type, field.getName(), field.getType(), clazz).isEmpty();
     }
     
     public static boolean hasGetter(ClassNode clazz,FieldNode field){
         ClassType type = Types.getClassType(clazz);
-        MethodDescriptor md = MethodUtil.getMethodDescriptor(type.getMethodDescriptors(clazz, true, true), "get" + NameUtil.firstCharToUpperCase(field.getName()) , null);
-        return md != null;
+        return findGetterByPropertyName(type, field.getName(), clazz) != null;
+    }
+
+    public static List<MethodDescriptor> findSetterByPropertyName(ClassType clazz, String propName,Type type, ClassNode caller) {
+        InvocationResolver methodResolver = new InvocationResolver();
+        String setterName = "set" + NameUtil.firstCharToUpperCase(propName);
+        MethodDescriptor[] methods = clazz.getMethodDescriptors(caller, true, true);
+        VarExpr setterArg = new VarExpr(new LocalVarNode(type, null));
+        List<InvocationResolver.Resolution> res = methodResolver.resolve(methods, setterName, setterArg);
+        return CollectionMixin.map(res, r -> r.method);
     }
 
     @Nullable
