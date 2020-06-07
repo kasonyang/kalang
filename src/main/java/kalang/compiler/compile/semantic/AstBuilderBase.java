@@ -338,6 +338,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return expr;
     }
 
+    protected ExprNode requireCastToObjectType(ExprNode expr, OffsetRange offset) {
+        Type oldType = expr.getType();
+        expr = BoxUtil.assignToObjectType(expr);
+        if (expr == null) {
+            throw new NodeException("unable to cast " + oldType + " to object type", offset);
+        }
+        return expr;
+    }
+
     @SuppressWarnings("unchecked")
     protected <T> T requireExprWithType(ExprNode expr,Class<T> expected, String errMsg) {
         Type type = expr.getType();
@@ -374,7 +383,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         node.offset = OffsetRangeHelper.getOffsetRange(tree);
     }
 
-    protected void mapAst(AstNode node,OffsetRange offsetRange, boolean recursive) {
+    protected <T extends AstNode> T mapAst(T node,OffsetRange offsetRange, boolean recursive) {
         node.offset = offsetRange;
         if (recursive) {
             List<AstNode> children = node.getChildren();
@@ -382,6 +391,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 mapAst(c, offsetRange, true);
             }
         }
+        return node;
     }
 
     protected <T extends AstNode> T mapAst(T node,OffsetRange offsetRange) {

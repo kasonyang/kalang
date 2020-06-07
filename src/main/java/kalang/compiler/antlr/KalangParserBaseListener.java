@@ -760,6 +760,18 @@ public class KalangParserBaseListener implements KalangParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterNullDefaultExpr(KalangParser.NullDefaultExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNullDefaultExpr(KalangParser.NullDefaultExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterWithExpr(KalangParser.WithExprContext ctx) { }
 	/**
 	 * {@inheritDoc}

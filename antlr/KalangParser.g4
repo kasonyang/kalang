@@ -294,6 +294,7 @@ expression
     |   expression '^' expression #binaryExpr
     |   expression '|' expression #binaryExpr
     |   expression ('&&'|'||') expression #binaryExpr
+    |   expression '??' expression #nullDefaultExpr
     |   expression '?' expression ':' expression #questionExpr
     |   Identifier #identifierExpr 
     |   expression '.' #errorousMemberExpr

@@ -19,6 +19,7 @@ DYNAMIC: '->>';
 STAR_DOT: '*.' ;
 STAR_DYNAMIC: '*->>' ;
 QUESTION_DOT: '?.' ;
+DOUBLE_QUESTION: '??' ;
 QUESTION_DOTDOT: '?..';
 QUESTION_DYNAMIC: '?->>' ;
 OVERRIDE   : 'override' ;

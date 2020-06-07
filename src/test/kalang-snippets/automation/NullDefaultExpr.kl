@@ -1,0 +1,21 @@
+class {
+    private int counter = 0;
+
+    boolean nullDefault() {
+        counter = 0;
+        val s as String? = null;
+        return ( s ?? getDefault()).toString() == "test" && counter == 1;
+    }
+
+    boolean nullDefaultForNonnullExpr() {
+        counter = 0;
+        val s as String? = "hello";
+        return ( s ?? getDefault() ).toString() == "hello" && counter == 0;
+    }
+
+    private String getDefault() {
+        counter++;
+        return "test";
+    }
+
+}

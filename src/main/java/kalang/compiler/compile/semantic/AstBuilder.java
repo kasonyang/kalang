@@ -914,7 +914,28 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ExprNode valuatedExpr = ConstExprUtil.evaluate(expr);
         return valuatedExpr != null ? valuatedExpr : expr;
     }
-    
+
+    @Override
+    public ExprNode visitNullDefaultExpr(NullDefaultExprContext ctx) {
+        OffsetRange offset = offset(ctx);
+        ExprNode expr1 = visitExpression(ctx.expression(0));
+        TypeValidator.requireType(expr1.getType(), ObjectType.class, "object type required", offset);
+        ExprNode expr2 = requireCastToObjectType(visitExpression(ctx.expression(1)), offset);
+        ObjectType expr2Type = (ObjectType) expr2.getType();
+        ObjectType commonType =(ObjectType) TypeUtil.getCommonType(expr1.getType(), expr2Type);
+        ObjectType returnType = Types.getObjectType(commonType, expr2Type.getNullable());
+        LocalVarNode tmpVar = declareTempLocalVar(commonType);
+        List<Statement> statements = new LinkedList<>();
+        statements.add(new VarDeclStmt(tmpVar));
+        statements.add(new ExprStmt(new AssignExpr(new VarExpr(tmpVar), expr1)));
+        statements.add(new IfStmt(
+                new CompareBinaryExpr(new VarExpr(tmpVar),new ConstExpr(null), BinaryExpr.OP_EQ),
+                newBlock(() -> new ExprStmt(new AssignExpr(new VarExpr(tmpVar), expr2))),
+                null
+        ));
+        return mapAst(new MultiStmtExpr(statements, new VarExpr(tmpVar, returnType)), offset(ctx), true);
+    }
+
     @Nullable
     private ExprNode getImplicitInvokeExpr(String methodName,ExprNode[] args, ParserRuleContext ctx){
         AstNode namedNode = this.accessNamedNode(methodName, offset(ctx.start), null, null);
