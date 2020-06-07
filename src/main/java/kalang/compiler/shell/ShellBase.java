@@ -10,6 +10,7 @@ import kalang.compiler.profile.Span;
 import kalang.compiler.profile.SpanFormatter;
 import kalang.compiler.tool.KalangShell;
 import kalang.lang.Runtime;
+import kalang.mixin.CollectionMixin;
 import kalang.type.Function0;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
@@ -281,7 +282,8 @@ public abstract class ShellBase {
             DependencyResolver resolver =new DependencyResolver(repositories);
             return resolver.resolve(artifacts.toArray(new Artifact[0]));
         };
-        if (enableCache) {
+        boolean containsSnapshots = CollectionMixin.find(dependencies, it -> it.toUpperCase().endsWith("-SNAPSHOT")) != null;
+        if (enableCache && !containsSnapshots) {
             File cacheFile = new File(getAppHomeDir("cache", true), "dependencies.cache");
             DependenciesCache dc = new DependenciesCache(cacheFile);
             return dc.get(dependencies, depResolver);

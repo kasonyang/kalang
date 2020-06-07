@@ -103,8 +103,7 @@ public class DependencyResolver {
         for (ModuleRevisionId mrid : mrids) {
             DefaultDependencyDescriptor dd = new DefaultDependencyDescriptor(moduleDescriptor,
                     mrid, true, false, true);
-            dd.addDependencyConfiguration(DEFAULT_CONFIGURATION, "master");
-            dd.addDependencyConfiguration(DEFAULT_CONFIGURATION, "compile");
+            dd.addDependencyConfiguration(DEFAULT_CONFIGURATION, DEFAULT_CONFIGURATION);
             moduleDescriptor.addDependency(dd);
         }
         ResolveReport res = ivy.resolve(moduleDescriptor, ops);
