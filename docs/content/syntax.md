@@ -11,6 +11,110 @@ status=published
 
 You don't have to declare package name and class name in the code.Kalang use the directory name as package name and the file name as class name.For example,the file `/src/foo/bar/Helloworld.kl` means that the package name is `foo.bar` , the main class name is `Helloworld` and the full class name is `foo.bar.Helloworld`,if the source root is `/src`.
 
+## Keywords
+
+`abstract` `as` `assert` `boolean` `break` `byte` `case` `catch`
+
+`char` `class` `const` `constructor` `continue` `default` `do`
+
+`double` `else` `enum` `extends` `final` `finally` `float` `for`
+
+`foreach` `goto` `if` `implements` `import` `in` `instanceof`
+
+`int` `interface` `long` `mixin` `native` `new` `null` `override` 
+
+`package` `private` `protected` `public` `return` `short` `static`
+
+`strictfp` `super` `switch` `synchronized` `this` `throw` `throws` 
+
+`transient` `try` `val` `var` `void` `volatile` `while` `with`
+
+## Identifiers
+
+### Normal identifiers
+
+Identifiers must start with a letter or an underscore.
+
+For example:
+
+```
+var name = "kalang";
+var _length = 4;
+```
+
+### Quoted identifiers
+
+Quoted identifiers could be use as field name or method name.
+
+For example:
+
+```
+System."in".read();
+System.out."println"("hello");
+```
+
+## Strings
+
+Double-quoted string
+
+```
+val str = "hello,kalang\n";
+```
+
+Triple-single-quoted string(support multiline)
+
+```
+val text = '''Hello
+Kalang
+''';
+```
+
+Interpolation
+
+```
+var name = "kalang";
+println( "hello,${name}!" );//output:hello,kalang!
+```
+
+## Numbers
+
+```
+byte a = 1;
+char b = 2;
+short c = 3;
+int d = 4;
+long e = 5;
+```
+
+## Booleans
+
+```
+var t = true;
+var f = false;
+```
+
+## Arrays
+
+```
+var intArray = [1,2,3];                    //int[]
+var integerArray= <Integer>[1,2,3];        //Integer[]
+var stringArray = ["hello","world"];       //String[]
+```
+
+```
+int[] arr = new int[10];             //length is 10
+int[] arr2 = new int[]{1,2,3};       //arr2 is initialized and it's length is 3
+```
+
+## Maps
+
+```
+var objectMap = ["name":"kalang","year":2016];          //Map<String,Object>
+var stringMap = ["name":"kalang","type":"language"];    //Map<String,String>
+var ov = objectMap.get("name");                         //ov is Object type
+var sv = stringMap.get("name");                         //sv is String type
+```
+
 ## Import classes
 
 Import single class:
@@ -98,19 +202,12 @@ Declare a variable with specified type and initial value
 var obj as Object = "hello";
 ```
 
-## Interpolation
-
-```
-var name = "kalang";
-println( "hello,${name}!" );//output:hello,kalang!
-```
-
 ## Loop
 
 for loop:
 
 ```
-for(int i=0;i<9;i++){
+for(var i=0;i<9;i++){
     println(i);
 }
 ```
@@ -137,7 +234,7 @@ while loop:
 
 ```
 while(expression){
-    //do Some Thing
+    //do some thing
 }
 ```
 
@@ -147,6 +244,24 @@ do loop:
 do{
 //do some thing
 }while(expression);
+```
+
+## Try statement
+
+```
+try {
+    // do some thing
+} catch (Exception ex) {
+    println(ex);
+} finally {
+    
+}
+```
+
+```
+try (val os = new ByteArrayOutputStream()) {
+    // do some thing
+}
 ```
 
 ## Comments
@@ -160,28 +275,6 @@ multi-line comment
 
 ```
 
-## Declare array
-
-```
-var intArray = [1,2,3];                    //int[]
-var integerArray= <Integer>[1,2,3];        //Integer[]
-var stringArray = ["hello","world"];       //String[]
-```
-
-```
-int[] arr = new int[10];             //length is 10
-int[] arr2 = new int[]{1,2,3};       //arr2 is initialized and it's length is 3
-```
-
-## Declare map
-
-```
-var objectMap = ["name":"kalang","year":2016];          //Map<String,Object>
-var stringMap = ["name":"kalang","type":"language"];    //Map<String,String>
-var ov = objectMap.get("name");                         //ov is Object type
-var sv = stringMap.get("name");                         //sv is String type
-```
-
 ## Null safe
 
 ```
@@ -191,6 +284,13 @@ void hello(String? name){
         name.length();       //compile passed:name is null checked
     }
 }
+```
+
+## Default for nullable expression
+
+```
+val s as String? = null;
+println(s ?? "test");     //output: test
 ```
 
 ## Cast type automatically
