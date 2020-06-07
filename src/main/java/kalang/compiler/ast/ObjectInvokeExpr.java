@@ -42,7 +42,7 @@ public class ObjectInvokeExpr extends InvocationExpr{
     
     //private final ClassNode specialClass;
 
-    public ObjectInvokeExpr(ExprNode invokeTarget, MethodDescriptor method, ExprNode[] args) {
+    public ObjectInvokeExpr(ExprNode invokeTarget, MethodDescriptor method, ExprNode... args) {
         super((ObjectType)invokeTarget.getType(),method, args);
         Parameters.requireTrue(!Modifier.isStatic(method.getModifier()));
         this.invokeTarget = invokeTarget;

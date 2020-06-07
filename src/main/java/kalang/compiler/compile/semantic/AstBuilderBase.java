@@ -24,6 +24,10 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+import static kalang.compiler.util.AstUtil.findGetterByPropertyName;
+import static kalang.compiler.util.AstUtil.findSetterByPropertyName;
+import static kalang.mixin.CollectionMixin.map;
+
 public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected final DiagnosisReporter diagnosisReporter;
@@ -106,7 +110,24 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 if (!(targetType instanceof ClassType)) {
                     return null;
                 }
-                ClassNode targetClassNode = ((ClassType) targetType).getClassNode();
+                ClassType targetClassType = (ClassType) targetType;
+                ClassNode targetClassNode = targetClassType.getClassNode();
+                boolean isWrite = assignValue != null;
+                if (isWrite) {
+                    List<MethodDescriptor> setters = findSetterByPropertyName(targetClassType, fieldName
+                            , assignValue.getType(), getCurrentClass());
+                    if (setters.size() > 1) {
+                        List<String> settersDesc = map(setters, it -> MethodUtil.toString(it.getMethodNode()));
+                        throw new NodeException("setter is ambiguous:\n" + String.join("\n", settersDesc), offset);
+                    } else if (setters.size() == 1) {
+                        return mapAst(new ObjectInvokeExpr(expr, setters.get(0), assignValue), offset);
+                    }
+                } else {
+                    MethodDescriptor getter = findGetterByPropertyName(targetClassType, fieldName, getCurrentClass());
+                    if (getter != null) {
+                        return mapAst(new ObjectInvokeExpr(expr, getter), offset);
+                    }
+                }
                 if (!InheritanceUtil.isInnerClassOf(getCurrentClass(), targetClassNode)) {
                     return null;
                 }
@@ -114,7 +135,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 if (field == null) {
                     return null;
                 }
-                boolean isWrite = assignValue != null;
                 if (isWrite) {
                     MethodNode writer = getPrivateFieldAccessor(field, true);
                     ClassReference clsRef = new ClassReference(writer.getClassNode());

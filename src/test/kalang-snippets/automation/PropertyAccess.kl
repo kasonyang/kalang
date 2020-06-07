@@ -1,0 +1,13 @@
+class {
+
+    private static class MyObject {
+        String name;
+    }
+
+    boolean setAndGet() {
+        val mo = new MyObject();
+        mo.name = "test";
+        return "test" == mo.name && "test" == mo.getName();
+    }
+
+}
