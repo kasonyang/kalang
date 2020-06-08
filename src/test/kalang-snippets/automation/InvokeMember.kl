@@ -1,0 +1,7 @@
+private static String test() {
+    return "test-method";
+}
+
+boolean callPrivateStatic() {
+    return test() == "test-method";
+}

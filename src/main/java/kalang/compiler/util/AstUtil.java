@@ -113,7 +113,10 @@ public class AstUtil {
     public static List<MethodDescriptor> findSetterByPropertyName(ClassType clazz, String propName,Type type, ClassNode caller) {
         InvocationResolver methodResolver = new InvocationResolver();
         String setterName = "set" + NameUtil.firstCharToUpperCase(propName);
-        MethodDescriptor[] methods = clazz.getMethodDescriptors(caller, true, true);
+        MethodDescriptor[] methods = CollectionMixin.findAll(
+                clazz.getMethodDescriptors(caller, true, true),
+                m -> !ModifierUtil.isStatic(m.getModifier())
+        );
         VarExpr setterArg = new VarExpr(new LocalVarNode(type, null));
         List<InvocationResolver.Resolution> res = methodResolver.resolve(methods, setterName, setterArg);
         return CollectionMixin.map(res, r -> r.method);
@@ -131,7 +134,10 @@ public class AstUtil {
         if (!propName.startsWith("is")) {
             nameList.add("is" + ucName);
         }
-        MethodDescriptor[] methods = clazz.getMethodDescriptors(caller, true, true);
+        MethodDescriptor[] methods = CollectionMixin.findAll(
+                clazz.getMethodDescriptors(caller, true, true),
+                m -> !ModifierUtil.isStatic(m.getModifier())
+        );
         for (String name : nameList) {
             List<InvocationResolver.Resolution> res = methodResolver.resolve(methods, name);
             if (res.isEmpty()) {
@@ -145,7 +151,9 @@ public class AstUtil {
     
     public static void createGetter(ClassNode clazz,FieldDescriptor field,int accessModifier){
         String fn = field.getName();
-        String getterName = "get" + NameUtil.firstCharToUpperCase(fn);
+        Type fieldType = field.getType();
+        String getterPrefix = Types.BOOLEAN_TYPE.equals(fieldType) ? "is" : "get";
+        String getterName = getterPrefix + NameUtil.firstCharToUpperCase(fn);
         boolean isStatic = isStatic(field.getModifier());
         if(isStatic){
             accessModifier |= Modifier.STATIC;
@@ -153,6 +161,7 @@ public class AstUtil {
         MethodNode getter = clazz.createMethodNode(field.getType(),getterName,accessModifier);
         //getter.offset = field.offset;
         BlockStmt body = getter.getBody();
+        assert body != null;
         FieldExpr fe;
         ClassReference cr = new ClassReference(clazz);
         if(isStatic){
@@ -174,6 +183,7 @@ public class AstUtil {
         //setter.offset = field.offset;
         ParameterNode param = setter.createParameter(field.getType(), field.getName());
         BlockStmt body = setter.getBody();
+        assert body != null;
         FieldExpr fe;
         ExprNode paramVal = new VarExpr(param);
         ClassReference cr = new ClassReference(clazz);
