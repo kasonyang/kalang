@@ -17,6 +17,7 @@ public class InvocationResolver {
     private final static int SCORE_EQUALS = 0;
     private final static int SCORE_SUBTYPE = 1;
     private final static int SCORE_CASTABLE = 2;
+    private final static int SCORE_VARARG = 3;
 
 
     public List<Resolution> resolve(MethodDescriptor[] methods, String methodName, ExprNode... args) {
@@ -59,7 +60,7 @@ public class InvocationResolver {
             }
             ExprNode[] tailArgs = new ExprNode[args.length - parameters.length + 1];
             for (int i = 0; i < parameters.length - 1; i++) {
-                SingleApplyResult r = applyArgToParam(args[i], parameters[i].getType());
+                SingleApplyResult r = applyArgToParam(args[i], parameters[i].getType(), false);
                 if (r == null) {
                     return null;
                 }
@@ -68,7 +69,7 @@ public class InvocationResolver {
                 matchTypes[i] = parameters[i].getType();
             }
             if (args.length == parameters.length) {
-                SingleApplyResult r = applyArgToParam(args[lastParamIndex], parameters[lastParamIndex].getType());
+                SingleApplyResult r = applyArgToParam(args[lastParamIndex], parameters[lastParamIndex].getType(), false);
                 if (r != null) {
                     scores[lastParamIndex] = r.score;
                     appliedArgs[lastParamIndex] = r.appliedArg;
@@ -78,7 +79,7 @@ public class InvocationResolver {
             }
             Type lastComponentType = ((ArrayType) lastParam.getType()).getComponentType();
             for (int i = 0; i < tailArgs.length; i++) {
-                SingleApplyResult tailApplyRes = applyArgToParam(args[lastParamIndex + i], lastComponentType);
+                SingleApplyResult tailApplyRes = applyArgToParam(args[lastParamIndex + i], lastComponentType, true);
                 if (tailApplyRes == null) {
                     return null;
                 }
@@ -95,7 +96,7 @@ public class InvocationResolver {
                 return null;
             }
             for (int i = 0; i < args.length; i++) {
-                SingleApplyResult r = applyArgToParam(args[i], parameters[i].getType());
+                SingleApplyResult r = applyArgToParam(args[i], parameters[i].getType(), false);
                 if (r == null) {
                     return null;
                 }
@@ -108,10 +109,10 @@ public class InvocationResolver {
     }
 
     @Nullable
-    private SingleApplyResult applyArgToParam(ExprNode arg, Type paramType) {
+    private SingleApplyResult applyArgToParam(ExprNode arg, Type paramType, boolean isVarargMode) {
         Type argType = arg.getType();
         if (argType.equals(paramType)) {
-            return new SingleApplyResult(0, arg);
+            return new SingleApplyResult(isVarargMode ? SCORE_VARARG : SCORE_EQUALS, arg);
         }
         int castMethod = BoxUtil.getCastMethod(arg, paramType);
         Integer score = getMatchScore(castMethod);
@@ -120,7 +121,7 @@ public class InvocationResolver {
         }
         ExprNode appliedArg = BoxUtil.assign(arg, paramType);
         Objects.requireNonNull(appliedArg);
-        return new SingleApplyResult(score, appliedArg);
+        return new SingleApplyResult(isVarargMode ? SCORE_VARARG : score, appliedArg);
     }
 
     private boolean isMorePreciseTypes(ExprNode[] args,int[] scores1,int[] scores2, Type[] paramTypes1, Type[] paramTypes2) {

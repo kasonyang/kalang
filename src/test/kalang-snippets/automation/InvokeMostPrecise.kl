@@ -1,0 +1,11 @@
+boolean invoke() {
+    return test("test") == "test1";
+}
+
+private String test(Object value) {
+    return "test1";
+}
+
+private String test(Object... value) {
+    return "test2";
+}
