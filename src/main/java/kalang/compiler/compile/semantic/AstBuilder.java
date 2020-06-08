@@ -1270,7 +1270,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         //find field
         ExprNode outerClassInstanceExpr = createThisExpr(offset);
         while(outerClassInstanceExpr != null){
-            ExprNode fe = this.getObjectFieldLikeExpr(outerClassInstanceExpr, name, offset, assignValue);
+            ExprNode fe = this.getObjectFieldLikeExpr(outerClassInstanceExpr, name, offset, assignValue, false);
             if (fe == null && outerClassInstanceExpr instanceof ThisExpr) {
                 ClassType outerClassType = (ClassType) outerClassInstanceExpr.getType();
                 AssignableExpr staticExpr = this.getStaticFieldExpr(new ClassReference(outerClassType.getClassNode()), name, offset);

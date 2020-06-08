@@ -1,0 +1,3 @@
+boolean invokeStatic() {
+    return Class.forName("java.lang.String") === String.class;
+}

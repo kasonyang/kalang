@@ -83,7 +83,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
 
-    protected ExprNode getObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset, @Nullable ExprNode assignValue){
+    protected ExprNode getObjectFieldLikeExpr(
+            ExprNode expr,String fieldName, OffsetRange offset, @Nullable ExprNode assignValue, boolean allowGetterOrSetter
+    ){
 
         Type type = expr.getType();
         if(!(type instanceof  ObjectType)){
@@ -113,19 +115,21 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 ClassType targetClassType = (ClassType) targetType;
                 ClassNode targetClassNode = targetClassType.getClassNode();
                 boolean isWrite = assignValue != null;
-                if (isWrite) {
-                    List<MethodDescriptor> setters = findSetterByPropertyName(targetClassType, fieldName
-                            , assignValue.getType(), getCurrentClass());
-                    if (setters.size() > 1) {
-                        List<String> settersDesc = map(setters, it -> MethodUtil.toString(it.getMethodNode()));
-                        throw new NodeException("setter is ambiguous:\n" + String.join("\n", settersDesc), offset);
-                    } else if (setters.size() == 1) {
-                        return mapAst(new ObjectInvokeExpr(expr, setters.get(0), assignValue), offset);
-                    }
-                } else {
-                    MethodDescriptor getter = findGetterByPropertyName(targetClassType, fieldName, getCurrentClass());
-                    if (getter != null) {
-                        return mapAst(new ObjectInvokeExpr(expr, getter), offset);
+                if (allowGetterOrSetter) {
+                    if (isWrite) {
+                        List<MethodDescriptor> setters = findSetterByPropertyName(targetClassType, fieldName
+                                , assignValue.getType(), getCurrentClass());
+                        if (setters.size() > 1) {
+                            List<String> settersDesc = map(setters, it -> MethodUtil.toString(it.getMethodNode()));
+                            throw new NodeException("setter is ambiguous:\n" + String.join("\n", settersDesc), offset);
+                        } else if (setters.size() == 1) {
+                            return mapAst(new ObjectInvokeExpr(expr, setters.get(0), assignValue), offset);
+                        }
+                    } else {
+                        MethodDescriptor getter = findGetterByPropertyName(targetClassType, fieldName, getCurrentClass());
+                        if (getter != null) {
+                            return mapAst(new ObjectInvokeExpr(expr, getter), offset);
+                        }
                     }
                 }
                 if (!InheritanceUtil.isInnerClassOf(getCurrentClass(), targetClassNode)) {
@@ -151,7 +155,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nonnull
     protected ExprNode requireObjectFieldLikeExpr(ExprNode expr,String fieldName, OffsetRange offset,@Nullable ExprNode assignValue){
-        ExprNode fe = getObjectFieldLikeExpr(expr, fieldName ,offset, assignValue);
+        ExprNode fe = getObjectFieldLikeExpr(expr, fieldName ,offset, assignValue, true);
         if (fe == null) {
             throw new NodeException("field not found:" + fieldName,offset);
         }
