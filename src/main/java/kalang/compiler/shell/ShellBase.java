@@ -176,7 +176,7 @@ public abstract class ShellBase {
                     dependencies.add(optionValue);
                     break;
                 case "repository":
-                    repositories.add(0,optionValue);
+                    repositories.add(optionValue);
                     break;
                 case "classpath":
                     try {
