@@ -1,0 +1,13 @@
+boolean testExclude() {
+    val map = ["a":1,"b":2];
+    return map..exclude("a") == ["b": 2] && map..exclude("b") == ["a" : 1];
+}
+
+boolean testOnly() {
+    val map = ["a":1,"b":2];
+    return map..only("b") == ["b": 2] && map..only("a") == ["a" : 1];
+}
+
+boolean testUnion() {
+    return ["a":1,"b":2] == ["a" : 1]..union(["b":2]);
+}
