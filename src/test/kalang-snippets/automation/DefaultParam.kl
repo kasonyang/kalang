@@ -1,3 +1,11 @@
 int methodWithDefParam(int value = 5) {
     return value + 1;
 }
+
+boolean testMethodWithDefParam2() {
+    return test("test") == 5;
+}
+
+private int test(String str, int len = 5) {
+    return len;
+}

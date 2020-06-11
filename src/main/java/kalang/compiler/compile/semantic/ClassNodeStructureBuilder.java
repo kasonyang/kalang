@@ -202,7 +202,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             KalangParser.ParamDeclContext p = ctx.params.get(i);
             if (p.paramDefVal != null) {
                 MethodNode m = thisClazz.createMethodNode(method.getType(), method.getName(), method.getModifier());
-                for (int j = 0; j < i - 1; j++) {
+                for (int j = 0; j < i; j++) {
                     m.createParameter(methodParams[j].getType(), methodParams[j].getName(), methodParams[j].getModifier());
                 }
                 for (AnnotationNode a: m.getAnnotations()) {
