@@ -620,7 +620,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitForStat(ForStatContext ctx) {
-        //TODO It seems that here lacks of var stack
         return newBlock(() -> {
             List<Statement> statements = new LinkedList<>();
             if (ctx.localVarDecl() != null) {
@@ -716,7 +715,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Nonnull
     protected ExprNode createFieldExpr(GetFieldExprContext to, @Nullable Function0<ExprNode> fromExprCb, OffsetRange offsetRange) {
-        //TODO support iterating syntax
         OffsetRange toOffset = offset(to);
         String refKey = to.refKey.getText();
         ExpressionContext exp = to.expression();
@@ -805,7 +803,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 from = requireImplicitCast(to.getType(), from, offset(ctx));
                 AssignExpr assignExpr = new AssignExpr(to, from);
                 mapAst(assignExpr, ctx);
-                //TODO remove override information before assign
                 if (from instanceof LambdaExpr) {
                     inferLambdaIfNeed((LambdaExpr)from,  toExpr.getType());
                 }
