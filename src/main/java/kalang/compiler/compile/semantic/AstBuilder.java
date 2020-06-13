@@ -2019,7 +2019,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         MethodDescriptor selectedMd = mdSelect.selectedMethod;
         Type[] declaredFuncTypes = MethodUtil.getReturnAndParamTypes(funcMethod);
         Type[] actualFuncTypes = MethodUtil.getReturnAndParamTypes(selectedMd.getReturnType(), funcMethod.getParameterTypes());
-        Map<GenericType, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
+        Map<ClassNode, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
         ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
         lambdaExpr.fixType(parameterizedType);
         lambdaExpr.setInvokeMethod(mdSelect.selectedMethod.getMethodNode());
@@ -2082,7 +2082,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         checkMethod();
         Type[] declaredFuncTypes = MethodUtil.getReturnAndParamTypes(funcMethod);
         Type[] actualFuncTypes = MethodUtil.getReturnAndParamTypes(methodNode.inferredReturnType, funcMethod.getParameterTypes());
-        Map<GenericType, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
+        Map<ClassNode, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
         ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
         lambdaExpr.fixType(parameterizedType);
         //TODO check return
@@ -2161,7 +2161,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         }
         Type[] actualTypes = AstUtil.getExprTypes(args);
-        Map<GenericType, Type> inferredTypes = ParameterizedUtil.getGenericTypeMap(paramTypes, actualTypes);
+        Map<ClassNode, Type> inferredTypes = ParameterizedUtil.getGenericTypeMap(paramTypes, actualTypes);
         if (!inferredTypes.isEmpty()) {
             MethodDescriptor md = invocationExpr.getMethod();
             MethodDescriptor newMd = md.toParameterized(inferredTypes, actualTypes);

@@ -27,13 +27,13 @@ public class ClassType extends ObjectType {
         return typeArguments;
     }
     
-    public Map<GenericType,Type> getTypeArgumentsMap(){
+    public Map<ClassNode,Type> getTypeArgumentsMap(){
         ClassNode clz = getClassNode();
         GenericType[] gts = clz.getGenericTypes();
-        Map<GenericType,Type> ret = new HashMap();
+        Map<ClassNode,Type> ret = new HashMap<>();
         if(typeArguments.length>0){
             for(int i=0;i<gts.length;i++){
-                ret.put(gts[i], typeArguments[i]);
+                ret.put(gts[i].getClassNode(), typeArguments[i]);
             }
         }
         return ret;
@@ -94,45 +94,6 @@ public class ClassType extends ObjectType {
         hashCode = 31 * hashCode + Objects.hash(nullable);
         return hashCode;
     }
-
-    private static Type[] parseGenericType(Type[] types, Map<GenericType,Type> genericTypes){
-        Type[] actTypes = new Type[types.length];
-        for(int i=0;i<actTypes.length;i++){
-            actTypes[i] = parseGenericType(types[i],genericTypes);
-        }
-        return actTypes;
-    }
-    
-    private static Type parseGenericType(Type type,Map<GenericType,Type> genericTypes){
-        if(type instanceof GenericType){
-            Type actualType = genericTypes.get(type);
-            return actualType == null ? type : actualType;
-        }else if(type instanceof ClassType){
-            ClassType pt = (ClassType) type;
-            Type[] ptTypeArguments = pt.getTypeArguments();
-            Type[] parsedTypeArguments = parseGenericType(ptTypeArguments,genericTypes);
-            if(Arrays.equals(parsedTypeArguments, ptTypeArguments)) return type;
-            return Types.getClassType(pt.getClassNode(), parsedTypeArguments, pt.getNullable());
-        }else if(type instanceof PrimitiveType){
-            return type;
-        }else if(type instanceof WildcardType){
-            WildcardType wt = (WildcardType) type;
-            Type[] ubs = wt.getUpperBounds();
-            Type[] lbs = wt.getLowerBounds();
-            Type[] parsedUBs = parseGenericType(ubs, genericTypes);
-            Type[] parsedLBs = parseGenericType(lbs, genericTypes);
-            return new WildcardType(parsedUBs, parsedLBs);
-        }else if(type instanceof ArrayType){
-            Type ct = ((ArrayType) type).getComponentType();
-            Type parsedCt = parseGenericType(ct, genericTypes);
-            if(parsedCt.equals(ct)) return type;
-            return Types.getArrayType(parsedCt, ((ArrayType) type).getNullable());
-        }else{
-            Exception ex = new Exception("unknown type:" + type);
-            ex.printStackTrace(System.err);
-            return type;
-        }        
-    }
     
     private Type eraseGenericType(Type type){
         if(type instanceof PrimitiveType){
@@ -161,9 +122,9 @@ public class ClassType extends ObjectType {
 
     @Override
     protected Type parseType(Type type) {
-        Map<GenericType, Type> genericTypes = this.getTypeArgumentsMap();
+        Map<ClassNode, Type> genericTypes = this.getTypeArgumentsMap();
         //FIXME it would also erase generic types declared in method
-        return genericTypes.isEmpty() && clazz.getGenericTypes().length>0 ? eraseGenericType(type) : parseGenericType(type, genericTypes);
+        return genericTypes.isEmpty() && clazz.getGenericTypes().length>0 ? eraseGenericType(type) : ParameterizedUtil.parameterizedType(type, genericTypes);
     }
 
     @Override
@@ -204,7 +165,7 @@ public class ClassType extends ObjectType {
         return superType;
     }
 
-    public ClassType toParameterized(Map<GenericType,Type> genericTypeTypeMap) {
+    public ClassType toParameterized(Map<ClassNode,Type> genericTypeTypeMap) {
         GenericType[] declaredGenericTypes = clazz.getGenericTypes();
         Type[] typeArgs = new Type[declaredGenericTypes.length];
         for (int i = 0; i < typeArgs.length; i++) {
