@@ -1,5 +1,6 @@
 package kalang.compiler.compile.semantic;
 
+import kalang.compiler.ast.ClassNode;
 import kalang.compiler.ast.ExprNode;
 import kalang.compiler.core.*;
 import kalang.compiler.util.*;
@@ -41,6 +42,20 @@ public class InvocationResolver {
 
     @Nullable
     private ArgsApplyResult applyArgsToParams(MethodDescriptor method, ExprNode[] args) {
+        ArgsApplyResult aar = doApplyArgsToParams(method, args);
+        if (aar != null) {
+            Type[] appliedTypes = map(aar.appliedArgs, Type.class, arg -> arg.getType());
+            Map<ClassNode, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(method.getParameterTypes(), appliedTypes);
+            //if generic type map is not empty,try again to make sure applied result is right
+            if (!genericTypeMap.isEmpty()) {
+                method = method.toParameterized(genericTypeMap, appliedTypes);
+                aar = doApplyArgsToParams(method, args);
+            }
+        }
+        return aar;
+    }
+
+    private ArgsApplyResult doApplyArgsToParams(MethodDescriptor method, ExprNode[] args) {
         ParameterDescriptor[] parameters = method.getParameterDescriptors();
         boolean isVarArgs = ModifierUtil.isVarArgs(method.getModifier());
         if (parameters.length == 0) {

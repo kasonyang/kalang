@@ -3,10 +3,7 @@ package kalang.compiler.util;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.core.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author KasonYang
@@ -65,7 +62,9 @@ public class ParameterizedUtil {
     private static void collectGenericTypeMap(List<Type> declaredTypes, List<Type> actualTypes, Map<ClassNode, Type> resultMap) {
         int min = Math.min(declaredTypes.size(), actualTypes.size());
         for (int i = 0; i < min; i++) {
-            collectGenericTypeMap(declaredTypes.get(i), actualTypes.get(i), resultMap);
+            Map<ClassNode, Type> rm = new HashMap<>();
+            collectGenericTypeMap(declaredTypes.get(i), actualTypes.get(i), rm);
+            mergeGenericType(resultMap, rm);
         }
     }
 
@@ -108,6 +107,12 @@ public class ParameterizedUtil {
             collectGenericTypeMap(declComponentType, actualComponentType, resultMap);
         } else {
             //do nothing
+        }
+    }
+
+    private static void mergeGenericType(Map<ClassNode, Type> resultMap, Map<ClassNode, Type> otherMap) {
+        for (Map.Entry<ClassNode, Type> e : otherMap.entrySet()) {
+            resultMap.merge(e.getKey(), e.getValue(), (t1, t2) -> TypeUtil.getCommonType(t1, t2));
         }
     }
 
