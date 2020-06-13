@@ -42,6 +42,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected MethodContext methodCtx;
 
+    protected Map<LambdaExpr,ParserRuleContext> lambdaExprCtxMap;
+
     private int tempVarCounter = 0;
 
     public AstBuilderBase(CompilationUnit compilationUnit) {
@@ -213,6 +215,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(methodCtx.method), m.offset);
             }
         }
+        for (Map.Entry<LambdaExpr, ParserRuleContext> e : lambdaExprCtxMap.entrySet()) {
+            handleSyntaxError("Invalid lambda expression", offset(e.getValue()));
+        }
     }
 
     @Nonnull
@@ -249,6 +254,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     protected void enterMethod(MethodNode method) {
         methodCtx = new MethodContext(this.getCurrentClass(),method);
+        lambdaExprCtxMap = new HashMap<>();
     }
 
     @Nullable

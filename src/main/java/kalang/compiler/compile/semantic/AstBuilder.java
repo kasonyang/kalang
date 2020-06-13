@@ -55,8 +55,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private ClassNodeInitializer classNodeInitializer;
     private ClassNodeStructureBuilder classNodeStructureBuilder;
 
-    private Map<LambdaExpr,ParserRuleContext> lambdaExprCtxMap = new HashMap();
-
     private int parsingPhase=0;
     //static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
 
@@ -2189,8 +2187,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 return;
             }
             lambdaExpr.setInterfaceMethod(funcMethod);
-            ParserRuleContext ctx = lambdaExprCtxMap.get(lambdaExpr);
-            //TODO check unprocessed lambda context
+            ParserRuleContext ctx = lambdaExprCtxMap.remove(lambdaExpr);
             if (ctx instanceof LambdaExprContext) {
                 createLambdaNode(lambdaExpr, (LambdaExprContext) ctx, lambdaType);
             } else if (ctx instanceof MethodRefExprContext) {
