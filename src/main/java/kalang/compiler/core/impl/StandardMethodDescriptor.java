@@ -2,6 +2,7 @@
 package kalang.compiler.core.impl;
 
 import kalang.annotation.Nullable;
+import kalang.compiler.ast.ClassNode;
 import kalang.compiler.ast.MethodNode;
 import kalang.compiler.core.GenericType;
 import kalang.compiler.core.MethodDescriptor;
@@ -9,6 +10,7 @@ import kalang.compiler.core.ParameterDescriptor;
 import kalang.compiler.core.Type;
 import kalang.compiler.util.MethodUtil;
 import kalang.compiler.util.ParameterizedUtil;
+import kalang.mixin.MapMixin;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -59,11 +61,12 @@ public class StandardMethodDescriptor implements MethodDescriptor {
     }
 
     @Override
-    public MethodDescriptor toParameterized(Map<GenericType, Type> genericTypeMap, @Nullable Type[] actualArgumentTypes) {
+    public MethodDescriptor toParameterized(Map<ClassNode, Type> genericTypeMap, @Nullable Type[] actualArgumentTypes) {
         if (actualArgumentTypes != null && actualArgumentTypes.length>0) {
-            Map<GenericType, Type> gtMap = new HashMap<>(genericTypeMap);
-            gtMap.putAll(ParameterizedUtil.getGenericTypeMap(parameterTypes, actualArgumentTypes));
-            genericTypeMap = gtMap;
+            genericTypeMap = MapMixin.union(
+                    genericTypeMap,
+                    ParameterizedUtil.getGenericTypeMap(parameterTypes, actualArgumentTypes)
+            );
         }
         ParameterDescriptor[] pds = new ParameterDescriptor[parameterDescriptors.length];
         for(int i=0;i<pds.length;i++) {

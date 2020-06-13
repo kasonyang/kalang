@@ -1,5 +1,6 @@
 package kalang.compiler.util;
 
+import kalang.compiler.ast.ClassNode;
 import kalang.compiler.core.*;
 
 import java.util.Arrays;
@@ -12,9 +13,9 @@ import java.util.Map;
  */
 public class ParameterizedUtil {
 
-    public static Type parameterizedType(Type type, Map<GenericType,Type> genericTypes){
+    public static Type parameterizedType(Type type, Map<ClassNode,Type> genericTypes){
         if(type instanceof GenericType){
-            Type actualType = genericTypes.get(type);
+            Type actualType = genericTypes.get(((GenericType) type).getClassNode());
             return actualType == null ? type : actualType;
         }else if(type instanceof ClassType){
             ClassType pt = (ClassType) type;
@@ -43,7 +44,7 @@ public class ParameterizedUtil {
         }
     }
 
-    public static Type[] parameterizedType(Type[] types, Map<GenericType,Type> genericTypes){
+    public static Type[] parameterizedType(Type[] types, Map<ClassNode,Type> genericTypes){
         Type[] actTypes = new Type[types.length];
         for(int i=0;i<actTypes.length;i++){
             actTypes[i] = parameterizedType(types[i],genericTypes);
@@ -51,24 +52,24 @@ public class ParameterizedUtil {
         return actTypes;
     }
 
-    public static Map<GenericType, Type> getGenericTypeMap(Type[] declaredTypes, Type[] actualTypes) {
+    public static Map<ClassNode, Type> getGenericTypeMap(Type[] declaredTypes, Type[] actualTypes) {
         return getGenericTypeMap(Arrays.asList(declaredTypes), Arrays.asList(actualTypes));
     }
 
-    public static Map<GenericType, Type> getGenericTypeMap(List<Type> declaredTypes, List<Type> actualTypes) {
-        Map<GenericType, Type> result = new HashMap<>();
+    public static Map<ClassNode, Type> getGenericTypeMap(List<Type> declaredTypes, List<Type> actualTypes) {
+        Map<ClassNode, Type> result = new HashMap<>();
         collectGenericTypeMap(declaredTypes, actualTypes, result);
         return result;
     }
 
-    private static void collectGenericTypeMap(List<Type> declaredTypes, List<Type> actualTypes, Map<GenericType, Type> resultMap) {
+    private static void collectGenericTypeMap(List<Type> declaredTypes, List<Type> actualTypes, Map<ClassNode, Type> resultMap) {
         int min = Math.min(declaredTypes.size(), actualTypes.size());
         for (int i = 0; i < min; i++) {
             collectGenericTypeMap(declaredTypes.get(i), actualTypes.get(i), resultMap);
         }
     }
 
-    private static void collectGenericTypeMap(Type declaredType, Type actualArgType, Map<GenericType, Type> resultMap) {
+    private static void collectGenericTypeMap(Type declaredType, Type actualArgType, Map<ClassNode, Type> resultMap) {
         if (actualArgType instanceof ObjectType) {
             ObjectType actualArgObjectType = (ObjectType) actualArgType;
             ObjectType superType = actualArgObjectType.getSuperType();
@@ -83,7 +84,7 @@ public class ParameterizedUtil {
         if (declaredType.equals(actualArgType)) {
             return;
         } else if (declaredType instanceof GenericType) {
-            resultMap.put((GenericType) declaredType, actualArgType);
+            resultMap.put(((GenericType) declaredType).getClassNode(), actualArgType);
         } else if (declaredType instanceof ClassType && actualArgType instanceof ClassType) {
             ClassType actualPt = (ClassType) actualArgType;
             ClassType declaredPt = (ClassType) declaredType;

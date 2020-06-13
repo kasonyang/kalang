@@ -1,6 +1,7 @@
 package kalang.compiler.core;
 
 import kalang.annotation.Nullable;
+import kalang.compiler.ast.ClassNode;
 import kalang.compiler.ast.MethodNode;
 
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.Map;
  */
 public interface MethodDescriptor {
 
-    MethodDescriptor toParameterized(Map<GenericType, Type> genericTypeMap, @Nullable Type[] actualArgumentTypes);
+    MethodDescriptor toParameterized(Map<ClassNode, Type> genericTypeMap, @Nullable Type[] actualArgumentTypes);
 
     Type[] getParameterTypes();
 
