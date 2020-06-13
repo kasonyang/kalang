@@ -163,9 +163,10 @@ public class MethodContext {
 
     public Type getVarObjectType(Object p, Type originType) {
         Type type = overrideTypes.get(p);
-        if(type==null) type = originType;
-        //TODO handle other object type
-        if(type instanceof ClassType){
+        if(type == null){
+            type = originType;
+        }
+        if(type instanceof ObjectType){
             Integer ns = nullState.get(p);
             NullableKind nullable;
             if(ns==null){
@@ -179,7 +180,7 @@ public class MethodContext {
             }else{
                 throw Exceptions.unexpectedValue(ns);
             }
-            return Types.getClassType((ClassType)type,nullable);
+            return Types.getObjectType((ObjectType) type,nullable);
         }else{
             return type;
         }
