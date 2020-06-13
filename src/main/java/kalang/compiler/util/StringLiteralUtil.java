@@ -7,7 +7,6 @@ package kalang.compiler.util;
 public class StringLiteralUtil {
 
     public static String parse(String literal) {
-        //TODO parse unicode
         char[] cs = literal.toCharArray();
         StringBuilder sb = new StringBuilder();
         int i = 0;
@@ -31,6 +30,10 @@ public class StringLiteralUtil {
                     case 'r':
                         sb.append('\r');
                         break;
+                    case 'u':
+                        sb.appendCodePoint(Integer.parseInt(new String(cs, i, 4), 16));
+                        i+= 4;
+                        break;
                     case '"':
                         sb.append('"');
                         break;
@@ -41,8 +44,7 @@ public class StringLiteralUtil {
                         sb.append('\\');
                         break;
                     default:
-                        sb.append('\\');
-                        i--;
+                        throw Exceptions.unexpectedValue(nc);
                 }
             } else {
                 sb.append(c);

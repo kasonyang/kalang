@@ -326,7 +326,7 @@ MultiLineStringCharacter
 fragment
 EscapeSequence
     :   '\\' [btnfr"'\\]
-    |   OctalEscape
+    //|   OctalEscape
     |   UnicodeEscape
     ;
 

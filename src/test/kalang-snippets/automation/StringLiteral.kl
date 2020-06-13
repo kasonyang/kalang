@@ -1,3 +1,7 @@
+boolean testUnicode() {
+    return "\u4f60\u597d" == "你好";
+}
+
 boolean test() {
     return "$".charAt(0) == 36;
 }
