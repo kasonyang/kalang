@@ -50,7 +50,8 @@ public abstract class InvocationExpr extends ExprNode {
      */
     public static MethodSelection applyMethod(ObjectType clazz,String methodName, @Nullable ExprNode[] args,MethodDescriptor[] candidates) throws MethodNotFoundException,AmbiguousMethodException {
         if(args == null) args = new ExprNode[0];
-         List<InvocationResolver.Resolution> selectedList = methodSelector.resolve(candidates, methodName, args);
+        MethodDescriptor[] namedMethods = CollectionMixin.findAll(candidates, m -> methodName.equals(m.getName()));
+         List<InvocationResolver.Resolution> selectedList = methodSelector.resolveArgs(namedMethods, args);
         if (selectedList.isEmpty()) {
             throw new MethodNotFoundException(clazz,methodName);
         } else if (selectedList.size() > 1) {

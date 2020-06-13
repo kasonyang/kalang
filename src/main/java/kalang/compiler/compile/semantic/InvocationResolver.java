@@ -20,12 +20,9 @@ public class InvocationResolver {
     private final static int SCORE_VARARG = 3;
 
 
-    public List<Resolution> resolve(MethodDescriptor[] methods, String methodName, ExprNode... args) {
+    public List<Resolution> resolveArgs(MethodDescriptor[] methods, ExprNode... args) {
         List<ArgsApplyResult> appliedList = new ArrayList<>(methods.length);
         for (MethodDescriptor m : methods) {
-            if (!methodName.equals(m.getName())) {
-                continue;
-            }
             ArgsApplyResult argsApplyRes = applyArgsToParams(m, args);
             if (argsApplyRes == null) {
                 continue;

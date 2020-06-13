@@ -114,17 +114,16 @@ public class AstUtil {
         InvocationResolver methodResolver = new InvocationResolver();
         String setterName = "set" + NameUtil.firstCharToUpperCase(propName);
         MethodDescriptor[] methods = CollectionMixin.findAll(
-                clazz.getMethodDescriptors(caller, true, true),
+                clazz.getMethodDescriptors(caller, setterName, true, true),
                 m -> !ModifierUtil.isStatic(m.getModifier())
         );
         VarExpr setterArg = new VarExpr(new LocalVarNode(type, null));
-        List<InvocationResolver.Resolution> res = methodResolver.resolve(methods, setterName, setterArg);
+        List<InvocationResolver.Resolution> res = methodResolver.resolveArgs(methods, setterArg);
         return CollectionMixin.map(res, r -> r.method);
     }
 
     @Nullable
     public static MethodDescriptor findGetterByPropertyName(ClassType clazz, String propName, ClassNode caller) {
-        InvocationResolver methodResolver = new InvocationResolver();
         List<String> nameList = new LinkedList<>();
         nameList.add(propName);
         String ucName = NameUtil.firstCharToUpperCase(propName);
@@ -134,17 +133,16 @@ public class AstUtil {
         if (!propName.startsWith("is")) {
             nameList.add("is" + ucName);
         }
-        MethodDescriptor[] methods = CollectionMixin.findAll(
-                clazz.getMethodDescriptors(caller, true, true),
-                m -> !ModifierUtil.isStatic(m.getModifier())
-        );
         for (String name : nameList) {
-            List<InvocationResolver.Resolution> res = methodResolver.resolve(methods, name);
-            if (res.isEmpty()) {
+            MethodDescriptor[] methods = CollectionMixin.findAll(
+                    clazz.getMethodDescriptors(caller, name,true, true),
+                    m -> !ModifierUtil.isStatic(m.getModifier()) && m.getParameterDescriptors().length == 0
+            );
+            if (methods.length == 0) {
                 continue;
             }
-            assert  res.size() == 1;
-            return res.get(0).method;
+            assert methods.length == 1;
+            return methods[0];
         }
         return null;
     }

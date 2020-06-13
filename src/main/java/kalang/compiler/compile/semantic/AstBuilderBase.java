@@ -58,20 +58,31 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         compilationUnit.getTypeNameResolver().importPackage(packageName);
     }
 
-    public void importStaticMember(ClassNode classNode,@Nullable String name) {
+    public void importStaticMember(ClassNode classNode,@Nullable String name, @Nullable String alias) {
         if (name!=null && !name.isEmpty()) {
-            compilationUnit.staticImportMembers.put(name,classNode);
+            CompilationUnit.MemberImport mi = new CompilationUnit.MemberImport(classNode, name);
+            compilationUnit.staticImportMembers.put(alias == null ? name : alias, mi);
         } else {
             compilationUnit.staticImportPaths.add(classNode);
         }
     }
 
-    public void importMixinMethod(ClassNode classNode, @Nullable String name) {
+    public void importStaticMember(ClassNode classNode) {
+        importStaticMember(classNode, null, null);
+    }
+
+
+    public void importMixinMethod(ClassNode classNode, @Nullable String name, @Nullable String alias) {
         if (name != null && !name.isEmpty()) {
-            compilationUnit.importedMixinMethods.put(name, classNode);
+            CompilationUnit.MemberImport mi = new CompilationUnit.MemberImport(classNode, name);
+            compilationUnit.importedMixinMethods.put(alias == null ? name : alias, mi);
         } else {
             compilationUnit.importedMixinPaths.add(classNode);
         }
+    }
+
+    public void importMixinMethod(ClassNode classNode) {
+        importMixinMethod(classNode, null, null);
     }
 
     protected OffsetRange offset(ParserRuleContext ctx) {
@@ -885,10 +896,10 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return compilationUnit.getCompileContext().getAstLoader().loadAst(className);
     }
 
-    protected List<MethodDescriptor> getImportedMethods(Map<String, ClassNode> importedMethods, List<ClassNode> importedPaths, String methodName) {
-        ClassNode classOfStaticImport = importedMethods.get(methodName);
+    protected List<MethodDescriptor> getImportedMethods(Map<String, CompilationUnit.MemberImport> importedMethods, List<ClassNode> importedPaths, String methodName) {
+        CompilationUnit.MemberImport classOfStaticImport = importedMethods.get(methodName);
         if (classOfStaticImport != null) {
-            return getStaticMethods(classOfStaticImport, methodName);
+            return getStaticMethods(classOfStaticImport.classNode, classOfStaticImport.member);
         }
         for (int i = importedPaths.size() - 1; i >= 0; i--) {
             ClassNode sc = importedPaths.get(i);

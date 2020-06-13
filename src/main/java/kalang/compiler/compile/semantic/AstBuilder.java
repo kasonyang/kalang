@@ -965,12 +965,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             namedMethods = getStaticImportedMethods(methodName).toArray(new MethodDescriptor[0]);
             if (namedMethods.length>0) {
                 clazzType = Types.getClassType(namedMethods[0].getMethodNode().getClassNode());
+                //methodName may be alias
+                methodName = namedMethods[0].getName();
             }
         }
         if (namedMethods.length <= 0) {
             namedMethods = getImportedMixinMethod(methodName).toArray(new MethodDescriptor[0]);
             if (namedMethods.length > 0) {
-                return getObjectInvokeExpr(invokeTarget, methodName, args, offset(ctx));
+                return getObjectInvokeExpr(invokeTarget, namedMethods[0].getName(), args, offset(ctx));
             }
         }
         try {
@@ -1003,11 +1005,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (mixinMethods.isEmpty()) {
             return null;
         }
-        ClassNode mixinCls = mixinMethods.get(0).getMethodNode().getClassNode();
+        MethodDescriptor mixinMethod = mixinMethods.get(0);
+        ClassNode mixinCls = mixinMethod.getMethodNode().getClassNode();
         ExprNode[] newArgs = new ExprNode[args.length + 1];
         newArgs[0] = target;
         System.arraycopy(args, 0, newArgs, 1, args.length);
-        return getStaticInvokeExpr(new ClassReference(mixinCls),methodName, newArgs, offset);
+        return getStaticInvokeExpr(new ClassReference(mixinCls), mixinMethod.getName() , newArgs, offset);
     }
 
     private ExprNode getObjectInvokeExpr(ExprNode target,String methodName, ExprNode[] args,OffsetRange offset){
@@ -1348,9 +1351,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (isImportStatic || isImportMixin) {
                 ClassNode locationCls = requireAst(location, ctx.stop,true);
                 if (isImportStatic) {
-                    importStaticMember(locationCls,null);
+                    importStaticMember(locationCls);
                 } else {
-                    importMixinMethod(locationCls, null);
+                    importMixinMethod(locationCls);
                 }
             } else {
                 typeNameResolver.importPackage(location);
@@ -1362,13 +1365,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 key = ctx.alias.getText();
             }
             if (isImportStatic || isImportMixin) {
-                //TODO support alias
                 String location = prefix.substring(0,prefix.length()-1);
                 ClassNode locationCls = requireAst(location, ctx.stop,true);
                 if (isImportStatic) {
-                    importStaticMember(locationCls,name);
+                    importStaticMember(locationCls,name, key);
                 } else {
-                    importMixinMethod(locationCls, name);
+                    importMixinMethod(locationCls, name, key);
                 }
             }else{
                 typeNameResolver.importClass(prefix + name,key);
