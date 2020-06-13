@@ -56,8 +56,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private ClassNodeStructureBuilder classNodeStructureBuilder;
 
     private Map<LambdaExpr,ParserRuleContext> lambdaExprCtxMap = new HashMap();
-    
-    private int anonymousClassCounter = 0;
 
     private int parsingPhase=0;
     //static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
@@ -2024,9 +2022,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         MethodDescriptor funcMethod = lambdaExpr.getInterfaceMethod();
         Type returnType = funcMethod.getReturnType();
         Type[] paramTypes = funcMethod.getParameterTypes();
-        String lambdaName = "lambda$" + ++anonymousClassCounter;
         MethodContext oldMethodCtx = this.methodCtx;
-        MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , Modifier.PUBLIC);
+        String lambdaName = "lambda$" + oldMethodCtx.method.getName() + "$" + ++oldMethodCtx.lambdaMethodCounter;
+        int modifier = Modifier.PUBLIC | (oldMethodCtx.method.getModifier() & Modifier.STATIC);
+        MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , modifier);
         enterMethod(methodNode);
         Map<String, AssignableObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
         for( Map.Entry<String, AssignableObject> v:accessibleVars.entrySet()) {
@@ -2093,8 +2092,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         }
         lambdaExpr.setInvokeMethod(methodNode);
         List<ExprNode> captureArgs = lambdaExpr.getCaptureArguments();
-        //TODO fix captureArgs in static method
-        captureArgs.add(new ThisExpr(getThisType()));
+        if (!ModifierUtil.isStatic(oldMethodCtx.method.getModifier())) {
+            captureArgs.add(new ThisExpr(getThisType()));
+        }
         for (ParameterNode p: methodNode.getParameters()) {
             if (!ModifierUtil.isSynthetic(p.getModifier())) {
                 break;

@@ -57,3 +57,7 @@ boolean lambdaInLambda() {
     });
     return result.get(0).get(0).length() == 1;
 }
+
+static boolean lambdaInStaticMethod() {
+    return [123]..asList()..map(it => it.toString()).get(0) == "123";
+}

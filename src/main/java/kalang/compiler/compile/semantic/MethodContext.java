@@ -29,6 +29,8 @@ public class MethodContext {
 
     public VarTable<Object,Integer> nullState = new VarTable<>();
 
+    public int lambdaMethodCounter = 0;
+
     public MethodContext(ClassNode classNode, MethodNode methodNode) {
         this.classNode = classNode;
         this.method = methodNode;
