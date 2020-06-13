@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 /**
@@ -31,6 +32,8 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
 
     final MemoryOutputManager outputManager = new MemoryOutputManager();
 
+    private final Configuration conf;
+
     public KalangClassLoader() {
         this(new File[0],null,null);
     }
@@ -40,7 +43,7 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
           CollectionMixin.map(sourceDir, URL.class, FilePathUtil::toURL),
           parentClassLoader == null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader
         );
-        Configuration conf = config == null ? new Configuration() : Configuration.copy(config);
+        conf = config == null ? new Configuration() : Configuration.copy(config);
         sourceLoader = new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding());
         conf.setAstLoader(new JvmAstLoader(conf.getAstLoader(), parentClassLoader));
         compiler = new KalangCompiler(conf){
@@ -97,12 +100,11 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
     public Class parseSource(String className,String code,String fileName){
         compiler.addSource(className, code, fileName);
         compiler.compile();
-        //TODO result maybe null
-        return tryLoadGeneratedClass(className);
+        return Objects.requireNonNull(tryLoadGeneratedClass(className));
     }
     
     public Class parseFile(String className,File file) throws IOException{
-        String code = FileUtils.readFileToString(file);
+        String code = FileUtils.readFileToString(file, conf.getEncoding());
         return parseSource(className, code, file.getName());
     }
 
