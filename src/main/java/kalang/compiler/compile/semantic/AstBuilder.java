@@ -1436,7 +1436,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitTryStat(TryStatContext ctx) {
-        //TODO handle multi-branched assign
         List<VarDeclContext> resources = ctx.resources;
         boolean hasCatch = ctx.catchTypes != null && !ctx.catchTypes.isEmpty();
         boolean hasFinally = ctx.finallyExec != null && !ctx.finallyExec.isEmpty();
@@ -1658,11 +1657,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         KalangParser.LambdaTypeContext lambdaTypeCtx = ctx.lambdaType();
         ClassType functionType = null;
         if (lambdaTypeCtx!=null) {
-            ClassType lambdaType = this.visitLambdaType(lambdaTypeCtx);
-            //TODO handle unexpected type?
-            if (Types.isFunctionType(lambdaType)) {
-                functionType = lambdaType;
-            }
+            functionType = this.visitLambdaType(lambdaTypeCtx);
+            assert Types.isFunctionType(functionType);
         }
         List<Token> lambdaParams = ctx.lambdaParams;
         int lambdaParamsCount = lambdaParams == null ? 0 : lambdaParams.size();
