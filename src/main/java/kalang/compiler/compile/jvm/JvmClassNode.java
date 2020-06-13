@@ -159,11 +159,13 @@ public class JvmClassNode extends ClassNode {
     @Nullable
     private Type transType(java.lang.reflect.Type t, Map<TypeVariable, GenericType> genericTypes) {
         if (t instanceof TypeVariable) {
-            GenericType vt = genericTypes.get(t);
+            TypeVariable typeVar = (TypeVariable) t;
+            NullableKind nullable = getNullable(typeVar.getAnnotations());
+            GenericType vt = genericTypes.get(typeVar);
             if (vt==null) {
-                vt = this.transTypeVariableToGenericType((TypeVariable) t,genericTypes);
+                vt = this.transTypeVariableToGenericType(typeVar, genericTypes);
             }
-            return vt;
+            return Types.getObjectType(vt, nullable);
         } else if (t instanceof java.lang.reflect.ParameterizedType) {
             java.lang.reflect.ParameterizedType pt = (java.lang.reflect.ParameterizedType) t;
             Type rawType = transType(pt.getRawType(), genericTypes);
@@ -175,7 +177,8 @@ public class JvmClassNode extends ClassNode {
             if (gTypes == null) {
                 return null;
             }
-            return Types.getClassType(((ObjectType) rawType).getClassNode(), gTypes);
+            ObjectType rawObjType = (ObjectType) rawType;
+            return Types.getClassType(rawObjType.getClassNode(), gTypes, rawObjType.getNullable());
         } else if (t instanceof java.lang.reflect.WildcardType) {
             java.lang.reflect.WildcardType wt = (java.lang.reflect.WildcardType) t;
             Type[] upperBounds = transType(wt.getUpperBounds(), genericTypes);
@@ -193,7 +196,7 @@ public class JvmClassNode extends ClassNode {
             if (ct == null) {
                 return null;
             }
-            return Types.getArrayType(ct, NullableKind.NONNULL);
+            return Types.getArrayType(ct, NullableKind.UNKNOWN);
         } else if (t instanceof Class) {
             Class type = (Class) t;
             if (type.isPrimitive()) {
@@ -206,7 +209,7 @@ public class JvmClassNode extends ClassNode {
                 return Types.getArrayType(ct);
             } else {
                 try {
-                    return Types.getClassType(this.astLoader.loadAst(type.getName()));
+                    return Types.getClassType(this.astLoader.loadAst(type.getName()), getNullable(type.getAnnotations()));
                 } catch (AstNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -221,9 +224,8 @@ public class JvmClassNode extends ClassNode {
         if (type == null) {
             type = transType(defaultClass, genericTypes);
         }
-        //TODO support nullable for other type
-        if (type instanceof ClassType) {
-            return Types.getClassType((ClassType) type, nullable);
+        if (type instanceof ObjectType) {
+            return Types.getObjectType((ObjectType) type, nullable);
         } else {
             return type;
         }
@@ -247,7 +249,7 @@ public class JvmClassNode extends ClassNode {
 
     private Map<TypeVariable, GenericType> getGenericTypeMap() {
         if (this.genericTypeMap == null) {
-            Map<TypeVariable, GenericType> gTypesMap = new HashMap();
+            Map<TypeVariable, GenericType> gTypesMap = new HashMap<>();
             TypeVariable[] typeParameters = clazz.getTypeParameters();
             if (typeParameters.length > 0) {
                 for (TypeVariable pt : typeParameters) {
@@ -273,14 +275,16 @@ public class JvmClassNode extends ClassNode {
     }
 
     private GenericType transTypeVariableToGenericType(TypeVariable pt,Map<TypeVariable,GenericType> gTypesMap){
-        GenericType genericClassType = new GenericType(pt.getName(), Types.getRootType(), new ObjectType[0], NullableKind.NONNULL);
-        gTypesMap.put(pt,genericClassType);
+        NullableKind nullable = getNullable(pt.getAnnotations());
+        GenericType genericClassType = new GenericType(pt.getName(), Types.getRootType(NullableKind.UNKNOWN), new ObjectType[0], nullable);
+        ClassNode classNode = genericClassType.getClassNode();
+        gTypesMap.put(pt ,genericClassType);
         ObjectType[] bounds = castToClassTypes(transType(pt.getBounds(), gTypesMap));
         ObjectType superType;
         ObjectType[] interfaces;
         if (bounds != null && bounds.length > 0) {
             if (ModifierUtil.isInterface(bounds[0].getModifier())) {
-                superType = Types.getRootType();
+                superType = Types.getRootType(NullableKind.UNKNOWN);
                 interfaces = bounds;
             } else {
                 superType = bounds[0];
@@ -288,10 +292,9 @@ public class JvmClassNode extends ClassNode {
                 System.arraycopy(bounds, 1, interfaces, 0, interfaces.length);
             }
         } else {
-            superType = Types.getRootType();
+            superType = Types.getRootType(NullableKind.UNKNOWN);
             interfaces = new ObjectType[0];
         }
-        ClassNode classNode = genericClassType.getClassNode();
         classNode.setSuperType(superType);
         for(ObjectType it:interfaces) {
             classNode.addInterface(it);

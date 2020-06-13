@@ -186,7 +186,7 @@ public class Types {
             return getClassType(ct.getClassNode(), ct.getTypeArguments(), nullableKind);
         } else if (type instanceof GenericType) {
             GenericType gt = (GenericType) type;
-            return new GenericType(gt.name, gt.getSuperType(), gt.getInterfaces(), nullableKind);
+            return new GenericType(gt.getClassNode(), nullableKind);
         } else if (type instanceof LambdaType) {
             return type;
         } else if (type instanceof WildcardType) {

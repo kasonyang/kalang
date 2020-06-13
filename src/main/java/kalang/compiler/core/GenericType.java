@@ -25,6 +25,11 @@ public class GenericType extends ObjectType{
         this.name = name;
     }
 
+    public GenericType(ClassNode classNode, NullableKind nullable) {
+        super(classNode, nullable);
+        this.name = classNode.getName();
+    }
+
     @Override
     public boolean equalsIgnoreNullable(ObjectType obj) {
         if (!(obj instanceof GenericType)) {
