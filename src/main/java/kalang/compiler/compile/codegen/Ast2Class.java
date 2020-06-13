@@ -375,15 +375,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private void destroyLocalVarNode(LocalVarNode var){
         Integer vid = this.varIds.get(var);
-        //TODO why vid==null
-//        if(vid==null){
-//            throw Exceptions.unexpectedValue(vid);
-//        }
+        Objects.requireNonNull(vid);
         LabelOp endLabel = new LabelOp();
         opCollector.visitLabel(endLabel);
         this.varIds.remove(var);
         String name = var.getName();
-        if(vid!=null && name!=null && !name.isEmpty()){
+        if(name!=null && !name.isEmpty()){
             opCollector.visitLocalVariable(name, getTypeDescriptor(var.getType()),null ,varStartLabels.get(var), endLabel, vid);
         }
     }
@@ -914,7 +911,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 opCollector.visitInsn(t.getOpcode(INEG));
                 break;
             case UnaryExpr.OPERATION_NOT:
-                //TODO here I am not sure
                 constX(exprType, -1);
                 opCollector.visitInsn(t.getOpcode(IXOR));
                 break;
