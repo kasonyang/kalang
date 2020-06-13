@@ -145,10 +145,18 @@ public class ClassType extends ObjectType {
             for(int i=0;i<typeArgs.length;i++){
                 Type a = typeArgs[i];
                 Type oa = otherTypeArgs[i];
-                if(a.equals(oa)) continue;
-                if(a instanceof WildcardType){
-                    WildcardType wt = (WildcardType)a;
-                    if(!wt.containsType((ObjectType)oa)) return false;
+                if (a.isAssignableFrom(oa) && oa.isAssignableFrom(a)) {
+                    continue;
+                }
+                if(a instanceof WildcardType) {
+                    WildcardType wt = (WildcardType) a;
+                    if (!wt.containsType((ObjectType) oa)) {
+                        return false;
+                    }
+                } else if (a instanceof GenericType) {
+                    return true;
+                } else {
+                    return false;
                 }
             }
             return true;
