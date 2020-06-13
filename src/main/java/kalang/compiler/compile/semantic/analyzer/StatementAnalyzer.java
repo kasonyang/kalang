@@ -9,9 +9,7 @@ import kalang.compiler.util.AstUtil;
 import kalang.compiler.util.BoxUtil;
 
 import javax.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 
@@ -177,27 +175,26 @@ public class StatementAnalyzer extends AstVisitor<Type> {
         return Types.isNumber(t1);
     }
     
-    protected void validateAnnotation(AnnotationNode[] annotation){
-        for(AnnotationNode an:annotation) validateAnnotation(an);
-    }
-    
-    public boolean validateAnnotation(AnnotationNode annotation){
+    public void validateAnnotation(AnnotationNode annotation){
         MethodNode[] mds = annotation.getAnnotationType().getDeclaredMethodNodes();
-        Set<String> attrKeys = annotation.values.keySet();
         List<String> missingValues = new LinkedList<>();
+        HashMap<String, ConstExpr> unprocessedValues = new HashMap<>(annotation.values);
         for(MethodNode m:mds){
             String name = m.getName();
-            if(m.getDefaultValue() == null && !attrKeys.contains(name)){
+            ConstExpr attr = unprocessedValues.remove(name);
+            if(m.getDefaultValue() == null && attr == null){
                 missingValues.add(name);
             }
+            if (attr != null && !m.getType().isAssignableFrom(attr.getType())) {
+                diagnosisReporter.report(Diagnosis.Kind.ERROR, attr.getType() + " is not applicable to " + m.getType(), attr.offset);
+            }
         }
-        if(missingValues.size()>0){
-            //TODO add offset on annotationNode
-            diagnosisReporter.report(Diagnosis.Kind.ERROR
-                    ,"Missing attribute for annotation:" + missingValues.toString(), annotation.offset);
-            return false;
+        for (String m : missingValues) {
+            diagnosisReporter.report(Diagnosis.Kind.ERROR,"Missing attribute " + m, annotation.offset);
         }
-        return true;
+        for (Map.Entry<String, ConstExpr> e : unprocessedValues.entrySet()) {
+            diagnosisReporter.report(Diagnosis.Kind.ERROR, "Cannot resolve method " + e.getKey(), annotation.offset);
+        }
     }
     
 }

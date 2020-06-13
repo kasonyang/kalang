@@ -644,8 +644,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             ConstExpr defaultValue = (ConstExpr) parseLiteral(dv);
             anNode.values.put("value", defaultValue);
         }
-        if(!statementAnalyzer.validateAnnotation(anNode)) return null;
-        //TODO validate annotation's values
+        statementAnalyzer.validateAnnotation(anNode);
         return anNode;
     }
 
