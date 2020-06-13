@@ -65,11 +65,12 @@ public class StatementAnalyzer extends AstVisitor<Type> {
         switch (op) {
             case "==":
             case "!=":
-                if (Types.isNumber(t1)) {
-                    return this.requireNumber(expr2,t2);
+                if (Types.isNumberPrimitive(t1)) {
+                    return this.requireNumber(expr2, t2);
+                } else if (Types.isNumberPrimitive(t2)) {
+                    return this.requireNumber(expr1, t1);
                 } else {
                     return true;
-                    //TODO pass anything.may be Object needed?
                 }
             case "+":
             case "-":

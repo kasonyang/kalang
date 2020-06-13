@@ -1,10 +1,10 @@
 package kalang.compiler.compile.jvm;
 
-import kalang.compiler.compile.AstNotFoundException;
 import kalang.compiler.ast.*;
-import kalang.compiler.core.*;
+import kalang.compiler.compile.AstNotFoundException;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.WildcardType;
+import kalang.compiler.core.*;
 import kalang.compiler.util.Exceptions;
 import kalang.compiler.util.ModifierUtil;
 
@@ -155,8 +155,6 @@ public class JvmClassNode extends ClassNode {
         return ret;
     }
 
-    //TODO why transType could be null?
-    @Nullable
     private Type transType(java.lang.reflect.Type t, Map<TypeVariable, GenericType> genericTypes) {
         if (t instanceof TypeVariable) {
             TypeVariable typeVar = (TypeVariable) t;
@@ -168,34 +166,18 @@ public class JvmClassNode extends ClassNode {
             return Types.getObjectType(vt, nullable);
         } else if (t instanceof java.lang.reflect.ParameterizedType) {
             java.lang.reflect.ParameterizedType pt = (java.lang.reflect.ParameterizedType) t;
-            Type rawType = transType(pt.getRawType(), genericTypes);
-            if (!(rawType instanceof ObjectType)) {
-                return null;
-            }
+            ObjectType rawObjType = (ObjectType) transType(pt.getRawType(), genericTypes);
             java.lang.reflect.Type[] typeArgs = pt.getActualTypeArguments();
             Type[] gTypes = transType(typeArgs, genericTypes);
-            if (gTypes == null) {
-                return null;
-            }
-            ObjectType rawObjType = (ObjectType) rawType;
             return Types.getClassType(rawObjType.getClassNode(), gTypes, rawObjType.getNullable());
         } else if (t instanceof java.lang.reflect.WildcardType) {
             java.lang.reflect.WildcardType wt = (java.lang.reflect.WildcardType) t;
             Type[] upperBounds = transType(wt.getUpperBounds(), genericTypes);
-            if (upperBounds == null) {
-                return null;
-            }
             Type[] lowerBounds = transType(wt.getLowerBounds(), genericTypes);
-            if (lowerBounds == null) {
-                return null;
-            }
-            return new WildcardType(upperBounds, lowerBounds);
+            return new WildcardType(upperBounds, lowerBounds, NullableKind.UNKNOWN);
         } else if (t instanceof GenericArrayType) {
             GenericArrayType gt = (GenericArrayType) t;
             Type ct = transType(gt.getGenericComponentType(), genericTypes);
-            if (ct == null) {
-                return null;
-            }
             return Types.getArrayType(ct, NullableKind.UNKNOWN);
         } else if (t instanceof Class) {
             Class type = (Class) t;
@@ -203,9 +185,6 @@ public class JvmClassNode extends ClassNode {
                 return Types.getPrimitiveType(type.getTypeName());
             } else if (type.isArray()) {
                 Type ct = transType(type.getComponentType(), genericTypes);
-                if (ct == null) {
-                    return null;
-                }
                 return Types.getArrayType(ct);
             } else {
                 try {
@@ -215,7 +194,7 @@ public class JvmClassNode extends ClassNode {
                 }
             }
         } else {
-            return null;
+            throw Exceptions.unsupportedTypeException(t);
         }
     }
 
