@@ -1,0 +1,3 @@
+expression may be null@2
+val list = [1,2]..asList()..at(9 , null);
+println(list.intValue());
