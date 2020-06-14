@@ -153,9 +153,7 @@ public class ClassType extends ObjectType {
                     if (!wt.containsType((ObjectType) oa)) {
                         return false;
                     }
-                } else if (a instanceof GenericType) {
-                    return true;
-                } else {
+                } else if (!(a instanceof GenericType) && !(oa instanceof GenericType)) {
                     return false;
                 }
             }

@@ -1,0 +1,7 @@
+boolean testEmptyMap() {
+    return newEmptyMap().isEmpty();
+}
+
+private Map<String,String> newEmptyMap() {
+    return Collections.emptyMap();
+}
