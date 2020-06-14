@@ -186,21 +186,25 @@ public class CollectionMixin {
     }
 
     @MixinMethod
-    public static String join(Collection list, String delimiter) {
-        return String.join(delimiter, list);
+    public static String join(Object[] list, String delimiter) {
+        return join(Arrays.asList(list), delimiter);
     }
 
     @MixinMethod
-    public static String join(Object[] list, String delimiter) {
-        StringBuilder sb = new StringBuilder();
-        int len = list.length;
-        if (len<=0) {
+    public static String join(Collection list, String delimiter) {
+        if (list.isEmpty()) {
             return "";
         }
-        for(int i=0;i<len-1;i++) {
-            sb.append(list[i]).append(delimiter);
+        StringBuilder sb = new StringBuilder();
+        Iterator iter = list.iterator();
+        boolean hasNext = iter.hasNext();
+        while(hasNext) {
+            sb.append(iter.next());
+            hasNext = iter.hasNext();
+            if (hasNext) {
+                sb.append(delimiter);
+            }
         }
-        sb.append(list[len-1]);
         return sb.toString();
     }
 
