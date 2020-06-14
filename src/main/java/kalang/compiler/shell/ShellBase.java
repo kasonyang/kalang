@@ -149,8 +149,8 @@ public abstract class ShellBase {
 
     protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader,@Nullable Reader optionsReader,boolean enableDepCache) throws IOException {
         //String scriptBase = "";
-        Set<String> dependencies = new HashSet<>();
-        List<String> repositories = new LinkedList<>();
+        Set<String> dependencies = new LinkedHashSet<>();
+        Set<String> repositories = new LinkedHashSet<>();
         Set<URL> classpaths = new HashSet<>();
         Set<File> sourcepaths = new HashSet<>();
         BufferedReader bufferedReader = new BufferedReader(reader);
@@ -215,7 +215,7 @@ public abstract class ShellBase {
 //        }
         if (!dependencies.isEmpty()) {
             Span rdSpan = Profiler.getInstance().beginSpan("resolving dependencies");
-            ResolveResult resolveResult = resolveDependencies(dependencies,repositories, enableDepCache);
+            ResolveResult resolveResult = resolveDependencies(dependencies,new LinkedList<>(repositories), enableDepCache);
             Profiler.getInstance().endSpan(rdSpan);
             for(File localFile:resolveResult.getLocalFiles()) {
                 classpaths.add(localFile.toURI().toURL());
