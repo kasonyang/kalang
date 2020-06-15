@@ -6,6 +6,10 @@ boolean testMethodWithDefParam2() {
     return test("test") == 5;
 }
 
-private int test(String str, int len = 5) {
+boolean testMethodWithDefParam2Full() {
+    return test("test", 3) == 3;
+}
+
+private static int test(String str, int len = 5) {
     return len;
 }

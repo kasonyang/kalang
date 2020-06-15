@@ -221,7 +221,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     }
                 }
             }
-            ExprNode callExpr = getObjectInvokeExpr(createThisExpr(OffsetRange.NONE), m.getName(), callParams, OffsetRange.NONE);
+            ExprNode callExpr;
+            if (ModifierUtil.isStatic(originMethod.getModifier())) {
+                callExpr = getStaticInvokeExpr(new ClassReference(thisClazz), m.getName(), callParams, OffsetRange.NONE);
+            } else {
+                callExpr = getObjectInvokeExpr(createThisExpr(OffsetRange.NONE), m.getName(), callParams, OffsetRange.NONE);
+            }
             Objects.requireNonNull(callExpr);
             BlockStmt mbody = m.getBody();
             assert mbody != null;
@@ -1069,7 +1074,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     private  ExprNode getStaticInvokeExpr(ClassReference clazz,String methodName, ExprNode[] argumentsCtx, OffsetRange offset){
         ExprNode expr;
         try {
-            expr = onInvocationExpr(StaticInvokeExpr.create(clazz, methodName, argumentsCtx));
+            expr = onInvocationExpr(StaticInvokeExpr.create(clazz, methodName, argumentsCtx, thisClazz));
         } catch (MethodNotFoundException ex) {
             throw createMethodNotFoundException(offset, clazz.getReferencedClassNode().getName(), methodName, argumentsCtx);
         } catch(AmbiguousMethodException ex){
