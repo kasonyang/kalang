@@ -2049,7 +2049,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 name = ctx.lambdaParams.get(i).getText();
             }
             ParameterNode pn = methodNode.createParameter(pt, name);
-            mapAst(pn, ctx.lambdaParams.get(i));
+            if (i < ctx.lambdaParams.size()) {
+                mapAst(pn, ctx.lambdaParams.get(i));
+            }
         }
         BlockStmt bs = this.newBlock(() -> {
             LinkedList<Statement> bsStatements = new LinkedList<>();
