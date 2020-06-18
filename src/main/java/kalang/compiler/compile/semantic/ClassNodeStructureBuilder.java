@@ -176,7 +176,8 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             } else {
                 pt = parseType(p.paramType);
             }
-            method.createParameter(pt, p.paramId.getText());
+            ParameterNode pn = method.createParameter(pt, p.paramId.getText());
+            mapAst(pn, p);
         }
         if (isOverriding) {
             method.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));

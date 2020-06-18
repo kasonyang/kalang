@@ -2,6 +2,7 @@ package kalang.compiler.compile.semantic.analyzer;
 
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.ast.MethodNode;
+import kalang.compiler.ast.ParameterNode;
 import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.compile.Diagnosis;
 import kalang.compiler.compile.util.DiagnosisReporter;
@@ -45,6 +46,7 @@ public class MethodDeclarationAnalyzer {
             parentMethodsMap.put(m.getDeclarationKey(), m);
         }
         for (MethodNode node : clazz.getDeclaredMethodNodes()) {
+            checkParam(node, diagnosisReporter);
             String declarationKey = MethodUtil.getDeclarationKey(node);
             if (declaredMethods.contains(declarationKey)) {
                 diagnosisReporter.report(Diagnosis.Kind.ERROR, "declare method is duplicated:" + declarationKey, node.offset);
@@ -58,6 +60,16 @@ public class MethodDeclarationAnalyzer {
             }
             if (!isOverriding && overriddenMd != null && !"<init>".equals(overriddenMd.getName())) {
                 diagnosisReporter.report(Diagnosis.Kind.ERROR, "method " + MethodUtil.toString(node) + " overrides or implements a method from a supertype", node.offset);
+            }
+        }
+    }
+
+    private void checkParam(MethodNode methodNode, DiagnosisReporter diagnosisReporter) {
+        Set<String> names = new HashSet<>();
+        ParameterNode[] params = methodNode.getParameters();
+        for (ParameterNode pn : params) {
+            if (!names.add(pn.getName())) {
+                diagnosisReporter.error("'" + pn.getName() + "' is defined in the scope", pn.offset);
             }
         }
     }

@@ -22,4 +22,7 @@ public class DiagnosisReporter {
         compilationUnit.getDiagnosisHandler().handleDiagnosis(diagnosis);
     }
 
+    public void error(String message, OffsetRange offsetRange) {
+        report(Diagnosis.Kind.ERROR, message, offsetRange);
+    }
 }

@@ -1,0 +1,7 @@
+'name' is defined in the scope@3
+void test(
+     String name,
+     String name
+) {
+
+}

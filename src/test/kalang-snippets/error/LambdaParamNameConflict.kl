@@ -1,0 +1,6 @@
+'it' is defined in the scope@3
+val list = [1]..asList()..map(it =>
+    it..cast(
+        it => it
+    )
+);

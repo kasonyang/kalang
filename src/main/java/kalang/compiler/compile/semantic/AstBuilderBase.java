@@ -404,6 +404,10 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         node.offset = OffsetRangeHelper.getOffsetRange(tree);
     }
 
+    protected void mapAst(@Nonnull AstNode node, @Nonnull Token token) {
+        node.offset = OffsetRangeHelper.getOffsetRange(token);
+    }
+
     protected <T extends AstNode> T mapAst(T node,OffsetRange offsetRange, boolean recursive) {
         node.offset = offsetRange;
         if (recursive) {
