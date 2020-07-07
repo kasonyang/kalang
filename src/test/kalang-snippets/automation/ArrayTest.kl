@@ -24,5 +24,10 @@ boolean newArray3D1() {
     return arr[0][1][2] == 6;
 }
 
+boolean readArrayByInteger() {
+    val idx = Integer.valueOf(1);
+    val array = [2,3];
+    return array[idx] == 3;
+}
 
 

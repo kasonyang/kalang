@@ -1217,7 +1217,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public ElementExpr visitGetArrayElementExpr(GetArrayElementExprContext ctx) {
-        ElementExpr ee = new ElementExpr(visitExpression(ctx.expression(0)),visitExpression(ctx.expression(1)));
+        ExprNode indexExpr = visitExpression(ctx.expression(1));
+        indexExpr = requireImplicitCast(Types.INT_TYPE, indexExpr, indexExpr.offset);
+        ElementExpr ee = new ElementExpr(visitExpression(ctx.expression(0)), indexExpr);
         mapAst(ee, offset(ctx), true);
         if(!statementAnalyzer.validateElementExpr(ee)) return null;
         return ee;
