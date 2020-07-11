@@ -13,7 +13,6 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 * Flexible syntax
 * Powerful scripting mode
 * Dependency manager integration
-* Flat learning curve
 * Compatible with other jvm-based languages like java,groovy and so on.
 
 # Projects writing in kalang

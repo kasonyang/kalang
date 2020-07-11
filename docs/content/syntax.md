@@ -137,7 +137,7 @@ import foo.bar.*;
 
 ## Declare class
 
-define a normal class:
+Define a normal class:
 
 ```
 //define a class,default modifier is public
@@ -146,7 +146,7 @@ class{
 }
 ```
 
-define a generic class:
+Define a generic class:
 
 ```
 class<T>{
@@ -154,7 +154,7 @@ class<T>{
 }
 ```
 
-extend and implement:
+Extend and implement:
 
 ```
 class extends Object implements List<String>{
@@ -162,7 +162,7 @@ class extends Object implements List<String>{
 }
 ```
 
-write as a script:
+Write as a script:
 
 ```
 println("Hello,world");
@@ -202,9 +202,19 @@ Declare a variable with specified type and initial value
 var obj as Object = "hello";
 ```
 
+Destructuring variables declaration
+
+```
+//same as: val length = "ABCD".length(); val bytes = "ABCD".bytes();
+val {length,bytes} = "ABCD";
+
+//same as: val firstVar = 1; val secondVar = 2;
+val [firstVar, secondVar] = [1,2];
+```
+
 ## Loop
 
-for loop:
+For loop:
 
 ```
 for(var i=0;i<9;i++){
@@ -212,7 +222,7 @@ for(var i=0;i<9;i++){
 }
 ```
 
-foreach loop
+Foreach loop
 
 ```
 for (v in [1,2,3]){
@@ -223,14 +233,14 @@ for (v,i in [1,2,3]){
 }
 ```
 
-loop invoke
+Loop invoke
 
 ```
 var arr = ["a","ab","abc"];
 var lens = arr*.length();//lens will be [1,2,3]
 ```
 
-while loop:
+While loop:
 
 ```
 while(expression){
@@ -238,7 +248,7 @@ while(expression){
 }
 ```
 
-do loop:
+Do loop:
 
 ```
 do{

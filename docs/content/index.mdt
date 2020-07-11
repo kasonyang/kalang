@@ -7,21 +7,20 @@ status=published
 
 # Overview
 
-Kalang is a static type-safe and null-safe language base on jvm with flexible syntax.
+Kalang is another static type-safe language base on jvm with flexible syntax.
 
 # Features
 
-* Static type-safe
-* Auto type
-* Flexible syntax
 * Powerful scripting mode
+* Auto type
 * Dependency manager integration
-* Flat learning curve
+* Static type-safe
+* Flexible syntax
 * Compatible with other jvm-based languages like java,groovy and so on.
 
 # Installation
 
-For Linux users:
+### For Linux users:
 
     wget -O kalang-compiler-${version}.tar http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/${version}/kalang-compiler-${version}.tar
     tar -xvf kalang-compiler-${version}.tar
@@ -29,7 +28,7 @@ For Linux users:
     ln -s `pwd`/kalang-compiler-${version}/bin/kalangsh /usr/local/bin/kalangsh
     ln -s `pwd`/kalang-compiler-${version}/bin/kalangeditor /usr/local/bin/kalangeditor
 
-For Windows users:
+### For Windows users:
 
 1. Download latest binary distribution:[http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/${version}/kalang-compiler-${version}.zip](http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/${version}/kalang-compiler-${version}.zip)
 2. Unzip the downloaded zip file
@@ -57,21 +56,21 @@ See [Syntax](syntax.html)
 
 # Usage
 
-## launch kalang scripts
+## Launch kalang scripts
 
 ```
-> kalangsh FILE ARGUMENTS
+> kalangsh YOUR_SCRIPT_FILE YOUR_SCRIPT_ARGUMENTS
 ```
 
-## launch kalang compiler
+## Launch kalang compiler
 
 ```
-> kalangc FILE
+> kalangc SOURCE_FILE
 ```
 
 For example:`kalangc Helloworld.kl` would compile `Helloworld.kl` in current directory.
 
-## launch the built-in editor
+## Launch the built-in editor
 
 ```
 > kalangeditor
@@ -108,14 +107,15 @@ console.info("Hello,world!");
 
 # Build from source
 
-requirements: 
+Requirements:
 
 * jdk8
 
-clone the source,and run
+Clone the source,and run
 
     >./gradlew build
 
-#IDE plugin support
+#IDE/Editor plugin support
 
+* [kalang-support-for-vscode](https://github.com/kasonyang/kalang-support-for-vscode)
 * [kalang-nb-support](https://github.com/kasonyang/kalang-nb-support) 
