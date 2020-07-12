@@ -198,7 +198,9 @@ public class BoxUtil {
     }
 
     private static ExprNode castPrimitive(ExprNode expr,PrimitiveType fromType,PrimitiveType toType) {
-        return new PrimitiveCastExpr(fromType, toType, expr);
+        PrimitiveCastExpr result = new PrimitiveCastExpr(fromType, toType, expr);
+        result.offset = expr.offset;
+        return result;
     }
 
     private static ExprNode castPrimitive2Object(ExprNode expr, PrimitiveType fromType) {
@@ -212,6 +214,7 @@ public class BoxUtil {
         } catch (MethodNotFoundException|AmbiguousMethodException ex) {
             throw new RuntimeException(ex);
         }
+        inv.offset = expr.offset;
         return inv;
     }
 
@@ -222,6 +225,7 @@ public class BoxUtil {
         } catch (MethodNotFoundException|AmbiguousMethodException ex) {
             throw new RuntimeException(ex);
         }
+        inv.offset = expr.offset;
         return inv;
     }
 

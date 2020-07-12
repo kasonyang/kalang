@@ -1,6 +1,7 @@
 package kalang.compiler.util;
 
 import kalang.compiler.ast.*;
+import kalang.compiler.compile.OffsetRange;
 import kalang.compiler.compile.semantic.AmbiguousMethodException;
 import kalang.compiler.compile.semantic.InvocationResolver;
 import kalang.compiler.compile.semantic.MethodNotFoundException;
@@ -23,13 +24,13 @@ public class AstUtil {
         MethodDescriptor[] constructors = supType.getConstructorDescriptors(clazzNode);
         MethodDescriptor m = MethodUtil.getMethodDescriptor(constructors, "<init>", null);
         if (m != null) {
-            MethodNode mm = clazzNode.createMethodNode(Types.VOID_TYPE, m.getName(), m.getModifier());
+            BlockStmt body = new BlockStmt();
+            MethodNode mm = clazzNode.createMethodNode(Types.VOID_TYPE, m.getName(), m.getModifier(), body);
             for (Type e : m.getExceptionTypes()) mm.addExceptionType(e);
             ParameterDescriptor[] pds = m.getParameterDescriptors();
             for (ParameterDescriptor pd : pds) {
                 mm.createParameter(pd.getType(), pd.getName(), pd.getModifier());
             }
-            BlockStmt body = mm.getBody();
             ParameterNode[] parameters = mm.getParameters();
             ExprNode[] params = new ExprNode[parameters.length];
             for (int i = 0; i < params.length; i++) {
@@ -43,10 +44,24 @@ public class AstUtil {
                                     params)
                     )
             );
+            mapOffset(mm, OffsetRange.NONE, true);
             return true;
         } else {
             return false;
         }
+    }
+
+    public static <T extends AstNode> T mapOffset(T node,OffsetRange offsetRange, boolean recursive) {
+        if (node.offset == null) {
+            node.offset = offsetRange;
+        }
+        if (recursive) {
+            List<AstNode> children = node.getChildren();
+            for (AstNode c: children) {
+                mapOffset(c, offsetRange, true);
+            }
+        }
+        return node;
     }
     
     public static boolean containsConstructor(ClassNode clazz){
@@ -94,10 +109,12 @@ public class AstUtil {
     }
     
     public static Statement createDefaultSuperConstructorCall(ClassNode clazz) throws MethodNotFoundException, AmbiguousMethodException{
-       SuperExpr thisExpr = new SuperExpr(clazz);
-        return new ExprStmt(
-                ObjectInvokeExpr.create(thisExpr, "<init>", null,clazz)
+        SuperExpr thisExpr = new SuperExpr(clazz);
+        ExprStmt stmt = new ExprStmt(
+                ObjectInvokeExpr.create(thisExpr, "<init>", null, clazz)
         );
+        AstUtil.mapOffset(stmt, OffsetRange.NONE, true);
+        return stmt;
     }
 
     public static boolean hasSetter(ClassNode clazz,FieldNode field){
@@ -147,7 +164,7 @@ public class AstUtil {
         return null;
     }
     
-    public static void createGetter(ClassNode clazz,FieldDescriptor field,int accessModifier){
+    public static void createGetter(ClassNode clazz,FieldNode field,int accessModifier){
         String fn = field.getName();
         Type fieldType = field.getType();
         String getterPrefix = Types.BOOLEAN_TYPE.equals(fieldType) ? "is" : "get";
@@ -156,10 +173,8 @@ public class AstUtil {
         if(isStatic){
             accessModifier |= Modifier.STATIC;
         }
-        MethodNode getter = clazz.createMethodNode(field.getType(),getterName,accessModifier);
-        //getter.offset = field.offset;
-        BlockStmt body = getter.getBody();
-        assert body != null;
+        BlockStmt body = new BlockStmt();
+        MethodNode getter = clazz.createMethodNode(field.getType(), getterName, accessModifier, body);
         FieldExpr fe;
         ClassReference cr = new ClassReference(clazz);
         if(isStatic){
@@ -168,20 +183,19 @@ public class AstUtil {
             fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
         }
         body.statements.add(new ReturnStmt(fe));
+        AstUtil.mapOffset(getter, field.offset, true);
     }
     
-    public static void createSetter(ClassNode clazz,FieldDescriptor field,int accessModifier){
+    public static void createSetter(ClassNode clazz,FieldNode field,int accessModifier){
         String fn = field.getName();
         String setterName = "set" + NameUtil.firstCharToUpperCase(fn);
         boolean isStatic = isStatic(field.getModifier());
         if(isStatic){
             accessModifier |= Modifier.STATIC;
         }
-        MethodNode setter = clazz.createMethodNode(Types.VOID_TYPE,setterName,accessModifier);
-        //setter.offset = field.offset;
+        BlockStmt body = new BlockStmt();
+        MethodNode setter = clazz.createMethodNode(Types.VOID_TYPE,setterName,accessModifier, body);
         ParameterNode param = setter.createParameter(field.getType(), field.getName());
-        BlockStmt body = setter.getBody();
-        assert body != null;
         FieldExpr fe;
         ExprNode paramVal = new VarExpr(param);
         ClassReference cr = new ClassReference(clazz);
@@ -191,6 +205,7 @@ public class AstUtil {
             fe = new ObjectFieldExpr(new ThisExpr(Types.getClassType(clazz)), field);
         }
         body.statements.add(new ExprStmt(new AssignExpr(fe,paramVal)));
+        AstUtil.mapOffset(setter, field.offset, true);
     }
 
     public static ClassNode createClassNodeWithInterfaces(String name,@Nullable ObjectType superType,@Nullable ObjectType... interfaces) {
@@ -236,9 +251,9 @@ public class AstUtil {
         Type[] argTypes = new Type[]{Types.getArrayType(Types.getStringClassType())};
         MethodDescriptor mainMethod = MethodUtil.getMethodDescriptor(methods, "main", argTypes);
         if (mainMethod==null) {
-            MethodNode m = clazz.createMethodNode(Types.VOID_TYPE, "main", Modifier.PUBLIC + Modifier.STATIC);
+            BlockStmt body = new BlockStmt();
+            MethodNode m = clazz.createMethodNode(Types.VOID_TYPE, "main", Modifier.PUBLIC + Modifier.STATIC, body);
             ParameterNode p = m.createParameter(argTypes[0], "arg");
-            BlockStmt body = m.getBody();
             try{
                 NewObjectExpr newScriptExpr = new NewObjectExpr(clazzType);
                 ObjectInvokeExpr invokeExpr = ObjectInvokeExpr.create(newScriptExpr, "run", new ExprNode[]{new VarExpr(p)});
@@ -246,6 +261,7 @@ public class AstUtil {
             } catch (MethodNotFoundException | AmbiguousMethodException ex) {
                 throw Exceptions.unexpectedException(ex);
             }
+            AstUtil.mapOffset(m, OffsetRange.NONE, true);
         }
     }
 

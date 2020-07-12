@@ -106,7 +106,7 @@ public class JvmClassNode extends ClassNode {
                 } else {
                     throw Exceptions.unexpectedValue(m);
                 }
-                MethodNode methodNode = createMethodNode(mType, mName, mModifier);
+                MethodNode methodNode = createMethodNode(mType, mName, mModifier, null);
                 methodNode.setDefaultValue(defaultValue);
                 for (Parameter p : m.getParameters()) {
                     NullableKind pnullable = getNullable(p.getAnnotations());

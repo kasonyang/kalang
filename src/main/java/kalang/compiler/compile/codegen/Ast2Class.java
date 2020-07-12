@@ -2,10 +2,7 @@
 package kalang.compiler.compile.codegen;
 
 import kalang.compiler.ast.*;
-import kalang.compiler.compile.AstLoader;
-import kalang.compiler.compile.AstNotFoundException;
-import kalang.compiler.compile.CodeGenerator;
-import kalang.compiler.compile.CompilationUnit;
+import kalang.compiler.compile.*;
 import kalang.compiler.compile.codegen.op.*;
 import kalang.compiler.compile.semantic.MalformedAstException;
 import kalang.compiler.compile.semantic.analyzer.ParentAnalyzer;
@@ -1326,6 +1323,12 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visit(AstNode node) {
+        if (node.offset == null) {
+            AstNode parent = parentAnalyzer.getParent(node, AstNode.class);
+            OffsetRange parentOffset = parent == null ? null : parent.offset;
+            int line = parentOffset == null ? -1 : parentOffset.startLine;
+            throw new IllegalArgumentException("offset is null:" + node + ",parent=" + parent + ",line=" + line);
+        }
         int lineNum = node.offset.startLine;
         if(lineNum>0 && (node instanceof Statement || node instanceof ExprNode) &&  !lineLabels.containsKey(lineNum)){
             LabelOp lb = new LabelOp();

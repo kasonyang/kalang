@@ -1,6 +1,7 @@
 package kalang.compiler.util;
 
 import kalang.compiler.ast.*;
+import kalang.compiler.compile.OffsetRange;
 import kalang.compiler.core.*;
 
 import java.util.HashMap;
@@ -34,12 +35,13 @@ public class InterfaceUtil {
 
     private static void createBridgeMethod(ClassNode clazz,Type returnType,Type[] paramTypes, MethodDescriptor targetMethod) {
         Type[] oldParamTypes = targetMethod.getParameterTypes();
-        MethodNode m = clazz.createMethodNode(returnType, targetMethod.getName(), targetMethod.getModifier());
+        BlockStmt mb = new BlockStmt();
+        mb.offset = OffsetRange.NONE;
+        MethodNode m = clazz.createMethodNode(returnType, targetMethod.getName(), targetMethod.getModifier(), mb);
         ParameterNode[] paramNodes = new ParameterNode[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {
             paramNodes[i] = m.createParameter(paramTypes[i], "p" + i);
         }
-        BlockStmt mb = m.getBody();
         ExprNode[] params = new ExprNode[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {
             if (!paramTypes[i].equals(oldParamTypes[i])) {

@@ -210,7 +210,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         if (mbody != null && needReturn && !terminalStmtAnalyzer.isTerminalStatement(mbody)) {
             ConstExpr defaultVal = m.getDefaultReturnValue();
             if (defaultVal!=null) {
-                mbody.statements.add(new ReturnStmt(defaultVal));
+                ReturnStmt defaultRetStmt = new ReturnStmt(defaultVal);
+                AstUtil.mapOffset(defaultRetStmt, OffsetRange.NONE, true);
+                mbody.statements.add(defaultRetStmt);
             } else {
                 handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(methodCtx.method), m.offset);
             }
@@ -228,6 +230,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     @Nonnull
     protected LocalVarNode declareLocalVar(@Nullable String name,Type type,int modifier,OffsetRange offset){
         LocalVarNode localVarNode = new LocalVarNode(type,name,modifier);
+        localVarNode.offset = offset;
         if(name!=null){
             ParameterNode param = methodCtx.getNamedParameter(name);
             LocalVarNode var = methodCtx.getNamedLocalVar(name);
@@ -409,14 +412,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     protected <T extends AstNode> T mapAst(T node,OffsetRange offsetRange, boolean recursive) {
-        node.offset = offsetRange;
-        if (recursive) {
-            List<AstNode> children = node.getChildren();
-            for (AstNode c: children) {
-                mapAst(c, offsetRange, true);
-            }
-        }
-        return node;
+        return AstUtil.mapOffset(node, offsetRange, recursive);
     }
 
     protected <T extends AstNode> T mapAst(T node,OffsetRange offsetRange) {
@@ -842,6 +838,20 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return () -> mapAst(new VarExpr(tmpTarget), target.offset);
     }
 
+    @Override
+    public Object visit(ParseTree tree) {
+        Object node = super.visit(tree);
+        if (node instanceof AstNode) {
+            AstNode astNode = (AstNode) node;
+            OffsetRange offset = OffsetRange.NONE;
+            if (tree instanceof ParserRuleContext) {
+                offset = offset((ParserRuleContext) tree);
+            }
+            mapAst(astNode, offset, true);
+        }
+        return node;
+    }
+
     @Nonnull
     protected ExprNode visitExpression(KalangParser.ExpressionContext expression) {
         Object node = visit(expression);
@@ -928,23 +938,25 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             return accessor;
         }
         ClassNode cn = field.getClassNode();
-        MethodNode mn = cn.createMethodNode(field.getType(), "access$" + accessorMap.size(), Modifier.STATIC | Modifier.SYNCHRONIZED);
+        BlockStmt mnBody = new BlockStmt();
+        MethodNode mn = cn.createMethodNode(field.getType(), "access$" + accessorMap.size(), Modifier.STATIC | Modifier.SYNCHRONIZED, mnBody);
         ParameterNode objPn = mn.createParameter(Types.getClassType(cn), "obj");
         if (isWriter) {
             ParameterNode valuePn = mn.createParameter(field.getType(), "value");
-            mn.getBody().statements.add(new ExprStmt(
+            mnBody.statements.add(new ExprStmt(
                     new AssignExpr(
                             new ObjectFieldExpr(new VarExpr(objPn), field)
                             , new VarExpr(valuePn)
                     )
             ));
-            mn.getBody().statements.add(new ReturnStmt(new VarExpr(valuePn)));
+            mnBody.statements.add(new ReturnStmt(new VarExpr(valuePn)));
         } else {
-            mn.getBody().statements.add(new ReturnStmt(
+            mnBody.statements.add(new ReturnStmt(
                     new ObjectFieldExpr(new VarExpr(objPn), field)
             ));
         }
         accessorMap.put(field, mn);
+        AstUtil.mapOffset(mn, field.offset, true);
         return mn;
     }
 

@@ -11,6 +11,9 @@ import org.antlr.v4.runtime.Token;
 public class OffsetRangeHelper {
 
     public static OffsetRange getOffsetRange(ParserRuleContext tree) {
+        if (tree == null) {
+            return OffsetRange.NONE;
+        }
         Token start = tree.getStart();
         Token stop = tree.getStop();
         if(start==null || stop==null) return OffsetRange.NONE;

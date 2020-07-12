@@ -161,14 +161,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             this.classNodeInitializer = new ClassNodeInitializer(this.compilationUnit);
             topClass = classNodeInitializer.build(cunit);
         }
-        if(targetPhase>=PARSING_PHASE_META
-                && parsingPhase < PARSING_PHASE_META){
+        if(targetPhase>=PARSING_PHASE_META && parsingPhase < PARSING_PHASE_META){
             parsingPhase = PARSING_PHASE_META;
             this.classNodeStructureBuilder = new ClassNodeStructureBuilder(this.compilationUnit, parser);
             buildClassNodeMeta(topClass);
         }
-        if(targetPhase>=PARSING_PHASE_ALL
-                && parsingPhase < PARSING_PHASE_ALL){
+        if(targetPhase>=PARSING_PHASE_ALL && parsingPhase < PARSING_PHASE_ALL){
             parsingPhase = PARSING_PHASE_ALL;
             visitMethods(topClass);
             processConstructorsAndStaticInitStmts(topClass);
@@ -235,6 +233,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             } else {
                 mbody.statements.add((new ReturnStmt(callExpr)));
             }
+            AstUtil.mapOffset(mbody, OffsetRange.NONE, true);
         }
         for(ClassNode c:clazz.classes){
             this.visitMethods(c);
@@ -486,7 +485,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ExprNode expr = visitExpression(ctx.expression());
             rs.setExpr(requireImplicitCast(methodCtx.method.getType(), expr, offset(ctx)));
         } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
-            rs.setExpr(new ConstExpr(null));
+            ConstExpr nullExpr = new ConstExpr(null);
+            nullExpr.offset = offset(ctx);
+            rs.setExpr(nullExpr);
         }
         // if(!statementAnalyzer.validateReturnStmt(methodCtx.method, rs)) return null;
         return this.onReturnStmt(rs);
@@ -2030,7 +2031,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         MethodContext oldMethodCtx = this.methodCtx;
         String lambdaName = "lambda$" + oldMethodCtx.method.getName() + "$" + ++oldMethodCtx.lambdaMethodCounter;
         int modifier = Modifier.PUBLIC | (oldMethodCtx.method.getModifier() & Modifier.STATIC);
-        MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , modifier);
+        BlockStmt methodNodeBody = new BlockStmt();
+        methodNodeBody.offset = offset(ctx);
+        MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , modifier, methodNodeBody);
         mapAst(methodNode, ctx.start);
         enterMethod(methodNode);
         Map<String, AssignableObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
@@ -2063,9 +2066,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 ExprNode bodyExpr = visitExpression(bodyExprCtx);
                 if (!returnType.equals(Types.VOID_TYPE)) {
                     bodyExpr = requireImplicitCast(methodCtx.method.getType(), bodyExpr, offset(bodyExprCtx));
-                    bsStatements.add(onReturnStmt(new ReturnStmt(bodyExpr)));
+                    ReturnStmt retStmt = new ReturnStmt(bodyExpr);
+                    retStmt.offset = bodyExpr.offset;
+                    bsStatements.add(onReturnStmt(retStmt));
                 } else {
-                    bsStatements.add(new ExprStmt(bodyExpr));
+                    ExprStmt exprStmt = new ExprStmt(bodyExpr);
+                    exprStmt.offset = bodyExpr.offset;
+                    bsStatements.add(exprStmt);
                 }
             } else {
                 List<StatContext> stats = ctx.stat();
@@ -2077,11 +2084,14 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 }
             }
             if (returnType.equals(Types.getVoidClassType())) {
-                bsStatements.add(onReturnStmt(new ReturnStmt(new ConstExpr(null))));
+                ReturnStmt defaultRetStmt = new ReturnStmt(new ConstExpr(null));
+                AstUtil.mapOffset(defaultRetStmt, OffsetRange.NONE, true);
+                bsStatements.add(onReturnStmt(defaultRetStmt));
             }
             return bsStatements;
         });
-        methodNode.getBody().statements.add(bs);
+        bs.offset =  offset(ctx);
+        methodNodeBody.statements.add(bs);
         checkMethod();
         Type[] declaredFuncTypes = MethodUtil.getReturnAndParamTypes(funcMethod);
         Type[] actualFuncTypes = MethodUtil.getReturnAndParamTypes(methodNode.inferredReturnType, funcMethod.getParameterTypes());

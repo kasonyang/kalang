@@ -37,12 +37,12 @@ public class MethodNode extends AstNode implements Annotationable{
     
     private final ClassNode classNode;
     
-    protected MethodNode(ClassNode classNode,Type type,String name,int modifier){
+    protected MethodNode(ClassNode classNode,Type type,String name,int modifier, BlockStmt body){
         this.classNode = classNode;
         this.modifier = modifier;
         this.type = type;
         this.name = name;
-        this.body = Modifier.isAbstract(modifier) ? null : new BlockStmt();
+        this.body = body;
     }
 
     public boolean removeParameter(ParameterNode p) {

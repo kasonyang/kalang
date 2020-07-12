@@ -24,6 +24,7 @@ public class MultiStmtExpr extends ExprNode {
     public List<AstNode> getChildren() {
         List<AstNode> ls = new LinkedList();
         addChild(ls, stmts);
+        addChild(ls, reference);
         return ls;
     }
 

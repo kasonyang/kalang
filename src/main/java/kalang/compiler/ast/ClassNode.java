@@ -76,8 +76,8 @@ public class ClassNode extends AstNode implements Annotationable{
         return fieldNode;
     }
     
-    public MethodNode createMethodNode(Type type,String name,int modifier){
-        MethodNode md = new MethodNode(this, type, name, modifier);
+    public MethodNode createMethodNode(Type type,String name,int modifier, BlockStmt body){
+        MethodNode md = new MethodNode(this, type, name, modifier, body);
         methods.add(md);
         return md;
     }
