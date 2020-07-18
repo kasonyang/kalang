@@ -1,27 +1,22 @@
 package kalang.compiler.shell;
 
 import kalang.compiler.compile.Configuration;
-import kalang.compiler.dependency.Artifact;
-import kalang.compiler.dependency.DependenciesCache;
-import kalang.compiler.dependency.DependencyResolver;
-import kalang.compiler.dependency.ResolveResult;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.profile.SpanFormatter;
 import kalang.compiler.tool.KalangShell;
+import kalang.compiler.util.ClassPathUtil;
 import kalang.lang.Runtime;
-import kalang.mixin.CollectionMixin;
-import kalang.type.Function0;
 import org.apache.commons.cli.*;
-import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -122,7 +117,7 @@ public abstract class ShellBase {
                 continue;
             }
             File ld = new File(l);
-            addClasspathFromLibPath(urls,ld);
+            ClassPathUtil.addClasspathFromLibPath(urls,ld);
         }
         File[] cps = parseClassPath(cli);
         for (File cp : cps) {
@@ -148,104 +143,24 @@ public abstract class ShellBase {
     }
 
     protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader,@Nullable Reader optionsReader,boolean enableDepCache) throws IOException {
-        //String scriptBase = "";
-        Set<String> dependencies = new LinkedHashSet<>();
-        Set<String> repositories = new LinkedHashSet<>();
-        Set<URL> classpaths = new HashSet<>();
-        Set<File> sourcepaths = new HashSet<>();
-        BufferedReader bufferedReader = new BufferedReader(reader);
-        Consumer<String> optionHandler = line -> {
-            if (line.isEmpty()) {
-                return;
-            }
-            if (line.startsWith("!")) {
-                return;
-            }
-            String[] parts = line.split(" ",2);
-            String optionName = parts[0];
-            String optionValue = parts.length>1 ? parts[1] : "";
-            if (optionValue.isEmpty()) {
-                return;
-            }
-            switch (optionName) {
-//                case "script":
-//                case "base":
-//                    scriptBase = optionValue;
-//                    break;
-                case "dependency":
-                    dependencies.add(optionValue);
-                    break;
-                case "repository":
-                    repositories.add(optionValue);
-                    break;
-                case "classpath":
-                    try {
-                        classpaths.add(new File(optionValue).toURI().toURL());
-                    } catch (MalformedURLException e) {
-                        LOG.warning("Invalid class path in script option:" + optionValue);
-                    }
-                    break;
-                case "libpath":
-                    addClasspathFromLibPath(classpaths,new File(optionValue));
-                    break;
-                case "sourcepath":
-                    sourcepaths.add(new File(optionValue));
-                    break;
-                default:
-                    LOG.warning("warn:unknown option:" + optionName);
-                    break;
-            }
-        };
-        String line;
-        if (optionsReader != null) {
-            BufferedReader bfdOptionsReader = new BufferedReader(optionsReader);
-            while ((line = bfdOptionsReader.readLine()) != null) {
-                optionHandler.accept(line.trim());
-            }
-        }
-        while((line = bufferedReader.readLine()) != null) {
-            line = line.trim();
-            if (!line.startsWith("#")) {
-                break;
-            }
-            optionHandler.accept(line.substring(1));
-        }
-//        if (!scriptBase.isEmpty()) {
-//            config.setScriptBaseClass(scriptBase);
-//        }
-        if (!dependencies.isEmpty()) {
-            Span rdSpan = Profiler.getInstance().beginSpan("resolving dependencies");
-            ResolveResult resolveResult = resolveDependencies(dependencies,new LinkedList<>(repositories), enableDepCache);
-            Profiler.getInstance().endSpan(rdSpan);
-            for(File localFile:resolveResult.getLocalFiles()) {
-                classpaths.add(localFile.toURI().toURL());
-            }
-        }
+        ShellOptionParser shellOptionParser = new ShellOptionParser();
+        shellOptionParser.parse(reader, optionsReader, enableDepCache);
+        URL[] classpaths = shellOptionParser.getClassPaths();
+        File[] sourcepaths = shellOptionParser.getSourcePaths();
         for (URL cp: classpaths) {
             LOG.fine("Add class path for script:" + cp);
         }
         for (File sp: sourcepaths) {
             LOG.fine("Add source path for script:" + sp);
         }
-        if (!classpaths.isEmpty()) {
-            classLoader = new URLClassLoader(classpaths.toArray(new URL[0]),classLoader);
+        if (classpaths.length > 0) {
+            classLoader = new URLClassLoader(classpaths,classLoader);
         }
         KalangShell shell = new KalangShell(config, classLoader);
         for(File sp : sourcepaths) {
             shell.addSourcePath(sp);
         }
         return shell;
-    }
-
-    public File getAppHomeDir(@Nullable  String subDir, boolean autoCreate) throws IOException {
-        File file = new File(FileUtils.getUserDirectory(),".kalang");
-        if (subDir != null && !subDir.isEmpty()) {
-            file = new File(file, subDir);
-        }
-        if (!file.exists() && autoCreate && !file.mkdirs()) {
-            throw new IOException("failed to create directory:" + file);
-        }
-        return file;
     }
 
     private void outputProfileInfo(String destination) {
@@ -263,46 +178,6 @@ public abstract class ShellBase {
             }
         }
         new SpanFormatter().format(rootSpan,os);
-    }
-
-
-
-    private ResolveResult resolveDependencies(Set<String> dependencies,List<String> repositories, boolean enableCache) throws IOException {
-        Function0<ResolveResult> depResolver = () -> {
-            List<Artifact> artifacts = new LinkedList<>();
-            for(String d:dependencies){
-                d = d.trim();
-                String[] dParts = d.split(":");
-                if (dParts.length!=3) {
-                    LOG.warning("illegal artifact:" + d);
-                    continue;
-                }
-                artifacts.add(new Artifact(dParts[0],dParts[1],dParts[2]));
-            }
-            DependencyResolver resolver =new DependencyResolver(repositories);
-            return resolver.resolve(artifacts.toArray(new Artifact[0]));
-        };
-        boolean containsSnapshots = CollectionMixin.find(dependencies, it -> it.toUpperCase().endsWith("-SNAPSHOT")) != null;
-        if (enableCache && !containsSnapshots) {
-            File cacheFile = new File(getAppHomeDir("cache", true), "dependencies.cache");
-            DependenciesCache dc = new DependenciesCache(cacheFile);
-            return dc.get(dependencies, depResolver);
-        }
-        return depResolver.call();
-    }
-
-    private void addClasspathFromLibPath(Set<URL> list,File libpath) {
-        if (!libpath.exists() || !libpath.isDirectory()) {
-            return;
-        }
-        Collection<File> jars = FileUtils.listFiles(libpath, new String[]{"jar"}, false);
-        for (File j : jars) {
-            try {
-                list.add(j.toURI().toURL());
-            } catch (MalformedURLException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
     }
 
     private void setLogLevel(Level logLevel) {
