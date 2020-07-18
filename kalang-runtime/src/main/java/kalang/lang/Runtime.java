@@ -28,7 +28,8 @@ public class Runtime {
                     throw new RuntimeException(ex);
                 }
             }
-            String[] versionParts = prop.getProperty("version", "").split("\\.");
+            String versionStr = prop.getProperty("version", "");
+            String[] versionParts = versionStr.split("-")[0].split("\\.");
             int major = versionParts.length>0 ? Integer.parseInt(versionParts[0]) : 0;
             int minor = versionParts.length>1 ? Integer.parseInt(versionParts[1]) : 0;
             int maintenance = versionParts.length>2 ? Integer.parseInt(versionParts[2]) : 0;
