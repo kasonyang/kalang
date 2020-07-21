@@ -1,4 +1,4 @@
-// Generated from KalangParser.g4 by ANTLR 4.5.1
+// Generated from KalangParser.g4 by ANTLR 4.7.2
 package kalang.compiler.antlr;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 

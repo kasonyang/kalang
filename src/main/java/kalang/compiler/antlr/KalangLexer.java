@@ -1,4 +1,4 @@
-// Generated from KalangLexer.g4 by ANTLR 4.5.1
+// Generated from KalangLexer.g4 by ANTLR 4.7.2
 package kalang.compiler.antlr;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATN;
@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.dfa.DFA;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class KalangLexer extends Lexer {
-	static { RuntimeMetaData.checkVersion("4.5.1", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.7.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -38,87 +38,103 @@ public class KalangLexer extends Lexer {
 		ELLIPSIS=126, COMPILE_OPTION_LINE=127, WS=128, COMMENT=129, LINE_COMMENT=130, 
 		PACKAGE_DELIMITER=131, INTERPOLATION_INTERUPT=132, INTERPOLATION_END=133, 
 		INTERPOLATION_STRING=134;
-	public static final int STRING = 1;
+	public static final int
+		COMMENTS=2, WHITESPACE=3;
+	public static final int
+		STRING=1;
+	public static String[] channelNames = {
+		"DEFAULT_TOKEN_CHANNEL", "HIDDEN", "COMMENTS", "WHITESPACE"
+	};
+
 	public static String[] modeNames = {
 		"DEFAULT_MODE", "STRING"
 	};
 
-	public static final String[] ruleNames = {
-		"DOUBLE_COLON", "AS", "IN", "CONSTRUCTOR", "VAR", "VAL", "FOREACH", "ARROW", 
-		"LAMBDA_ARROW", "DYNAMIC", "STAR_DOT", "STAR_DYNAMIC", "QUESTION_DOT", 
-		"DOUBLE_QUESTION", "QUESTION_DOTDOT", "QUESTION_DYNAMIC", "OVERRIDE", 
-		"ABSTRACT", "ASSERT", "BOOLEAN", "BREAK", "BYTE", "CASE", "CATCH", "CHAR", 
-		"CLASS", "CONST", "CONTINUE", "DEFAULT", "DO", "DOUBLE", "ELSE", "ENUM", 
-		"EXTENDS", "FINAL", "FINALLY", "FLOAT", "FOR", "IF", "GOTO", "IMPLEMENTS", 
-		"IMPORT", "INSTANCEOF", "INT", "INTERFACE", "LONG", "NATIVE", "NEW", "PACKAGE", 
-		"PRIVATE", "PROTECTED", "PUBLIC", "RETURN", "SHORT", "STATIC", "STRICTFP", 
-		"SUPER", "SWITCH", "SYNCHRONIZED", "THIS", "THROW", "THROWS", "TRANSIENT", 
-		"TRY", "VOID", "VOLATILE", "WHILE", "MIXIN", "WITH", "IntegerLiteral", 
-		"DecimalIntegerLiteral", "HexIntegerLiteral", "OctalIntegerLiteral", "BinaryIntegerLiteral", 
-		"IntegerTypeSuffix", "DecimalNumeral", "Digits", "Digit", "NonZeroDigit", 
-		"DigitOrUnderscore", "Underscores", "HexNumeral", "HexDigits", "HexDigit", 
-		"HexDigitOrUnderscore", "OctalNumeral", "OctalDigits", "OctalDigit", "OctalDigitOrUnderscore", 
-		"BinaryNumeral", "BinaryDigits", "BinaryDigit", "BinaryDigitOrUnderscore", 
-		"FloatingPointLiteral", "DecimalFloatingPointLiteral", "ExponentPart", 
-		"ExponentIndicator", "SignedInteger", "Sign", "FloatTypeSuffix", "HexadecimalFloatingPointLiteral", 
-		"HexSignificand", "BinaryExponent", "BinaryExponentIndicator", "BooleanLiteral", 
-		"CharacterLiteral", "SingleCharacter", "StringLiteral", "MultiLineStringLiteral", 
-		"StringCharacters", "MultiLineStringCharacters", "StringCharacter", "MultiLineStringCharacter", 
-		"EscapeSequence", "OctalEscape", "UnicodeEscape", "ZeroToThree", "NullLiteral", 
-		"LPAREN", "RPAREN", "LBRACE", "RBRACE", "LBRACK", "RBRACK", "SEMI", "COMMA", 
-		"DOT", "DOTDOT", "ASSIGN", "GT", "LT", "BANG", "TILDE", "QUESTION", "COLON", 
-		"EQUAL", "SAME", "LE", "GE", "NOTEQUAL", "NOTSAME", "AND", "OR", "INC", 
-		"DEC", "ADD", "SUB", "MUL", "DIV", "BITAND", "BITOR", "CARET", "MOD", 
-		"ADD_ASSIGN", "SUB_ASSIGN", "MUL_ASSIGN", "DIV_ASSIGN", "AND_ASSIGN", 
-		"OR_ASSIGN", "XOR_ASSIGN", "MOD_ASSIGN", "LSHIFT_ASSIGN", "RSHIFT_ASSIGN", 
-		"URSHIFT_ASSIGN", "InterpolationPreffixString", "Identifier", "JavaLetter", 
-		"JavaLetterOrDigit", "AT", "ELLIPSIS", "COMPILE_OPTION_LINE", "WS", "COMMENT", 
-		"LINE_COMMENT", "PACKAGE_DELIMITER", "INTERPOLATION_INTERUPT", "INTERPOLATION_END", 
-		"INTERPOLATION_STRING"
-	};
+	private static String[] makeRuleNames() {
+		return new String[] {
+			"DOUBLE_COLON", "AS", "IN", "CONSTRUCTOR", "VAR", "VAL", "FOREACH", "ARROW", 
+			"LAMBDA_ARROW", "DYNAMIC", "STAR_DOT", "STAR_DYNAMIC", "QUESTION_DOT", 
+			"DOUBLE_QUESTION", "QUESTION_DOTDOT", "QUESTION_DYNAMIC", "OVERRIDE", 
+			"ABSTRACT", "ASSERT", "BOOLEAN", "BREAK", "BYTE", "CASE", "CATCH", "CHAR", 
+			"CLASS", "CONST", "CONTINUE", "DEFAULT", "DO", "DOUBLE", "ELSE", "ENUM", 
+			"EXTENDS", "FINAL", "FINALLY", "FLOAT", "FOR", "IF", "GOTO", "IMPLEMENTS", 
+			"IMPORT", "INSTANCEOF", "INT", "INTERFACE", "LONG", "NATIVE", "NEW", 
+			"PACKAGE", "PRIVATE", "PROTECTED", "PUBLIC", "RETURN", "SHORT", "STATIC", 
+			"STRICTFP", "SUPER", "SWITCH", "SYNCHRONIZED", "THIS", "THROW", "THROWS", 
+			"TRANSIENT", "TRY", "VOID", "VOLATILE", "WHILE", "MIXIN", "WITH", "IntegerLiteral", 
+			"DecimalIntegerLiteral", "HexIntegerLiteral", "OctalIntegerLiteral", 
+			"BinaryIntegerLiteral", "IntegerTypeSuffix", "DecimalNumeral", "Digits", 
+			"Digit", "NonZeroDigit", "DigitOrUnderscore", "Underscores", "HexNumeral", 
+			"HexDigits", "HexDigit", "HexDigitOrUnderscore", "OctalNumeral", "OctalDigits", 
+			"OctalDigit", "OctalDigitOrUnderscore", "BinaryNumeral", "BinaryDigits", 
+			"BinaryDigit", "BinaryDigitOrUnderscore", "FloatingPointLiteral", "DecimalFloatingPointLiteral", 
+			"ExponentPart", "ExponentIndicator", "SignedInteger", "Sign", "FloatTypeSuffix", 
+			"HexadecimalFloatingPointLiteral", "HexSignificand", "BinaryExponent", 
+			"BinaryExponentIndicator", "BooleanLiteral", "CharacterLiteral", "SingleCharacter", 
+			"StringLiteral", "MultiLineStringLiteral", "StringCharacters", "MultiLineStringCharacters", 
+			"StringCharacter", "MultiLineStringCharacter", "EscapeSequence", "OctalEscape", 
+			"UnicodeEscape", "ZeroToThree", "NullLiteral", "LPAREN", "RPAREN", "LBRACE", 
+			"RBRACE", "LBRACK", "RBRACK", "SEMI", "COMMA", "DOT", "DOTDOT", "ASSIGN", 
+			"GT", "LT", "BANG", "TILDE", "QUESTION", "COLON", "EQUAL", "SAME", "LE", 
+			"GE", "NOTEQUAL", "NOTSAME", "AND", "OR", "INC", "DEC", "ADD", "SUB", 
+			"MUL", "DIV", "BITAND", "BITOR", "CARET", "MOD", "ADD_ASSIGN", "SUB_ASSIGN", 
+			"MUL_ASSIGN", "DIV_ASSIGN", "AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN", 
+			"MOD_ASSIGN", "LSHIFT_ASSIGN", "RSHIFT_ASSIGN", "URSHIFT_ASSIGN", "InterpolationPreffixString", 
+			"Identifier", "JavaLetter", "JavaLetterOrDigit", "AT", "ELLIPSIS", "COMPILE_OPTION_LINE", 
+			"WS", "COMMENT", "LINE_COMMENT", "PACKAGE_DELIMITER", "INTERPOLATION_INTERUPT", 
+			"INTERPOLATION_END", "INTERPOLATION_STRING"
+		};
+	}
+	public static final String[] ruleNames = makeRuleNames();
 
-	private static final String[] _LITERAL_NAMES = {
-		null, "'::'", "'as'", "'in'", "'constructor'", "'var'", "'val'", "'foreach'", 
-		"'->'", "'=>'", "'->>'", "'*.'", "'*->>'", "'?.'", "'??'", "'?..'", "'?->>'", 
-		"'override'", "'abstract'", "'assert'", "'boolean'", "'break'", "'byte'", 
-		"'case'", "'catch'", "'char'", "'class'", "'const'", "'continue'", "'default'", 
-		"'do'", "'double'", "'else'", "'enum'", "'extends'", "'final'", "'finally'", 
-		"'float'", "'for'", "'if'", "'goto'", "'implements'", "'import'", "'instanceof'", 
-		"'int'", "'interface'", "'long'", "'native'", "'new'", "'package'", "'private'", 
-		"'protected'", "'public'", "'return'", "'short'", "'static'", "'strictfp'", 
-		"'super'", "'switch'", "'synchronized'", "'this'", "'throw'", "'throws'", 
-		"'transient'", "'try'", "'void'", "'volatile'", "'while'", "'mixin'", 
-		"'with'", null, null, null, null, null, null, "'null'", "'('", "')'", 
-		"'{'", "'}'", "'['", "']'", "';'", "','", "'.'", "'..'", "'='", "'>'", 
-		"'<'", "'!'", "'~'", "'?'", "':'", "'=='", "'==='", "'<='", "'>='", "'!='", 
-		"'!=='", "'&&'", "'||'", "'++'", "'--'", "'+'", "'-'", "'*'", "'/'", "'&'", 
-		"'|'", "'^'", "'%'", "'+='", "'-='", "'*='", "'/='", "'&='", "'|='", "'^='", 
-		"'%='", "'<<='", "'>>='", "'>>>='", null, null, "'@'", "'...'", null, 
-		null, null, null, "'\\'", "'${'", "'\"'"
-	};
-	private static final String[] _SYMBOLIC_NAMES = {
-		null, "DOUBLE_COLON", "AS", "IN", "CONSTRUCTOR", "VAR", "VAL", "FOREACH", 
-		"ARROW", "LAMBDA_ARROW", "DYNAMIC", "STAR_DOT", "STAR_DYNAMIC", "QUESTION_DOT", 
-		"DOUBLE_QUESTION", "QUESTION_DOTDOT", "QUESTION_DYNAMIC", "OVERRIDE", 
-		"ABSTRACT", "ASSERT", "BOOLEAN", "BREAK", "BYTE", "CASE", "CATCH", "CHAR", 
-		"CLASS", "CONST", "CONTINUE", "DEFAULT", "DO", "DOUBLE", "ELSE", "ENUM", 
-		"EXTENDS", "FINAL", "FINALLY", "FLOAT", "FOR", "IF", "GOTO", "IMPLEMENTS", 
-		"IMPORT", "INSTANCEOF", "INT", "INTERFACE", "LONG", "NATIVE", "NEW", "PACKAGE", 
-		"PRIVATE", "PROTECTED", "PUBLIC", "RETURN", "SHORT", "STATIC", "STRICTFP", 
-		"SUPER", "SWITCH", "SYNCHRONIZED", "THIS", "THROW", "THROWS", "TRANSIENT", 
-		"TRY", "VOID", "VOLATILE", "WHILE", "MIXIN", "WITH", "IntegerLiteral", 
-		"FloatingPointLiteral", "BooleanLiteral", "CharacterLiteral", "StringLiteral", 
-		"MultiLineStringLiteral", "NullLiteral", "LPAREN", "RPAREN", "LBRACE", 
-		"RBRACE", "LBRACK", "RBRACK", "SEMI", "COMMA", "DOT", "DOTDOT", "ASSIGN", 
-		"GT", "LT", "BANG", "TILDE", "QUESTION", "COLON", "EQUAL", "SAME", "LE", 
-		"GE", "NOTEQUAL", "NOTSAME", "AND", "OR", "INC", "DEC", "ADD", "SUB", 
-		"MUL", "DIV", "BITAND", "BITOR", "CARET", "MOD", "ADD_ASSIGN", "SUB_ASSIGN", 
-		"MUL_ASSIGN", "DIV_ASSIGN", "AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN", "MOD_ASSIGN", 
-		"LSHIFT_ASSIGN", "RSHIFT_ASSIGN", "URSHIFT_ASSIGN", "InterpolationPreffixString", 
-		"Identifier", "AT", "ELLIPSIS", "COMPILE_OPTION_LINE", "WS", "COMMENT", 
-		"LINE_COMMENT", "PACKAGE_DELIMITER", "INTERPOLATION_INTERUPT", "INTERPOLATION_END", 
-		"INTERPOLATION_STRING"
-	};
+	private static String[] makeLiteralNames() {
+		return new String[] {
+			null, "'::'", "'as'", "'in'", "'constructor'", "'var'", "'val'", "'foreach'", 
+			"'->'", "'=>'", "'->>'", "'*.'", "'*->>'", "'?.'", "'??'", "'?..'", "'?->>'", 
+			"'override'", "'abstract'", "'assert'", "'boolean'", "'break'", "'byte'", 
+			"'case'", "'catch'", "'char'", "'class'", "'const'", "'continue'", "'default'", 
+			"'do'", "'double'", "'else'", "'enum'", "'extends'", "'final'", "'finally'", 
+			"'float'", "'for'", "'if'", "'goto'", "'implements'", "'import'", "'instanceof'", 
+			"'int'", "'interface'", "'long'", "'native'", "'new'", "'package'", "'private'", 
+			"'protected'", "'public'", "'return'", "'short'", "'static'", "'strictfp'", 
+			"'super'", "'switch'", "'synchronized'", "'this'", "'throw'", "'throws'", 
+			"'transient'", "'try'", "'void'", "'volatile'", "'while'", "'mixin'", 
+			"'with'", null, null, null, null, null, null, "'null'", "'('", "')'", 
+			"'{'", "'}'", "'['", "']'", "';'", "','", "'.'", "'..'", "'='", "'>'", 
+			"'<'", "'!'", "'~'", "'?'", "':'", "'=='", "'==='", "'<='", "'>='", "'!='", 
+			"'!=='", "'&&'", "'||'", "'++'", "'--'", "'+'", "'-'", "'*'", "'/'", 
+			"'&'", "'|'", "'^'", "'%'", "'+='", "'-='", "'*='", "'/='", "'&='", "'|='", 
+			"'^='", "'%='", "'<<='", "'>>='", "'>>>='", null, null, "'@'", "'...'", 
+			null, null, null, null, "'\\'", "'${'", "'\"'"
+		};
+	}
+	private static final String[] _LITERAL_NAMES = makeLiteralNames();
+	private static String[] makeSymbolicNames() {
+		return new String[] {
+			null, "DOUBLE_COLON", "AS", "IN", "CONSTRUCTOR", "VAR", "VAL", "FOREACH", 
+			"ARROW", "LAMBDA_ARROW", "DYNAMIC", "STAR_DOT", "STAR_DYNAMIC", "QUESTION_DOT", 
+			"DOUBLE_QUESTION", "QUESTION_DOTDOT", "QUESTION_DYNAMIC", "OVERRIDE", 
+			"ABSTRACT", "ASSERT", "BOOLEAN", "BREAK", "BYTE", "CASE", "CATCH", "CHAR", 
+			"CLASS", "CONST", "CONTINUE", "DEFAULT", "DO", "DOUBLE", "ELSE", "ENUM", 
+			"EXTENDS", "FINAL", "FINALLY", "FLOAT", "FOR", "IF", "GOTO", "IMPLEMENTS", 
+			"IMPORT", "INSTANCEOF", "INT", "INTERFACE", "LONG", "NATIVE", "NEW", 
+			"PACKAGE", "PRIVATE", "PROTECTED", "PUBLIC", "RETURN", "SHORT", "STATIC", 
+			"STRICTFP", "SUPER", "SWITCH", "SYNCHRONIZED", "THIS", "THROW", "THROWS", 
+			"TRANSIENT", "TRY", "VOID", "VOLATILE", "WHILE", "MIXIN", "WITH", "IntegerLiteral", 
+			"FloatingPointLiteral", "BooleanLiteral", "CharacterLiteral", "StringLiteral", 
+			"MultiLineStringLiteral", "NullLiteral", "LPAREN", "RPAREN", "LBRACE", 
+			"RBRACE", "LBRACK", "RBRACK", "SEMI", "COMMA", "DOT", "DOTDOT", "ASSIGN", 
+			"GT", "LT", "BANG", "TILDE", "QUESTION", "COLON", "EQUAL", "SAME", "LE", 
+			"GE", "NOTEQUAL", "NOTSAME", "AND", "OR", "INC", "DEC", "ADD", "SUB", 
+			"MUL", "DIV", "BITAND", "BITOR", "CARET", "MOD", "ADD_ASSIGN", "SUB_ASSIGN", 
+			"MUL_ASSIGN", "DIV_ASSIGN", "AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN", 
+			"MOD_ASSIGN", "LSHIFT_ASSIGN", "RSHIFT_ASSIGN", "URSHIFT_ASSIGN", "InterpolationPreffixString", 
+			"Identifier", "AT", "ELLIPSIS", "COMPILE_OPTION_LINE", "WS", "COMMENT", 
+			"LINE_COMMENT", "PACKAGE_DELIMITER", "INTERPOLATION_INTERUPT", "INTERPOLATION_END", 
+			"INTERPOLATION_STRING"
+		};
+	}
+	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
 	/**
@@ -153,8 +169,8 @@ public class KalangLexer extends Lexer {
 	}
 
 
-	    public static final int WHITESPACE = 3;
-	    public static final int COMMENTS =    4; 
+	//    public static final int WHITESPACE = 3;
+	//    public static final int COMMENTS =    4;
 	    private boolean inString = false;
 
 
@@ -173,6 +189,9 @@ public class KalangLexer extends Lexer {
 	public String getSerializedATN() { return _serializedATN; }
 
 	@Override
+	public String[] getChannelNames() { return channelNames; }
+
+	@Override
 	public String[] getModeNames() { return modeNames; }
 
 	@Override
@@ -186,15 +205,6 @@ public class KalangLexer extends Lexer {
 			break;
 		case 164:
 			InterpolationPreffixString_action((RuleContext)_localctx, actionIndex);
-			break;
-		case 171:
-			WS_action((RuleContext)_localctx, actionIndex);
-			break;
-		case 172:
-			COMMENT_action((RuleContext)_localctx, actionIndex);
-			break;
-		case 173:
-			LINE_COMMENT_action((RuleContext)_localctx, actionIndex);
 			break;
 		case 176:
 			INTERPOLATION_END_action((RuleContext)_localctx, actionIndex);
@@ -216,27 +226,6 @@ public class KalangLexer extends Lexer {
 
 			            inString = true;
 			        
-			break;
-		}
-	}
-	private void WS_action(RuleContext _localctx, int actionIndex) {
-		switch (actionIndex) {
-		case 3:
-			_channel = WHITESPACE;
-			break;
-		}
-	}
-	private void COMMENT_action(RuleContext _localctx, int actionIndex) {
-		switch (actionIndex) {
-		case 4:
-			_channel = COMMENTS;
-			break;
-		}
-	}
-	private void LINE_COMMENT_action(RuleContext _localctx, int actionIndex) {
-		switch (actionIndex) {
-		case 5:
-			_channel = COMMENTS;
 			break;
 		}
 	}
@@ -280,7 +269,7 @@ public class KalangLexer extends Lexer {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\2\u0088\u0512\b\1\b"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\2\u0088\u0512\b\1\b"+
 		"\1\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n"+
 		"\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21"+
 		"\4\22\t\22\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30"+
@@ -389,22 +378,22 @@ public class KalangLexer extends Lexer {
 		"\2\u0154\177\u0156\u0080\u0158\u0081\u015a\u0082\u015c\u0083\u015e\u0084"+
 		"\u0160\u0085\u0162\u0086\u0164\u0087\u0166\u0088\4\2\3\32\4\2NNnn\3\2"+
 		"\63;\4\2ZZzz\5\2\62;CHch\3\2\629\4\2DDdd\3\2\62\63\4\2GGgg\4\2--//\6\2"+
-		"FFHHffhh\4\2RRrr\4\2))^^\5\2$$&&^^\4\2^^}}\3\2))\n\2$$))^^ddhhppttvv\3"+
-		"\2\62\65\6\2&&C\\aac|\4\2\2\u0101\ud802\udc01\3\2\ud802\udc01\3\2\udc02"+
-		"\ue001\7\2&&\62;C\\aac|\4\2\f\f\17\17\5\2\13\f\16\17\"\"\u0526\2\4\3\2"+
-		"\2\2\2\6\3\2\2\2\2\b\3\2\2\2\2\n\3\2\2\2\2\f\3\2\2\2\2\16\3\2\2\2\2\20"+
-		"\3\2\2\2\2\22\3\2\2\2\2\24\3\2\2\2\2\26\3\2\2\2\2\30\3\2\2\2\2\32\3\2"+
-		"\2\2\2\34\3\2\2\2\2\36\3\2\2\2\2 \3\2\2\2\2\"\3\2\2\2\2$\3\2\2\2\2&\3"+
-		"\2\2\2\2(\3\2\2\2\2*\3\2\2\2\2,\3\2\2\2\2.\3\2\2\2\2\60\3\2\2\2\2\62\3"+
-		"\2\2\2\2\64\3\2\2\2\2\66\3\2\2\2\28\3\2\2\2\2:\3\2\2\2\2<\3\2\2\2\2>\3"+
-		"\2\2\2\2@\3\2\2\2\2B\3\2\2\2\2D\3\2\2\2\2F\3\2\2\2\2H\3\2\2\2\2J\3\2\2"+
-		"\2\2L\3\2\2\2\2N\3\2\2\2\2P\3\2\2\2\2R\3\2\2\2\2T\3\2\2\2\2V\3\2\2\2\2"+
-		"X\3\2\2\2\2Z\3\2\2\2\2\\\3\2\2\2\2^\3\2\2\2\2`\3\2\2\2\2b\3\2\2\2\2d\3"+
-		"\2\2\2\2f\3\2\2\2\2h\3\2\2\2\2j\3\2\2\2\2l\3\2\2\2\2n\3\2\2\2\2p\3\2\2"+
-		"\2\2r\3\2\2\2\2t\3\2\2\2\2v\3\2\2\2\2x\3\2\2\2\2z\3\2\2\2\2|\3\2\2\2\2"+
-		"~\3\2\2\2\2\u0080\3\2\2\2\2\u0082\3\2\2\2\2\u0084\3\2\2\2\2\u0086\3\2"+
-		"\2\2\2\u0088\3\2\2\2\2\u008a\3\2\2\2\2\u008c\3\2\2\2\2\u008e\3\2\2\2\2"+
-		"\u00be\3\2\2\2\2\u00d4\3\2\2\2\2\u00d6\3\2\2\2\2\u00da\3\2\2\2\2\u00dc"+
+		"FFHHffhh\4\2RRrr\4\2))^^\5\2$$&&^^\3\2}}\3\2))\n\2$$))^^ddhhppttvv\3\2"+
+		"\62\65\6\2&&C\\aac|\4\2\2\u0101\ud802\udc01\3\2\ud802\udc01\3\2\udc02"+
+		"\ue001\7\2&&\62;C\\aac|\4\2\f\f\17\17\5\2\13\f\16\17\"\"\2\u0526\2\4\3"+
+		"\2\2\2\2\6\3\2\2\2\2\b\3\2\2\2\2\n\3\2\2\2\2\f\3\2\2\2\2\16\3\2\2\2\2"+
+		"\20\3\2\2\2\2\22\3\2\2\2\2\24\3\2\2\2\2\26\3\2\2\2\2\30\3\2\2\2\2\32\3"+
+		"\2\2\2\2\34\3\2\2\2\2\36\3\2\2\2\2 \3\2\2\2\2\"\3\2\2\2\2$\3\2\2\2\2&"+
+		"\3\2\2\2\2(\3\2\2\2\2*\3\2\2\2\2,\3\2\2\2\2.\3\2\2\2\2\60\3\2\2\2\2\62"+
+		"\3\2\2\2\2\64\3\2\2\2\2\66\3\2\2\2\28\3\2\2\2\2:\3\2\2\2\2<\3\2\2\2\2"+
+		">\3\2\2\2\2@\3\2\2\2\2B\3\2\2\2\2D\3\2\2\2\2F\3\2\2\2\2H\3\2\2\2\2J\3"+
+		"\2\2\2\2L\3\2\2\2\2N\3\2\2\2\2P\3\2\2\2\2R\3\2\2\2\2T\3\2\2\2\2V\3\2\2"+
+		"\2\2X\3\2\2\2\2Z\3\2\2\2\2\\\3\2\2\2\2^\3\2\2\2\2`\3\2\2\2\2b\3\2\2\2"+
+		"\2d\3\2\2\2\2f\3\2\2\2\2h\3\2\2\2\2j\3\2\2\2\2l\3\2\2\2\2n\3\2\2\2\2p"+
+		"\3\2\2\2\2r\3\2\2\2\2t\3\2\2\2\2v\3\2\2\2\2x\3\2\2\2\2z\3\2\2\2\2|\3\2"+
+		"\2\2\2~\3\2\2\2\2\u0080\3\2\2\2\2\u0082\3\2\2\2\2\u0084\3\2\2\2\2\u0086"+
+		"\3\2\2\2\2\u0088\3\2\2\2\2\u008a\3\2\2\2\2\u008c\3\2\2\2\2\u008e\3\2\2"+
+		"\2\2\u00be\3\2\2\2\2\u00d4\3\2\2\2\2\u00d6\3\2\2\2\2\u00da\3\2\2\2\2\u00dc"+
 		"\3\2\2\2\2\u00ee\3\2\2\2\2\u00f0\3\2\2\2\2\u00f2\3\2\2\2\2\u00f4\3\2\2"+
 		"\2\2\u00f6\3\2\2\2\2\u00f8\3\2\2\2\2\u00fa\3\2\2\2\2\u00fc\3\2\2\2\2\u00fe"+
 		"\3\2\2\2\2\u0100\3\2\2\2\2\u0102\3\2\2\2\2\u0104\3\2\2\2\2\u0106\3\2\2"+
@@ -738,17 +727,17 @@ public class KalangLexer extends Lexer {
 		"\u04f9\7\61\2\2\u04f9\u04fa\7\61\2\2\u04fa\u04fe\3\2\2\2\u04fb\u04fd\n"+
 		"\30\2\2\u04fc\u04fb\3\2\2\2\u04fd\u0500\3\2\2\2\u04fe\u04fc\3\2\2\2\u04fe"+
 		"\u04ff\3\2\2\2\u04ff\u0501\3\2\2\2\u0500\u04fe\3\2\2\2\u0501\u0502\b\u00af"+
-		"\6\2\u0502\u015f\3\2\2\2\u0503\u0504\7^\2\2\u0504\u0161\3\2\2\2\u0505"+
+		"\5\2\u0502\u015f\3\2\2\2\u0503\u0504\7^\2\2\u0504\u0161\3\2\2\2\u0505"+
 		"\u0506\7&\2\2\u0506\u0507\7}\2\2\u0507\u0508\3\2\2\2\u0508\u0509\b\u00b1"+
-		"\7\2\u0509\u0163\3\2\2\2\u050a\u050b\7$\2\2\u050b\u050c\b\u00b2\b\2\u050c"+
+		"\6\2\u0509\u0163\3\2\2\2\u050a\u050b\7$\2\2\u050b\u050c\b\u00b2\7\2\u050c"+
 		"\u0165\3\2\2\2\u050d\u050f\5\u00e2q\2\u050e\u050d\3\2\2\2\u050f\u0510"+
 		"\3\2\2\2\u0510\u050e\3\2\2\2\u0510\u0511\3\2\2\2\u0511\u0167\3\2\2\2<"+
 		"\2\3\u0319\u031d\u0321\u0325\u0329\u0330\u0335\u0337\u033d\u0341\u0345"+
 		"\u034b\u0350\u035a\u035e\u0364\u0368\u0370\u0374\u037a\u0384\u0388\u038e"+
 		"\u0392\u0397\u039a\u039d\u03a2\u03a5\u03aa\u03af\u03b7\u03c2\u03c6\u03cb"+
 		"\u03cf\u03df\u03e9\u03ef\u03f4\u03fe\u0407\u040c\u0412\u041c\u0421\u042e"+
-		"\u04b9\u04c4\u04cd\u04d5\u04e1\u04e6\u04f0\u04fe\u0510\t\3{\2\3\u00a6"+
-		"\3\3\u00ad\5\3\u00ae\6\3\u00af\7\6\2\2\3\u00b2\4";
+		"\u04b9\u04c4\u04cd\u04d5\u04e1\u04e6\u04f0\u04fe\u0510\b\3{\2\3\u00a6"+
+		"\3\2\5\2\2\4\2\6\2\2\3\u00b2\4";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

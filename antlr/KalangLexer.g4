@@ -1,9 +1,10 @@
 lexer grammar KalangLexer;
 @lexer::members {
-    public static final int WHITESPACE = 3;
-    public static final int COMMENTS =    4; 
+//    public static final int WHITESPACE = 3;
+//    public static final int COMMENTS =    4;
     private boolean inString = false;
-} 
+}
+channels{COMMENTS,WHITESPACE}
 // LEXER
 // §3.9 Keywords
 DOUBLE_COLON : '::' ;
@@ -308,16 +309,16 @@ MultiLineStringCharacters
 
 fragment
 StringCharacter
-    :   ~["\\\$]
-    |  '$' ~[\{]
+    :   ~["\\$]
+    |  '$' ~[{]
     |   EscapeSequence
     ;
 
 fragment
 MultiLineStringCharacter
-    : ~[\'\\]
-    | '\'' ~[\']
-    | '\'\'' ~[\']
+    : ~['\\]
+    | '\'' ~[']
+    | '\'\'' ~[']
     | EscapeSequence
     ; 
 
