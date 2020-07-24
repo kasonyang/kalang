@@ -283,7 +283,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     private BlockStmt newBlock(StatementSupplier statementSupplier) {
-        List<Statement> list = statementSupplier == null ? Collections.emptyList() : Collections.singletonList(statementSupplier.get());
+        List<Statement> list = new ArrayList<>();
+        Statement stmt = statementSupplier == null ? null : statementSupplier.get();
+        if (stmt != null) {
+            list.add(stmt);
+        }
         return newBlock(() -> list);
     }
 
