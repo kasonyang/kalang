@@ -135,7 +135,7 @@ parameterizedElementType:
     type | wildcardType
 ;
 wildcardType:
-    '?' boundKind=('extends'|'super') classType
+    '?' (boundKind=('extends'|'super') classType)?
 ;
 primitiveType:
   DOUBLE|LONG|FLOAT|INT|SHORT|CHAR|BOOLEAN|BYTE|VOID

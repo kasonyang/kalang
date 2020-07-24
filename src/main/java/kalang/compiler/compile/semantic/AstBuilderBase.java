@@ -897,13 +897,18 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     private Type parseWildcardType(KalangParser.WildcardTypeContext ctx){
-        ObjectType classType = parseClassType(ctx.classType());
-        Type[] bounds = new Type[]{classType};
-        String boundKind = ctx.boundKind.getText();
-        if(boundKind.equals("super")){
-            return new WildcardType(new Type[]{Types.getRootType()},bounds);
-        }else{
-            return new WildcardType(bounds,null);
+        Token boundKind = ctx.boundKind;
+        if(boundKind != null && boundKind.getText().equals("super")){
+            return new WildcardType(
+                    new Type[]{Types.getRootType(NullableKind.UNKNOWN)},
+                    new Type[]{parseClassType(ctx.classType())},
+                    NullableKind.UNKNOWN
+            );
+        } else {
+            Type upperBound = boundKind != null
+                    ? parseClassType(ctx.classType())
+                    : Types.getRootType(NullableKind.UNKNOWN);
+            return new WildcardType(new Type[]{upperBound},null, NullableKind.UNKNOWN);
         }
     }
 
