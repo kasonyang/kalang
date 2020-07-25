@@ -214,7 +214,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 AstUtil.mapOffset(defaultRetStmt, OffsetRange.NONE, true);
                 mbody.statements.add(defaultRetStmt);
             } else {
-                handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(methodCtx.method), m.offset);
+                handleSyntaxError("Missing return statement in method:" + MethodUtil.toString(methodCtx.method), OffsetRangeHelper.lastCharOffset(m.offset));
             }
         }
         for (Map.Entry<LambdaExpr, ParserRuleContext> e : lambdaExprCtxMap.entrySet()) {
