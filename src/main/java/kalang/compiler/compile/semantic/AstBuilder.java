@@ -471,14 +471,18 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
+    @Nonnull
     public Statement visitStat(StatContext ctx) {
         ParseTree child = ctx.getChild(0);
+        Statement result;
         try {
-            return child == null ? null : (Statement) visit(child);
+            result = child == null ? null : (Statement) visit(child);
         } catch (NodeException ex) {
             handleSyntaxError(ex.getMessage(), ex.getOffsetRange());
-            return null;
+            result = null;
         }
+        // return a empty block statement to avoid NPE when result is null
+        return result == null ? new BlockStmt() : result;
     }
 
     @Override
