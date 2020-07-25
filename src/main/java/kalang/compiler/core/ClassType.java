@@ -134,7 +134,7 @@ public class ClassType extends ObjectType {
             ClassType other = (ClassType) type;
             if(!nullable.isAssignableFrom(other.getNullable())) return false;
             ClassNode otherClazz = other.getClassNode();
-            if(!clazz.equals(otherClazz)) return false;
+            if(!clazz.getName().equals(otherClazz.getName())) return false;
             GenericType[] gts = clazz.getGenericTypes();
             if(gts.length==0) return true;
             //handle parameterizedType
