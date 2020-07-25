@@ -142,11 +142,23 @@ public abstract class ShellBase {
         return new File[0];
     }
 
-    protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, Reader reader,@Nullable Reader optionsReader,boolean enableDepCache) throws IOException {
-        ShellOptionParser shellOptionParser = new ShellOptionParser();
-        shellOptionParser.parse(reader, optionsReader, enableDepCache);
-        URL[] classpaths = shellOptionParser.getClassPaths();
-        File[] sourcepaths = shellOptionParser.getSourcePaths();
+    protected KalangOption loadKalangOption(CommandLine cli, Reader shellFileReader, @Nullable File projectPath) throws IOException {
+        FileReader optionReader = null;
+        if (projectPath != null) {
+            File optionFile = new File(projectPath, "kalang.options");
+            if (optionFile.exists()) {
+                optionReader = new FileReader(optionFile);
+            }
+        }
+        boolean enableDepCache = ! cli.hasOption("disable-dependency-cache");
+        KalangOption option = new KalangOption();
+        option.parse(shellFileReader, optionReader, enableDepCache);
+        return option;
+    }
+
+    protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, KalangOption compileOptions) throws IOException {
+        URL[] classpaths = compileOptions.getClassPaths();
+        File[] sourcepaths = compileOptions.getSourcePaths();
         for (URL cp: classpaths) {
             LOG.fine("Add class path for script:" + cp);
         }

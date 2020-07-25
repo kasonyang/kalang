@@ -7,6 +7,8 @@ import org.apache.commons.cli.Options;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
 
 /**
  *
@@ -24,17 +26,33 @@ public class Kalangc extends ShellBase {
 
     @Override
     protected int execute(CommandLine cli) {
+        try {
+            return doExecute(cli);
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage());
+            return Constant.ERR_IO_EXCEPTION;
+        }
+    }
+
+    protected int doExecute(CommandLine cli) throws IOException {
+        File currentDir = new File(".");
         FileSystemCompiler fsc = new FileSystemCompiler();
         StandardDiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
         fsc.setDiagnosisHandler(diagnosisHandler);
         fsc.setClassLoader(this.createClassLoader(cli));
         fsc.setConfiguration(this.createConfiguration(cli));
+        KalangOption kalangOption = loadKalangOption(cli, new StringReader(""), currentDir);
+        for (URL cp : kalangOption.getClassPaths()) {
+            fsc.addClassPath(cp);
+        }
+        for (File sp :kalangOption.getSourcePaths()) {
+            fsc.addSourcePath(sp);
+        }
         if (cli.hasOption("sourcepath")) {
             String srcPath = cli.getOptionValue("sourcepath");
             fsc.addSourcePath(new File(srcPath));
         }
         fsc.setOutputDir(new File(cli.getOptionValue("output-dir", ".")));
-        File currentDir = new File(".");
         fsc.addSourcePath(currentDir);
         String[] srcs = cli.getArgs();
         for (String s : srcs) {
@@ -45,15 +63,8 @@ public class Kalangc extends ShellBase {
                 fsc.addSource(currentDir, srcFile);
             }
         }
-        try {
-            fsc.compile();
-            return diagnosisHandler.hasError() 
-                    ? Constant.ERR_COMPILE_ERROR 
-                    : Constant.SUCCESS ;
-        } catch (IOException ex) {
-            System.err.println(ex.getMessage());
-            return Constant.ERR_IO_EXCEPTION;
-        }
+        fsc.compile();
+        return diagnosisHandler.hasError() ? Constant.ERR_COMPILE_ERROR : Constant.SUCCESS ;
     }
 
     public Kalangc() {

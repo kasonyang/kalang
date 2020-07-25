@@ -85,6 +85,10 @@ public class FileSystemCompiler {
         }
     }
 
+    public void addClassPath(URL path) {
+        classPaths.add(path);
+    }
+
     public void addClassPath(File path) {
         try {
             classPaths.add(path.toURI().toURL());

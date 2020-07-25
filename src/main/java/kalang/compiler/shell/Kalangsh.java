@@ -42,10 +42,11 @@ public class Kalangsh extends ShellBase {
         try {
             Class clazz;
             String[] scriptArgs;
-            boolean enableDepCache = ! cli.hasOption("disable-dependency-cache");
+
             if (cli.hasOption("code")) {
                 String code = cli.getOptionValue("code");
-                KalangShell sh = this.createKalangShell(config, classLoader,new StringReader(code), null, enableDepCache);
+                KalangOption kalangOption = loadKalangOption(cli, new StringReader(code), null);
+                KalangShell sh = this.createKalangShell(config, classLoader, kalangOption);
                 scriptArgs = new String[0];
                 clazz = sh.parse("Temp",code, "Tmp.kl");
             } else {
@@ -59,14 +60,11 @@ public class Kalangsh extends ShellBase {
                     System.arraycopy(args, 1, scriptArgs, 0, scriptArgs.length);
                 }
                 File sourceDir = file.getAbsoluteFile().getParentFile();
-                File optionsFile = new File(sourceDir, "kalangsh.options");
-                Reader fileReader = new InputStreamReader(new FileInputStream(file), config.getEncoding());
-                FileReader optionsReader = optionsFile.exists() ? new FileReader(optionsFile) : null;
-                KalangShell sh = this.createKalangShell(config, classLoader, fileReader, optionsReader, enableDepCache);
-                fileReader.close();
-                if (optionsReader != null) {
-                    optionsReader.close();
+                KalangOption shellOption;
+                try (Reader fileReader = new InputStreamReader(new FileInputStream(file), config.getEncoding())) {
+                    shellOption = loadKalangOption(cli, fileReader, sourceDir);
                 }
+                KalangShell sh = this.createKalangShell(config, classLoader, shellOption);
                 sh.addSourcePath(file.getAbsoluteFile().getParentFile());
                 clazz = sh.parse(file);
             }

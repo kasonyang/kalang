@@ -28,9 +28,9 @@ import java.util.logging.Logger;
 /**
  * @author KasonYang
  */
-public class ShellOptionParser {
+public class KalangOption {
 
-    private final static Logger LOG = Logger.getLogger(ShellOptionParser.class.getName());
+    private final static Logger LOG = Logger.getLogger(KalangOption.class.getName());
 
     private LinkedHashSet<URL> classPaths;
 
