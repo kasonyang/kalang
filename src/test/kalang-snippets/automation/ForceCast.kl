@@ -1,0 +1,4 @@
+boolean castNull() {
+    val obj = (String?) null;
+    return obj == null;
+}

@@ -1433,10 +1433,15 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         Type toType = parseType(ctx.type());
         Type fromType = expr.getType();
         if(fromType instanceof PrimitiveType){
-            if(toType instanceof PrimitiveType){
-                castExpr = new PrimitiveCastExpr((PrimitiveType)fromType,(PrimitiveType)toType, expr);
-            }else{
-                throw new NodeException("unable to cast primitive type to class type", offset(ctx));
+            if(toType instanceof PrimitiveType) {
+                castExpr = new PrimitiveCastExpr((PrimitiveType) fromType, (PrimitiveType) toType, expr);
+            } else if (
+                    Objects.equals(fromType, Types.NULL_TYPE)
+                    && (toType instanceof ObjectType)
+                    && ((ObjectType) toType).getNullable().isAssignableFrom(NullableKind.NULLABLE)){
+                castExpr = new CastExpr(toType, expr);
+            } else {
+                throw new NodeException("unable to cast primitive type to nonnull class type", offset(ctx));
             }
         }else{
             if(toType instanceof PrimitiveType){
