@@ -761,7 +761,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if (expr instanceof ExprNode) {
                 return createField.call((ExprNode) expr);
             } else if (expr instanceof ClassReference) {
-                AssignableExpr sfe = StaticFieldExpr.create((ClassReference) expr, fname, null);
+                AssignableExpr sfe = getStaticFieldExpr((ClassReference) expr, fname, offsetRange);
+                if (sfe == null) {
+                    throw new NodeException("field not found:" + fname, offsetRange);
+                }
                 if (fromExprCb != null) {
                     return mapAst(new AssignExpr(sfe, fromExprCb.call()), offsetRange);
                 }

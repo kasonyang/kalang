@@ -531,7 +531,8 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
         }
         if(ast == null){
-            throw new NodeException("class not found:" + id, offset(token));
+            diagnosisReporter.error("class not found:" + id, offset(token));
+            return Types.getRootType(NullableKind.UNKNOWN).getClassNode();
         }
         return ast;
     }
