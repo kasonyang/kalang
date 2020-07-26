@@ -245,6 +245,7 @@ expression
     :   LPAREN 
         expression 
         RPAREN #parenExpr
+    |   Identifier #identifierExpr
     |   ref=('this'|'super') #selfRefExpr
     |   literal #literalExpr
     | (
@@ -265,7 +266,6 @@ expression
     |    target=expression refKey=('.'|'->>'|'..'|'*.'|'*->>'|'?.'|'?->>'|'?..') ( Identifier | StringLiteral)
         '(' (params+=expression (',' params+=expression)*)? ')'  #invokeExpr
     |   expression refKey=('.'|'->>'|'*.'|'*->>'|'?.'|'?->>') (Identifier | StringLiteral) #getFieldExpr
-    |   expression '::' Identifier                                                         #methodRefExpr
     |     (Identifier|key='this'|key='super') 
         '(' (params+=expression (',' params+=expression)*)? ')'   #memberInvocationExpr
     |  expression '[' expression ']' #getArrayElementExpr    
@@ -274,11 +274,12 @@ expression
     |   ( 'new' type ( '[' sizes+=expression ']' )+ ( suffix+='[' ']' )*
             | 'new' type '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}' //TODO support multi dimensions
         )    #newArrayExpr
+    |   expression '::' Identifier  #methodRefExpr
+    |   '(' type ')' expression #castExpr
     |   expression op=('++' | '--') #incExpr
     |   ( '+' | '-' ) expression #unaryExpr
     |   op=( '++' | '--' ) expression #preIncExpr
     |   ('~'|'!') expression  #unaryExpr
-    |   '(' type ')' expression #castExpr
     |   expression ('*'|'/'|'%') expression #binaryExpr
     |   expression ('+'|'-') expression #binaryExpr
     //don't write as '<<' , '>>>' or '>>' because it would cause problem when visit HashMap<String,List<String>>
@@ -293,10 +294,10 @@ expression
     |   expression '&' expression #binaryExpr
     |   expression '^' expression #binaryExpr
     |   expression '|' expression #binaryExpr
-    |   expression ('&&'|'||') expression #binaryExpr
+    |   expression '&&' expression #binaryExpr
+    |   expression '||' expression #binaryExpr
     |   expression '??' expression #nullDefaultExpr
     |   expression '?' expression ':' expression #questionExpr
-    |   Identifier #identifierExpr 
     |   expression '.' #errorousMemberExpr
     |   InterpolationPreffixString expression ( '}' INTERPOLATION_STRING? INTERPOLATION_INTERUPT expression)* '}' INTERPOLATION_STRING? INTERPOLATION_END #interpolationExpr
     |   WITH '(' expression ')' '{' stat* '}' #withExpr
