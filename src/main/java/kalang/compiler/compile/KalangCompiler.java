@@ -19,8 +19,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-import static kalang.compiler.compile.CompilePhase.PHASE_ALL;
-
 /**
  * The core compiler
  *
@@ -28,14 +26,13 @@ import static kalang.compiler.compile.CompilePhase.PHASE_ALL;
  */
 public abstract class KalangCompiler implements CompileContext {
 
-    private int compileTargetPhase = PHASE_ALL;
+    private final CompilePhaseManager compilePhaseManager = new CompilePhaseManager();
 
-    private HashMap<String, CompilationUnit> compilationUnits = new HashMap<>();
+    private final Map<String, CompilationUnitController> compilationUnitCtrlMap =
+            new HashMap<>();
 
     @Nonnull
     private final List<KalangSource> sources = new LinkedList<>();
-
-    private int compilingPhase;
 
     private DiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
 
@@ -44,6 +41,8 @@ public abstract class KalangCompiler implements CompileContext {
     private final AstLoader astLoader;
 
     private SourceLoader sourceLoader = className -> null;
+    private CompilePhase compileTargetPhase;
+    private CompilePhase compilingPhase;
 
     public KalangCompiler() {
         this(new Configuration());
@@ -72,9 +71,9 @@ public abstract class KalangCompiler implements CompileContext {
                 }
                 String[] classNameInfo = className.split("\\$", 2);
                 String topClassName = classNameInfo[0];
-                CompilationUnit compilationUnit = compilationUnits.get(topClassName);
-                if (compilationUnit != null) {
-                    ClassNode clazz = compilationUnit.getAst();
+                CompilationUnitController cUnitCtrl = compilationUnitCtrlMap.get(topClassName);
+                if (cUnitCtrl != null) {
+                    ClassNode clazz = cUnitCtrl.getCompilationUnit().getAst();
                     if (classNameInfo.length == 1) {
                         return clazz;
                     } else {
@@ -88,13 +87,14 @@ public abstract class KalangCompiler implements CompileContext {
                 if (srcLoader != null) {
                     KalangSource source = srcLoader.loadSource(className);
                     if (source != null) {
-                        return createCompilationUnit(source).getAst();
+                        return createCompilationUnitController(source).getCompilationUnit().getAst();
                     }
                 }
                 notFoundAstSet.add(className);
                 throw new AstNotFoundException(className);
             }
         };
+        initCompilePhases();
     }
 
     /**
@@ -112,31 +112,33 @@ public abstract class KalangCompiler implements CompileContext {
     public void addSource(KalangSource source) {
         String className = source.getClassName();
         sources.add(source);
-        compilationUnits.put(className, createCompilationUnit(source));
+        compilationUnitCtrlMap.put(className, createCompilationUnitController(source));
     }
 
-    public void setCompileTargetPhase(int targetPhase) {
-        compileTargetPhase = targetPhase;
+    public void setCompileTargetPhase(String targetPhase) {
+        compileTargetPhase = compilePhaseManager.getPhase(targetPhase);
     }
 
-    public int getCompileTargetPhase() {
-        return compileTargetPhase;
+    public String getCompileTargetPhase() {
+        return compileTargetPhase.getId();
     }
 
-    public void compile(int targetPhase) {
-        compilingPhase = CompilePhase.PHASE_INITIALIZE;
-        while (compilingPhase < targetPhase && compilingPhase < this.compileTargetPhase) {
-            compilingPhase++;
+    public void compile(CompilePhase targetPhase) {
+        compilingPhase = compilePhaseManager.getStartPhase();
+        while (compilingPhase.isBefore(targetPhase) && compilingPhase.isBefore(this.compileTargetPhase)) {
+            compilingPhase = compilingPhase.nextPhase();
             Span span = Profiler.getInstance().beginSpan("compilePhase@" + compilingPhase);
-            Set<CompilationUnit> compiledUnits = new HashSet<>();
+            Set<CompilationUnitController> cUnitCtrlSets = new HashSet<>();
             // compilationUnits may be updated when compiling
-            while (compiledUnits.size() < compilationUnits.size()) {
-                HashSet<CompilationUnit> currentUnitSet = new HashSet<>(compilationUnits.values());
-                for (CompilationUnit unit: currentUnitSet) {
-                    if (!compiledUnits.add(unit)) {
+            while (cUnitCtrlSets.size() < compilationUnitCtrlMap.size()) {
+                HashSet<CompilationUnitController> currentUnitCtrlSet = new HashSet<>(
+                        compilationUnitCtrlMap.values()
+                );
+                for (CompilationUnitController unitCtrl: currentUnitCtrlSet) {
+                    if (!cUnitCtrlSets.add(unitCtrl)) {
                         continue;
                     }
-                    unit.compile(compilingPhase);
+                    unitCtrl.compileToPhase(compilingPhase);
                 }
             }
             Profiler.getInstance().endSpan(span);
@@ -169,27 +171,46 @@ public abstract class KalangCompiler implements CompileContext {
     }
 
     @Nonnull
-    public HashMap<String, CompilationUnit> getCompilationUnits() {
-        return compilationUnits;
+    public Map<String, CompilationUnit> getCompilationUnits() {
+        Map<String, CompilationUnit> result = new HashMap<>();
+        for (Map.Entry<String, CompilationUnitController> e : compilationUnitCtrlMap.entrySet()) {
+            result.put(e.getKey(), e.getValue().getCompilationUnit());
+        }
+        return result;
     }
 
     @Nullable
     public CompilationUnit getCompilationUnit(@Nonnull String className) {
-        return compilationUnits.get(className);
+        CompilationUnitController controller = compilationUnitCtrlMap.get(className);
+        return controller == null ? null : controller.getCompilationUnit();
+    }
+
+    protected void initCompilePhases() {
+        compilePhaseManager.registerPhase(StandardCompilePhases.PARSE_DECLARATION, u ->
+            u.getAstBuilder().parseMemberDeclaration(getAstLoader())
+        );
+        compilePhaseManager.registerPhase(StandardCompilePhases.PARSE_BODY, u ->
+            u.getAstBuilder().parseMemberBody(getAstLoader())
+        );
+        compilePhaseManager.registerPhase(StandardCompilePhases.ANALYZE_SEMANTIC, CompilationUnit::analyzeSemantic);
+        compilePhaseManager.registerPhase(StandardCompilePhases.GENERATE_CODE, CompilationUnit::generateClass);
+        compilingPhase = compilePhaseManager.getStartPhase();
+        compileTargetPhase = compilePhaseManager.getLastPhase();
     }
 
     protected CompilationUnit newCompilationUnit(KalangSource source) {
         return new CompilationUnit(source, this);
     }
 
-    private CompilationUnit createCompilationUnit(KalangSource source) {
+    private CompilationUnitController createCompilationUnitController(KalangSource source) {
         CompilationUnit unit = newCompilationUnit(source);
-        compilationUnits.put(source.getClassName(), unit);
-        unit.compile(compilingPhase);
-        return unit;
+        CompilationUnitController controller = new CompilationUnitController(unit, compilePhaseManager.getStartPhase());
+        compilationUnitCtrlMap.put(source.getClassName(), controller);
+        controller.compileToPhase(compilingPhase);
+        return controller;
     }
 
-    public int getCurrentCompilePhase() {
+    public CompilePhase getCurrentCompilePhase() {
         return compilingPhase;
     }
 
@@ -269,12 +290,12 @@ public abstract class KalangCompiler implements CompileContext {
     }
 
     @Override
-    public void stopCompile(int stopPhase) {
-        setCompileTargetPhase(stopPhase);
+    public void stopCompile(String stopPhaseId) {
+        setCompileTargetPhase(stopPhaseId);
     }
 
     @Override
-    public int getCompilingPhase() {
+    public CompilePhase getCompilingPhase() {
         return this.compilingPhase;
     }
 
@@ -283,4 +304,7 @@ public abstract class KalangCompiler implements CompileContext {
         return configuration;
     }
 
+    protected CompilePhaseManager getCompilePhaseManager() {
+        return compilePhaseManager;
+    }
 }

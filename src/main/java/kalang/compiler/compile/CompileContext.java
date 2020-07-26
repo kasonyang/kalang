@@ -26,9 +26,9 @@ public interface CompileContext {
     
     DiagnosisHandler getDiagnosisHandler();
     
-    void stopCompile(int stopPhase);
+    void stopCompile(String stopPhaseId);
     
-    int getCompilingPhase();
+    CompilePhase getCompilingPhase();
     
     Configuration getConfiguration();
 

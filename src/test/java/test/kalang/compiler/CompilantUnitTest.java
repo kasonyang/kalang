@@ -25,7 +25,6 @@ public class CompilantUnitTest {
                 + "}"
                 + "}","Test.kl");
         CompilationUnit cu = new CompilationUnit(source,new DefaultCompileContext());
-        cu.compile(CompilePhase.PHASE_PARSING);
         AstBuilder astBuilder = cu.getAstBuilder();
         ParseTreeNavigator treeNav = new ParseTreeNavigator(astBuilder.getParseTree());
         ParseTree tree = treeNav.getParseTree(0);

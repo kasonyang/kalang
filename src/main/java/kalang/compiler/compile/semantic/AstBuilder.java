@@ -47,16 +47,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         public int modifier;
     }
 
-    public static final int
-            PARSING_PHASE_INIT = 1,
-            PARSING_PHASE_META = 2,
-            PARSING_PHASE_ALL = 3;
-
     private ClassNodeInitializer classNodeInitializer;
     private ClassNodeStructureBuilder classNodeStructureBuilder;
-
-    private int parsingPhase=0;
-    //static String DEFAULT_VAR_TYPE;// = "java.lang.Object";
 
     protected ClassNode thisClazz;
 
@@ -134,44 +126,29 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return className;
     }
 
-    public void compile(){
-        compile(PARSING_PHASE_ALL,null);
+    public void parseInit() {
+        Span span = Profiler.getInstance().beginSpan("parse");
+        CompilationUnitContext cunit = buildCompilationUnitContext();
+        Profiler.getInstance().endSpan(span);
+        this.compilationContext = cunit;
+        for(ImportDeclContext ic:cunit.importDecl()){
+            this.visitImportDecl(ic);
+        }
+        this.classNodeInitializer = new ClassNodeInitializer(this.compilationUnit);
+        topClass = classNodeInitializer.build(cunit);
     }
-    
-    public void compile(int targetPhase){
-        compile(targetPhase, null);
+
+    public void parseMemberDeclaration(AstLoader astLoader) {
+        setupAstLoader(astLoader);
+        this.classNodeStructureBuilder = new ClassNodeStructureBuilder(this.compilationUnit, parser);
+        buildClassNodeMeta(topClass);
     }
-    
-    public void compile(int targetPhase,@Nullable AstLoader astLoader) {
-        if(astLoader==null){
-            this.astLoader = new AstLoader();
-        }else{
-            this.astLoader = astLoader;
-        }
-        compilationUnit.getTypeNameResolver().setAstLoader(astLoader);
-        if(targetPhase>=PARSING_PHASE_INIT && parsingPhase < PARSING_PHASE_INIT){
-            parsingPhase = PARSING_PHASE_INIT;
-            Span span = Profiler.getInstance().beginSpan("parse");
-            CompilationUnitContext cunit = buildCompilationUnitContext();
-            Profiler.getInstance().endSpan(span);
-            this.compilationContext = cunit;
-            for(ImportDeclContext ic:cunit.importDecl()){
-                this.visitImportDecl(ic);
-            }
-            this.classNodeInitializer = new ClassNodeInitializer(this.compilationUnit);
-            topClass = classNodeInitializer.build(cunit);
-        }
-        if(targetPhase>=PARSING_PHASE_META && parsingPhase < PARSING_PHASE_META){
-            parsingPhase = PARSING_PHASE_META;
-            this.classNodeStructureBuilder = new ClassNodeStructureBuilder(this.compilationUnit, parser);
-            buildClassNodeMeta(topClass);
-        }
-        if(targetPhase>=PARSING_PHASE_ALL && parsingPhase < PARSING_PHASE_ALL){
-            parsingPhase = PARSING_PHASE_ALL;
-            visitMethods(topClass);
-            processConstructorsAndStaticInitStmts(topClass);
-            checkAndBuildInterfaceMethods(topClass);
-        }
+
+    public void parseMemberBody(AstLoader astLoader) {
+        setupAstLoader(astLoader);
+        visitMethods(topClass);
+        processConstructorsAndStaticInitStmts(topClass);
+        checkAndBuildInterfaceMethods(topClass);
     }
     
     private void visitMethods(ClassNode clazz){
@@ -2401,6 +2378,15 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 , null)));
         stats.add(new TryStmt(execBlock, catchBlocks, finallyBlock));
         return stats;
+    }
+
+    private void setupAstLoader(@Nullable AstLoader astLoader) {
+        if(astLoader==null){
+            this.astLoader = new AstLoader();
+        }else{
+            this.astLoader = astLoader;
+        }
+        compilationUnit.getTypeNameResolver().setAstLoader(astLoader);
     }
 
 }

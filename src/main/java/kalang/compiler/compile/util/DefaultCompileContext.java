@@ -57,12 +57,12 @@ public class DefaultCompileContext implements CompileContext {
     }
 
     @Override
-    public void stopCompile(int stopPhase) {
+    public void stopCompile(String stopPhaseId) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public int getCompilingPhase() {
+    public CompilePhase getCompilingPhase() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

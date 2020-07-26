@@ -6,8 +6,6 @@ import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.semantic.AstBuilder;
 import kalang.compiler.compile.semantic.MalformedAstException;
 import kalang.compiler.compile.util.DiagnosisReporter;
-import kalang.compiler.profile.Profiler;
-import kalang.compiler.profile.Span;
 import kalang.helper.PrintHelper;
 import kalang.mixin.*;
 
@@ -16,8 +14,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import static kalang.compiler.compile.CompilePhase.*;
 
 /**
  *
@@ -28,9 +24,7 @@ public class CompilationUnit {
     private final KalangLexer lexer;
     private final KalangParser parser;
     private final AstBuilder astBuilder;
-    
-    private int compilingPhase;
-    
+
     private final KalangSource source;
     
     private final CompileContext context;
@@ -71,47 +65,28 @@ public class CompilationUnit {
         astBuilder.importMixinMethod(astLoader.loadAst(ObjectMixin.class.getName()));
         astBuilder.importMixinMethod(astLoader.loadAst(PropertiesMixin.class.getName()));
         astBuilder.importMixinMethod(astLoader.loadAst(MapMixin.class.getName()));
-        compile(PHASE_INITIALIZE);
-    }
-    
-    protected void doCompilePhase(int phase){
-        DiagnosisReporter dnReporter = new DiagnosisReporter(this);
-        if(phase == PHASE_INITIALIZE){
-            parse(AstBuilder.PARSING_PHASE_INIT);
-        }else if(phase == PHASE_PARSING){
-            parse(AstBuilder.PARSING_PHASE_META);
-        }else if(phase == PHASE_BUILDAST) {
-            parse(AstBuilder.PARSING_PHASE_ALL);
-        }else if(phase == PHASE_SEMANTIC) {
-            SemanticAnalyzer smtAnalyzer = context.createSemanticAnalyzer(this);
-            if (smtAnalyzer == null) {
-                throw new IllegalArgumentException("SemanticAnalyzer is missing");
-            }
-            smtAnalyzer.semanticAnalyze();
-        }else if(phase == PHASE_CLASSGEN){
-            CodeGenerator codeGenerator = context.createCodeGenerator(this);
-            if(codeGenerator == null){
-                throw new IllegalStateException("CodeGenerator is missing");
-            }
-            try {
-                codeGenerator.generateCode();
-            } catch (MalformedAstException ex) {
-                dnReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), ex.getMalformedNode().offset);
-            }
-        }
-    }
-    
-    public void compile(int targetPhase){
-        while(compilingPhase<targetPhase){
-            compilingPhase++;
-            Span span = Profiler.getInstance().beginSpan("compilationPhase@" + compilingPhase);
-            doCompilePhase(compilingPhase);
-            Profiler.getInstance().endSpan(span);
-        }
+        astBuilder.parseInit();
     }
 
-    protected void parse(int targetParsingPhase) {
-        astBuilder.compile(targetParsingPhase,context.getAstLoader());
+    public void analyzeSemantic() {
+        SemanticAnalyzer smtAnalyzer = context.createSemanticAnalyzer(this);
+        if (smtAnalyzer == null) {
+            throw new IllegalArgumentException("SemanticAnalyzer is missing");
+        }
+        smtAnalyzer.semanticAnalyze();
+    }
+
+    public void generateClass() {
+        DiagnosisReporter dnReporter = new DiagnosisReporter(this);
+        CodeGenerator codeGenerator = context.createCodeGenerator(this);
+        if(codeGenerator == null){
+            throw new IllegalStateException("CodeGenerator is missing");
+        }
+        try {
+            codeGenerator.generateCode();
+        } catch (MalformedAstException ex) {
+            dnReporter.report(Diagnosis.Kind.ERROR, ex.getMessage(), ex.getMalformedNode().offset);
+        }
     }
 
     @Nonnull
