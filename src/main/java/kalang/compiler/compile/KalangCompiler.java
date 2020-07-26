@@ -6,6 +6,7 @@ import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.util.StandardDiagnosisHandler;
 import kalang.compiler.compile.semantic.DefaultSemanticAnalyzer;
 import kalang.compiler.compile.semantic.AstBuilder;
+import kalang.compiler.core.ObjectType;
 import kalang.compiler.profile.Invocation;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
@@ -28,6 +29,9 @@ public abstract class KalangCompiler implements CompileContext {
 
     private final CompilePhaseManager compilePhaseManager = new CompilePhaseManager();
 
+    /**
+     * key is className
+     */
     private final Map<String, CompilationUnitController> compilationUnitCtrlMap =
             new HashMap<>();
 
@@ -138,7 +142,7 @@ public abstract class KalangCompiler implements CompileContext {
                     if (!cUnitCtrlSets.add(unitCtrl)) {
                         continue;
                     }
-                    unitCtrl.compileToPhase(compilingPhase);
+                    compileUnitToPhase(unitCtrl, compilingPhase);
                 }
             }
             Profiler.getInstance().endSpan(span);
@@ -188,6 +192,9 @@ public abstract class KalangCompiler implements CompileContext {
     protected void initCompilePhases() {
         compilePhaseManager.registerPhase(StandardCompilePhases.PARSE_DECLARATION, u ->
             u.getAstBuilder().parseMemberDeclaration(getAstLoader())
+        );
+        compilePhaseManager.registerPhase(StandardCompilePhases.BUILD_DEFAULT_MEMBERS, u ->
+            u.getAstBuilder().buildDefaultMembers()
         );
         compilePhaseManager.registerPhase(StandardCompilePhases.PARSE_BODY, u ->
             u.getAstBuilder().parseMemberBody(getAstLoader())
@@ -307,4 +314,16 @@ public abstract class KalangCompiler implements CompileContext {
     protected CompilePhaseManager getCompilePhaseManager() {
         return compilePhaseManager;
     }
+
+    private void compileUnitToPhase(CompilationUnitController unit, CompilePhase targetPhase) {
+        ObjectType unitSuperType = unit.getCompilationUnit().getAst().getSuperType();
+        String unitSuperClsName = unitSuperType == null ? null : unitSuperType.getName();
+        CompilationUnitController superUnitCtrl = unitSuperClsName == null ? null : compilationUnitCtrlMap.get(unitSuperClsName);
+        //compile super unit first because subclass may depend on super type
+        if (superUnitCtrl != null) {
+            compileUnitToPhase(superUnitCtrl, targetPhase);
+        }
+        unit.compileToPhase(targetPhase);
+    }
+
 }

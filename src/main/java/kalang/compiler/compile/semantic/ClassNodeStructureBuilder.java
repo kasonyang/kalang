@@ -72,7 +72,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                 thisClazz.addInterface(parseClassType(itf));
             }
         }
-        if (this.isDeclaringNonStaticInnerClass()) {
+        if (AstUtil.isNonStaticInnerClass(thisClazz)) {
             ClassNode parentClass = thisClazz.enclosingClass;
             if (parentClass == null) {
                 throw Exceptions.unexpectedValue(null);
@@ -81,59 +81,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             field.offset = OffsetRange.NONE;
         }
         visitClassBody(ctx.classBody());
-        if (!ModifierUtil.isInterface(thisClazz.getModifier()) && !AstUtil.containsConstructor(thisClazz)
-                && !AstUtil.createEmptyConstructor(thisClazz)) {
-            handleSyntaxError("failed to create constructor with no parameters", offset(ctx));
-        }
-        MethodNode[] methods = thisClazz.getDeclaredMethodNodes();
-        for (MethodNode node : methods) {
-            BlockStmt body = node.getBody();
-            if (body != null) {
-                if (AstUtil.isConstructor(node)) {//constructor
-                    if (this.isDeclaringNonStaticInnerClass()) {
-                        ClassNode enclosingClass = thisClazz.enclosingClass;
-                        if (enclosingClass == null) {
-                            throw Exceptions.unexpectedValue(null);
-                        }
-                        ParameterNode outerInstanceParam = node.createParameter(0, Types.getClassType(enclosingClass), "this$0");
-                        AssignableExpr parentFieldExpr = getObjectFieldExpr(
-                                new ThisExpr(Types.getClassType(thisClazz)), "this$0", OffsetRange.NONE
-                        );
-                        if (parentFieldExpr == null) {
-                            throw Exceptions.unexpectedValue(null);
-                        }
-                        ExprStmt initThis$0Stmt = new ExprStmt(new AssignExpr(parentFieldExpr, new VarExpr(outerInstanceParam)));
-                        AstUtil.mapOffset(initThis$0Stmt, OffsetRange.NONE, true);
-                        body.statements.add(1, initThis$0Stmt);
-                    }
-                }
-            }
-        }
-        for (FieldNode fieldNode : thisClazz.getFields()) {
-            int mdf = fieldNode.getModifier();
-            if (Modifier.isStatic(mdf)){
-                continue;
-            }
-            if (!Modifier.isPublic(mdf) && !Modifier.isProtected(mdf)){
-                continue;
-            }
-            if (!AstUtil.hasGetter(thisClazz, fieldNode)) {
-                AstUtil.createGetter(thisClazz, fieldNode, mdf);
-            }
-            if (!AstUtil.hasSetter(thisClazz, fieldNode)) {
-                AstUtil.createSetter(thisClazz, fieldNode, mdf);
-            }
-            fieldNode.setModifier(ModifierUtil.setPrivate(mdf));
-        }
         return null;
-    }
-
-    private boolean isNonStaticInnerClass(ClassNode clazz) {
-        return clazz.enclosingClass != null && !Modifier.isStatic(clazz.getModifier()) && !Modifier.isInterface(clazz.getModifier());
-    }
-
-    private boolean isDeclaringNonStaticInnerClass() {
-        return isNonStaticInnerClass(thisClazz);
     }
 
     @Override

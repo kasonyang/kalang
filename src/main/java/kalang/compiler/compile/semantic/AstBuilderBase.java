@@ -87,6 +87,56 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         importMixinMethod(classNode, null, null);
     }
 
+    protected void buildDefaultMembers(ClassNode clazz) {
+        for (ClassNode c : clazz.classes) {
+            buildDefaultMembers(c);
+        }
+        if (!ModifierUtil.isInterface(clazz.getModifier()) && !AstUtil.containsConstructor(clazz)
+                && !AstUtil.createEmptyConstructor(clazz)) {
+            handleSyntaxError("failed to create constructor with no parameters", clazz.offset);
+        }
+        MethodNode[] methods = clazz.getDeclaredMethodNodes();
+        for (MethodNode node : methods) {
+            BlockStmt body = node.getBody();
+            if (body != null) {
+                if (AstUtil.isConstructor(node)) {//constructor
+                    if (AstUtil.isNonStaticInnerClass(clazz)) {
+                        ClassNode enclosingClass = clazz.enclosingClass;
+                        if (enclosingClass == null) {
+                            throw Exceptions.unexpectedValue(null);
+                        }
+                        ParameterNode outerInstanceParam = node.createParameter(0, Types.getClassType(enclosingClass), "this$0");
+                        AssignableExpr parentFieldExpr = getObjectFieldExpr(
+                                new ThisExpr(Types.getClassType(clazz)), "this$0", OffsetRange.NONE
+                        );
+                        if (parentFieldExpr == null) {
+                            throw Exceptions.unexpectedValue(null);
+                        }
+                        ExprStmt initThis$0Stmt = new ExprStmt(new AssignExpr(parentFieldExpr, new VarExpr(outerInstanceParam)));
+                        AstUtil.mapOffset(initThis$0Stmt, OffsetRange.NONE, true);
+                        body.statements.add(1, initThis$0Stmt);
+                    }
+                }
+            }
+        }
+        for (FieldNode fieldNode : clazz.getFields()) {
+            int mdf = fieldNode.getModifier();
+            if (Modifier.isStatic(mdf)){
+                continue;
+            }
+            if (!Modifier.isPublic(mdf) && !Modifier.isProtected(mdf)){
+                continue;
+            }
+            if (!AstUtil.hasGetter(clazz, fieldNode)) {
+                AstUtil.createGetter(clazz, fieldNode, mdf);
+            }
+            if (!AstUtil.hasSetter(clazz, fieldNode)) {
+                AstUtil.createSetter(clazz, fieldNode, mdf);
+            }
+            fieldNode.setModifier(ModifierUtil.setPrivate(mdf));
+        }
+    }
+
     protected OffsetRange offset(ParserRuleContext ctx) {
         return OffsetRangeHelper.getOffsetRange(ctx);
     }

@@ -144,6 +144,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         buildClassNodeMeta(topClass);
     }
 
+    public void buildDefaultMembers() {
+        buildDefaultMembers(topClass);
+    }
+
     public void parseMemberBody(AstLoader astLoader) {
         setupAstLoader(astLoader);
         visitMethods(topClass);

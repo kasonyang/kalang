@@ -15,6 +15,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class AstUtil {
+
+    public static boolean isNonStaticInnerClass(ClassNode clazz) {
+        return clazz.enclosingClass != null && !Modifier.isStatic(clazz.getModifier()) && !Modifier.isInterface(clazz.getModifier());
+    }
     
     public static boolean createEmptyConstructor(ClassNode clazzNode){
         ObjectType supType = clazzNode.getSuperType();
