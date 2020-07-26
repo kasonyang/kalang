@@ -2094,6 +2094,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         Type[] actualFuncTypes = MethodUtil.getReturnAndParamTypes(methodNode.inferredReturnType, funcMethod.getParameterTypes());
         Map<ClassNode, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
         ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
+        if (!genericTypeMap.isEmpty()) {
+            //parameterized return type
+            methodNode.setType(ParameterizedUtil.parameterizedType(methodNode.getType(), genericTypeMap));
+        }
         lambdaExpr.fixType(parameterizedType);
         //TODO check return
         Set<VarObject> usedVars = new HashSet<>();

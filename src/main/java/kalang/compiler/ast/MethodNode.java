@@ -155,4 +155,9 @@ public class MethodNode extends AstNode implements Annotationable{
     public void setDefaultValue(@Nullable ConstExpr defaultValue) {
         this.defaultValue = defaultValue;
     }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
 }
