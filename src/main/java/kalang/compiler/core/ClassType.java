@@ -132,6 +132,11 @@ public class ClassType extends ObjectType {
         if(super.isAssignableFrom(type)) return true;
         if(type instanceof ClassType){
             ClassType other = (ClassType) type;
+            // infer generic type from left type. For example: List<String> list = Collections.emptyList();
+            Map<ClassNode, Type> gtm = ParameterizedUtil.getGenericTypeMap(new Type[]{other}, new Type[]{this});
+            if (!gtm.isEmpty()) {
+                other = other.toParameterized(gtm);
+            }
             if(!nullable.isAssignableFrom(other.getNullable())) return false;
             ClassNode otherClazz = other.getClassNode();
             if(!clazz.getName().equals(otherClazz.getName())) return false;

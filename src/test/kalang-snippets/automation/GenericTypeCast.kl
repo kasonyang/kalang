@@ -1,0 +1,3 @@
+protected void test() {
+    List<? extends Exception> list = Collections.emptyList();
+}
