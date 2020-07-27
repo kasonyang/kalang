@@ -8,6 +8,8 @@ int testCallSelf(){
 
 
 static class A {
+    //TODO to support calling private constructor from inner class
+    //private constructor() {}
     int callB() {
         return new B().run();
     }
