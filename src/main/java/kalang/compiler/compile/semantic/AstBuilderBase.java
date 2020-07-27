@@ -130,7 +130,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             if (!AstUtil.hasGetter(clazz, fieldNode)) {
                 AstUtil.createGetter(clazz, fieldNode, mdf);
             }
-            if (!AstUtil.hasSetter(clazz, fieldNode)) {
+            if (!ModifierUtil.isFinal(fieldNode.getModifier()) && !AstUtil.hasSetter(clazz, fieldNode)) {
                 AstUtil.createSetter(clazz, fieldNode, mdf);
             }
             fieldNode.setModifier(ModifierUtil.setPrivate(mdf));
