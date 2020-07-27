@@ -5,12 +5,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-public class Runtime {
+public class KalangRuntime {
 
     private static BuildInfo buildInfo;
 
     public static URL getRuntimeClassPath() {
-        return Runtime.class.getProtectionDomain().getCodeSource().getLocation();
+        return KalangRuntime.class.getProtectionDomain().getCodeSource().getLocation();
     }
 
     public static synchronized Version getVersion() {
@@ -20,7 +20,7 @@ public class Runtime {
     public static synchronized BuildInfo getBuildInfo() {
         if (buildInfo == null) {
             Properties prop = new Properties();
-            InputStream is = Runtime.class.getResourceAsStream("runtime.properties");
+            InputStream is = KalangRuntime.class.getResourceAsStream("runtime.properties");
             if (is != null) {
                 try {
                     prop.load(is);
@@ -42,7 +42,7 @@ public class Runtime {
 
     public static class BuildInfo {
 
-        private Runtime.Version version;
+        private KalangRuntime.Version version;
 
         private long buildTime;
 

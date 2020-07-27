@@ -6,7 +6,7 @@ import kalang.compiler.profile.Span;
 import kalang.compiler.profile.SpanFormatter;
 import kalang.compiler.tool.KalangShell;
 import kalang.compiler.util.ClassPathUtil;
-import kalang.lang.Runtime;
+import kalang.lang.KalangRuntime;
 import org.apache.commons.cli.*;
 
 import javax.annotation.Nullable;
@@ -93,8 +93,8 @@ public abstract class ShellBase {
     }
     
     protected void printVersion() {
-        Runtime.BuildInfo bi = Runtime.getBuildInfo();
-        System.out.println(String.format("%s v%s\nBuild time: %s", appName, Runtime.getVersion(), new Date(bi.getBuildTime())));
+        KalangRuntime.BuildInfo bi = KalangRuntime.getBuildInfo();
+        System.out.println(String.format("%s v%s\nBuild time: %s", appName, KalangRuntime.getVersion(), new Date(bi.getBuildTime())));
     }
 
     protected Configuration createConfiguration(CommandLine cli) {
@@ -108,7 +108,7 @@ public abstract class ShellBase {
 
     protected ClassLoader createClassLoader(CommandLine cli) {
         Set<URL> urls = new HashSet<>();
-        URL runtimeClassPath = Runtime.getRuntimeClassPath();
+        URL runtimeClassPath = KalangRuntime.getRuntimeClassPath();
         LOG.fine("Runtime class path:" + runtimeClassPath);
         urls.add(runtimeClassPath);
         String[] libPaths = cli.getOptionValue("libpath", "").split(File.pathSeparator);
