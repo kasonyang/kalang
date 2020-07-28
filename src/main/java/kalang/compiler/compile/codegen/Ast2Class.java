@@ -310,7 +310,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             this.declareNewVar(p);
             if(p.getType() instanceof ObjectType){
                 String nullableAnnotation = getNullableAnnotation((ObjectType)p.getType());
-                if (nullableAnnotation!=null && nullableAnnotation.isEmpty()) {
+                if (nullableAnnotation!=null && !nullableAnnotation.isEmpty()) {
                     method.visitParameterAnnotation(i,getClassDescriptor(nullableAnnotation), true).visitEnd();
                 }
             }
