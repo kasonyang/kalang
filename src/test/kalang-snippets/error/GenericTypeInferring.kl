@@ -1,0 +1,5 @@
+java.util.Map<K,K> cannot be converted to java.util.Map<java.lang.String,java.lang.Exception>@4
+protected <K> Map<K,K> newMap() {
+    return new HashMap<>();
+}
+Map<String,Exception> map = newMap();

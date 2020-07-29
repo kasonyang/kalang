@@ -2,6 +2,6 @@ boolean testEmptyMap() {
     return newEmptyMap().isEmpty();
 }
 
-private Map<String,String> newEmptyMap() {
+protected Map<String,String> newEmptyMap() {
     return Collections.emptyMap();
 }

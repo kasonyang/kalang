@@ -47,12 +47,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
         thisClazz.annotations.addAll(getAnnotations(ctx.annotation()));
         //thisClazz.modifier = parseModifier(ctx.varModifier());
-        List<Token> gnrTypes = ctx.genericTypes;
-        if (gnrTypes != null && !gnrTypes.isEmpty()) {
-            for (Token g : gnrTypes) {
-                //TODO suport generic type bounds in syntax
-                GenericType gt = new GenericType(g.getText(), Types.getRootType(), null, NullableKind.NONNULL);
-                thisClazz.declareGenericType(gt);
+        if (ctx.typeParam != null) {
+            for (KalangParser.TypeParameterContext tpc : ctx.typeParam) {
+                thisClazz.declareGenericType(parseGenericType(tpc));
             }
         }
         ObjectType superType = null;
@@ -87,21 +84,13 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     @Override
     public AstNode visitMethodDecl(MethodDeclContext ctx) {
         String name;
-        Type type;
-        boolean isOverriding = ctx.OVERRIDE() != null;
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
-            type = Types.VOID_TYPE;
             name = "<init>";
         } else {
-            if (ctx.type() == null) {
-                type = Types.VOID_TYPE;
-            } else {
-                type = parseType(ctx.returnType);
-            }
             name = ctx.name.getText();
         }
         int modifier = parseModifier(ctx.varModifier());
-        //check method duplicated before generate java stub
+        boolean isOverriding = ctx.OVERRIDE() != null;
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();
         if(blockStmt==null){
             if(ModifierUtil.isInterface(thisClazz.getModifier())){
@@ -117,7 +106,20 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             methodBody = new BlockStmt();
             methodBody.offset = offset(ctx.blockStmt());
         }
-        MethodNode method = thisClazz.createMethodNode(type, name, modifier, methodBody);
+        //TODO simplify createMethod method
+        MethodNode method = thisClazz.createMethodNode(Types.getRootType(NullableKind.UNKNOWN), name, modifier, methodBody);
+        enterMethod(method);
+        //check method duplicated before generate java stub
+        if (ctx.typeParam != null) {
+            for (KalangParser.TypeParameterContext tpc : ctx.typeParam) {
+                method.declareGenericType(parseGenericType(tpc));
+            }
+        }
+        if (ctx.returnType == null) {
+            method.setType(Types.VOID_TYPE);
+        } else {
+            method.setType(parseType(ctx.returnType));
+        }
         List<KalangParser.ParamDeclContext> params = ctx.params;
         for (int i = 0; i < params.size(); i++) {
             KalangParser.ParamDeclContext p = params.get(i);
@@ -161,6 +163,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                 BlockStmt mBody = new BlockStmt();
                 mBody.offset = OffsetRange.NONE;
                 MethodNode m = thisClazz.createMethodNode(method.getType(), method.getName(), method.getModifier(), mBody);
+                for (GenericType gt : method.getGenericTypes()) {
+                    m.declareGenericType(gt);
+                }
                 for (int j = 0; j < i; j++) {
                     m.createParameter(methodParams[j].getType(), methodParams[j].getName(), methodParams[j].getModifier());
                 }

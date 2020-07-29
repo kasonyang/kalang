@@ -49,7 +49,7 @@ classDef:
     annotation*
     varModifier?
     (
-        classKind='class' ('<' genericTypes+=Identifier (',' genericTypes+=Identifier)* '>')?
+        classKind='class' ('<' typeParam+=typeParameter (',' typeParam+= typeParameter)* '>')?
         |classKind='interface'
     ) 
     name=Identifier?
@@ -89,8 +89,12 @@ methodDecl:
    annotation*
    OVERRIDE? DEFAULT? varModifier? 
    (
-     (returnType=type name=Identifier )
-     |(prefix='constructor')
+     (
+       ('<' typeParam+=typeParameter (',' typeParam+=typeParameter)* '>')?
+       returnType=type name=Identifier
+     )|(
+        prefix='constructor'
+     )
    )
    '('   
         (
@@ -139,6 +143,9 @@ parameterizedElementType:
 ;
 wildcardType:
     '?' (boundKind=('extends'|'super') classType)?
+;
+typeParameter:
+    Identifier ('extends' bounds+=classType ('&' bounds+=classType)* )?
 ;
 primitiveType:
   DOUBLE|LONG|FLOAT|INT|SHORT|CHAR|BOOLEAN|BYTE|VOID

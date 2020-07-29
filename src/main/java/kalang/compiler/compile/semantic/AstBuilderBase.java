@@ -305,6 +305,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return true;
     }
 
+    //TODO add callback and cleanup methodCtx after finish callback
     protected void enterMethod(MethodNode method) {
         methodCtx = new MethodContext(this.getCurrentClass(),method);
         lambdaExprCtxMap = new HashMap<>();
@@ -513,6 +514,31 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     @Nonnull
+    protected GenericType parseGenericType(KalangParser.TypeParameterContext ctx) {
+        String name = ctx.Identifier().getText();
+        List<KalangParser.ClassTypeContext> bounds = ctx.bounds;
+        ObjectType superType = Types.getRootType(NullableKind.UNKNOWN);
+        List<ObjectType> interfaces = Collections.emptyList();
+        if (bounds != null && !bounds.isEmpty()) {
+            interfaces = new ArrayList<>(bounds.size());
+            for (int i = 0; i < bounds.size(); i++) {
+                KalangParser.ClassTypeContext b = bounds.get(i);
+                ObjectType classType = parseClassType(b);
+                if (i > 0 && !ModifierUtil.isInterface(classType.getModifier())) {
+                    diagnosisReporter.error("interface expected", offset(b));
+                    continue;
+                }
+                if (ModifierUtil.isInterface(classType.getModifier())) {
+                    interfaces.add(classType);
+                } else {
+                    superType = classType;
+                }
+            }
+        }
+        return new GenericType(name, superType, interfaces.toArray(new ObjectType[0]), NullableKind.UNKNOWN);
+    }
+
+    @Nonnull
     protected ObjectType parseClassType(KalangParser.ClassTypeContext ctx) {
         NullableKind nullable = ctx.nullable == null ? NullableKind.NONNULL : NullableKind.NULLABLE;
         KalangParser.LambdaTypeContext lambdaType = ctx.lambdaType();
@@ -526,10 +552,13 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
         classNameParts.add(rawTypeToken.getText());
         String rawType = String.join(".", classNameParts);
-        for (GenericType gt : getCurrentClass().getGenericTypes()) {
-            if (rawType.equals(gt.getName())) {
-                return gt;
-            }
+        GenericType[] allGenericTypes = getCurrentClass().getGenericTypes();
+        if (methodCtx != null) {
+            allGenericTypes = CollectionMixin.concat(allGenericTypes, methodCtx.method.getGenericTypes());
+        }
+        GenericType gt = CollectionMixin.find(allGenericTypes, it -> rawType.equals(it.getName()));
+        if (gt != null) {
+            return gt;
         }
         ObjectType clazzType = requireClassType(rawType, rawTypeToken);
         ClassNode clazzNode = clazzType.getClassNode();

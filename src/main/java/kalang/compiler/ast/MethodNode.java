@@ -1,13 +1,12 @@
 package kalang.compiler.ast;
 
+import kalang.compiler.core.GenericType;
 import kalang.compiler.core.Type;
+import kalang.mixin.CollectionMixin;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class MethodNode extends AstNode implements Annotationable{
     
@@ -26,14 +25,16 @@ public class MethodNode extends AstNode implements Annotationable{
     @Nullable
     private ConstExpr defaultValue = null;
     
-    private final List<ParameterNode> parameters = new LinkedList();
+    private final List<ParameterNode> parameters = new LinkedList<>();
     
     private final List<AnnotationNode> annotations = new LinkedList<>();
+
+    private final List<GenericType> genericTypes = new LinkedList<>();
     
     @Nullable
     private final BlockStmt body;
     
-    private final List<Type> exceptionTypes = new LinkedList();
+    private final List<Type> exceptionTypes = new LinkedList<>();
     
     private final ClassNode classNode;
     
@@ -64,6 +65,17 @@ public class MethodNode extends AstNode implements Annotationable{
     
     public ParameterNode createParameter(int index,Type type,String name){
         return _createParameter(index, type, name, 0);
+    }
+
+    public void declareGenericType(GenericType type) {
+        if (CollectionMixin.find(genericTypes, it -> name.equals(it.getName())) != null) {
+            throw new IllegalArgumentException("duplicated type parameter:" + name);
+        }
+        genericTypes.add(type);
+    }
+
+    public GenericType[] getGenericTypes() {
+        return genericTypes.toArray(new GenericType[0]);
     }
     
     private ParameterNode _createParameter(Integer index,Type type,String name, int modifier){

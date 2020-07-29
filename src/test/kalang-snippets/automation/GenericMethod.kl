@@ -1,0 +1,5 @@
+protected <K,V> Map<K,V> newMap(K key, V value) {
+    val map = new HashMap<K,V>();
+    map.put(key, value);
+    return map;
+}

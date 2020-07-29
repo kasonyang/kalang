@@ -107,6 +107,12 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitWildcardType(KalangParser.WildcardTypeContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link KalangParser#typeParameter}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTypeParameter(KalangParser.TypeParameterContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link KalangParser#primitiveType}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
