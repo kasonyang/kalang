@@ -1,3 +1,7 @@
 protected void test() {
     List<? extends Exception> list = Collections.emptyList();
 }
+
+protected void testMap() {
+    Map<String,Exception> map = new HashMap<>();
+}

@@ -120,8 +120,11 @@ type:
 ;
 classType:
      ( paths +=Identifier '\\')* rawClass=Identifier
-        ('<' parameterTypes+=parameterizedElementType 
-                    ( ',' parameterTypes+=parameterizedElementType)* 
+        (typeArgsPrefix='<'
+            (
+                parameterTypes+=parameterizedElementType
+                ( ',' parameterTypes+=parameterizedElementType)*
+            )?
         '>')?
         (nullable='?')?
      | lambdaType

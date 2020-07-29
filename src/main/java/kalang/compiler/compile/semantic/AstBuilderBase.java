@@ -534,6 +534,10 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         ObjectType clazzType = requireClassType(rawType, rawTypeToken);
         ClassNode clazzNode = clazzType.getClassNode();
         GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
+        boolean isRawType = ctx.typeArgsPrefix == null;
+        if (isRawType) {
+            return Types.getClassType(clazzType.getClassNode(), nullable);
+        }
         List<KalangParser.ParameterizedElementTypeContext> parameterTypes = ctx.parameterTypes;
         if (parameterTypes != null && !parameterTypes.isEmpty()) {
             Type[] typeArguments = new Type[parameterTypes.size()];
@@ -546,7 +550,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             }
             return Types.getClassType(clazzType.getClassNode(), typeArguments, nullable);
         } else {
-            return Types.getClassType(clazzType.getClassNode(), nullable);
+            return Types.getClassType(clazzType.getClassNode(), clzDeclaredGenericTypes, nullable);
         }
     }
 
