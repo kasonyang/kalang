@@ -7,7 +7,6 @@ import kalang.compiler.dependency.ResolveResult;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.ClassPathUtil;
-import kalang.mixin.CollectionMixin;
 import kalang.type.Function0;
 import org.apache.commons.io.FileUtils;
 
@@ -125,8 +124,7 @@ public class KalangOption {
             DependencyResolver resolver =new DependencyResolver(repositories);
             return resolver.resolve(artifacts.toArray(new Artifact[0]));
         };
-        boolean containsSnapshots = CollectionMixin.find(dependencies, it -> it.toUpperCase().endsWith("-SNAPSHOT")) != null;
-        if (enableCache && !containsSnapshots) {
+        if (enableCache) {
             File cacheFile = new File(getAppHomeDir("cache", true), "dependencies.cache");
             DependenciesCache dc = new DependenciesCache(cacheFile);
             return dc.get(dependencies, depResolver);
