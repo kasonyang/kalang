@@ -163,16 +163,17 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             if(stats!=null){
                 BlockStmt mbody = m.getBody();
                 assert mbody != null;
-                enterMethod(m);
-                Statement prevStmt = null;
-                for (StatContext s: stats) {
-                    if (terminalStatAnalyzer.isTerminalStatement(prevStmt)) {
-                        handleSyntaxError("unreachable statement", offset(s));
+                enterMethod(m, () -> {
+                    Statement prevStmt = null;
+                    for (StatContext s: stats) {
+                        if (terminalStatAnalyzer.isTerminalStatement(prevStmt)) {
+                            handleSyntaxError("unreachable statement", offset(s));
+                        }
+                        prevStmt = visitStat(s);
+                        mbody.statements.add(prevStmt);
                     }
-                    prevStmt = visitStat(s);
-                    mbody.statements.add(prevStmt);
-                }
-                checkMethod();
+                    checkMethod();
+                });
             }
         }
         List<MissingParamMethodInfo> missParamsMethods = classNodeStructureBuilder.getMissParamMethods();
@@ -182,39 +183,40 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             MethodNode originMethod = e.getOriginMethod();
             ParameterNode[] mnParams = m.getParameters();
             ParameterNode[] originParams = originMethod.getParameters();
-            enterMethod(m);
-            ExprNode[] callParams = new ExprNode[originParams.length];
-            for (int i = 0; i < mnParams.length; i++) {
-                callParams[i] = new VarExpr(mnParams[i]);
-            }
-            for (int i = mnParams.length; i < originParams.length; i++) {
-                ParamDeclContext pCtx = mdCtx.params.get(i);
-                ExpressionContext defValCtx = pCtx.paramDefVal;
-                if (defValCtx == null) {
-                    handleSyntaxError("missing default value for parameter " + pCtx.paramId.getText(), offset(pCtx));
-                    return;
-                } else {
-                    callParams[i] = requireImplicitCast(originParams[i].getType(), visitExpression(defValCtx), offset(defValCtx));
-                    if (Types.NULL_TYPE.equals(callParams[i].getType())) {
-                        callParams[i] = new CastExpr(originParams[i].getType(), callParams[i]);
+            enterMethod(m, () -> {
+                ExprNode[] callParams = new ExprNode[originParams.length];
+                for (int i = 0; i < mnParams.length; i++) {
+                    callParams[i] = new VarExpr(mnParams[i]);
+                }
+                for (int i = mnParams.length; i < originParams.length; i++) {
+                    ParamDeclContext pCtx = mdCtx.params.get(i);
+                    ExpressionContext defValCtx = pCtx.paramDefVal;
+                    if (defValCtx == null) {
+                        handleSyntaxError("missing default value for parameter " + pCtx.paramId.getText(), offset(pCtx));
+                        return;
+                    } else {
+                        callParams[i] = requireImplicitCast(originParams[i].getType(), visitExpression(defValCtx), offset(defValCtx));
+                        if (Types.NULL_TYPE.equals(callParams[i].getType())) {
+                            callParams[i] = new CastExpr(originParams[i].getType(), callParams[i]);
+                        }
                     }
                 }
-            }
-            ExprNode callExpr;
-            if (ModifierUtil.isStatic(originMethod.getModifier())) {
-                callExpr = getStaticInvokeExpr(new ClassReference(thisClazz), m.getName(), callParams, OffsetRange.NONE);
-            } else {
-                callExpr = getObjectInvokeExpr(createThisExpr(OffsetRange.NONE), m.getName(), callParams, OffsetRange.NONE);
-            }
-            Objects.requireNonNull(callExpr);
-            BlockStmt mbody = m.getBody();
-            assert mbody != null;
-            if (Types.VOID_TYPE.equals(m.getType())) {
-                mbody.statements.add(new ExprStmt(callExpr));
-            } else {
-                mbody.statements.add((new ReturnStmt(callExpr)));
-            }
-            AstUtil.mapOffset(mbody, OffsetRange.NONE, true);
+                ExprNode callExpr;
+                if (ModifierUtil.isStatic(originMethod.getModifier())) {
+                    callExpr = getStaticInvokeExpr(new ClassReference(thisClazz), m.getName(), callParams, OffsetRange.NONE);
+                } else {
+                    callExpr = getObjectInvokeExpr(createThisExpr(OffsetRange.NONE), m.getName(), callParams, OffsetRange.NONE);
+                }
+                Objects.requireNonNull(callExpr);
+                BlockStmt mbody = m.getBody();
+                assert mbody != null;
+                if (Types.VOID_TYPE.equals(m.getType())) {
+                    mbody.statements.add(new ExprStmt(callExpr));
+                } else {
+                    mbody.statements.add((new ReturnStmt(callExpr)));
+                }
+                AstUtil.mapOffset(mbody, OffsetRange.NONE, true);
+            });
         }
         for(ClassNode c:clazz.classes){
             this.visitMethods(c);
@@ -2032,102 +2034,102 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         methodNodeBody.offset = offset(ctx);
         MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , modifier, methodNodeBody);
         mapAst(methodNode, ctx.start);
-        enterMethod(methodNode);
-        Map<String, AssignableObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
-        for( Map.Entry<String, AssignableObject> v:accessibleVars.entrySet()) {
-            String name = v.getKey();
-            AssignableObject var = v.getValue();
-            methodNode.createParameter(var.getType(), name, Modifier.FINAL | ModifierConstant.SYNTHETIC);
-        }
-        List<Token> lambdaParams = ctx.lambdaParams;
-        if (paramTypes.length < lambdaParams.size()) {
-            String msg = String.format("expected %d parameters but got %d",paramTypes.length,lambdaParams.size());
-            handleSyntaxError(msg, offset(ctx));
-            return;
-        }
-        for (int i=0;i<paramTypes.length;i++) {
-            Type pt = paramTypes[i];
-            String name = null;
-            if (i<ctx.lambdaParams.size()) {
-                name = ctx.lambdaParams.get(i).getText();
+        enterMethod(methodNode, ()-> {
+            Map<String, AssignableObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
+            for( Map.Entry<String, AssignableObject> v:accessibleVars.entrySet()) {
+                String name = v.getKey();
+                AssignableObject var = v.getValue();
+                methodNode.createParameter(var.getType(), name, Modifier.FINAL | ModifierConstant.SYNTHETIC);
             }
-            ParameterNode pn = methodNode.createParameter(pt, name);
-            if (i < ctx.lambdaParams.size()) {
-                mapAst(pn, ctx.lambdaParams.get(i));
+            List<Token> lambdaParams = ctx.lambdaParams;
+            if (paramTypes.length < lambdaParams.size()) {
+                String msg = String.format("expected %d parameters but got %d",paramTypes.length,lambdaParams.size());
+                handleSyntaxError(msg, offset(ctx));
+                return;
             }
-        }
-        BlockStmt bs = this.newBlock(() -> {
-            LinkedList<Statement> bsStatements = new LinkedList<>();
-            ExpressionContext bodyExprCtx = ctx.expression();
-            if (bodyExprCtx != null) {
-                ExprNode bodyExpr = visitExpression(bodyExprCtx);
-                if (!returnType.equals(Types.VOID_TYPE)) {
-                    bodyExpr = requireImplicitCast(methodCtx.method.getType(), bodyExpr, offset(bodyExprCtx));
-                    ReturnStmt retStmt = new ReturnStmt(bodyExpr);
-                    retStmt.offset = bodyExpr.offset;
-                    bsStatements.add(onReturnStmt(retStmt));
-                } else {
-                    ExprStmt exprStmt = new ExprStmt(bodyExpr);
-                    exprStmt.offset = bodyExpr.offset;
-                    bsStatements.add(exprStmt);
+            for (int i=0;i<paramTypes.length;i++) {
+                Type pt = paramTypes[i];
+                String name = null;
+                if (i<ctx.lambdaParams.size()) {
+                    name = ctx.lambdaParams.get(i).getText();
                 }
-            } else {
-                List<StatContext> stats = ctx.stat();
-                for (StatContext s : stats) {
-                    Statement statement = visitStat(s);
-                    if (statement != null) {
-                        bsStatements.add(statement);
+                ParameterNode pn = methodNode.createParameter(pt, name);
+                if (i < ctx.lambdaParams.size()) {
+                    mapAst(pn, ctx.lambdaParams.get(i));
+                }
+            }
+            BlockStmt bs = this.newBlock(() -> {
+                LinkedList<Statement> bsStatements = new LinkedList<>();
+                ExpressionContext bodyExprCtx = ctx.expression();
+                if (bodyExprCtx != null) {
+                    ExprNode bodyExpr = visitExpression(bodyExprCtx);
+                    if (!returnType.equals(Types.VOID_TYPE)) {
+                        bodyExpr = requireImplicitCast(methodCtx.method.getType(), bodyExpr, offset(bodyExprCtx));
+                        ReturnStmt retStmt = new ReturnStmt(bodyExpr);
+                        retStmt.offset = bodyExpr.offset;
+                        bsStatements.add(onReturnStmt(retStmt));
+                    } else {
+                        ExprStmt exprStmt = new ExprStmt(bodyExpr);
+                        exprStmt.offset = bodyExpr.offset;
+                        bsStatements.add(exprStmt);
+                    }
+                } else {
+                    List<StatContext> stats = ctx.stat();
+                    for (StatContext s : stats) {
+                        Statement statement = visitStat(s);
+                        if (statement != null) {
+                            bsStatements.add(statement);
+                        }
                     }
                 }
+                if (returnType.equals(Types.getVoidClassType())) {
+                    ReturnStmt defaultRetStmt = new ReturnStmt(new ConstExpr(null));
+                    AstUtil.mapOffset(defaultRetStmt, OffsetRange.NONE, true);
+                    bsStatements.add(onReturnStmt(defaultRetStmt));
+                }
+                return bsStatements;
+            });
+            bs.offset =  offset(ctx);
+            methodNodeBody.statements.add(bs);
+            checkMethod();
+            Type[] declaredFuncTypes = MethodUtil.getReturnAndParamTypes(funcMethod);
+            Type[] actualFuncTypes = MethodUtil.getReturnAndParamTypes(methodNode.inferredReturnType, funcMethod.getParameterTypes());
+            Map<ClassNode, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
+            ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
+            if (!genericTypeMap.isEmpty()) {
+                //parameterized return type
+                methodNode.setType(ParameterizedUtil.parameterizedType(methodNode.getType(), genericTypeMap));
             }
-            if (returnType.equals(Types.getVoidClassType())) {
-                ReturnStmt defaultRetStmt = new ReturnStmt(new ConstExpr(null));
-                AstUtil.mapOffset(defaultRetStmt, OffsetRange.NONE, true);
-                bsStatements.add(onReturnStmt(defaultRetStmt));
+            lambdaExpr.fixType(parameterizedType);
+            //TODO check return
+            Set<VarObject> usedVars = new HashSet<>();
+            new AstNodeCollector().collect(methodNode, VarExpr.class).forEach(it -> usedVars.add(it.getVar()));
+            for (ParameterNode p: methodNode.getParameters()) {
+                if (!ModifierUtil.isSynthetic(p.getModifier())) {
+                    break;
+                }
+                if (!usedVars.contains(p)) {
+                    methodNode.removeParameter(p);
+                }
             }
-            return bsStatements;
+            lambdaExpr.setInvokeMethod(methodNode);
+            List<ExprNode> captureArgs = lambdaExpr.getCaptureArguments();
+            if (!ModifierUtil.isStatic(oldMethodCtx.method.getModifier())) {
+                captureArgs.add(new ThisExpr(getThisType()));
+            }
+            for (ParameterNode p: methodNode.getParameters()) {
+                if (!ModifierUtil.isSynthetic(p.getModifier())) {
+                    break;
+                }
+                AssignableObject captureVar = accessibleVars.get(p.getName());
+                Objects.requireNonNull(captureVar);
+                if (captureVar instanceof VarObject) {
+                    captureArgs.add(new VarExpr((VarObject) captureVar));
+                }  else {
+                    throw Exceptions.unexpectedValue(captureVar);
+                }
+            }
         });
-        bs.offset =  offset(ctx);
-        methodNodeBody.statements.add(bs);
-        checkMethod();
-        Type[] declaredFuncTypes = MethodUtil.getReturnAndParamTypes(funcMethod);
-        Type[] actualFuncTypes = MethodUtil.getReturnAndParamTypes(methodNode.inferredReturnType, funcMethod.getParameterTypes());
-        Map<ClassNode, Type> genericTypeMap = ParameterizedUtil.getGenericTypeMap(declaredFuncTypes, actualFuncTypes);
-        ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
-        if (!genericTypeMap.isEmpty()) {
-            //parameterized return type
-            methodNode.setType(ParameterizedUtil.parameterizedType(methodNode.getType(), genericTypeMap));
-        }
-        lambdaExpr.fixType(parameterizedType);
-        //TODO check return
-        Set<VarObject> usedVars = new HashSet<>();
-        new AstNodeCollector().collect(methodNode, VarExpr.class).forEach(it -> usedVars.add(it.getVar()));
-        for (ParameterNode p: methodNode.getParameters()) {
-            if (!ModifierUtil.isSynthetic(p.getModifier())) {
-                break;
-            }
-            if (!usedVars.contains(p)) {
-                methodNode.removeParameter(p);
-            }
-        }
-        lambdaExpr.setInvokeMethod(methodNode);
-        List<ExprNode> captureArgs = lambdaExpr.getCaptureArguments();
-        if (!ModifierUtil.isStatic(oldMethodCtx.method.getModifier())) {
-            captureArgs.add(new ThisExpr(getThisType()));
-        }
-        for (ParameterNode p: methodNode.getParameters()) {
-            if (!ModifierUtil.isSynthetic(p.getModifier())) {
-                break;
-            }
-            AssignableObject captureVar = accessibleVars.get(p.getName());
-            Objects.requireNonNull(captureVar);
-            if (captureVar instanceof VarObject) {
-                captureArgs.add(new VarExpr((VarObject) captureVar));
-            }  else {
-                throw Exceptions.unexpectedValue(captureVar);
-            }
-        }
-        methodCtx = oldMethodCtx;
     }
 
     private void processConstructorsAndStaticInitStmts(ClassNode clazz) {
