@@ -1,20 +1,22 @@
 package kalang.compiler.compile.semantic;
 
-import kalang.compiler.compile.AstNotFoundException;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.antlr.KalangParser.MethodDeclContext;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.*;
 import kalang.compiler.core.*;
-import kalang.compiler.util.Exceptions;
 import kalang.compiler.util.AstUtil;
+import kalang.compiler.util.Exceptions;
 import kalang.compiler.util.ModifierUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -108,77 +110,78 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         }
         //TODO simplify createMethod method
         MethodNode method = thisClazz.createMethodNode(Types.getRootType(NullableKind.UNKNOWN), name, modifier, methodBody);
-        enterMethod(method);
-        //check method duplicated before generate java stub
-        if (ctx.typeParam != null) {
-            for (KalangParser.TypeParameterContext tpc : ctx.typeParam) {
-                method.declareGenericType(parseGenericType(tpc));
-            }
-        }
-        if (ctx.returnType == null) {
-            method.setType(Types.VOID_TYPE);
-        } else {
-            method.setType(parseType(ctx.returnType));
-        }
-        List<KalangParser.ParamDeclContext> params = ctx.params;
-        for (int i = 0; i < params.size(); i++) {
-            KalangParser.ParamDeclContext p = params.get(i);
-            Type pt;
-            if (p.VARARGS != null) {
-                if (i == params.size() - 1) {
-                    method.addModifier(ModifierConstant.VARARGS);
-                } else {
-                    handleSyntaxError("Vararg parameter must be the last parameter", offset(p));
+        enterMethod(method, () -> {
+            //check method duplicated before generate java stub
+            if (ctx.typeParam != null) {
+                for (KalangParser.TypeParameterContext tpc : ctx.typeParam) {
+                    method.declareGenericType(parseGenericType(tpc));
                 }
-                pt = Types.getArrayType(parseType(p.paramType));
+            }
+            if (ctx.returnType == null) {
+                method.setType(Types.VOID_TYPE);
             } else {
-                pt = parseType(p.paramType);
+                method.setType(parseType(ctx.returnType));
             }
-            ParameterNode pn = method.createParameter(pt, p.paramId.getText());
-            mapAst(pn, p);
-        }
-        if (isOverriding) {
-            method.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));
-        }
-        for(AnnotationNode a:getAnnotations(ctx.annotation()))  method.addAnnotation(a);
-        KalangParser.BlockStmtContext bstm = ctx.blockStmt();
-        if(bstm!=null){
-            List<KalangParser.StatContext> stats = bstm.stat();
-            if(stats!=null) this.methodStatsContexts.put(method, stats.toArray(new KalangParser.StatContext[0]));
-        }
-        if (ctx.exceptionTypes != null) {
-            for (Token et : ctx.exceptionTypes) {
-                ObjectType exType = requireClassType(et);
-                if(exType!=null){
-                    method.addExceptionType(exType);
+            List<KalangParser.ParamDeclContext> params = ctx.params;
+            for (int i = 0; i < params.size(); i++) {
+                KalangParser.ParamDeclContext p = params.get(i);
+                Type pt;
+                if (p.VARARGS != null) {
+                    if (i == params.size() - 1) {
+                        method.addModifier(ModifierConstant.VARARGS);
+                    } else {
+                        handleSyntaxError("Vararg parameter must be the last parameter", offset(p));
+                    }
+                    pt = Types.getArrayType(parseType(p.paramType));
+                } else {
+                    pt = parseType(p.paramType);
+                }
+                ParameterNode pn = method.createParameter(pt, p.paramId.getText());
+                mapAst(pn, p);
+            }
+            if (isOverriding) {
+                method.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));
+            }
+            for(AnnotationNode a:getAnnotations(ctx.annotation()))  method.addAnnotation(a);
+            KalangParser.BlockStmtContext bstm = ctx.blockStmt();
+            if(bstm!=null){
+                List<KalangParser.StatContext> stats = bstm.stat();
+                if(stats!=null) this.methodStatsContexts.put(method, stats.toArray(new KalangParser.StatContext[0]));
+            }
+            if (ctx.exceptionTypes != null) {
+                for (Token et : ctx.exceptionTypes) {
+                    ObjectType exType = requireClassType(et);
+                    if(exType!=null){
+                        method.addExceptionType(exType);
+                    }
                 }
             }
-        }
-        mapAst(method, ctx);
-        ParameterNode[] methodParams = method.getParameters();
-        int paramsCount = methodParams.length;
-        for(int i = 0;i < paramsCount;i++){
-            KalangParser.ParamDeclContext p = ctx.params.get(i);
-            if (p.paramDefVal != null) {
-                BlockStmt mBody = new BlockStmt();
-                mBody.offset = OffsetRange.NONE;
-                MethodNode m = thisClazz.createMethodNode(method.getType(), method.getName(), method.getModifier(), mBody);
-                for (GenericType gt : method.getGenericTypes()) {
-                    m.declareGenericType(gt);
+            mapAst(method, ctx);
+            ParameterNode[] methodParams = method.getParameters();
+            int paramsCount = methodParams.length;
+            for(int i = 0;i < paramsCount;i++){
+                KalangParser.ParamDeclContext p = ctx.params.get(i);
+                if (p.paramDefVal != null) {
+                    BlockStmt mBody = new BlockStmt();
+                    mBody.offset = OffsetRange.NONE;
+                    MethodNode m = thisClazz.createMethodNode(method.getType(), method.getName(), method.getModifier(), mBody);
+                    for (GenericType gt : method.getGenericTypes()) {
+                        m.declareGenericType(gt);
+                    }
+                    for (int j = 0; j < i; j++) {
+                        m.createParameter(methodParams[j].getType(), methodParams[j].getName(), methodParams[j].getModifier());
+                    }
+                    for (AnnotationNode a: m.getAnnotations()) {
+                        m.addAnnotation(a);
+                    }
+                    for (Type e: m.getExceptionTypes()) {
+                        m.addExceptionType(e);
+                    }
+                    mapAst(m, ctx);
+                    missParamMethods.add(new MissingParamMethodInfo(m, method, ctx));
                 }
-                for (int j = 0; j < i; j++) {
-                    m.createParameter(methodParams[j].getType(), methodParams[j].getName(), methodParams[j].getModifier());
-                }
-                for (AnnotationNode a: m.getAnnotations()) {
-                    m.addAnnotation(a);
-                }
-                for (Type e: m.getExceptionTypes()) {
-                    m.addExceptionType(e);
-                }
-                mapAst(m, ctx);
-                missParamMethods.add(new MissingParamMethodInfo(m, method, ctx));
             }
-        }
+        });
         return null;
     }
     

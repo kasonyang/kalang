@@ -305,10 +305,17 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return true;
     }
 
-    //TODO add callback and cleanup methodCtx after finish callback
-    protected void enterMethod(MethodNode method) {
-        methodCtx = new MethodContext(this.getCurrentClass(),method);
-        lambdaExprCtxMap = new HashMap<>();
+    protected void enterMethod(MethodNode method, Runnable callback) {
+        MethodContext oldMethodCtx = methodCtx;
+        Map<LambdaExpr, ParserRuleContext> oldLambdaExprCtxMap = lambdaExprCtxMap;
+        try {
+            methodCtx = new MethodContext(this.getCurrentClass(), method);
+            lambdaExprCtxMap = new HashMap<>();
+            callback.run();
+        } finally {
+            methodCtx = oldMethodCtx;
+            lambdaExprCtxMap = oldLambdaExprCtxMap;
+        }
     }
 
     @Nullable
