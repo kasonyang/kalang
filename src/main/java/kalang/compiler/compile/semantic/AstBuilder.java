@@ -151,6 +151,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     public void parseMemberBody(AstLoader astLoader) {
         setupAstLoader(astLoader);
         visitMethods(topClass);
+        buildMissParamMethods();
         processConstructorsAndStaticInitStmts(topClass);
         checkAndBuildInterfaceMethods(topClass);
     }
@@ -175,48 +176,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     checkMethod();
                 });
             }
-        }
-        List<MissingParamMethodInfo> missParamsMethods = classNodeStructureBuilder.getMissParamMethods();
-        for (MissingParamMethodInfo e: missParamsMethods) {
-            MethodNode m = e.getMissingParamMethod();
-            MethodDeclContext mdCtx = e.getMethodDeclContext();
-            MethodNode originMethod = e.getOriginMethod();
-            ParameterNode[] mnParams = m.getParameters();
-            ParameterNode[] originParams = originMethod.getParameters();
-            enterMethod(m, () -> {
-                ExprNode[] callParams = new ExprNode[originParams.length];
-                for (int i = 0; i < mnParams.length; i++) {
-                    callParams[i] = new VarExpr(mnParams[i]);
-                }
-                for (int i = mnParams.length; i < originParams.length; i++) {
-                    ParamDeclContext pCtx = mdCtx.params.get(i);
-                    ExpressionContext defValCtx = pCtx.paramDefVal;
-                    if (defValCtx == null) {
-                        handleSyntaxError("missing default value for parameter " + pCtx.paramId.getText(), offset(pCtx));
-                        return;
-                    } else {
-                        callParams[i] = requireImplicitCast(originParams[i].getType(), visitExpression(defValCtx), offset(defValCtx));
-                        if (Types.NULL_TYPE.equals(callParams[i].getType())) {
-                            callParams[i] = new CastExpr(originParams[i].getType(), callParams[i]);
-                        }
-                    }
-                }
-                ExprNode callExpr;
-                if (ModifierUtil.isStatic(originMethod.getModifier())) {
-                    callExpr = getStaticInvokeExpr(new ClassReference(thisClazz), m.getName(), callParams, OffsetRange.NONE);
-                } else {
-                    callExpr = getObjectInvokeExpr(createThisExpr(OffsetRange.NONE), m.getName(), callParams, OffsetRange.NONE);
-                }
-                Objects.requireNonNull(callExpr);
-                BlockStmt mbody = m.getBody();
-                assert mbody != null;
-                if (Types.VOID_TYPE.equals(m.getType())) {
-                    mbody.statements.add(new ExprStmt(callExpr));
-                } else {
-                    mbody.statements.add((new ReturnStmt(callExpr)));
-                }
-                AstUtil.mapOffset(mbody, OffsetRange.NONE, true);
-            });
         }
         for(ClassNode c:clazz.classes){
             this.visitMethods(c);
@@ -2397,6 +2356,58 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             this.astLoader = astLoader;
         }
         compilationUnit.getTypeNameResolver().setAstLoader(astLoader);
+    }
+
+    private void buildMissParamMethods() {
+        List<MissingParamMethodInfo> missParamsMethods = classNodeStructureBuilder.getMissParamMethods();
+        for (MissingParamMethodInfo e: missParamsMethods) {
+            MethodNode m = e.getMissingParamMethod();
+            MethodDeclContext mdCtx = e.getMethodDeclContext();
+            MethodNode originMethod = e.getOriginMethod();
+            ParameterNode[] mnParams = m.getParameters();
+            ParameterNode[] originParams = originMethod.getParameters();
+            ClassNode oldThisClazz = thisClazz;
+            thisClazz = m.getClassNode();
+            try {
+                enterMethod(m, () -> {
+                    thisClazz = m.getClassNode();
+                    ExprNode[] callParams = new ExprNode[originParams.length];
+                    for (int i = 0; i < mnParams.length; i++) {
+                        callParams[i] = new VarExpr(mnParams[i]);
+                    }
+                    for (int i = mnParams.length; i < originParams.length; i++) {
+                        ParamDeclContext pCtx = mdCtx.params.get(i);
+                        ExpressionContext defValCtx = pCtx.paramDefVal;
+                        if (defValCtx == null) {
+                            handleSyntaxError("missing default value for parameter " + pCtx.paramId.getText(), offset(pCtx));
+                            return;
+                        } else {
+                            callParams[i] = requireImplicitCast(originParams[i].getType(), visitExpression(defValCtx), offset(defValCtx));
+                            if (Types.NULL_TYPE.equals(callParams[i].getType())) {
+                                callParams[i] = new CastExpr(originParams[i].getType(), callParams[i]);
+                            }
+                        }
+                    }
+                    ExprNode callExpr;
+                    if (ModifierUtil.isStatic(originMethod.getModifier())) {
+                        callExpr = getStaticInvokeExpr(new ClassReference(thisClazz), m.getName(), callParams, OffsetRange.NONE);
+                    } else {
+                        callExpr = getObjectInvokeExpr(createThisExpr(OffsetRange.NONE), m.getName(), callParams, OffsetRange.NONE);
+                    }
+                    Objects.requireNonNull(callExpr);
+                    BlockStmt mbody = m.getBody();
+                    assert mbody != null;
+                    if (Types.VOID_TYPE.equals(m.getType())) {
+                        mbody.statements.add(new ExprStmt(callExpr));
+                    } else {
+                        mbody.statements.add((new ReturnStmt(callExpr)));
+                    }
+                    AstUtil.mapOffset(mbody, OffsetRange.NONE, true);
+                });
+            } finally {
+                thisClazz = oldThisClazz;
+            }
+        }
     }
 
 }
