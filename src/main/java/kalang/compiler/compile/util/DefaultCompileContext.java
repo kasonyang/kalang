@@ -53,7 +53,7 @@ public class DefaultCompileContext implements CompileContext {
 
     @Override
     public DiagnosisHandler getDiagnosisHandler() {
-        return StandardDiagnosisHandler.INSTANCE;
+        return new StandardDiagnosisHandler();
     }
 
     @Override

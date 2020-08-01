@@ -21,7 +21,7 @@ public class CompilerTestCase extends FileSystemCompiler {
 
     @Override
     public void compile() throws IOException {
-        final DiagnosisHandler oldDiagnosisHandler = StandardDiagnosisHandler.INSTANCE;
+        final DiagnosisHandler oldDiagnosisHandler = new StandardDiagnosisHandler();
         this.setDiagnosisHandler(diagnosis -> {
             oldDiagnosisHandler.handleDiagnosis(diagnosis);
             if (diagnosis.getKind().isError()) {

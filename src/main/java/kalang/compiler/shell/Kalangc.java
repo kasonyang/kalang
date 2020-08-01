@@ -37,7 +37,7 @@ public class Kalangc extends ShellBase {
     protected int doExecute(CommandLine cli) throws IOException {
         File currentDir = new File(".");
         FileSystemCompiler fsc = new FileSystemCompiler();
-        StandardDiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
+        StandardDiagnosisHandler diagnosisHandler = new StandardDiagnosisHandler();
         fsc.setDiagnosisHandler(diagnosisHandler);
         fsc.setClassLoader(this.createClassLoader(cli));
         fsc.setConfiguration(this.createConfiguration(cli));
