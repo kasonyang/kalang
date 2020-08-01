@@ -17,12 +17,22 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 
 # Projects writing in kalang
 
+* [dbutil](https://github.com/kasonyang/dbutil)
+* [ksh](https://github.com/kasonyang/ksh)
+* [fhc](https://github.com/kasonyang/fhc)
 * [Kailer](https://github.com/kasonyang/kailer)
 * [ColorConsole](https://github.com/kasonyang/color-console)
 
 # Gist
 
 * [serve static content](https://gist.github.com/kasonyang/f3d8364161144b0c49f9caf3a7b42272)
+
+#IDE/Editor plugin support
+
+* Intellij Idea : [intellij-kalang](https://github.com/kasonyang/intellij-kalang)
+* Visual Studio Code : [kalang-support-for-vscode](https://github.com/kasonyang/kalang-support-for-vscode) (only syntax highlight)
+* NetBeans : [kalang-nb-support](https://github.com/kasonyang/kalang-nb-support) 
+
 
 # How to build
 
