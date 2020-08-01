@@ -38,7 +38,7 @@ public abstract class KalangCompiler implements CompileContext {
     @Nonnull
     private final List<KalangSource> sources = new LinkedList<>();
 
-    private DiagnosisHandler diagnosisHandler = StandardDiagnosisHandler.INSTANCE;
+    private DiagnosisHandler diagnosisHandler = new StandardDiagnosisHandler();
 
     private final Configuration configuration;
 

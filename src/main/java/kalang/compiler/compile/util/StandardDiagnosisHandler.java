@@ -12,8 +12,6 @@ import java.io.PrintStream;
  */
 public class StandardDiagnosisHandler implements DiagnosisHandler {
 
-    public static StandardDiagnosisHandler INSTANCE = new StandardDiagnosisHandler();
-
     private final PrintStream errOut;
 
     private final PrintStream stdOut;
