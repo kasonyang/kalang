@@ -35,7 +35,7 @@ public class StandardDiagnosisHandler implements DiagnosisHandler {
             CompileContext ctx = diagnosis.getContext();
             ctx.stopCompile(ctx.getCompilingPhase().getId());
         }
-        PrintStream o = isError ? stdOut : errOut;
+        PrintStream o = isError ? errOut : stdOut;
         o.println(diagnosis);
     }
 
