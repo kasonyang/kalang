@@ -17,3 +17,7 @@ processResources {
             buildtime: new Date().getTime()
   }
 }
+
+tasks.withType(JavaCompile) {
+  options.compilerArgs << '-parameters'
+}
