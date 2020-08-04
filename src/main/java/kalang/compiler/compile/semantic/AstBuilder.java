@@ -1987,7 +1987,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         Type returnType = funcMethod.getReturnType();
         Type[] paramTypes = funcMethod.getParameterTypes();
         MethodContext oldMethodCtx = this.methodCtx;
-        String lambdaName = "lambda$" + oldMethodCtx.method.getName() + "$" + ++oldMethodCtx.lambdaMethodCounter;
+        String methodName = oldMethodCtx.method.getName();
+        if ("<init>".equals(methodName)) {
+            methodName = "constructor";
+        }
+        String lambdaName = "lambda$" + methodName + "$" + ++oldMethodCtx.lambdaMethodCounter;
         int modifier = Modifier.PUBLIC | (oldMethodCtx.method.getModifier() & Modifier.STATIC);
         BlockStmt methodNodeBody = new BlockStmt();
         methodNodeBody.offset = offset(ctx);
