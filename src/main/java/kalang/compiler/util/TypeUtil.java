@@ -21,7 +21,7 @@ public class TypeUtil {
     }
     
     public static Type getCommonType(Type... types){
-        if(types.length==0) return Types.getRootType();
+        if(types.length==0) return Types.getRootType(NullableKind.UNKNOWN);
         if(types.length==1) return types[0];
         Type ret = CollectionMixin.find(types, it -> !Types.NULL_TYPE.equals(it));
         if (ret == null) {
@@ -30,21 +30,32 @@ public class TypeUtil {
         boolean requireNullable = isNullable(ret);
         for (Type t : types) {
             requireNullable = requireNullable || isNullable(ret);
-            if (!t.equals(ret)) {
-                if (Types.NULL_TYPE.equals(t)) {
-                    requireNullable = true;
+            if (t.equals(ret)) {
+                continue;
+            }
+            if (Types.NULL_TYPE.equals(t)) {
+                requireNullable = true;
+                continue;
+            }
+            if ((Types.isPrimitiveDataType(ret)) && (Types.isPrimitiveDataType(t))) {
+                ret = Types.getHigherType(ret, t);
+                continue;
+            }
+            if (t.isAssignableFrom(ret)) {
+                ret = t;
+                continue;
+            }
+            if (ret.isAssignableFrom(t)) {
+                continue;
+            }
+            if (t instanceof ObjectType) {
+                ObjectType tSuperType = ((ObjectType) t).getSuperType();
+                if (tSuperType != null) {
+                    ret = getCommonType(ret, tSuperType);
                     continue;
                 }
-                if ((Types.isPrimitiveDataType(ret)) && (Types.isPrimitiveDataType(t))) {
-                    ret = Types.getHigherType(ret, t);
-                } else {
-                    if (t.isAssignableFrom(ret)) {
-                        ret = t;
-                    } else if (!ret.isAssignableFrom(t)) {
-                        ret = Types.getRootType();
-                    }
-                }
             }
+            ret = Types.getRootType(NullableKind.UNKNOWN);
         }
         if (requireNullable) {
             if (ret instanceof PrimitiveType) {
