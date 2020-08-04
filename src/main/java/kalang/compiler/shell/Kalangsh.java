@@ -11,6 +11,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  *
@@ -69,11 +70,15 @@ public class Kalangsh extends ShellBase {
                 clazz = sh.parse(file);
             }
             if (!cli.hasOption("check")) {
-                if (Script.class.isAssignableFrom(clazz)) { //script check
-                    Script scriptInstance = (Script)clazz.newInstance();
-                    return scriptInstance.run(scriptArgs);
-                } else {
-                    ClassExecutor.executeMain(clazz, scriptArgs);
+                try {
+                    if (Script.class.isAssignableFrom(clazz)) { //script check
+                        Script scriptInstance = (Script) clazz.newInstance();
+                        return scriptInstance.run(scriptArgs);
+                    } else {
+                        ClassExecutor.executeMain(clazz, scriptArgs);
+                    }
+                } catch (InvocationTargetException ex) {
+                    throw ex.getCause();
                 }
             }
             return Constant.SUCCESS;
