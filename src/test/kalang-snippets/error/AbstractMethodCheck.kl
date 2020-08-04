@@ -1,0 +1,4 @@
+please override abstract method public abstract java.util.Set<java.util.Map$Entry<java.lang.String,java.lang.String>> entrySet() in java.util.AbstractMap@1
+class extends AbstractMap<String,String> {
+
+}

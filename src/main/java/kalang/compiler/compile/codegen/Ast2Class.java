@@ -242,7 +242,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             classWriter.visitSource(fileName, null);
         }
         visitChildren(node);
-        Map<MethodDescriptor, MethodNode> implementationMap = InterfaceUtil.getImplementationMap(node);
+        Map<MethodDescriptor, MethodNode> implementationMap = ImplementationUtil.getImplementationMap(node);
         for(Map.Entry<MethodDescriptor,MethodNode> e:implementationMap.entrySet()) {
             MethodDescriptor interfaceMethod = e.getKey();
             MethodNode implementedMethod = e.getValue();

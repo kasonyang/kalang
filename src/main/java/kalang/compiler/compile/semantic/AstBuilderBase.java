@@ -832,7 +832,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         if (Modifier.isAbstract(clazz.getModifier())) {
             return;
         }
-        Map<MethodDescriptor, MethodNode> implementationMap = InterfaceUtil.getImplementationMap(clazz);
+        Map<MethodDescriptor, MethodNode> implementationMap = ImplementationUtil.getImplementationMap(clazz);
         for(Map.Entry<MethodDescriptor,MethodNode> e:implementationMap.entrySet()) {
             MethodDescriptor interfaceMethod = e.getKey();
             MethodNode implementedMethod = e.getValue();

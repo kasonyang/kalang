@@ -3,7 +3,9 @@ package kalang.compiler.util;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.OffsetRange;
 import kalang.compiler.core.*;
+import kalang.mixin.CollectionMixin;
 
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,11 +13,15 @@ import java.util.Map;
  *
  * @author Kason Yang
  */
-public class InterfaceUtil {
+public class ImplementationUtil {
 
     public static Map<MethodDescriptor,MethodNode> getImplementationMap(ClassNode clazz) {
         ObjectType[] interfaces = clazz.getInterfaces();
         Map<MethodDescriptor,MethodNode> result = new HashMap<>();
+        ObjectType superType = clazz.getSuperType();
+        if (superType != null) {
+            doGetImplementationMap(clazz, superType, result);
+        }
         for (ObjectType itf : interfaces) {
             doGetImplementationMap(clazz,itf,result);
         }
@@ -25,7 +31,10 @@ public class InterfaceUtil {
     private static void doGetImplementationMap(ClassNode clazz, ObjectType interfaceType,Map<MethodDescriptor,MethodNode> map) {
         MethodDescriptor[] interfaceMethods = interfaceType.getMethodDescriptors(null, true, true);
         ClassType clazzType = Types.getClassType(clazz, new Type[0]);
-        MethodDescriptor[] clazzMethods = clazzType.getMethodDescriptors(null, true, false);
+        MethodDescriptor[] clazzMethods = CollectionMixin.findAll(
+                clazzType.getMethodDescriptors(null, true, false),
+                it -> !Modifier.isAbstract(it.getModifier())
+        );
         for (MethodDescriptor im : interfaceMethods) {
             String imDeclKey = im.getDeclarationKey();
             MethodDescriptor cm = MethodUtil.getMethodDescriptor(clazzMethods, imDeclKey);
