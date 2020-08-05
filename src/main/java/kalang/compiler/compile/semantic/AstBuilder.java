@@ -2012,7 +2012,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             for( Map.Entry<String, AssignableObject> v:accessibleVars.entrySet()) {
                 String name = v.getKey();
                 AssignableObject var = v.getValue();
-                methodNode.createParameter(var.getType(), name, Modifier.FINAL | ModifierConstant.SYNTHETIC);
+                methodNode.createParameter(
+                        TypeUtil.normalizeForMethod(var.getType()),
+                        name,
+                        Modifier.FINAL | ModifierConstant.SYNTHETIC
+                );
             }
             List<Token> lambdaParams = ctx.lambdaParams;
             if (paramTypes.length < lambdaParams.size()) {
@@ -2026,7 +2030,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 if (i<ctx.lambdaParams.size()) {
                     name = ctx.lambdaParams.get(i).getText();
                 }
-                ParameterNode pn = methodNode.createParameter(pt, name);
+                ParameterNode pn = methodNode.createParameter(
+                        TypeUtil.normalizeForMethod(pt),
+                        name
+                );
                 if (i < ctx.lambdaParams.size()) {
                     mapAst(pn, ctx.lambdaParams.get(i));
                 }
@@ -2071,7 +2078,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ClassType parameterizedType = lambdaType.toParameterized(genericTypeMap);
             if (!genericTypeMap.isEmpty()) {
                 //parameterized return type
-                methodNode.setType(ParameterizedUtil.parameterizedType(methodNode.getType(), genericTypeMap));
+                methodNode.setType(TypeUtil.normalizeForMethod(
+                        ParameterizedUtil.parameterizedType(methodNode.getType(), genericTypeMap)
+                ));
             }
             lambdaExpr.fixType(parameterizedType);
             //TODO check return

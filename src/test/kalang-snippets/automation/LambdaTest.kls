@@ -1,3 +1,5 @@
+import java.util.stream.Collectors;
+
 static class StringList extends ArrayList<String> {
 
 }
@@ -60,4 +62,8 @@ boolean lambdaInLambda() {
 
 static boolean lambdaInStaticMethod() {
     return [123]..asList()..map(it => it.toString()).get(0) == "123";
+}
+
+protected String genericTypeSignature(List<?> values) {
+    return values.stream().map(it => "?").collect(Collectors.joining(","));
 }

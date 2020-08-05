@@ -66,6 +66,24 @@ public class TypeUtil {
         return ret;
     }
 
+    public static Type normalizeForMethod(Type type) {
+        //wildcards is used only as reference parameters
+        if (type instanceof WildcardType) {
+            WildcardType wt = (WildcardType) type;
+            ClassType rootObjType = Types.getRootType(wt.getNullable());
+            ObjectType superType = wt.getSuperType();
+            if (superType != null && !superType.equalsIgnoreNullable(rootObjType)) {
+                return superType;
+            }
+            Type[] upperBounds = wt.getUpperBounds();
+            if (upperBounds.length > 0) {
+                return upperBounds[0];
+            }
+            return rootObjType;
+        }
+        return type;
+    }
+
     private static boolean isNullable(Type type) {
         if (type instanceof ObjectType) {
             NullableKind nullableKind = ((ObjectType) type).getNullable();

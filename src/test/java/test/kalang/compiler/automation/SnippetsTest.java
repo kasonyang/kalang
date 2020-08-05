@@ -60,6 +60,7 @@ public class SnippetsTest {
         }
         Method[] mds = hwCls.getDeclaredMethods();
         for (Method m : mds) {
+            validGenericType(m);
             if (!Modifier.isPublic(m.getModifiers())) {
                 continue;
             }
@@ -89,6 +90,11 @@ public class SnippetsTest {
                 assertEquals("result of method[" + fullMethodName + "] should be 6", 6, ret);
             }
         }
+    }
+
+    private void validGenericType(Method m) {
+        m.getGenericReturnType();
+        m.getGenericParameterTypes();
     }
 
 }
