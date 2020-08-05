@@ -23,7 +23,7 @@ public class CompilantUnitTest {
         KalangSource source = new KalangSource("Test", "class{"
                 + "void main(){"
                 + "}"
-                + "}","Test.kl");
+                + "}","Test.kl", false);
         CompilationUnit cu = new CompilationUnit(source,new DefaultCompileContext());
         AstBuilder astBuilder = cu.getAstBuilder();
         ParseTreeNavigator treeNav = new ParseTreeNavigator(astBuilder.getParseTree());

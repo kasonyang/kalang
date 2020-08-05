@@ -21,7 +21,7 @@ public class DebugTest {
 
     @Test
     public void testShell() throws IOException {
-        File debugFile = new File("debug/debug.kl");
+        File debugFile = new File("debug/debug.kls");
         if (debugFile.exists()) {
             int result = new Kalangsh().run(new String[]{"--profile-out","@stderr",debugFile.getCanonicalPath()});
             Assert.assertEquals(0,result);
@@ -30,7 +30,7 @@ public class DebugTest {
 
     @Test
     public void testCompile() throws IOException {
-        File debugFile = new File("debug/debug.kl");
+        File debugFile = new File("debug/debug.kls");
         if (debugFile.exists()) {
             File outputDir = new File("build/kalang-debug");
             if (!outputDir.exists() && !outputDir.mkdirs()) {
@@ -47,7 +47,7 @@ public class DebugTest {
 
     @Test
     public void testParse() throws IOException {
-        File debugFile = new File("debug/debug.kl");
+        File debugFile = new File("debug/debug.kls");
         if (debugFile.exists()) {
             KalangShell shell = new KalangShell();
             Class clz = shell.parse(debugFile);

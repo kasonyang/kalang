@@ -107,9 +107,15 @@ public abstract class KalangCompiler implements CompileContext {
      * @param className the name of class
      * @param source the source of class
      * @param fileName the file name of source
+     * @param script <code>true</code> if the source is a script
      */
+    public void addSource(String className, String source, String fileName, boolean script) {
+        KalangSource src = new KalangSource(className, source, fileName, script);
+        addSource(src);
+    }
+
     public void addSource(String className, String source, String fileName) {
-        KalangSource src = new KalangSource(className, source, fileName);
+        KalangSource src = new KalangSource(className, source, fileName, fileName != null && fileName.endsWith(".kls"));
         addSource(src);
     }
 

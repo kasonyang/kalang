@@ -13,10 +13,13 @@ public class KalangSource {
     
     private String fileName;
 
-    public KalangSource(String className, String text,String fileName) {
+    private boolean script;
+
+    public KalangSource(String className, String text,String fileName, boolean script) {
         this.className = className;
         this.text = text;
         this.fileName = fileName;
+        this.script = script;
     }
 
     public String getClassName() {
@@ -27,12 +30,12 @@ public class KalangSource {
         return text;
     }
 
-    public KalangSource(String fileName) {
-        this.fileName = fileName;
-    }
-
     public String getFileName() {
         return fileName;
+    }
+
+    public boolean isScript() {
+        return script;
     }
 
 }

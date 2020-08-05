@@ -27,7 +27,7 @@ public class AntlrTest {
     @Test
     public void testParser() throws IOException{
         KalangParser parser = new KalangParser(this.createTokenStream());
-        parser.compilationUnit();
+        parser.standardCompilationUnit();
     }
     
     private CommonTokenStream createTokenStream() throws IOException{

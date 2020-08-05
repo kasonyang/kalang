@@ -32,10 +32,17 @@
 parser grammar KalangParser;
 options { tokenVocab=KalangLexer; }
 
-compilationUnit:
+standardCompilationUnit:
+    importDecl*
+    classDef
+    EOF
+;
+
+scriptCompilationUnit:
     compileOption*
     importDecl*
-    (classDef | scriptDef)
+    scriptDef
+    EOF
 ;
 
 compileOption:

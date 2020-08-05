@@ -16,7 +16,7 @@ public class KalangShellTest {
     @Test
     public void test() throws Throwable{
         KalangShell shell = new KalangShell();
-        Class script = shell.parse("Test", "println(\"test\");", "Test.kl");
+        Class script = shell.parse("Test", "println(\"test\");", "Test.kls");
         ClassExecutor.executeMain(script, new String[0]);
     }
     

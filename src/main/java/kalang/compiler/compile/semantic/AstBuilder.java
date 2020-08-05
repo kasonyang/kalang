@@ -128,10 +128,11 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     public void parseInit() {
         Span span = Profiler.getInstance().beginSpan("parse");
-        CompilationUnitContext cunit = buildCompilationUnitContext();
+        ParserRuleContext cunit = buildCompilationUnitContext();
         Profiler.getInstance().endSpan(span);
         this.compilationContext = cunit;
-        for(ImportDeclContext ic:cunit.importDecl()){
+        List<ImportDeclContext> importDecls = cunit.getRuleContexts(ImportDeclContext.class);
+        for(ImportDeclContext ic : importDecls){
             this.visitImportDecl(ic);
         }
         this.classNodeInitializer = new ClassNodeInitializer(this.compilationUnit);
@@ -346,7 +347,16 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public AstNode visitCompilationUnit(CompilationUnitContext ctx) {
+    public Object visitStandardCompilationUnit(StandardCompilationUnitContext ctx) {
+        return processCompilationUnit(ctx);
+    }
+
+    @Override
+    public Object visitScriptCompilationUnit(ScriptCompilationUnitContext ctx) {
+        return processCompilationUnit(ctx);
+    }
+
+    public AstNode processCompilationUnit(ParserRuleContext ctx) {
         try {
             visitChildren(ctx);
         } catch (NodeException ex) {
@@ -2270,23 +2280,24 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return expr;
     }
 
-    private CompilationUnitContext buildCompilationUnitContext() {
+    private ParserRuleContext buildCompilationUnitContext() {
         ANTLRErrorStrategy oldErrorHandler = parser.getErrorHandler();
         List<? extends ANTLRErrorListener> oldErrorListeners = parser.getErrorListeners();
         parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
         parser.removeErrorListeners();
         parser.setErrorHandler(new SLLErrorStrategy(compilationUnit));
+        boolean script = compilationUnit.getSource().isScript();
         try {
-            CompilationUnitContext cu = parser.compilationUnit();
+            ParserRuleContext ctx = script ? parser.scriptCompilationUnit() : parser.standardCompilationUnit();
             oldErrorListeners.forEach(parser::addErrorListener);
             parser.setErrorHandler(oldErrorHandler);
-            return cu;
+            return ctx;
         } catch (Throwable throwable) {
             parser.getInputStream().seek(0);
             parser.getInterpreter().setPredictionMode(PredictionMode.LL);
             oldErrorListeners.forEach(parser::addErrorListener);
             parser.setErrorHandler(oldErrorHandler);
-            return parser.compilationUnit();
+            return script ? parser.scriptCompilationUnit() : parser.standardCompilationUnit();
         }
     }
 

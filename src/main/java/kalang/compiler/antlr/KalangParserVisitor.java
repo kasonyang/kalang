@@ -11,11 +11,17 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by {@link KalangParser#compilationUnit}.
+	 * Visit a parse tree produced by {@link KalangParser#standardCompilationUnit}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitCompilationUnit(KalangParser.CompilationUnitContext ctx);
+	T visitStandardCompilationUnit(KalangParser.StandardCompilationUnitContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link KalangParser#scriptCompilationUnit}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitScriptCompilationUnit(KalangParser.ScriptCompilationUnitContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link KalangParser#compileOption}.
 	 * @param ctx the parse tree

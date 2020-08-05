@@ -46,8 +46,8 @@ public class ClassNodeInitializer extends AstBuilderBase {
         return topClass;
     }
 
-    public ClassNode build(KalangParser.CompilationUnitContext ctx){
-        this.visitCompilationUnit(ctx);
+    public ClassNode build(ParserRuleContext ctx){
+        visit(ctx);
         return topClass;
     }
 
