@@ -3,9 +3,9 @@ package kalang.compiler.compile;
 import kalang.compiler.antlr.KalangLexer;
 import kalang.compiler.antlr.KalangParser;
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.compile.util.StandardDiagnosisHandler;
-import kalang.compiler.compile.semantic.DefaultSemanticAnalyzer;
 import kalang.compiler.compile.semantic.AstBuilder;
+import kalang.compiler.compile.semantic.DefaultSemanticAnalyzer;
+import kalang.compiler.compile.util.StandardDiagnosisHandler;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.profile.Invocation;
 import kalang.compiler.profile.Profiler;
@@ -15,6 +15,7 @@ import kalang.compiler.util.LexerFactory;
 import kalang.compiler.util.OffsetRangeHelper;
 import kalang.compiler.util.TokenStreamFactory;
 import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.InputMismatchException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -255,16 +256,33 @@ public abstract class KalangCompiler implements CompileContext {
             @Override
             public void reportError(Parser recognizer, RecognitionException e) {
                 String msg = AntlrErrorString.exceptionString(recognizer, e);
-                Diagnosis diagnosis = new Diagnosis(
-                        compilationUnit.getCompileContext(),
-                         Diagnosis.Kind.ERROR,
-                         OffsetRangeHelper.getOffsetRange(e.getOffendingToken()),
-                         msg,
-                         compilationUnit.getSource()
-                );
-                diagnosisHandler.handleDiagnosis(diagnosis);
+                OffsetRange offset = OffsetRangeHelper.getOffsetRange(e.getOffendingToken());
+                reportSyntaxError(compilationUnit, recognizer, msg, offset);
             }
 
+            @Override
+            protected void reportUnwantedToken(Parser recognizer) {
+                if (inErrorRecoveryMode(recognizer)) {
+                    return;
+                }
+                beginErrorCondition(recognizer);
+                Token t = recognizer.getCurrentToken();
+                String tokenName = getTokenErrorDisplay(t);
+                String msg = "extraneous input " + tokenName;
+                recognizer.notifyErrorListeners(t, msg, null);
+            }
+            protected void reportInputMismatch(Parser recognizer, InputMismatchException e) {
+                String msg = "mismatched input "+getTokenErrorDisplay(e.getOffendingToken());
+                recognizer.notifyErrorListeners(e.getOffendingToken(), msg, e);
+            }
+        });
+        parser.removeErrorListeners();
+        parser.addErrorListener(new BaseErrorListener(){
+            @Override
+            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
+                OffsetRange offset = OffsetRangeHelper.getOffsetRange((Token) offendingSymbol);
+                reportSyntaxError(compilationUnit, (Parser) recognizer, msg, offset);
+            }
         });
         return parser;
     }
@@ -319,6 +337,17 @@ public abstract class KalangCompiler implements CompileContext {
 
     protected CompilePhaseManager getCompilePhaseManager() {
         return compilePhaseManager;
+    }
+
+    protected void reportSyntaxError(CompilationUnit compilationUnit, Parser recognizer, String msg, OffsetRange offsetRange) {
+        Diagnosis diagnosis = new Diagnosis(
+                compilationUnit.getCompileContext(),
+                Diagnosis.Kind.ERROR,
+                offsetRange,
+                msg,
+                compilationUnit.getSource()
+        );
+        diagnosisHandler.handleDiagnosis(diagnosis);
     }
 
     private void compileUnitToPhase(CompilationUnitController unit, CompilePhase targetPhase) {

@@ -2291,7 +2291,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     private ParserRuleContext buildCompilationUnitContext() {
         ANTLRErrorStrategy oldErrorHandler = parser.getErrorHandler();
-        List<? extends ANTLRErrorListener> oldErrorListeners = parser.getErrorListeners();
+        List<? extends ANTLRErrorListener> oldErrorListeners = new ArrayList<>(parser.getErrorListeners());
         parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
         parser.removeErrorListeners();
         parser.setErrorHandler(new SLLErrorStrategy(compilationUnit));
