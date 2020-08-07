@@ -3,7 +3,7 @@ package kalang.compiler.tool;
 
 import kalang.compiler.compile.*;
 import kalang.compiler.compile.codegen.Ast2Class;
-import kalang.compiler.compile.jvm.JvmAstLoader;
+import kalang.compiler.compile.jvm.JvmClassNodeLoader;
 import kalang.compiler.util.FilePathUtil;
 import kalang.mixin.CollectionMixin;
 import org.apache.commons.io.FileUtils;
@@ -45,7 +45,7 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
         );
         conf = config == null ? new Configuration() : Configuration.copy(config);
         sourceLoader = new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding());
-        conf.setAstLoader(new JvmAstLoader(conf.getAstLoader(), parentClassLoader));
+        conf.setClassNodeLoader(new JvmClassNodeLoader(conf.getClassNodeLoader(), parentClassLoader));
         compiler = new KalangCompiler(conf){
             @Override
             public SourceLoader getSourceLoader() {
@@ -84,7 +84,7 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
     }
 
     private void generateClasses(CompilationUnit compilationUnit) {
-        Ast2Class ast2Class = new Ast2Class(outputManager, compiler.getAstLoader(), compilationUnit);
+        Ast2Class ast2Class = new Ast2Class(outputManager, compiler.getClassNodeLoader(), compilationUnit);
         ast2Class.generateCode();
     }
 

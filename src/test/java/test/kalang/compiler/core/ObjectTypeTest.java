@@ -1,6 +1,6 @@
 package test.kalang.compiler.core;
 
-import kalang.compiler.compile.AstNotFoundException;
+import kalang.compiler.compile.ClassNodeNotFoundException;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.core.ClassType;
 import kalang.compiler.core.ObjectType;
@@ -25,7 +25,7 @@ public class ObjectTypeTest {
   }
   
   @Test
-  public void test() throws AstNotFoundException{
+  public void test() throws ClassNodeNotFoundException {
     ClassType type = Types.getClassType(ObjectTypeTest.class.getName());
     ClassNode classNode = type.getClassNode();
     ObjectType rootType = Types.getRootType();

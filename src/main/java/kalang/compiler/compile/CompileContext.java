@@ -20,7 +20,7 @@ public interface CompileContext {
 
     CodeGenerator createCodeGenerator(CompilationUnit compilationUnit);
     
-    AstLoader getAstLoader();
+    ClassNodeLoader getClassNodeLoader();
 
     SourceLoader getSourceLoader();
     

@@ -43,7 +43,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     private OutputManager outputManager;
 
-    private final AstLoader astLoader;
+    private final ClassNodeLoader classNodeLoader;
     
     private Map<Integer, LabelOp> lineLabels = new HashMap<>();
     
@@ -73,9 +73,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private String classInternalName;
 
 
-    public Ast2Class(OutputManager outputManager, AstLoader astLoader, CompilationUnit compilationUnit) {
+    public Ast2Class(OutputManager outputManager, ClassNodeLoader classNodeLoader, CompilationUnit compilationUnit) {
         this.outputManager = outputManager;
-        this.astLoader = astLoader;
+        this.classNodeLoader = classNodeLoader;
         this.compilationUnit = compilationUnit;
     }
     
@@ -189,8 +189,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         String annotation = getNullableAnnotation(type);
         if(annotation!=null){
             try {
-                annotation(obj, new AnnotationNode(AstLoader.BASE_AST_LOADER.loadAst(annotation)));
-            } catch (AstNotFoundException ex) {
+                annotation(obj, new AnnotationNode(DefaultClassNodeLoader.BASE_CLASS_NODE_LOADER.loadClassNode(annotation)));
+            } catch (ClassNodeNotFoundException ex) {
                 throw Exceptions.missingRuntimeClass(ex.getMessage());
             }
         }
@@ -224,7 +224,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         String oldClassInternalName = this.classInternalName;
         this.classInternalName = internalName(clazz);
         ClassWriter oldClassWriter = this.classWriter;
-        this.classWriter = new  KlClassWriter(ClassWriter.COMPUTE_FRAMES, astLoader);
+        this.classWriter = new  KlClassWriter(ClassWriter.COMPUTE_FRAMES, classNodeLoader);
         annotation(classWriter, clazz.getAnnotations());
         String parentName = "java.lang.Object";
         ObjectType superType = node.getSuperType();
@@ -1586,25 +1586,25 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     private static class KlClassWriter extends ClassWriter {
 
-        private AstLoader astLoader;
+        private ClassNodeLoader classNodeLoader;
 
-        public KlClassWriter(int flags, AstLoader astLoader) {
+        public KlClassWriter(int flags, ClassNodeLoader classNodeLoader) {
             super(flags);
-            this.astLoader = astLoader;
+            this.classNodeLoader = classNodeLoader;
         }
 
         @Override
         protected String getCommonSuperClass(String type1, String type2) {
             ClassNode cn1;
             try {
-                cn1 = astLoader.loadAst(type1.replace('/', '.'));
-            } catch (AstNotFoundException e) {
+                cn1 = classNodeLoader.loadClassNode(type1.replace('/', '.'));
+            } catch (ClassNodeNotFoundException e) {
                 throw new TypeNotPresentException(type1, e);
             }
             ClassNode cn2;
             try {
-                cn2 = astLoader.loadAst(type2.replace('/', '.'));
-            } catch (AstNotFoundException e) {
+                cn2 = classNodeLoader.loadClassNode(type2.replace('/', '.'));
+            } catch (ClassNodeNotFoundException e) {
                 throw new TypeNotPresentException(type2, e);
             }
             ObjectType t1 = getClassType(cn1);

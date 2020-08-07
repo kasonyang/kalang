@@ -7,15 +7,14 @@ import kalang.compiler.compile.semantic.AstBuilder;
 import kalang.compiler.compile.semantic.DefaultSemanticAnalyzer;
 import kalang.compiler.compile.util.StandardDiagnosisHandler;
 import kalang.compiler.core.ObjectType;
-import kalang.compiler.profile.Invocation;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.AntlrErrorString;
 import kalang.compiler.util.LexerFactory;
 import kalang.compiler.util.OffsetRangeHelper;
 import kalang.compiler.util.TokenStreamFactory;
-import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.InputMismatchException;
+import org.antlr.v4.runtime.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,7 +25,7 @@ import java.util.*;
  *
  * @author Kason Yang
  */
-public abstract class KalangCompiler implements CompileContext {
+public abstract class KalangCompiler implements CompileContext, ClassNodeLoader {
 
     private final CompilePhaseManager compilePhaseManager = new CompilePhaseManager();
 
@@ -43,11 +42,10 @@ public abstract class KalangCompiler implements CompileContext {
 
     private final Configuration configuration;
 
-    private final AstLoader astLoader;
-
     private SourceLoader sourceLoader = className -> null;
     private CompilePhase compileTargetPhase;
     private CompilePhase compilingPhase;
+    private Set<String> notFoundAstSet = new HashSet<>();
 
     public KalangCompiler() {
         this(new Configuration());
@@ -55,43 +53,6 @@ public abstract class KalangCompiler implements CompileContext {
 
     public KalangCompiler(Configuration configuration) {
         this.configuration = configuration;
-        this.astLoader = new AstLoader(configuration.getAstLoader()){
-
-            private Set<String> notFoundAstSet = new HashSet<>();
-
-            @Override
-            protected ClassNode findAst(@Nonnull String className) throws AstNotFoundException {
-                Profiler profiler = Profiler.getInstance();
-                Invocation invocation = profiler.beginInvocation(KalangCompiler.class.getName() + ":findAst");
-                try{
-                    return doFindAst(className);
-                }finally {
-                    profiler.endInvocation(invocation);
-                }
-            }
-
-            protected ClassNode doFindAst(@Nonnull String className) throws AstNotFoundException {
-                if (notFoundAstSet.contains(className)) {
-                    throw new AstNotFoundException(className);
-                }
-                String[] classNameInfo = className.split("\\$", 2);
-                String topClassName = classNameInfo[0];
-                CompilationUnitController cUnitCtrl = loadCompilationUnitController(topClassName);
-                if (cUnitCtrl != null) {
-                    ClassNode clazz = cUnitCtrl.getCompilationUnit().getAst();
-                    if (classNameInfo.length == 1) {
-                        return clazz;
-                    } else {
-                        ClassNode c = findInnerClass(clazz, className);
-                        if (c != null) {
-                            return c;
-                        }
-                    }
-                }
-                notFoundAstSet.add(className);
-                throw new AstNotFoundException(className);
-            }
-        };
         initCompilePhases();
     }
 
@@ -209,15 +170,52 @@ public abstract class KalangCompiler implements CompileContext {
         return controller == null ? null : controller.getCompilationUnit();
     }
 
+    @Override
+    public ClassNode getClassNode(String className) {
+        Profiler profiler = Profiler.getInstance();
+        Span span = profiler.beginSpan(KalangCompiler.class.getName() + ":findAst");
+        try{
+            return doGetClassNode(className);
+        }finally {
+            profiler.endSpan(span);
+        }
+    }
+
+    protected ClassNode doGetClassNode(String className) {
+        if (notFoundAstSet.contains(className)) {
+            return null;
+        }
+        String[] classNameInfo = className.split("\\$", 2);
+        String topClassName = classNameInfo[0];
+        CompilationUnitController cUnitCtrl = loadCompilationUnitController(topClassName);
+        if (cUnitCtrl != null) {
+            ClassNode clazz = cUnitCtrl.getCompilationUnit().getAst();
+            if (classNameInfo.length == 1) {
+                return clazz;
+            } else {
+                ClassNode c = findInnerClass(clazz, className);
+                if (c != null) {
+                    return c;
+                }
+            }
+        }
+        ClassNode cn = configuration.getClassNodeLoader().getClassNode(className);
+        if (cn != null) {
+            return cn;
+        }
+        notFoundAstSet.add(className);
+        return null;
+    }
+
     protected void initCompilePhases() {
         compilePhaseManager.registerPhase(StandardCompilePhases.PARSE_DECLARATION, u ->
-            u.getAstBuilder().parseMemberDeclaration(getAstLoader())
+            u.getAstBuilder().parseMemberDeclaration(getClassNodeLoader())
         );
         compilePhaseManager.registerPhase(StandardCompilePhases.BUILD_DEFAULT_MEMBERS, u ->
             u.getAstBuilder().buildDefaultMembers()
         );
         compilePhaseManager.registerPhase(StandardCompilePhases.PARSE_BODY, u ->
-            u.getAstBuilder().parseMemberBody(getAstLoader())
+            u.getAstBuilder().parseMemberBody(getClassNodeLoader())
         );
         compilePhaseManager.registerPhase(StandardCompilePhases.ANALYZE_SEMANTIC, CompilationUnit::analyzeSemantic);
         compilePhaseManager.registerPhase(StandardCompilePhases.GENERATE_CODE, CompilationUnit::generateClass);
@@ -311,8 +309,8 @@ public abstract class KalangCompiler implements CompileContext {
     }
 
     @Override
-    public final AstLoader getAstLoader() {
-        return this.astLoader;
+    public final ClassNodeLoader getClassNodeLoader() {
+        return this;
     }
 
     @Override

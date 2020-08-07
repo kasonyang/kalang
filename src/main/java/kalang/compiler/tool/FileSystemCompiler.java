@@ -1,7 +1,7 @@
 package kalang.compiler.tool;
 
 import kalang.compiler.compile.*;
-import kalang.compiler.compile.jvm.JvmAstLoader;
+import kalang.compiler.compile.jvm.JvmClassNodeLoader;
 import kalang.compiler.util.ClassNameUtil;
 import org.apache.commons.io.FileUtils;
 
@@ -27,7 +27,7 @@ public class FileSystemCompiler {
 
     private final List<File> sourcePaths = new LinkedList<>();
 
-    private AstLoader parentAstLoader = AstLoader.BASE_AST_LOADER;
+    private ClassNodeLoader parentClassNodeLoader = DefaultClassNodeLoader.BASE_CLASS_NODE_LOADER;
 
     private String extension = "class";
 
@@ -48,14 +48,14 @@ public class FileSystemCompiler {
             throw new IllegalStateException("output directory is null");
         }
         URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]), this.classLoader);
-        AstLoader astLoader = new JvmAstLoader(this.parentAstLoader, pathClassLoader);
+        ClassNodeLoader classNodeLoader = new JvmClassNodeLoader(this.parentClassNodeLoader, pathClassLoader);
         Configuration conf = Configuration.copy(configuration);
-        conf.setAstLoader(astLoader);
+        conf.setClassNodeLoader(classNodeLoader);
         KalangCompiler compiler = new KalangCompiler(conf) {
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
                 FileSystemOutputManager om = new FileSystemOutputManager(outputDir, extension);
-                return new ClassWriter(om, this.getAstLoader(), compilationUnit);
+                return new ClassWriter(om, this.getClassNodeLoader(), compilationUnit);
             }
 
         };

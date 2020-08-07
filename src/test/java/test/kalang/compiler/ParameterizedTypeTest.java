@@ -1,6 +1,6 @@
 package test.kalang.compiler;
 
-import kalang.compiler.compile.AstNotFoundException;
+import kalang.compiler.compile.ClassNodeNotFoundException;
 import kalang.compiler.core.ClassType;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Type;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class ParameterizedTypeTest {
     
     @Test
-    public void test() throws AstNotFoundException{
+    public void test() throws ClassNodeNotFoundException {
         //TODO optimize
         ClassType pt = Types.getClassType(Types.getClassType("java.util.LinkedList").getClassNode(),new Type[]{Types.getIntClassType()});
         ObjectType supType = pt.getSuperType();

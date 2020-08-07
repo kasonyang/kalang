@@ -1,6 +1,6 @@
 package kalang.compiler.compile;
 
-import kalang.compiler.compile.jvm.JvmAstLoader;
+import kalang.compiler.compile.jvm.JvmClassNodeLoader;
 import kalang.lang.Script;
 
 /**
@@ -13,13 +13,13 @@ public class Configuration {
 
     private String encoding = "utf8";
 
-    private AstLoader astLoader = new JvmAstLoader();
+    private ClassNodeLoader classNodeLoader = new JvmClassNodeLoader();
 
     public static Configuration copy(Configuration other) {
         Configuration conf = new Configuration();
         conf.scriptBaseClass = other.scriptBaseClass;
         conf.encoding = other.encoding;
-        conf.astLoader = other.astLoader;
+        conf.classNodeLoader = other.classNodeLoader;
         return conf;
     }
 
@@ -39,12 +39,12 @@ public class Configuration {
         this.encoding = encoding;
     }
 
-    public AstLoader getAstLoader() {
-        return astLoader;
+    public ClassNodeLoader getClassNodeLoader() {
+        return classNodeLoader;
     }
 
-    public void setAstLoader(AstLoader astLoader) {
-        this.astLoader = astLoader;
+    public void setClassNodeLoader(ClassNodeLoader classNodeLoader) {
+        this.classNodeLoader = classNodeLoader;
     }
 
 }

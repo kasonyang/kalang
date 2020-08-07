@@ -1,9 +1,9 @@
 
 package kalang.compiler.core;
 
-import kalang.compiler.compile.AstNotFoundException;
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.compile.AstLoader;
+import kalang.compiler.compile.DefaultClassNodeLoader;
+import kalang.compiler.compile.ClassNodeNotFoundException;
 import kalang.compiler.util.Exceptions;
 import kalang.type.Function;
 import kalang.type.FunctionClasses;
@@ -215,20 +215,20 @@ public class Types {
     public static ClassType requireClassType(String className,NullableKind nullableKind){
         try {
             return Types.getClassType(className,nullableKind);
-        } catch (AstNotFoundException ex) {
+        } catch (ClassNodeNotFoundException ex) {
             Logger.getLogger(Types.class.getName()).log(Level.SEVERE, null, ex);
             throw new RuntimeException("failed to load class type:"+className);
         }
     }
     
     @Nonnull
-    public static ClassType getClassType(String className) throws AstNotFoundException{
+    public static ClassType getClassType(String className) throws ClassNodeNotFoundException {
         return getClassType(className,NullableKind.NONNULL);
     }
     
     @Nonnull
-    public static ClassType getClassType(String className,NullableKind nullable) throws AstNotFoundException{
-        ClassNode ast = AstLoader.BASE_AST_LOADER.loadAst(className);
+    public static ClassType getClassType(String className,NullableKind nullable) throws ClassNodeNotFoundException {
+        ClassNode ast = DefaultClassNodeLoader.BASE_CLASS_NODE_LOADER.loadClassNode(className);
         return Types.getClassType(ast,nullable);
     }
     

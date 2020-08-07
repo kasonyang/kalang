@@ -1,7 +1,7 @@
 package kalang.compiler.compile.jvm;
 
 import kalang.compiler.ast.*;
-import kalang.compiler.compile.AstNotFoundException;
+import kalang.compiler.compile.ClassNodeNotFoundException;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.WildcardType;
 import kalang.compiler.core.*;
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public class JvmClassNode extends ClassNode {
 
-    private final JvmAstLoader astLoader;
+    private final JvmClassNodeLoader classNodeLoader;
 
     private final Class clazz;
 
@@ -33,8 +33,8 @@ public class JvmClassNode extends ClassNode {
 
     private Map<TypeVariable, GenericType> genericTypeMap = null;
 
-    public JvmClassNode(Class clazz, JvmAstLoader astLoader) {
-        this.astLoader = astLoader;
+    public JvmClassNode(Class clazz, JvmClassNodeLoader classNodeLoader) {
+        this.classNodeLoader = classNodeLoader;
         this.clazz = clazz;
         this.setName(clazz.getName());
         this.setModifier(clazz.getModifiers());
@@ -188,8 +188,8 @@ public class JvmClassNode extends ClassNode {
                 return Types.getArrayType(ct);
             } else {
                 try {
-                    return Types.getClassType(this.astLoader.loadAst(type.getName()), getNullable(type.getAnnotations()));
-                } catch (AstNotFoundException ex) {
+                    return Types.getClassType(this.classNodeLoader.loadClassNode(type.getName()), getNullable(type.getAnnotations()));
+                } catch (ClassNodeNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
             }

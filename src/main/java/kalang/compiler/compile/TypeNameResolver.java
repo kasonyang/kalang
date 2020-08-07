@@ -17,7 +17,7 @@ public class TypeNameResolver {
 
     private List<String> importPackages = new LinkedList();
 
-    private AstLoader astLoader;
+    private ClassNodeLoader classNodeLoader;
 
     private Map<String,Optional<String>> resolvedIdMap = new HashMap<>();
 
@@ -55,8 +55,8 @@ public class TypeNameResolver {
         return val.orElse(null);
     }
 
-    public void setAstLoader(AstLoader astLoader) {
-        this.astLoader = astLoader;
+    public void setClassNodeLoader(ClassNodeLoader classNodeLoader) {
+        this.classNodeLoader = classNodeLoader;
     }
 
     @Nullable
@@ -96,7 +96,7 @@ public class TypeNameResolver {
                 } else {
                     clsName = id;
                 }
-                if (astLoader!=null &&  astLoader.getAst(clsName) != null) {
+                if (classNodeLoader !=null &&  classNodeLoader.getClassNode(clsName) != null) {
                     return clsName;
                 }
             }

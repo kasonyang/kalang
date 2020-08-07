@@ -1,8 +1,9 @@
 package kalang.compiler.compile.jvm;
 
-import kalang.compiler.compile.AstNotFoundException;
+import kalang.compiler.compile.DefaultClassNodeLoader;
+import kalang.compiler.compile.ClassNodeNotFoundException;
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.compile.AstLoader;
+import kalang.compiler.compile.ClassNodeLoader;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,28 +16,28 @@ import java.util.Objects;
  *
  * @author Kason Yang
  */
-public class JvmAstLoader extends AstLoader {
+public class JvmClassNodeLoader extends DefaultClassNodeLoader {
 
     private ClassLoader javaClassLoader;
 
     private Map<String, ClassNode> loadedClasses = new HashMap<>();
 
-    public JvmAstLoader(@Nullable AstLoader parentAstLoader, @Nonnull ClassLoader javaClassLoader) {
-        super(parentAstLoader);
+    public JvmClassNodeLoader(@Nullable ClassNodeLoader parent, @Nonnull ClassLoader javaClassLoader) {
+        super(parent);
         Objects.requireNonNull(javaClassLoader);
         this.javaClassLoader = javaClassLoader;
     }
 
-    public JvmAstLoader() {
-        this(null, JvmAstLoader.class.getClassLoader());
+    public JvmClassNodeLoader() {
+        this(null, JvmClassNodeLoader.class.getClassLoader());
     }
 
     @Nonnull
     @Override
-    protected ClassNode findAst(String className) throws AstNotFoundException {
+    protected ClassNode findAst(String className) throws ClassNodeNotFoundException {
         if (className == null) {
             System.err.println("warning:trying to null class");
-            throw new AstNotFoundException("null");
+            throw new ClassNodeNotFoundException("null");
         }
         ClassNode ast = loadedClasses.get(className);
         if (ast != null) {
@@ -47,7 +48,7 @@ public class JvmAstLoader extends AstLoader {
             ast = buildFromClass(clz);
             return ast;
         } catch (ClassNotFoundException ex) {
-            throw new AstNotFoundException(className);
+            throw new ClassNodeNotFoundException(className);
         }
     }
     
@@ -56,10 +57,10 @@ public class JvmAstLoader extends AstLoader {
      *
      * @param clz the java class
      * @return the ast built from java class
-     * @throws AstNotFoundException
+     * @throws ClassNodeNotFoundException
      */
     @Nonnull
-    private ClassNode buildFromClass(@Nonnull Class clz) throws AstNotFoundException {
+    private ClassNode buildFromClass(@Nonnull Class clz) throws ClassNodeNotFoundException {
         ClassNode cn = new JvmClassNode(clz, this);
         loadedClasses.put(clz.getName(), cn);
         return cn;

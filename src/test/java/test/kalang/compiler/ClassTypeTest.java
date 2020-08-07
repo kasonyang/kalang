@@ -1,8 +1,9 @@
 package test.kalang.compiler;
 
-import kalang.compiler.compile.AstNotFoundException;
+import kalang.compiler.compile.DefaultClassNodeLoader;
+import kalang.compiler.compile.ClassNodeNotFoundException;
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.compile.AstLoader;
+import kalang.compiler.compile.ClassNodeLoader;
 import kalang.compiler.core.*;
 import org.junit.Test;
 
@@ -23,19 +24,19 @@ public class ClassTypeTest {
     }
     
     @Test
-    public void testEarsedType() throws AstNotFoundException{
-        AstLoader astLoader = new AstLoader();
-        ClassType listType = Types.getClassType(astLoader.loadAst("java.util.List"),new Type[0]);
-        ClassType arrayListType = Types.getClassType(astLoader.loadAst("java.util.ArrayList"),new Type[0]);
+    public void testEarsedType() throws ClassNodeNotFoundException {
+        ClassNodeLoader astLoader = new DefaultClassNodeLoader();
+        ClassType listType = Types.getClassType(astLoader.loadClassNode("java.util.List"),new Type[0]);
+        ClassType arrayListType = Types.getClassType(astLoader.loadClassNode("java.util.ArrayList"),new Type[0]);
         assertTrue(arrayListType.isSubTypeOf(listType));
         
     }
     
     @Test
-    public void test() throws AstNotFoundException{
-        AstLoader astLoader = new AstLoader();
-        ClassNode listClass = astLoader.loadAst(List.class.getName());
-        ClassNode arrayListClass = astLoader.loadAst(ArrayList.class.getName());
+    public void test() throws ClassNodeNotFoundException {
+        ClassNodeLoader astLoader = new DefaultClassNodeLoader();
+        ClassNode listClass = astLoader.loadClassNode(List.class.getName());
+        ClassNode arrayListClass = astLoader.loadClassNode(ArrayList.class.getName());
         
         Type[] paramTypes = new Type[]{Types.getStringClassType()};
         ObjectType listType = Types.getClassType(listClass,paramTypes );

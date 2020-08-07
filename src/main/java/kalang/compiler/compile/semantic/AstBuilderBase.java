@@ -1005,11 +1005,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
     @Nullable
     private ClassNode getAst(String className) {
-        return compilationUnit.getCompileContext().getAstLoader().getAst(className);
+        return compilationUnit.getCompileContext().getClassNodeLoader().getClassNode(className);
     }
 
     protected ClassNode loadAst(String className) {
-        return compilationUnit.getCompileContext().getAstLoader().loadAst(className);
+        return compilationUnit.getCompileContext().getClassNodeLoader().loadClassNode(className);
     }
 
     protected List<MethodDescriptor> getImportedMethods(Map<String, CompilationUnit.MemberImport> importedMethods, List<ClassNode> importedPaths, String methodName) {

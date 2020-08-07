@@ -1,6 +1,6 @@
 package kalang.compiler.tool;
 
-import kalang.compiler.compile.AstLoader;
+import kalang.compiler.compile.ClassNodeLoader;
 import kalang.compiler.compile.CodeGenerator;
 import kalang.compiler.compile.CompilationUnit;
 import kalang.compiler.compile.codegen.Ast2Class;
@@ -13,7 +13,7 @@ public class ClassWriter implements CodeGenerator{
 
     private OutputManager outputManager;
 
-    private AstLoader astLoader;
+    private ClassNodeLoader classNodeLoader;
 
     private CompilationUnit compilationUnit;
 
@@ -21,16 +21,16 @@ public class ClassWriter implements CodeGenerator{
         this.compilationUnit = compilationUnit;
     }
 
-    public ClassWriter(OutputManager outputManager, AstLoader astLoader, CompilationUnit compilationUnit) {
+    public ClassWriter(OutputManager outputManager, ClassNodeLoader classNodeLoader, CompilationUnit compilationUnit) {
         this.outputManager = outputManager;
-        this.astLoader = astLoader;
+        this.classNodeLoader = classNodeLoader;
         this.compilationUnit = compilationUnit;
     }
 
     @Override
     public void generateCode() {
         if (outputManager != null) {
-            Ast2Class ast2class = new Ast2Class(outputManager, astLoader, compilationUnit);
+            Ast2Class ast2class = new Ast2Class(outputManager, classNodeLoader, compilationUnit);
             ast2class.generateCode();
         }
     }

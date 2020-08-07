@@ -42,8 +42,8 @@ public class DefaultCompileContext implements CompileContext {
     }
 
     @Override
-    public AstLoader getAstLoader() {
-        return AstLoader.BASE_AST_LOADER;
+    public ClassNodeLoader getClassNodeLoader() {
+        return DefaultClassNodeLoader.BASE_CLASS_NODE_LOADER;
     }
 
     @Override

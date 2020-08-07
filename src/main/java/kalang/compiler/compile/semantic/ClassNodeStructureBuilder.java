@@ -140,7 +140,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                 mapAst(pn, p);
             }
             if (isOverriding) {
-                method.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));
+                method.addAnnotation(new AnnotationNode(getClassNodeLoader().loadClassNode(Override.class.getName())));
             }
             for(AnnotationNode a:getAnnotations(ctx.annotation()))  method.addAnnotation(a);
             KalangParser.BlockStmtContext bstm = ctx.blockStmt();
@@ -229,7 +229,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         BlockStmt body = new BlockStmt();
         body.offset = offset(ctx);
         MethodNode mm = thisClazz.createMethodNode(Types.INT_TYPE,"execute",Modifier.PUBLIC, body);
-        mm.addAnnotation(new AnnotationNode(getAstLoader().loadAst(Override.class.getName())));
+        mm.addAnnotation(new AnnotationNode(getClassNodeLoader().loadClassNode(Override.class.getName())));
         mm.addExceptionType(Types.getExceptionClassType());
         mm.setDefaultReturnValue(new ConstExpr(0));
         mapAst(mm, offset(ctx));
@@ -245,11 +245,11 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     private ObjectType getScriptType(){
         CompileContext context = this.compilationUnit.getCompileContext();
         Configuration conf = context.getConfiguration();
-        AstLoader astLoader = context.getAstLoader();
+        ClassNodeLoader classNodeLoader = context.getClassNodeLoader();
         String defaultBaseClass = conf.getScriptBaseClass();
         try{
-            return Types.getClassType(astLoader.loadAst(defaultBaseClass));
-        }catch (AstNotFoundException ex) {
+            return Types.getClassType(classNodeLoader.loadClassNode(defaultBaseClass));
+        }catch (ClassNodeNotFoundException ex) {
             throw Exceptions.missingRuntimeClass(defaultBaseClass);
         }
     }

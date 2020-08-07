@@ -46,7 +46,7 @@ public class CompilationUnit {
         parser = context.createParser(this,lexer);
         astBuilder = context.createAstBuilder(this,parser);
         //TODO astBuilder.getAstLoader() != context.getAstLoader?
-        AstLoader astLoader = context.getAstLoader();
+        ClassNodeLoader classNodeLoader = context.getClassNodeLoader();
         //should move to configuration?
         astBuilder.importPackage("java.lang");
         astBuilder.importPackage("java.util");
@@ -56,15 +56,15 @@ public class CompilationUnit {
         astBuilder.importPackage("kalang.io");
         astBuilder.importPackage("kalang.util");
         astBuilder.importPackage("kalang.lang");
-        astBuilder.importStaticMember(astLoader.loadAst(PrintHelper.class.getName()));
-        astBuilder.importMixinMethod(astLoader.loadAst(CollectionMixin.class.getName()));
-        astBuilder.importMixinMethod(astLoader.loadAst(StringMixin.class.getName()));
-        astBuilder.importMixinMethod(astLoader.loadAst(IOMixin.class.getName()));
-        astBuilder.importMixinMethod(astLoader.loadAst(DigestMixin.class.getName()));
-        astBuilder.importMixinMethod(astLoader.loadAst(DataMixin.class.getName()));
-        astBuilder.importMixinMethod(astLoader.loadAst(ObjectMixin.class.getName()));
-        astBuilder.importMixinMethod(astLoader.loadAst(PropertiesMixin.class.getName()));
-        astBuilder.importMixinMethod(astLoader.loadAst(MapMixin.class.getName()));
+        astBuilder.importStaticMember(classNodeLoader.loadClassNode(PrintHelper.class.getName()));
+        astBuilder.importMixinMethod(classNodeLoader.loadClassNode(CollectionMixin.class.getName()));
+        astBuilder.importMixinMethod(classNodeLoader.loadClassNode(StringMixin.class.getName()));
+        astBuilder.importMixinMethod(classNodeLoader.loadClassNode(IOMixin.class.getName()));
+        astBuilder.importMixinMethod(classNodeLoader.loadClassNode(DigestMixin.class.getName()));
+        astBuilder.importMixinMethod(classNodeLoader.loadClassNode(DataMixin.class.getName()));
+        astBuilder.importMixinMethod(classNodeLoader.loadClassNode(ObjectMixin.class.getName()));
+        astBuilder.importMixinMethod(classNodeLoader.loadClassNode(PropertiesMixin.class.getName()));
+        astBuilder.importMixinMethod(classNodeLoader.loadClassNode(MapMixin.class.getName()));
         astBuilder.parseInit();
     }
 

@@ -6,10 +6,7 @@ import kalang.compiler.antlr.KalangParser.*;
 import kalang.compiler.antlr.KalangParserVisitor;
 import kalang.compiler.antlr.SLLErrorStrategy;
 import kalang.compiler.ast.*;
-import kalang.compiler.compile.AstLoader;
-import kalang.compiler.compile.CompilationUnit;
-import kalang.compiler.compile.OffsetRange;
-import kalang.compiler.compile.TypeNameResolver;
+import kalang.compiler.compile.*;
 import kalang.compiler.compile.semantic.analyzer.AstNodeCollector;
 import kalang.compiler.compile.semantic.analyzer.TerminalStatementAnalyzer;
 import kalang.compiler.core.*;
@@ -55,7 +52,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     protected ClassNode topClass;
 
     @Nonnull
-    private AstLoader astLoader;
+    private ClassNodeLoader classNodeLoader;
 
     private ParserRuleContext compilationContext;
 
@@ -139,8 +136,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         topClass = classNodeInitializer.build(cunit);
     }
 
-    public void parseMemberDeclaration(AstLoader astLoader) {
-        setupAstLoader(astLoader);
+    public void parseMemberDeclaration(ClassNodeLoader classNodeLoader) {
+        setupClassNodeLoader(classNodeLoader);
         this.classNodeStructureBuilder = new ClassNodeStructureBuilder(this.compilationUnit, parser);
         buildClassNodeMeta(topClass);
     }
@@ -149,8 +146,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         buildDefaultMembers(topClass);
     }
 
-    public void parseMemberBody(AstLoader astLoader) {
-        setupAstLoader(astLoader);
+    public void parseMemberBody(ClassNodeLoader classNodeLoader) {
+        setupClassNodeLoader(classNodeLoader);
         visitMethods(topClass);
         buildMissParamMethods();
         processConstructorsAndStaticInitStmts(topClass);
@@ -206,8 +203,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Nonnull
-    public AstLoader getAstLoader() {
-        return compilationUnit.getCompileContext().getAstLoader();
+    public ClassNodeLoader getClassNodeLoader() {
+        return compilationUnit.getCompileContext().getClassNodeLoader();
     }
 
     @Nonnull
@@ -832,7 +829,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
         } else if ("==".equals(op) || "!=".equals(op)) {
             if (type1 instanceof ObjectType) {
-                ClassReference objectsRef = new ClassReference(this.astLoader.loadAst(Objects.class.getName()));
+                ClassReference objectsRef = new ClassReference(this.classNodeLoader.loadClassNode(Objects.class.getName()));
                 expr = this.getStaticInvokeExpr(objectsRef, "equals", new ExprNode[]{expr1, expr2}, offset);
                 if ("!=".equals(op)) {
                     expr = new UnaryExpr(expr, "!");
@@ -1064,7 +1061,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ExprNode[] invokeArgs = new ExprNode[]{
                     target, new ConstExpr(mdName), AstUtil.createInitializedArray(Types.getRootType(), paramsBuilder.call())
             };
-            ClassNode dispatcherAst = astLoader.getAst(MethodDispatcher.class.getName());
+            ClassNode dispatcherAst = classNodeLoader.getClassNode(MethodDispatcher.class.getName());
             if (dispatcherAst == null) {
                 throw Exceptions.unexpectedValue("Runtime library is required!");
             }
@@ -2373,13 +2370,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         return stats;
     }
 
-    private void setupAstLoader(@Nullable AstLoader astLoader) {
-        if(astLoader==null){
-            this.astLoader = new AstLoader();
+    private void setupClassNodeLoader(@Nullable ClassNodeLoader classNodeLoader) {
+        if(classNodeLoader==null){
+            this.classNodeLoader = new DefaultClassNodeLoader();
         }else{
-            this.astLoader = astLoader;
+            this.classNodeLoader = classNodeLoader;
         }
-        compilationUnit.getTypeNameResolver().setAstLoader(astLoader);
+        compilationUnit.getTypeNameResolver().setClassNodeLoader(classNodeLoader);
     }
 
     private void buildMissParamMethods() {
