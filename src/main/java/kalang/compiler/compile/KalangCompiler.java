@@ -76,7 +76,7 @@ public abstract class KalangCompiler implements CompileContext {
                 }
                 String[] classNameInfo = className.split("\\$", 2);
                 String topClassName = classNameInfo[0];
-                CompilationUnitController cUnitCtrl = compilationUnitCtrlMap.get(topClassName);
+                CompilationUnitController cUnitCtrl = loadCompilationUnitController(topClassName);
                 if (cUnitCtrl != null) {
                     ClassNode clazz = cUnitCtrl.getCompilationUnit().getAst();
                     if (classNameInfo.length == 1) {
@@ -86,13 +86,6 @@ public abstract class KalangCompiler implements CompileContext {
                         if (c != null) {
                             return c;
                         }
-                    }
-                }
-                SourceLoader srcLoader = getSourceLoader();
-                if (srcLoader != null) {
-                    KalangSource source = srcLoader.loadSource(className);
-                    if (source != null) {
-                        return createCompilationUnitController(source).getCompilationUnit().getAst();
                     }
                 }
                 notFoundAstSet.add(className);
@@ -163,6 +156,26 @@ public abstract class KalangCompiler implements CompileContext {
         compile(compileTargetPhase);
     }
 
+    public void removeCompilationUnitController(String className) {
+        compilationUnitCtrlMap.remove(className);
+    }
+
+    @Nullable
+    protected CompilationUnitController loadCompilationUnitController(String className) {
+        CompilationUnitController cUnitCtrl = compilationUnitCtrlMap.get(className);
+        if (cUnitCtrl != null) {
+            return cUnitCtrl;
+        }
+        SourceLoader srcLoader = getSourceLoader();
+        if (srcLoader != null) {
+            KalangSource source = srcLoader.loadSource(className);
+            if (source != null) {
+                return createCompilationUnitController(source);
+            }
+        }
+        return null;
+    }
+
     private ClassNode findInnerClass(ClassNode topClass, String className) {
         for (ClassNode c : topClass.classes) {
             if (className.equals(c.getName())) {
@@ -216,7 +229,7 @@ public abstract class KalangCompiler implements CompileContext {
         return new CompilationUnit(source, this);
     }
 
-    private CompilationUnitController createCompilationUnitController(KalangSource source) {
+    protected CompilationUnitController createCompilationUnitController(KalangSource source) {
         CompilationUnit unit = newCompilationUnit(source);
         CompilationUnitController controller = new CompilationUnitController(unit, compilePhaseManager.getStartPhase());
         compilationUnitCtrlMap.put(source.getClassName(), controller);
