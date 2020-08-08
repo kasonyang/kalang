@@ -412,13 +412,6 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPreIncExpr(KalangParser.PreIncExprContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code errorousMemberExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code nullDefaultExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree

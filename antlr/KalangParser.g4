@@ -186,7 +186,6 @@ stat:
     |returnStat
     |tryStat
     |throwStat
-    |errorousStat
     |assertStmt
 ;
 emptyStat:
@@ -266,12 +265,12 @@ expression
     |   ref=('this'|'super') #selfRefExpr
     |   literal #literalExpr
     | (
-        ( lambdaType? '{' ( lambdaParams+=Identifier (',' lambdaParams+=Identifier)* '=>')? stat* '}' )
-      | (
-            ( ('(' (lambdaParams+=Identifier (',' lambdaParams+=Identifier)*)? ')' ) | lambdaParams+=Identifier)
-            '=>'
-            (('{' stat* '}') | expression)
+         (
+            ('(' (lambdaParams+=Identifier (',' lambdaParams+=Identifier)*)? ')' )
+            | lambdaParams+=Identifier
          )
+         '=>'
+         (('{' stat* '}') | expression)
       ) #lambdaExpr
     | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=expression ':' values+=expression ( ',' keys+=expression ':' values+=expression)*  ','? ']'
           | '[' ':' ']'
@@ -315,7 +314,6 @@ expression
     |   expression '||' expression #binaryExpr
     |   expression '??' expression #nullDefaultExpr
     |   expression '?' expression ':' expression #questionExpr
-    |   expression '.' #errorousMemberExpr
     |   InterpolationPreffixString expression ( '}' INTERPOLATION_STRING? INTERPOLATION_INTERUPT expression)* '}' INTERPOLATION_STRING? INTERPOLATION_END #interpolationExpr
     |   WITH '(' expression ')' '{' stat* '}' #withExpr
     |   <assoc=right> expression

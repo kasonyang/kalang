@@ -458,13 +458,6 @@ public class KalangParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> impl
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitNullDefaultExpr(KalangParser.NullDefaultExprContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

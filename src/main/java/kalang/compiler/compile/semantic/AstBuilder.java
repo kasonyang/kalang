@@ -1592,11 +1592,6 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
-    public Object visitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx) {
-        throw new NodeException("identifier excepted", offset(ctx.stop));
-    }
-
-    @Override
     public Object visitInstanceofExpr(KalangParser.InstanceofExprContext ctx) {
         ExprNode expr = visitExpression(ctx.expression());
         Token ts = ctx.Identifier().getSymbol();
@@ -1623,17 +1618,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     
     @Override
     public Object visitLambdaExpr(KalangParser.LambdaExprContext ctx) {
-        KalangParser.LambdaTypeContext lambdaTypeCtx = ctx.lambdaType();
+        KalangParser.LambdaTypeContext lambdaTypeCtx = null;
         ClassType functionType = null;
-        if (lambdaTypeCtx!=null) {
-            functionType = this.visitLambdaType(lambdaTypeCtx);
-            assert Types.isFunctionType(functionType);
-        }
         List<Token> lambdaParams = ctx.lambdaParams;
         int lambdaParamsCount = lambdaParams == null ? 0 : lambdaParams.size();
-        Type type = functionType!=null ? functionType : new LambdaType(lambdaParamsCount);
+        Type type = new LambdaType(lambdaParamsCount);
         LambdaExpr ms = new LambdaExpr(type);
-        Map<String, AssignableObject> accessibleVars = new HashMap();
+        Map<String, AssignableObject> accessibleVars = new HashMap<>();
         VarTable<String, LocalVarNode> vtb = this.methodCtx.varTables;
         while(vtb!=null) {
             for(Map.Entry<String, LocalVarNode> v:vtb.vars().entrySet()) {
@@ -1655,14 +1646,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         for(Map.Entry<String, AssignableObject> e:accessibleVars.entrySet()) {
             ms.putAccessibleVarObject(e.getKey(), e.getValue());
         }
-        if (functionType!=null){
-            MethodDescriptor funcMethod = LambdaUtil.getFunctionalMethod(functionType);
-            Objects.requireNonNull(funcMethod);
-            ms.setInterfaceMethod(funcMethod);
-            createLambdaNode(ms,ctx, functionType);
-        } else {
-            lambdaExprCtxMap.put(ms, ctx);
-        }
+        lambdaExprCtxMap.put(ms, ctx);
         mapAst(ms, offset(ctx));
         return ms;
     }

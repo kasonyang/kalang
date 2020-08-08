@@ -684,18 +684,6 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitPreIncExpr(KalangParser.PreIncExprContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code errorousMemberExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code errorousMemberExpr}
-	 * labeled alternative in {@link KalangParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitErrorousMemberExpr(KalangParser.ErrorousMemberExprContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code nullDefaultExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree

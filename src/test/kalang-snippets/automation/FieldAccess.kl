@@ -3,7 +3,7 @@ class {
     private int value = 3;
 
     int test() {
-        val cb = &Integer() {
+        val cb as &Integer() = () => {
             value += 3;
             return value;
         };
