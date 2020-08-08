@@ -1048,6 +1048,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public AstNode visitInvokeExpr(InvokeExprContext ctx) {
         OffsetRange offsetRange = offset(ctx);
+        AstNode target = (AstNode) visit(ctx.target);
         String mdName;
         if (ctx.Identifier() != null) {
             mdName = ctx.Identifier().getText();
@@ -1056,10 +1057,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             mdName = StringLiteralUtil.parse(strLiteral.substring(1, strLiteral.length() - 1));
         }
         Function0<ExprNode[]> paramsBuilder = () ->  map(ctx.params, this::visitExpression).toArray(new ExprNode[0]);
-        Function1<ExprNode, ExprNode> createDotInvoke = (target) -> getObjectInvokeExpr(target, mdName, ctx.params, offsetRange);
-        Function1<ExprNode, ExprNode> createDynamicInvoke = (target) -> {
+        Function1<ExprNode, ExprNode> createDotInvoke = (invokeTarget) -> getObjectInvokeExpr(invokeTarget, mdName, ctx.params, offsetRange);
+        Function1<ExprNode, ExprNode> createDynamicInvoke = (invokeTarget) -> {
             ExprNode[] invokeArgs = new ExprNode[]{
-                    target, new ConstExpr(mdName), AstUtil.createInitializedArray(Types.getRootType(), paramsBuilder.call())
+                    invokeTarget, new ConstExpr(mdName), AstUtil.createInitializedArray(Types.getRootType(), paramsBuilder.call())
             };
             ClassNode dispatcherAst = classNodeLoader.getClassNode(MethodDispatcher.class.getName());
             if (dispatcherAst == null) {
@@ -1067,14 +1068,13 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             }
             return getStaticInvokeExpr(new ClassReference(dispatcherAst), "invokeMethod", invokeArgs, offset(ctx));
         };
-        Function1<ExprNode, ExprNode> createMixinInvoke = (target) -> {
-            ExprNode mixinInvoke = getMixinInvokeExpr(target, mdName, paramsBuilder.call(), offsetRange);
+        Function1<ExprNode, ExprNode> createMixinInvoke = (invokeTarget) -> {
+            ExprNode mixinInvoke = getMixinInvokeExpr(invokeTarget, mdName, paramsBuilder.call(), offsetRange);
             if (mixinInvoke == null) {
                 throw new NodeException("mixin method not found:" + mdName, offsetRange);
             }
             return mixinInvoke;
         };
-        AstNode target = (AstNode) visit(ctx.target);
         Function0<ExprNode> requireTargetAsExpr = () -> {
             if (!(target instanceof ExprNode)) {
                 throw new NodeException("expression required", offset(ctx.expression));
