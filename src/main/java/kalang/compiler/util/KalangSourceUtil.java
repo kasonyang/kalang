@@ -14,6 +14,6 @@ public class KalangSourceUtil {
     public static KalangSource create(File dir,File sourceFile, String encoding) throws IOException{
         String clsName = ClassNameUtil.getClassName(dir, sourceFile);
         boolean script = sourceFile.getName().endsWith(".kls");
-        return new KalangSource(clsName,FileUtils.readFileToString(sourceFile, encoding),sourceFile.getName(), script);
+        return new KalangSource(clsName,FileUtils.readFileToString(sourceFile, encoding),sourceFile.getCanonicalPath(), script);
     }
 }

@@ -3,6 +3,7 @@ package kalang.compiler.compile.util;
 import kalang.compiler.compile.CompileContext;
 import kalang.compiler.compile.Diagnosis;
 import kalang.compiler.compile.DiagnosisHandler;
+import kalang.compiler.util.DiagnosisUtil;
 
 import java.io.PrintStream;
 
@@ -36,7 +37,7 @@ public class StandardDiagnosisHandler implements DiagnosisHandler {
             ctx.stopCompile(ctx.getCompilingPhase().getId());
         }
         PrintStream o = isError ? errOut : stdOut;
-        o.println(diagnosis);
+        o.println(DiagnosisUtil.toPrintString(diagnosis));
     }
 
     public boolean hasError() {

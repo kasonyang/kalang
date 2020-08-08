@@ -34,7 +34,7 @@ public class CompileException extends RuntimeException {
     }
 
     private static String formatMsg(String description, String fileName, int line) {
-        return String.format("%s @%s:%s", description, fileName, line);
+        return String.format("%s:%s: Error:%s", fileName,  line, description);
     }
 
 }

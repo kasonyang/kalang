@@ -105,7 +105,7 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
     
     public Class parseFile(String className,File file) throws IOException{
         String code = FileUtils.readFileToString(file, conf.getEncoding());
-        return parseSource(className, code, file.getName());
+        return parseSource(className, code, file.getCanonicalPath());
     }
 
     @Override

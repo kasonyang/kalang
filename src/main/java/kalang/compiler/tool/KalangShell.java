@@ -2,6 +2,7 @@ package kalang.compiler.tool;
 
 import kalang.compiler.compile.Configuration;
 import kalang.compiler.compile.Diagnosis;
+import kalang.compiler.util.DiagnosisUtil;
 import kalang.compiler.util.Exceptions;
 import kalang.lang.Script;
 import org.apache.commons.io.FileUtils;
@@ -44,7 +45,7 @@ public class KalangShell {
 
     public Class parse(File file) throws IOException {
         String className = file.getName().split("\\.")[0];
-        return parse(className, FileUtils.readFileToString(file, configuration.getEncoding()), file.getName());
+        return parse(className, FileUtils.readFileToString(file, configuration.getEncoding()), file.getCanonicalPath());
     }
 
     public Script parseScript(File file) throws IOException {
@@ -71,12 +72,7 @@ public class KalangShell {
                 if (diagnosis.getKind().isError()) {
                     super.handleDiagnosis(diagnosis);
                 } else {
-                    System.err.format("%s:%d: %s: %s\n",
-                            diagnosis.getSource().getFileName(),
-                            diagnosis.getOffset().startLine,
-                            diagnosis.getKind().name(),
-                            diagnosis.getDescription()
-                    );
+                    System.err.println(DiagnosisUtil.toPrintString(diagnosis));
                 }
             }
         };

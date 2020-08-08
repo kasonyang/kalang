@@ -62,12 +62,13 @@ public class FileSystemCompiler {
         if (diagnosisHandler != null) {
             compiler.setDiagnosisHandler(diagnosisHandler);
         }
+        String encoding = conf.getEncoding();
         for (Map.Entry<String, File> e : sourceFiles.entrySet()) {
             String className = e.getKey();
             File file = e.getValue();
-            compiler.addSource(className, FileUtils.readFileToString(file), file.getName());
+            compiler.addSource(className, FileUtils.readFileToString(file, encoding), file.getCanonicalPath());
         }
-        FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(sourcePaths.toArray(new File[0]), new String[]{"kl", "kalang"}, conf.getEncoding());
+        FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(sourcePaths.toArray(new File[0]), new String[]{"kl", "kalang"}, encoding);
         compiler.setSourceLoader(sourceLoader);
         compiler.compile();
     }
