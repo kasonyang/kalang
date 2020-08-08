@@ -18,8 +18,8 @@ public class ArrayType extends ObjectType{
     }
     
     @Override
-    public String getName() {
-        return componentType.getName() + "[]";
+    public String getName(boolean simple) {
+        return componentType.getName(simple) + "[]" + getNullableSuffix();
     }
 
     public Type getComponentType() {

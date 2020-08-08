@@ -69,11 +69,11 @@ public class WildcardType extends ObjectType {
     }
 
     @Override
-    public String getName() {
+    public String getName(boolean simple) {
         if(lowerBounds.length>0){
-            return "? super " + TypeUtil.toString(lowerBounds, "&");
+            return "? super " + TypeUtil.toString(lowerBounds, "&", simple);
         }else if(upperBounds.length>0){
-            return "? extends " + TypeUtil.toString(upperBounds,"&");
+            return "? extends " + TypeUtil.toString(upperBounds,"&", simple);
         }else{
             return "?";
         }

@@ -11,6 +11,7 @@ import kalang.compiler.core.impl.StandardParameterDescriptor;
 import kalang.compiler.util.AccessUtil;
 import kalang.compiler.util.MethodUtil;
 import kalang.compiler.util.ModifierUtil;
+import kalang.compiler.util.NameUtil;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
@@ -33,8 +34,8 @@ public abstract class ObjectType extends Type{
     public abstract boolean equalsIgnoreNullable(ObjectType other);
 
     @Override
-    public String getName() {
-        return clazz.getName();
+    public String getName(boolean simple) {
+        return (simple ? NameUtil.getSimpleClassName(clazz.getName()) : clazz.getName()) + getNullableSuffix();
     }
 
     public ClassNode getClassNode() {
@@ -205,6 +206,13 @@ public abstract class ObjectType extends Type{
     
     public int getModifier(){
         return clazz.getModifier();
+    }
+
+    protected String getNullableSuffix() {
+        if (nullable == NullableKind.NULLABLE) {
+            return "?";
+        }
+        return "";
     }
     
 }

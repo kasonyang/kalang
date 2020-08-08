@@ -13,7 +13,7 @@ public class PrimitiveType extends Type{
     }
 
     @Override
-    public String getName() {
+    public String getName(boolean simple) {
         return name;
     }
 

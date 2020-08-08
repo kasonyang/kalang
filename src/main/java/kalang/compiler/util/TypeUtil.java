@@ -12,10 +12,10 @@ import java.util.List;
  */
 public class TypeUtil {
     
-    public static String toString(Type[] types,String delimiter){
-        List<String> list = new ArrayList(types.length);
+    public static String toString(Type[] types,String delimiter, boolean simple){
+        List<String> list = new ArrayList<>(types.length);
         for(Type t:types){
-            list.add(t.toString());
+            list.add(t.getName(simple));
         }
         return String.join(delimiter, list);
     }

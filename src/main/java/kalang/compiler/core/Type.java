@@ -6,7 +6,11 @@ package kalang.compiler.core;
 public abstract class Type {
     
     
-    public abstract String getName();
+    public String getName() {
+        return getName(false);
+    }
+
+    public abstract String getName(boolean simple);
     
     public String getDeclarationKey(){
         return getName();

@@ -40,7 +40,7 @@ public class GenericType extends ObjectType{
     }
 
     @Override
-    public String getName() {
+    public String getName(boolean simple) {
         return name;
     }
 

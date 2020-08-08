@@ -3,6 +3,7 @@ package kalang.compiler.core;
 
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.util.Exceptions;
+import kalang.compiler.util.NameUtil;
 import kalang.compiler.util.ParameterizedUtil;
 
 import java.util.*;
@@ -45,17 +46,18 @@ public class ClassType extends ObjectType {
     }
 
     @Override
-    public String getName() {
+    public String getName(boolean simple) {
         Type[] pTypes = getTypeArguments();
-        List<String> paramTypes = new ArrayList(pTypes.length);
+        List<String> paramTypes = new ArrayList<>(pTypes.length);
         for(Type t:pTypes){
-            paramTypes.add(t.getName());
+            paramTypes.add(t.getName(simple));
         }
         String suffix = paramTypes.isEmpty() ? "" : "<" + String.join(",",paramTypes) + ">";
         if(nullable.equals(NullableKind.NULLABLE)){
             suffix += "?";
         }
-        return  clazz.getName() + suffix;
+        String className = simple ? NameUtil.getSimpleClassName(clazz.getName()) : clazz.getName();
+        return  className + suffix + getNullableSuffix();
     }
 
     @Override
