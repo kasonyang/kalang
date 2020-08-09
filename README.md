@@ -30,7 +30,7 @@ Kalang is a static type-safe and null-safe language base on jvm with flexible sy
 #IDE/Editor plugin support
 
 * Intellij Idea : [intellij-kalang](https://github.com/kasonyang/intellij-kalang)
-* Visual Studio Code : [kalang-support-for-vscode](https://github.com/kasonyang/kalang-support-for-vscode) (only syntax highlight)
+* Visual Studio Code : [kalang-support-for-vscode](https://github.com/kasonyang/kalang-support-for-vscode) (only syntax highlighting)
 * NetBeans : [kalang-nb-support](https://github.com/kasonyang/kalang-nb-support) 
 
 
