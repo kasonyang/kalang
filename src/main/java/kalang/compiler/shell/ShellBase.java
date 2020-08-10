@@ -153,10 +153,15 @@ public abstract class ShellBase {
         boolean enableDepCache = ! cli.hasOption("disable-dependency-cache");
         KalangOption option = new KalangOption();
         option.parse(shellFileReader, optionReader, enableDepCache);
+        String baseScriptClass = cli.getOptionValue("script-base", "");
+        if (!baseScriptClass.isEmpty()) {
+            option.setScriptBase(baseScriptClass);
+        }
         return option;
     }
 
     protected KalangShell createKalangShell(Configuration config, ClassLoader classLoader, KalangOption compileOptions) throws IOException {
+        applyOptionToConf(config, compileOptions);
         URL[] classpaths = compileOptions.getClassPaths();
         File[] sourcepaths = compileOptions.getSourcePaths();
         for (URL cp: classpaths) {
@@ -190,6 +195,10 @@ public abstract class ShellBase {
             }
         }
         new SpanFormatter().format(rootSpan,os);
+    }
+
+    private void applyOptionToConf(Configuration configuration, KalangOption option) {
+        configuration.setScriptBaseClass(option.getScriptBase());
     }
 
     private void setLogLevel(Level logLevel) {

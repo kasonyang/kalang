@@ -95,6 +95,9 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
                 && !AstUtil.createEmptyConstructor(clazz)) {
             handleSyntaxError("failed to create constructor with no parameters", clazz.offset);
         }
+        if (clazz.isScript) {
+            AstUtil.createScriptMainMethodIfNotExists(clazz);
+        }
         MethodNode[] methods = clazz.getDeclaredMethodNodes();
         for (MethodNode node : methods) {
             BlockStmt body = node.getBody();

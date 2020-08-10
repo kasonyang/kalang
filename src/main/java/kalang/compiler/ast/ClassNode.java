@@ -39,10 +39,12 @@ public class ClassNode extends AstNode implements Annotationable{
     
     protected List<GenericType> genericTypes = new LinkedList<>();
     
-    public final List<ClassNode> classes = new LinkedList();
+    public final List<ClassNode> classes = new LinkedList<>();
     
     @Nullable
     public ClassNode enclosingClass;
+
+    public boolean isScript = false;
 
     public ClassNode() {
     }

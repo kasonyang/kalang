@@ -237,8 +237,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         if(stats!=null){
             this.methodStatsContexts.put(mm, stats.toArray(new KalangParser.StatContext[0]));
         }
-        AstUtil.createEmptyConstructor(thisClazz);
-        AstUtil.createScriptMainMethodIfNotExists(thisClazz);
+        thisClazz.isScript = true;
         return null;
     }
         

@@ -35,6 +35,8 @@ public class KalangOption {
 
     private LinkedHashSet<File> sourcePaths;
 
+    private String scriptBase = "";
+
     public void parse(Reader codeReader, @Nullable Reader optionsReader, boolean enableDepCache) throws IOException {
         LinkedHashSet<String> dependencies = new LinkedHashSet<>();
         LinkedHashSet<String> repositories = new LinkedHashSet<>();
@@ -55,10 +57,9 @@ public class KalangOption {
                 return;
             }
             switch (optionName) {
-//                case "script":
-//                case "base":
-//                    scriptBase = optionValue;
-//                    break;
+                case "script-base":
+                    scriptBase = optionValue;
+                    break;
                 case "dependency":
                     dependencies.add(optionValue);
                     break;
@@ -149,6 +150,15 @@ public class KalangOption {
 
     public File[] getSourcePaths() {
         return sourcePaths.toArray(new File[0]);
+    }
+
+    public String getScriptBase() {
+        return scriptBase;
+    }
+
+    public KalangOption setScriptBase(String scriptBase) {
+        this.scriptBase = scriptBase;
+        return this;
     }
 
 }
