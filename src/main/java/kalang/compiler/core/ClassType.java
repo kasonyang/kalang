@@ -53,9 +53,6 @@ public class ClassType extends ObjectType {
             paramTypes.add(t.getName(simple));
         }
         String suffix = paramTypes.isEmpty() ? "" : "<" + String.join(",",paramTypes) + ">";
-        if(nullable.equals(NullableKind.NULLABLE)){
-            suffix += "?";
-        }
         String className = simple ? NameUtil.getSimpleClassName(clazz.getName()) : clazz.getName();
         return  className + suffix + getNullableSuffix();
     }
