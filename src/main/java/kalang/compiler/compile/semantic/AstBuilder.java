@@ -2035,12 +2035,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                         bsStatements.add(exprStmt);
                     }
                 } else {
-                    List<StatContext> stats = ctx.stat();
+                    List<StatContext> stats = ctx.blockStmt().stat();
                     for (StatContext s : stats) {
-                        Statement statement = visitStat(s);
-                        if (statement != null) {
-                            bsStatements.add(statement);
-                        }
+                        bsStatements.add(visitStat(s));
                     }
                 }
                 if (returnType.equals(Types.getVoidClassType())) {
