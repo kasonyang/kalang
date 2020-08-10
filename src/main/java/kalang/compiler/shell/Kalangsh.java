@@ -12,6 +12,8 @@ import org.apache.commons.cli.Options;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  *
@@ -41,7 +43,7 @@ public class Kalangsh extends ShellBase {
 
         String[] args = cli.getArgs();
         try {
-            Class clazz;
+            Class<?> clazz;
             String[] scriptArgs;
 
             if (cli.hasOption("code")) {
@@ -71,9 +73,9 @@ public class Kalangsh extends ShellBase {
             }
             if (!cli.hasOption("check")) {
                 try {
-                    if (Script.class.isAssignableFrom(clazz)) { //script check
-                        Script scriptInstance = (Script) clazz.newInstance();
-                        return scriptInstance.run(scriptArgs);
+                    if (isScriptClass(clazz)) { //script check
+                        Method runMethod = clazz.getMethod("run", String[].class);
+                        return (Integer)runMethod.invoke(clazz.newInstance(), (Object)scriptArgs);
                     } else {
                         ClassExecutor.executeMain(clazz, scriptArgs);
                     }
@@ -101,6 +103,14 @@ public class Kalangsh extends ShellBase {
         options.addOption(null, "check", false, "don't run,just check");
         options.addOption(null, "disable-dependency-cache", false, "disable dependency cache");
         return options;
+    }
+
+    private boolean isScriptClass(Class<?> clazz) {
+        if (Objects.equals(Script.class.getName(), clazz.getName())) {
+            return true;
+        }
+        Class<?> superClazz = clazz.getSuperclass();
+        return superClazz != null && isScriptClass(superClazz);
     }
 
 }
