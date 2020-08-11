@@ -1,10 +1,8 @@
 package kalang.compiler.profile;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class Span {
 
@@ -14,9 +12,7 @@ public class Span {
 
     private long stopTime;
 
-    private List<Span> childSpans = new LinkedList();
-
-    private Map<String,Invocation> invocations = new HashMap<>();
+    private List<Span> childSpans = new LinkedList<>();
 
     private Span parentSpan;
 
@@ -27,22 +23,6 @@ public class Span {
 
     public String getName() {
         return name;
-    }
-
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
-    public long getStopTime() {
-        return stopTime;
-    }
-
-    public void setStopTime(long stopTime) {
-        this.stopTime = stopTime;
     }
 
     public void addChildSpan(Span span) {
@@ -58,22 +38,16 @@ public class Span {
         return parentSpan;
     }
 
-    public Invocation startInvocation(String name) {
-        Invocation invocation = invocations.get(name);
-        if (invocation==null) {
-            invocation = new Invocation(name,this);
-            invocations.put(name,invocation);
-        }
-        invocation.start();
-        return invocation;
+    public void start() {
+        this.startTime = System.nanoTime();
     }
 
-    public void stopInvocation(Invocation invocation) {
-        invocation.end();
+    public void stop() {
+        this.stopTime = System.nanoTime();
     }
 
-    public Invocation[] getInvocations() {
-        return invocations.values().toArray(new Invocation[0]);
+    public long getElapsedNanoTime() {
+        return stopTime - startTime;
     }
 
 }

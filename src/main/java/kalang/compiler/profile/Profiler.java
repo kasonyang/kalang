@@ -1,6 +1,7 @@
 package kalang.compiler.profile;
 
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 public class Profiler {
 
@@ -16,7 +17,7 @@ public class Profiler {
 
     public void startProfile() {
         rootSpan = new Span("root",null);
-        rootSpan.setStartTime(System.currentTimeMillis());
+        rootSpan.start();
         currentSpan = rootSpan;
     }
 
@@ -26,29 +27,33 @@ public class Profiler {
 
     public Span beginSpan(String name) {
         currentSpan = new Span(name,currentSpan);
-        currentSpan.setStartTime(System.currentTimeMillis());
+        currentSpan.start();
         return currentSpan;
     }
 
     public void endSpan(Span span) {
-        span.setStopTime(System.currentTimeMillis());
+        span.stop();
         currentSpan = span.getParentSpan();
         if (currentSpan!=null) {
             currentSpan.addChildSpan(span);
         }
     }
 
-    @Nullable
-    public Invocation beginInvocation(String name) {
-        if (currentSpan!=null) {
-            return currentSpan.startInvocation(name);
+    public void spanRun(String name, Runnable runnable) {
+        Span sp = beginSpan(name);
+        try {
+            runnable.run();
+        } finally {
+            endSpan(sp);
         }
-        return null;
     }
 
-    public void endInvocation(@Nullable Invocation invocation) {
-        if (currentSpan!=null && invocation!=null) {
-            currentSpan.stopInvocation(invocation);
+    public <T> T spanCall(String name, Supplier<T> callback) {
+        Span sp = beginSpan(name);
+        try {
+            return callback.get();
+        } finally {
+            endSpan(sp);
         }
     }
 

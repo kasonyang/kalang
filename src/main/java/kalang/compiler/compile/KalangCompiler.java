@@ -173,7 +173,7 @@ public abstract class KalangCompiler implements CompileContext, ClassNodeLoader 
     @Override
     public ClassNode getClassNode(String className) {
         Profiler profiler = Profiler.getInstance();
-        Span span = profiler.beginSpan(KalangCompiler.class.getName() + ":findAst");
+        Span span = profiler.beginSpan(KalangCompiler.class.getName() + ":getClassNode");
         try{
             return doGetClassNode(className);
         }finally {

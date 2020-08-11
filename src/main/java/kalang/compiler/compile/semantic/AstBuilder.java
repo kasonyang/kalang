@@ -70,6 +70,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Nullable
     private LocalVarNode thisVar;
 
+    Profiler PROFILER = Profiler.getInstance();
+
     @Override
     public Object visitEmptyStat(KalangParser.EmptyStatContext ctx) {
         return this.newBlock((Supplier) null);
@@ -148,7 +150,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     public void parseMemberBody(ClassNodeLoader classNodeLoader) {
         setupClassNodeLoader(classNodeLoader);
-        visitMethods(topClass);
+        PROFILER.spanRun("parseMethods", () -> visitMethods(topClass));
         buildMissParamMethods();
         processConstructorsAndStaticInitStmts(topClass);
         checkAndBuildInterfaceMethods(topClass);
