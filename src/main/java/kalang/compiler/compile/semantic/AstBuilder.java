@@ -154,6 +154,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         buildMissParamMethods();
         processConstructorsAndStaticInitStmts(topClass);
         checkAndBuildInterfaceMethods(topClass);
+        markStructureFinished(topClass);
     }
     
     private void visitMethods(ClassNode clazz){

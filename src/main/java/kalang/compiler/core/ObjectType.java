@@ -8,10 +8,8 @@ import kalang.compiler.ast.ParameterNode;
 import kalang.compiler.core.impl.StandardFieldDescriptor;
 import kalang.compiler.core.impl.StandardMethodDescriptor;
 import kalang.compiler.core.impl.StandardParameterDescriptor;
-import kalang.compiler.util.AccessUtil;
-import kalang.compiler.util.MethodUtil;
-import kalang.compiler.util.ModifierUtil;
-import kalang.compiler.util.NameUtil;
+import kalang.compiler.util.*;
+import kalang.mixin.CollectionMixin;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
@@ -25,6 +23,10 @@ public abstract class ObjectType extends Type{
     protected final ClassNode clazz;
     
     protected NullableKind nullable;
+
+    private MethodDescriptor[] allMethodDescriptors;
+
+    private MethodDescriptor[] declaredMethodDescriptors;
 
     public ObjectType(ClassNode clazz,NullableKind nullable) {
         this.clazz = clazz;
@@ -87,50 +89,54 @@ public abstract class ObjectType extends Type{
     }
 
     public MethodDescriptor[] getMethodDescriptors(@Nullable ClassNode caller, @Nullable String name, boolean includeSuperType, boolean includeInterfaces) {
-        Map<String, MethodDescriptor> descs = new HashMap<>();
-        if (includeSuperType && !ModifierUtil.isInterface(getModifier())) {
-            ObjectType superType = getSuperType();
-            if (superType != null) {
-                for (MethodDescriptor m: superType.getMethodDescriptors(caller, name, true, includeInterfaces)) {
-                    descs.put(m.getDeclarationKey(), m);
-                }
-            }
-        }
-        if (includeInterfaces) {
-            for (ObjectType itf: getInterfaces()) {
-                for (MethodDescriptor m: itf.getMethodDescriptors(caller, name, includeSuperType, true)) {
-                    descs.put(m.getDeclarationKey(), m);
-                }
-            }
-        }
-        List<MethodNode> mds;
-        if (includeSuperType && ModifierUtil.isInterface(getModifier())) {
-            List<MethodNode> objectMds = Arrays.asList(Types.getRootType().getClassNode().getDeclaredMethodNodes());
-            List<MethodNode> clsMds = Arrays.asList(clazz.getDeclaredMethodNodes());
-            mds = new ArrayList<>(clsMds.size() + objectMds.size());
-            mds.addAll(clsMds);
-            mds.addAll(objectMds);
-        } else {
-            mds = Arrays.asList(clazz.getDeclaredMethodNodes());
-        }
-        for (MethodNode m : mds) {
+        MethodDescriptor[] allMds = getAllMethodDescriptors();
+        List<MethodDescriptor> result = new ArrayList<>(allMds.length);
+        ClassNode rootClassNode = Types.getRootType(NullableKind.UNKNOWN).getClassNode();
+        for (MethodDescriptor m : allMds) {
             if (!AccessUtil.isAccessible(m.getModifier(), clazz, caller)) {
                 continue;
             }
             if (name != null && !name.isEmpty() && !name.equals(m.getName())) {
                 continue;
             }
-            MethodDescriptor md = new StandardMethodDescriptor(
-                    m
-                    , getParameterDescriptors(m)
-                    , parseType(m.getType())
-                    , parseTypes(m.getExceptionTypes())
-            );
-            descs.put(md.getDeclarationKey(), md);
+            boolean isInterfaceMethod = Modifier.isInterface(m.getMethodNode().getClassNode().getModifier());
+            boolean isDeclaredMethod = Objects.equals(m.getMethodNode().getClassNode(),clazz);
+            if (!isDeclaredMethod && !includeInterfaces && isInterfaceMethod) {
+                continue;
+            }
+            if (!isDeclaredMethod
+                    && !includeSuperType
+                    && !isInterfaceMethod
+                    // method from Object should not be ignored
+                    && !rootClassNode.equals(m.getMethodNode().getClassNode())
+            ) {
+                continue;
+            }
+            result.add(m);
         }
-        return descs.values().toArray(new MethodDescriptor[0]);
+        return result.toArray(new MethodDescriptor[0]);
     }
-    
+
+    public MethodDescriptor[] getDeclaredMethodDescriptors() {
+        if (!clazz.isStructureFinished) {
+            return buildDeclaredMethodDescriptorsFromClass();
+        }
+        if (declaredMethodDescriptors == null) {
+            declaredMethodDescriptors = buildDeclaredMethodDescriptorsFromClass();
+        }
+        return declaredMethodDescriptors;
+    }
+
+    public MethodDescriptor[] getAllMethodDescriptors() {
+        if (!clazz.isStructureFinished) {
+            return buildAllMethodDescriptors();
+        }
+        if (allMethodDescriptors ==  null) {
+            allMethodDescriptors = buildAllMethodDescriptors();
+        }
+        return allMethodDescriptors;
+    }
+
     public MethodDescriptor[] getConstructorDescriptors(@Nullable ClassNode caller){
         return this.getMethodDescriptors(caller,"<init>",false,false);
     }
@@ -214,5 +220,55 @@ public abstract class ObjectType extends Type{
         }
         return "";
     }
+
+    protected MethodDescriptor[] buildDeclaredMethodDescriptorsFromClass() {
+        MethodNode[] mds = clazz.getDeclaredMethodNodes();
+        return CollectionMixin.map(mds, MethodDescriptor.class, m ->
+            new StandardMethodDescriptor(
+                    m
+                    , getParameterDescriptors(m)
+                    , parseType(m.getType())
+                    , parseTypes(m.getExceptionTypes())
+            )
+        );
+    }
+
+    protected MethodDescriptor[] buildAllMethodDescriptors() {
+        Map<String, MethodDescriptor> descMap = new HashMap<>();
+        //process interfaces
+        for (ObjectType itf: getInterfaces()) {
+            collectNonPrivateMethods(itf, descMap);
+        }
+        //process super type
+        ObjectType superType = getSuperType();
+        if (superType != null) {
+            collectNonPrivateMethods(superType, descMap);
+        }
+
+        //process declared methods
+        for (MethodDescriptor m : getDeclaredMethodDescriptors()) {
+            descMap.put(m.getDeclarationKey(), m);
+        }
+
+        //process methods from Object type for interface
+        if (ModifierUtil.isInterface(getModifier())) {
+            ClassType rootType = Types.getRootType(NullableKind.UNKNOWN);
+            collectNonPrivateMethods(rootType, descMap);
+        }
+        return descMap.values().toArray(new MethodDescriptor[0]);
+    }
+
+    private void collectNonPrivateMethods(ObjectType type, Map<String, MethodDescriptor> descMap) {
+        for (MethodDescriptor m : type.getAllMethodDescriptors()) {
+            if (Modifier.isPrivate(m.getModifier())) {
+                continue;
+            }
+            if (AstUtil.isConstructor(m.getMethodNode())) {
+                continue;
+            }
+            descMap.put(m.getDeclarationKey(), m);
+        }
+    }
+
     
 }

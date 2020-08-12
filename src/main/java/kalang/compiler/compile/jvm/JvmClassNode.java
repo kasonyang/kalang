@@ -36,6 +36,7 @@ public class JvmClassNode extends ClassNode {
     public JvmClassNode(Class clazz, JvmClassNodeLoader classNodeLoader) {
         this.classNodeLoader = classNodeLoader;
         this.clazz = clazz;
+        this.isStructureFinished = true;
         this.setName(clazz.getName());
         this.setModifier(clazz.getModifiers());
     }

@@ -46,6 +46,8 @@ public class ClassNode extends AstNode implements Annotationable{
 
     public boolean isScript = false;
 
+    public boolean isStructureFinished = false;
+
     public ClassNode() {
     }
     

@@ -963,6 +963,13 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
     }
 
+    protected void markStructureFinished(ClassNode clazz) {
+        clazz.isStructureFinished = true;
+        for (ClassNode c : clazz.classes) {
+            markStructureFinished(c);
+        }
+    }
+
     private boolean isSafeAccessibleExpr(ExprNode expr) {
         return expr instanceof VarExpr
                 || expr instanceof StaticFieldExpr
