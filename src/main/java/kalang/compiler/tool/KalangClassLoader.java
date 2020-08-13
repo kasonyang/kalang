@@ -42,7 +42,7 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
         );
         conf = config == null ? new Configuration() : Configuration.copy(config);
         sourceLoader = new CachedSourceLoader(
-                new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding())
+                new FileSystemSourceLoader(sourceDir, KalangSource.EXTENSION_STANDARD, conf.getEncoding())
         );
         conf.setClassNodeLoader(
             new CachedClassNodeLoader(

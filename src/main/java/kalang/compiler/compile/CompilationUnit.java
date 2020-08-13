@@ -6,10 +6,13 @@ import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.semantic.AstBuilder;
 import kalang.compiler.compile.semantic.MalformedAstException;
 import kalang.compiler.compile.util.DiagnosisReporter;
+import kalang.compiler.tool.CompileException;
 import kalang.helper.PrintHelper;
 import kalang.mixin.*;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,7 +45,14 @@ public class CompilationUnit {
     public CompilationUnit(@Nonnull KalangSource source,CompileContext context) {
         this.source = source;
         this.context = context;
-        lexer = context.createLexer(this,source.getText());
+        String encoding = context.getConfiguration().getEncoding();
+        String srcContent;
+        try (InputStream is = source.createInputStream()) {
+            srcContent = IOMixin.readToString(is, encoding);
+        } catch (IOException ex) {
+            throw new CompileException(ex.getMessage(), source.getFileName(), 0);
+        }
+        lexer = context.createLexer(this, srcContent);
         parser = context.createParser(this,lexer);
         astBuilder = context.createAstBuilder(this,parser);
         //TODO astBuilder.getAstLoader() != context.getAstLoader?

@@ -1,41 +1,26 @@
 
 package kalang.compiler.compile;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  *
  * @author Kason Yang 
  */
-public class KalangSource {
-    
-    private String className;
-    
-    private String text;
-    
-    private String fileName;
+public interface KalangSource {
 
-    private boolean script;
+    String[] EXTENSION_STANDARD = new String[] {"kl", "kalang"};
 
-    public KalangSource(String className, String text,String fileName, boolean script) {
-        this.className = className;
-        this.text = text;
-        this.fileName = fileName;
-        this.script = script;
-    }
+    String[] EXTENSION_SCRIPT = new String[] {"kls"};
 
-    public String getClassName() {
-        return className;
-    }
 
-    public String getText() {
-        return text;
-    }
+    String getClassName();
 
-    public String getFileName() {
-        return fileName;
-    }
+    InputStream createInputStream() throws IOException;
 
-    public boolean isScript() {
-        return script;
-    }
+    String getFileName();
+
+    boolean isScript();
 
 }

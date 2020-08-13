@@ -7,12 +7,9 @@ import kalang.compiler.util.FilePathUtil;
 import kalang.compiler.util.KalangSourceUtil;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *  The class load source from file system.
@@ -47,12 +44,7 @@ public class FileSystemSourceLoader implements SourceLoader {
             for(File s:srcDirs){
                 File srcFile = new File(s,fn);
                 if(FilePathUtil.existFile(srcFile)){
-                    try {
-                        return KalangSourceUtil.create(s, srcFile, encoding);
-                    } catch (IOException ex) {
-                        Logger.getLogger(FileSystemSourceLoader.class.getName()).log(Level.SEVERE, null, ex);
-                        return null;
-                    }
+                    return KalangSourceUtil.create(s, srcFile);
                 }
             }
         }

@@ -68,7 +68,11 @@ public class FileSystemCompiler {
             File file = e.getValue();
             compiler.addSource(className, FileUtils.readFileToString(file, encoding), file.getCanonicalPath());
         }
-        FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(sourcePaths.toArray(new File[0]), new String[]{"kl", "kalang"}, encoding);
+        FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(
+                sourcePaths.toArray(new File[0]),
+                KalangSource.EXTENSION_STANDARD,
+                encoding
+        );
         compiler.setSourceLoader(new CachedSourceLoader(sourceLoader));
         compiler.compile();
     }

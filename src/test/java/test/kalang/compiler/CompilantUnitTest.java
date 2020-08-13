@@ -7,6 +7,8 @@ import kalang.compiler.util.ParseTreeNavigator;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.Test;
 
+import java.io.UnsupportedEncodingException;
+
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -19,12 +21,15 @@ public class CompilantUnitTest {
     }
     
     @Test
-    public void test(){
-        KalangSource source = new KalangSource("Test", "class{"
+    public void test() throws UnsupportedEncodingException {
+        DefaultCompileContext ctx = new DefaultCompileContext();
+        String src = "class{"
                 + "void main(){"
                 + "}"
-                + "}","Test.kl", false);
-        CompilationUnit cu = new CompilationUnit(source,new DefaultCompileContext());
+                + "}";
+        byte[] srcData = src.getBytes(ctx.getConfiguration().getEncoding());
+        KalangSource source = new InMemoryKalangSource("Test", srcData,"Test.kl", false);
+        CompilationUnit cu = new CompilationUnit(source, ctx);
         AstBuilder astBuilder = cu.getAstBuilder();
         ParseTreeNavigator treeNav = new ParseTreeNavigator(astBuilder.getParseTree());
         ParseTree tree = treeNav.getParseTree(0);

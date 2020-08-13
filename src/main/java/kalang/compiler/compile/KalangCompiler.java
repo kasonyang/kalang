@@ -9,15 +9,13 @@ import kalang.compiler.compile.util.StandardDiagnosisHandler;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
-import kalang.compiler.util.AntlrErrorString;
-import kalang.compiler.util.LexerFactory;
-import kalang.compiler.util.OffsetRangeHelper;
-import kalang.compiler.util.TokenStreamFactory;
+import kalang.compiler.util.*;
 import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 /**
@@ -64,13 +62,17 @@ public abstract class KalangCompiler implements CompileContext, ClassNodeLoader 
      * @param script <code>true</code> if the source is a script
      */
     public void addSource(String className, String source, String fileName, boolean script) {
-        KalangSource src = new KalangSource(className, source, fileName, script);
-        addSource(src);
+        try {
+            byte[] content = source.getBytes(configuration.getEncoding());
+            KalangSource src = new InMemoryKalangSource(className, content, fileName, script);
+            addSource(src);
+        } catch (UnsupportedEncodingException e) {
+            throw Exceptions.unexpectedException(e);
+        }
     }
 
     public void addSource(String className, String source, String fileName) {
-        KalangSource src = new KalangSource(className, source, fileName, fileName != null && fileName.endsWith(".kls"));
-        addSource(src);
+        addSource(className, source, fileName, KalangSourceUtil.isScriptFile(fileName));
     }
 
     public void addSource(KalangSource source) {

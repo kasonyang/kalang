@@ -1,6 +1,7 @@
 package kalang.compiler.shell;
 
 import kalang.compiler.compile.Configuration;
+import kalang.compiler.compile.KalangSource;
 import kalang.compiler.gui.Editor;
 import kalang.compiler.tool.KalangShell;
 import kalang.compiler.util.ClassExecutor;
@@ -43,7 +44,7 @@ public class Kalangeditor extends ShellBase {
         Configuration config = this.createConfiguration(cli);
         KalangOption shellOption = loadKalangOption(cli, new StringReader(code), null);
         KalangShell kalangshell = this.createKalangShell(config, classLoader, shellOption);
-        Class<?> clazz = kalangshell.parse(className, code, className + ".kls");
+        Class<?> clazz = kalangshell.parse(className, code, className + "." + KalangSource.EXTENSION_SCRIPT[0]);
         ClassExecutor.executeMain(clazz,new String[0]);
     }
 

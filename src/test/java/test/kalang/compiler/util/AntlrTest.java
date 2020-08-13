@@ -1,9 +1,8 @@
 package test.kalang.compiler.util;
 
 import kalang.compiler.antlr.KalangParser;
-import kalang.compiler.compile.KalangSource;
-import kalang.compiler.util.KalangSourceUtil;
 import kalang.compiler.util.TokenStreamFactory;
+import kalang.mixin.IOMixin;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.junit.Test;
 
@@ -31,8 +30,9 @@ public class AntlrTest {
     }
     
     private CommonTokenStream createTokenStream() throws IOException{
-        KalangSource source = KalangSourceUtil.create(new File("src/test/kalang-snippets"), new File("src/test/kalang-snippets/automation/HelloKalang.kl"), "utf8");
-        return TokenStreamFactory.createTokenStream(source.getText());
+        File file = new File("src/test/kalang-snippets/automation/HelloKalang.kl");
+        String src = IOMixin.readToString(file, "utf8");
+        return TokenStreamFactory.createTokenStream(src);
     }
     
 }
