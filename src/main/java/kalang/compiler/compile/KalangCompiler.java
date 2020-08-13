@@ -45,7 +45,6 @@ public abstract class KalangCompiler implements CompileContext, ClassNodeLoader 
     private SourceLoader sourceLoader = className -> null;
     private CompilePhase compileTargetPhase;
     private CompilePhase compilingPhase;
-    private Set<String> notFoundAstSet = new HashSet<>();
 
     public KalangCompiler() {
         this(new Configuration());
@@ -182,9 +181,6 @@ public abstract class KalangCompiler implements CompileContext, ClassNodeLoader 
     }
 
     protected ClassNode doGetClassNode(String className) {
-        if (notFoundAstSet.contains(className)) {
-            return null;
-        }
         String[] classNameInfo = className.split("\\$", 2);
         String topClassName = classNameInfo[0];
         CompilationUnitController cUnitCtrl = loadCompilationUnitController(topClassName);
@@ -199,12 +195,7 @@ public abstract class KalangCompiler implements CompileContext, ClassNodeLoader 
                 }
             }
         }
-        ClassNode cn = configuration.getClassNodeLoader().getClassNode(className);
-        if (cn != null) {
-            return cn;
-        }
-        notFoundAstSet.add(className);
-        return null;
+        return configuration.getClassNodeLoader().getClassNode(className);
     }
 
     protected void initCompilePhases() {

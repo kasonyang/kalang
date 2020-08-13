@@ -11,13 +11,10 @@ import org.apache.commons.io.FileUtils;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 /**
  *
  * @author Kason Yang
@@ -28,7 +25,7 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
     
     private final HashMap<String,Class> loadedClasses = new HashMap<>();
 
-    private final FileSystemSourceLoader sourceLoader;
+    private final SourceLoader sourceLoader;
 
     final MemoryOutputManager outputManager = new MemoryOutputManager();
 
@@ -44,8 +41,14 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
           parentClassLoader == null ? (parentClassLoader = KalangClassLoader.class.getClassLoader()) : parentClassLoader
         );
         conf = config == null ? new Configuration() : Configuration.copy(config);
-        sourceLoader = new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding());
-        conf.setClassNodeLoader(new JvmClassNodeLoader(conf.getClassNodeLoader(), parentClassLoader));
+        sourceLoader = new CachedSourceLoader(
+                new FileSystemSourceLoader(sourceDir, new String[]{"kl","kalang"}, conf.getEncoding())
+        );
+        conf.setClassNodeLoader(
+            new CachedClassNodeLoader(
+                new JvmClassNodeLoader(conf.getClassNodeLoader(), parentClassLoader)
+            )
+        );
         compiler = new KalangCompiler(conf){
             @Override
             public SourceLoader getSourceLoader() {
@@ -87,17 +90,8 @@ public class KalangClassLoader extends URLClassLoader implements DiagnosisHandle
         Ast2Class ast2Class = new Ast2Class(outputManager, compiler.getClassNodeLoader(), compilationUnit);
         ast2Class.generateCode();
     }
-
-    public void addClassPath(File path) {
-        try {
-            super.addURL(path.toURI().toURL());
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(KalangClassLoader.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        sourceLoader.addSourceDir(path);
-    }
     
-    public Class parseSource(String className,String code,String fileName){
+    public Class<?> parseSource(String className,String code,String fileName){
         compiler.addSource(className, code, fileName);
         compiler.compile();
         return Objects.requireNonNull(tryLoadGeneratedClass(className));

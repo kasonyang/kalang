@@ -50,7 +50,7 @@ public class FileSystemCompiler {
         URLClassLoader pathClassLoader = new URLClassLoader(classPaths.toArray(new URL[0]), this.classLoader);
         ClassNodeLoader classNodeLoader = new JvmClassNodeLoader(this.parentClassNodeLoader, pathClassLoader);
         Configuration conf = Configuration.copy(configuration);
-        conf.setClassNodeLoader(classNodeLoader);
+        conf.setClassNodeLoader(new CachedClassNodeLoader(classNodeLoader));
         KalangCompiler compiler = new KalangCompiler(conf) {
             @Override
             public CodeGenerator createCodeGenerator(CompilationUnit compilationUnit) {
@@ -69,7 +69,7 @@ public class FileSystemCompiler {
             compiler.addSource(className, FileUtils.readFileToString(file, encoding), file.getCanonicalPath());
         }
         FileSystemSourceLoader sourceLoader = new FileSystemSourceLoader(sourcePaths.toArray(new File[0]), new String[]{"kl", "kalang"}, encoding);
-        compiler.setSourceLoader(sourceLoader);
+        compiler.setSourceLoader(new CachedSourceLoader(sourceLoader));
         compiler.compile();
     }
 
