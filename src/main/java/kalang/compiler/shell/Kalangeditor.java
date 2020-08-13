@@ -43,7 +43,7 @@ public class Kalangeditor extends ShellBase {
         Configuration config = this.createConfiguration(cli);
         KalangOption shellOption = loadKalangOption(cli, new StringReader(code), null);
         KalangShell kalangshell = this.createKalangShell(config, classLoader, shellOption);
-        Class clazz = kalangshell.parse(className, code, className + ".kl");
+        Class<?> clazz = kalangshell.parse(className, code, className + ".kls");
         ClassExecutor.executeMain(clazz,new String[0]);
     }
 

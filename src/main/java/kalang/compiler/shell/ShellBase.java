@@ -6,6 +6,7 @@ import kalang.compiler.profile.Span;
 import kalang.compiler.profile.SpanFormatter;
 import kalang.compiler.tool.KalangShell;
 import kalang.compiler.util.ClassPathUtil;
+import kalang.compiler.util.StringUtil;
 import kalang.lang.KalangRuntime;
 import org.apache.commons.cli.*;
 
@@ -198,7 +199,9 @@ public abstract class ShellBase {
     }
 
     private void applyOptionToConf(Configuration configuration, KalangOption option) {
-        configuration.setScriptBaseClass(option.getScriptBase());
+        if (StringUtil.isNotEmpty(option.getScriptBase())) {
+            configuration.setScriptBaseClass(option.getScriptBase());
+        }
     }
 
     private void setLogLevel(Level logLevel) {
