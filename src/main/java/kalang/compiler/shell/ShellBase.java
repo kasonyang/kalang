@@ -146,7 +146,7 @@ public abstract class ShellBase {
     protected KalangOption loadKalangOption(CommandLine cli, Reader shellFileReader, @Nullable File projectPath) throws IOException {
         FileReader optionReader = null;
         if (projectPath != null) {
-            File optionFile = new File(projectPath, "kalang.options");
+            File optionFile = new File(projectPath, KalangOption.DEFAULT_OPTION_FILE);
             if (optionFile.exists()) {
                 optionReader = new FileReader(optionFile);
             }

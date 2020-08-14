@@ -29,6 +29,8 @@ import java.util.logging.Logger;
  */
 public class KalangOption {
 
+    public final static String DEFAULT_OPTION_FILE = ".kloptions";
+
     private final static Logger LOG = Logger.getLogger(KalangOption.class.getName());
 
     private LinkedHashSet<URL> classPaths;
