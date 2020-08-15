@@ -6,6 +6,9 @@ import kalang.mixin.CollectionMixin;
 import java.util.ArrayList;
 import java.util.List;
 
+import static kalang.compiler.core.Types.*;
+import static kalang.compiler.core.Types.NULL_TYPE;
+
 /**
  *
  * @author Kason Yang
@@ -82,6 +85,54 @@ public class TypeUtil {
             return rootObjType;
         }
         return type;
+    }
+
+    public static String getTypeDescriptor(Type t) {
+        if (t instanceof PrimitiveType) {
+            if (t.equals(VOID_TYPE)) {
+                return "V";
+            } else if (t.equals(BOOLEAN_TYPE)) {
+                return "Z";
+            } else if (t.equals(LONG_TYPE)) {
+                return "J";
+            } else if (t.equals(INT_TYPE)) {
+                return "I";
+            } else if (t.equals(CHAR_TYPE)) {
+                return "C";
+            } else if (t.equals(SHORT_TYPE)) {
+                return "S";
+            } else if (t.equals(BYTE_TYPE)) {
+                return "B";
+            } else if (t.equals(FLOAT_TYPE)) {
+                return "F";
+            } else if (t.equals(DOUBLE_TYPE)) {
+                return "D";
+            } else if (t.equals(NULL_TYPE)) {
+                return "Ljava/lang/Object;";
+            } else {
+                throw Exceptions.unsupportedTypeException(t);
+            }
+        } else if (t instanceof ArrayType) {
+            return "[" + getTypeDescriptor(((ArrayType) t).getComponentType());
+        } else if (t instanceof GenericType) {
+            GenericType gt = (GenericType) t;
+            ObjectType st = gt.getSuperType();
+            ObjectType[] itfs = gt.getInterfaces();
+            if (itfs.length == 1 && st != null && st.isAssignableFrom(itfs[0])) {
+                st = itfs[0];
+            }
+            return getTypeDescriptor(st);
+        } else if (t instanceof ClassType) {
+            return "L" + internalName(((ClassType) t).getClassNode().getName()) + ";";
+        } else if (t instanceof WildcardType) {
+            return getTypeDescriptor(((WildcardType) t).getSuperType());
+        } else {
+            throw Exceptions.unsupportedTypeException(t);
+        }
+    }
+
+    private static String internalName(String className) {
+        return className.replace(".", "/");
     }
 
     private static boolean isNullable(Type type) {

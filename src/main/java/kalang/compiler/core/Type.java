@@ -12,10 +12,6 @@ public abstract class Type {
 
     public abstract String getName(boolean simple);
     
-    public String getDeclarationKey(){
-        return getName();
-    }
-    
     public boolean isAssignableFrom(Type type){
         return equals(type);
     }

@@ -23,7 +23,7 @@ public class MethodUtil {
     public static String getDeclarationKey(String name, Type[] types) {
         List<String> typeStrList = new ArrayList<>(types.length);
         for (Type t : types) {
-            typeStrList.add(t.getDeclarationKey());
+            typeStrList.add(TypeUtil.getTypeDescriptor(t));
         }
         return MethodUtil.getDeclarationKey(name, typeStrList.toArray(new String[0]));
     }

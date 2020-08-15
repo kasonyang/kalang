@@ -41,11 +41,6 @@ public class ClassType extends ObjectType {
     }
 
     @Override
-    public String getDeclarationKey() {
-        return clazz.getName();
-    }
-
-    @Override
     public String getName(boolean simple) {
         Type[] pTypes = getTypeArguments();
         List<String> paramTypes = new ArrayList<>(pTypes.length);

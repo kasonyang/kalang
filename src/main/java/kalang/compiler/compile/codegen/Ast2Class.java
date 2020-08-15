@@ -14,7 +14,6 @@ import kalang.compiler.util.*;
 import kalang.mixin.CollectionMixin;
 import org.objectweb.asm.*;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static kalang.compiler.core.Types.*;
+import static kalang.compiler.util.TypeUtil.getTypeDescriptor;
 import static org.objectweb.asm.Opcodes.*;
 /**
  *The class generate the java class binary data for ast
@@ -165,15 +165,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private String internalName(String className){
         return className.replace(".", "/");
     }
-    
-    private String[] internalNames(String[] names){
-        String[] inames = new String[names.length];
-        for(int i=0;i<names.length;i++){
-            inames[i] = internalName(names[i]);
-        }
-        return inames;
-    }
-    
+
     protected String getNullableAnnotation(ObjectType type){
         NullableKind nullable = type.getNullable();
         if(nullable == NullableKind.NONNULL){
@@ -997,60 +989,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
     
-    private String getTypeDescriptor(Type[] types){
-        if(types==null) return null;
-        if(types.length==0) return null;
-        StringBuilder ts = new StringBuilder();
-        for(Type t:types){
-            ts.append(getTypeDescriptor(t));
-        }
-        return ts.toString();
-    }
-    
-    private String getTypeDescriptor(Type t){
-        if(t instanceof PrimitiveType){
-            if(t.equals(VOID_TYPE)){
-                return "V";
-            }else if(t.equals(BOOLEAN_TYPE)){
-                return "Z";
-            }else if(t.equals(LONG_TYPE)){
-                return "J";
-            }else if(t.equals(INT_TYPE)){
-                return "I";
-            }else if(t.equals(CHAR_TYPE)){
-                return "C";
-            }else if(t.equals(SHORT_TYPE)){
-                return "S";
-            }else if(t.equals(BYTE_TYPE)){
-                return "B";
-            }else if(t.equals(FLOAT_TYPE)){
-                return "F";
-            }else if(t.equals(DOUBLE_TYPE)){
-                return "D";
-            }else if(t.equals(NULL_TYPE)){
-                return "Ljava/lang/Object;";
-            }else{
-                throw Exceptions.unsupportedTypeException(t);
-            }
-        }else if(t instanceof ArrayType){
-            return "[" + getTypeDescriptor(((ArrayType)t).getComponentType());
-        }else if(t instanceof GenericType){
-            GenericType gt = (GenericType) t;
-            ObjectType st = gt.getSuperType();
-            ObjectType[] itfs = gt.getInterfaces();
-            if (itfs.length == 1 && st != null && st.isAssignableFrom(itfs[0])) {
-                st = itfs[0];
-            }
-            return getTypeDescriptor(st);
-        }else if(t instanceof ClassType){
-            return "L" + internalName(((ClassType) t).getClassNode().getName()) + ";";
-        }else if(t instanceof WildcardType){
-            return getTypeDescriptor(((WildcardType) t).getSuperType());
-        }else{
-            throw Exceptions.unsupportedTypeException(t);
-        }
-    }
-    
     private String getClassDescriptor(String className){
         return "L" + internalName(className) + ";" ;
     }
@@ -1087,15 +1025,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         org.objectweb.asm.Type type = asmType(vo.getType());
         int vid = getVarId(vo);
         opCollector.visitVarInsn(type.getOpcode(ILOAD),vid);
-    }
-    
-    @Nonnull
-    private String[] internalName(@Nonnull ClassNode[] clazz){
-        String[] names = new String[clazz.length];
-        for(int i=0;i<clazz.length;i++){
-            names[i] = internalName(clazz[i]);
-        }
-        return names;
     }
     
     private String internalName(ClassNode clazz){
