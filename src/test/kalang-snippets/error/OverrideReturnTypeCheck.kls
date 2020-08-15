@@ -1,0 +1,5 @@
+incompatible return type@1
+override Object toString() {
+    return "";
+}
+
