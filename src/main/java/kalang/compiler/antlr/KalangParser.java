@@ -38,8 +38,8 @@ public class KalangParser extends Parser {
 		XOR_ASSIGN=118, MOD_ASSIGN=119, LSHIFT_ASSIGN=120, RSHIFT_ASSIGN=121, 
 		URSHIFT_ASSIGN=122, InterpolationPreffixString=123, Identifier=124, AT=125, 
 		ELLIPSIS=126, COMPILE_OPTION_LINE=127, WS=128, COMMENT=129, LINE_COMMENT=130, 
-		PACKAGE_DELIMITER=131, UNKNOWN_CHAR=132, INTERPOLATION_INTERUPT=133, INTERPOLATION_END=134, 
-		INTERPOLATION_STRING=135;
+		PACKAGE_DELIMITER=131, UNTERMINATED_STRING=132, UNTERMINATED_MULTILINE_STRING=133, 
+		UNKNOWN_CHAR=134, INTERPOLATION_INTERUPT=135, INTERPOLATION_END=136, INTERPOLATION_STRING=137;
 	public static final int
 		RULE_standardCompilationUnit = 0, RULE_scriptCompilationUnit = 1, RULE_compileOption = 2, 
 		RULE_scriptDef = 3, RULE_classDef = 4, RULE_importDecl = 5, RULE_qualifiedName = 6, 
@@ -86,7 +86,7 @@ public class KalangParser extends Parser {
 			"'!=='", "'&&'", "'||'", "'++'", "'--'", "'+'", "'-'", "'*'", "'/'", 
 			"'&'", "'|'", "'^'", "'%'", "'+='", "'-='", "'*='", "'/='", "'&='", "'|='", 
 			"'^='", "'%='", "'<<='", "'>>='", "'>>>='", null, null, "'@'", "'...'", 
-			null, null, null, null, "'\\'", null, "'${'", "'\"'"
+			null, null, null, null, "'\\'", null, null, null, "'${'", "'\"'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -111,8 +111,8 @@ public class KalangParser extends Parser {
 			"MUL_ASSIGN", "DIV_ASSIGN", "AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN", 
 			"MOD_ASSIGN", "LSHIFT_ASSIGN", "RSHIFT_ASSIGN", "URSHIFT_ASSIGN", "InterpolationPreffixString", 
 			"Identifier", "AT", "ELLIPSIS", "COMPILE_OPTION_LINE", "WS", "COMMENT", 
-			"LINE_COMMENT", "PACKAGE_DELIMITER", "UNKNOWN_CHAR", "INTERPOLATION_INTERUPT", 
-			"INTERPOLATION_END", "INTERPOLATION_STRING"
+			"LINE_COMMENT", "PACKAGE_DELIMITER", "UNTERMINATED_STRING", "UNTERMINATED_MULTILINE_STRING", 
+			"UNKNOWN_CHAR", "INTERPOLATION_INTERUPT", "INTERPOLATION_END", "INTERPOLATION_STRING"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -6267,7 +6267,7 @@ public class KalangParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\u0089\u03b9\4\2\t"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\u008b\u03b9\4\2\t"+
 		"\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -6578,12 +6578,12 @@ public class KalangParser extends Parser {
 		"\u0320\7P\2\2\u0320\u0321\5R*\27\u0321\u0349\3\2\2\2\u0322\u0323\t\7\2"+
 		"\2\u0323\u0349\5R*\25\u0324\u0325\t\b\2\2\u0325\u0349\5R*\24\u0326\u0327"+
 		"\t\t\2\2\u0327\u0349\5R*\23\u0328\u0329\7}\2\2\u0329\u0332\5R*\2\u032a"+
-		"\u032c\7R\2\2\u032b\u032d\7\u0089\2\2\u032c\u032b\3\2\2\2\u032c\u032d"+
-		"\3\2\2\2\u032d\u032e\3\2\2\2\u032e\u032f\7\u0087\2\2\u032f\u0331\5R*\2"+
+		"\u032c\7R\2\2\u032b\u032d\7\u008b\2\2\u032c\u032b\3\2\2\2\u032c\u032d"+
+		"\3\2\2\2\u032d\u032e\3\2\2\2\u032e\u032f\7\u0089\2\2\u032f\u0331\5R*\2"+
 		"\u0330\u032a\3\2\2\2\u0331\u0334\3\2\2\2\u0332\u0330\3\2\2\2\u0332\u0333"+
 		"\3\2\2\2\u0333\u0335\3\2\2\2\u0334\u0332\3\2\2\2\u0335\u0337\7R\2\2\u0336"+
-		"\u0338\7\u0089\2\2\u0337\u0336\3\2\2\2\u0337\u0338\3\2\2\2\u0338\u0339"+
-		"\3\2\2\2\u0339\u033a\7\u0088\2\2\u033a\u0349\3\2\2\2\u033b\u033c\7G\2"+
+		"\u0338\7\u008b\2\2\u0337\u0336\3\2\2\2\u0337\u0338\3\2\2\2\u0338\u0339"+
+		"\3\2\2\2\u0339\u033a\7\u008a\2\2\u033a\u0349\3\2\2\2\u033b\u033c\7G\2"+
 		"\2\u033c\u033d\7O\2\2\u033d\u033e\5R*\2\u033e\u033f\7P\2\2\u033f\u0343"+
 		"\7Q\2\2\u0340\u0342\5.\30\2\u0341\u0340\3\2\2\2\u0342\u0345\3\2\2\2\u0343"+
 		"\u0341\3\2\2\2\u0343\u0344\3\2\2\2\u0344\u0346\3\2\2\2\u0345\u0343\3\2"+
