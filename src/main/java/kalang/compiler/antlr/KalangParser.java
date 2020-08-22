@@ -39,7 +39,8 @@ public class KalangParser extends Parser {
 		URSHIFT_ASSIGN=122, InterpolationPreffixString=123, Identifier=124, AT=125, 
 		ELLIPSIS=126, COMPILE_OPTION_LINE=127, WS=128, COMMENT=129, LINE_COMMENT=130, 
 		PACKAGE_DELIMITER=131, UNTERMINATED_STRING=132, UNTERMINATED_MULTILINE_STRING=133, 
-		UNKNOWN_CHAR=134, INTERPOLATION_INTERUPT=135, INTERPOLATION_END=136, INTERPOLATION_STRING=137;
+		UNCLOSED_COMMENT=134, UNKNOWN_CHAR=135, INTERPOLATION_INTERUPT=136, INTERPOLATION_END=137, 
+		INTERPOLATION_STRING=138;
 	public static final int
 		RULE_standardCompilationUnit = 0, RULE_scriptCompilationUnit = 1, RULE_compileOption = 2, 
 		RULE_scriptDef = 3, RULE_classDef = 4, RULE_importDecl = 5, RULE_qualifiedName = 6, 
@@ -86,7 +87,7 @@ public class KalangParser extends Parser {
 			"'!=='", "'&&'", "'||'", "'++'", "'--'", "'+'", "'-'", "'*'", "'/'", 
 			"'&'", "'|'", "'^'", "'%'", "'+='", "'-='", "'*='", "'/='", "'&='", "'|='", 
 			"'^='", "'%='", "'<<='", "'>>='", "'>>>='", null, null, "'@'", "'...'", 
-			null, null, null, null, "'\\'", null, null, null, "'${'", "'\"'"
+			null, null, null, null, "'\\'", null, null, null, null, "'${'", "'\"'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -112,7 +113,8 @@ public class KalangParser extends Parser {
 			"MOD_ASSIGN", "LSHIFT_ASSIGN", "RSHIFT_ASSIGN", "URSHIFT_ASSIGN", "InterpolationPreffixString", 
 			"Identifier", "AT", "ELLIPSIS", "COMPILE_OPTION_LINE", "WS", "COMMENT", 
 			"LINE_COMMENT", "PACKAGE_DELIMITER", "UNTERMINATED_STRING", "UNTERMINATED_MULTILINE_STRING", 
-			"UNKNOWN_CHAR", "INTERPOLATION_INTERUPT", "INTERPOLATION_END", "INTERPOLATION_STRING"
+			"UNCLOSED_COMMENT", "UNKNOWN_CHAR", "INTERPOLATION_INTERUPT", "INTERPOLATION_END", 
+			"INTERPOLATION_STRING"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -4369,6 +4371,7 @@ public class KalangParser extends Parser {
 		public Token Identifier;
 		public List<Token> lambdaParams = new ArrayList<Token>();
 		public TerminalNode LAMBDA_ARROW() { return getToken(KalangParser.LAMBDA_ARROW, 0); }
+		public TerminalNode ARROW() { return getToken(KalangParser.ARROW, 0); }
 		public BlockStmtContext blockStmt() {
 			return getRuleContext(BlockStmtContext.class,0);
 		}
@@ -4953,7 +4956,15 @@ public class KalangParser extends Parser {
 					throw new NoViableAltException(this);
 				}
 				setState(670);
-				match(LAMBDA_ARROW);
+				_la = _input.LA(1);
+				if ( !(_la==ARROW || _la==LAMBDA_ARROW) ) {
+				_errHandler.recoverInline(this);
+				}
+				else {
+					if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+					_errHandler.reportMatch(this);
+					consume();
+				}
 				setState(673);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
@@ -6267,7 +6278,7 @@ public class KalangParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\u008b\u03b9\4\2\t"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\u008c\u03b9\4\2\t"+
 		"\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -6336,16 +6347,16 @@ public class KalangParser extends Parser {
 		"*\3*\3*\3*\3*\3*\3*\3*\3*\3*\3*\3*\3*\7*\u039c\n*\f*\16*\u039f\13*\3+"+
 		"\3+\3+\3+\3+\3+\3+\3+\5+\u03a9\n+\3+\3+\5+\u03ad\n+\3+\3+\3+\5+\u03b2"+
 		"\n+\3,\6,\u03b5\n,\r,\16,\u03b6\3,\2\4\32R-\2\4\6\b\n\f\16\20\22\24\26"+
-		"\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNPRTV\2\22\4\299FF\4\2$$;"+
-		";\13\2\26\26\30\30\33\33!!\'\'..\60\6088CC\3\2\7\b\4\2;;>>\3\2jk\3\2h"+
-		"i\3\2\\]\4\2lmqq\4\2Z[bc\4\2`ade\4\2YYr|\5\2\f\17\21\22WX\4\2LL~~\5\2"+
-		"\f\17\22\22WW\n\2\24\24%%\61\61\64\6699==AADD\2\u0442\2[\3\2\2\2\4d\3"+
-		"\2\2\2\6p\3\2\2\2\bw\3\2\2\2\n}\3\2\2\2\f\u00d7\3\2\2\2\16\u00db\3\2\2"+
-		"\2\20\u00e8\3\2\2\2\22\u00ec\3\2\2\2\24\u00fb\3\2\2\2\26\u0135\3\2\2\2"+
-		"\30\u013e\3\2\2\2\32\u0156\3\2\2\2\34\u017d\3\2\2\2\36\u017f\3\2\2\2 "+
-		"\u0192\3\2\2\2\"\u0194\3\2\2\2$\u0199\3\2\2\2&\u01a5\3\2\2\2(\u01a7\3"+
-		"\2\2\2*\u01af\3\2\2\2,\u01c9\3\2\2\2.\u01e1\3\2\2\2\60\u01e3\3\2\2\2\62"+
-		"\u01e5\3\2\2\2\64\u01e7\3\2\2\2\66\u01ed\3\2\2\28\u01f1\3\2\2\2:\u01fa"+
+		"\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJLNPRTV\2\23\4\299FF\4\2$$;"+
+		";\13\2\26\26\30\30\33\33!!\'\'..\60\6088CC\3\2\7\b\4\2;;>>\3\2\n\13\3"+
+		"\2jk\3\2hi\3\2\\]\4\2lmqq\4\2Z[bc\4\2`ade\4\2YYr|\5\2\f\17\21\22WX\4\2"+
+		"LL~~\5\2\f\17\22\22WW\n\2\24\24%%\61\61\64\6699==AADD\2\u0442\2[\3\2\2"+
+		"\2\4d\3\2\2\2\6p\3\2\2\2\bw\3\2\2\2\n}\3\2\2\2\f\u00d7\3\2\2\2\16\u00db"+
+		"\3\2\2\2\20\u00e8\3\2\2\2\22\u00ec\3\2\2\2\24\u00fb\3\2\2\2\26\u0135\3"+
+		"\2\2\2\30\u013e\3\2\2\2\32\u0156\3\2\2\2\34\u017d\3\2\2\2\36\u017f\3\2"+
+		"\2\2 \u0192\3\2\2\2\"\u0194\3\2\2\2$\u0199\3\2\2\2&\u01a5\3\2\2\2(\u01a7"+
+		"\3\2\2\2*\u01af\3\2\2\2,\u01c9\3\2\2\2.\u01e1\3\2\2\2\60\u01e3\3\2\2\2"+
+		"\62\u01e5\3\2\2\2\64\u01e7\3\2\2\2\66\u01ed\3\2\2\28\u01f1\3\2\2\2:\u01fa"+
 		"\3\2\2\2<\u021c\3\2\2\2>\u0228\3\2\2\2@\u023d\3\2\2\2B\u023f\3\2\2\2D"+
 		"\u0242\3\2\2\2F\u0245\3\2\2\2H\u024b\3\2\2\2J\u0253\3\2\2\2L\u027c\3\2"+
 		"\2\2N\u027e\3\2\2\2P\u0286\3\2\2\2R\u0348\3\2\2\2T\u03b1\3\2\2\2V\u03b4"+
@@ -6534,8 +6545,8 @@ public class KalangParser extends Parser {
 		"\3\2\2\2\u0297\u0298\3\2\2\2\u0298\u029b\3\2\2\2\u0299\u0297\3\2\2\2\u029a"+
 		"\u0292\3\2\2\2\u029a\u029b\3\2\2\2\u029b\u029c\3\2\2\2\u029c\u029f\7P"+
 		"\2\2\u029d\u029f\7~\2\2\u029e\u0291\3\2\2\2\u029e\u029d\3\2\2\2\u029f"+
-		"\u02a0\3\2\2\2\u02a0\u02a3\7\13\2\2\u02a1\u02a4\58\35\2\u02a2\u02a4\5"+
-		"R*\2\u02a3\u02a1\3\2\2\2\u02a3\u02a2\3\2\2\2\u02a4\u0349\3\2\2\2\u02a5"+
+		"\u02a0\3\2\2\2\u02a0\u02a3\t\7\2\2\u02a1\u02a4\58\35\2\u02a2\u02a4\5R"+
+		"*\2\u02a3\u02a1\3\2\2\2\u02a3\u02a2\3\2\2\2\u02a4\u0349\3\2\2\2\u02a5"+
 		"\u02a6\7[\2\2\u02a6\u02a7\7~\2\2\u02a7\u02a8\7V\2\2\u02a8\u02a9\7~\2\2"+
 		"\u02a9\u02ab\7Z\2\2\u02aa\u02a5\3\2\2\2\u02aa\u02ab\3\2\2\2\u02ab\u02c2"+
 		"\3\2\2\2\u02ac\u02ad\7S\2\2\u02ad\u02ae\5R*\2\u02ae\u02af\7_\2\2\u02af"+
@@ -6575,15 +6586,15 @@ public class KalangParser extends Parser {
 		"\2\2\u0317\u030f\3\2\2\2\u0317\u0318\3\2\2\2\u0318\u0319\3\2\2\2\u0319"+
 		"\u031a\7R\2\2\u031a\u031c\3\2\2\2\u031b\u02f9\3\2\2\2\u031b\u030a\3\2"+
 		"\2\2\u031c\u0349\3\2\2\2\u031d\u031e\7O\2\2\u031e\u031f\5\32\16\2\u031f"+
-		"\u0320\7P\2\2\u0320\u0321\5R*\27\u0321\u0349\3\2\2\2\u0322\u0323\t\7\2"+
-		"\2\u0323\u0349\5R*\25\u0324\u0325\t\b\2\2\u0325\u0349\5R*\24\u0326\u0327"+
-		"\t\t\2\2\u0327\u0349\5R*\23\u0328\u0329\7}\2\2\u0329\u0332\5R*\2\u032a"+
-		"\u032c\7R\2\2\u032b\u032d\7\u008b\2\2\u032c\u032b\3\2\2\2\u032c\u032d"+
-		"\3\2\2\2\u032d\u032e\3\2\2\2\u032e\u032f\7\u0089\2\2\u032f\u0331\5R*\2"+
+		"\u0320\7P\2\2\u0320\u0321\5R*\27\u0321\u0349\3\2\2\2\u0322\u0323\t\b\2"+
+		"\2\u0323\u0349\5R*\25\u0324\u0325\t\t\2\2\u0325\u0349\5R*\24\u0326\u0327"+
+		"\t\n\2\2\u0327\u0349\5R*\23\u0328\u0329\7}\2\2\u0329\u0332\5R*\2\u032a"+
+		"\u032c\7R\2\2\u032b\u032d\7\u008c\2\2\u032c\u032b\3\2\2\2\u032c\u032d"+
+		"\3\2\2\2\u032d\u032e\3\2\2\2\u032e\u032f\7\u008a\2\2\u032f\u0331\5R*\2"+
 		"\u0330\u032a\3\2\2\2\u0331\u0334\3\2\2\2\u0332\u0330\3\2\2\2\u0332\u0333"+
 		"\3\2\2\2\u0333\u0335\3\2\2\2\u0334\u0332\3\2\2\2\u0335\u0337\7R\2\2\u0336"+
-		"\u0338\7\u008b\2\2\u0337\u0336\3\2\2\2\u0337\u0338\3\2\2\2\u0338\u0339"+
-		"\3\2\2\2\u0339\u033a\7\u008a\2\2\u033a\u0349\3\2\2\2\u033b\u033c\7G\2"+
+		"\u0338\7\u008c\2\2\u0337\u0336\3\2\2\2\u0337\u0338\3\2\2\2\u0338\u0339"+
+		"\3\2\2\2\u0339\u033a\7\u008b\2\2\u033a\u0349\3\2\2\2\u033b\u033c\7G\2"+
 		"\2\u033c\u033d\7O\2\2\u033d\u033e\5R*\2\u033e\u033f\7P\2\2\u033f\u0343"+
 		"\7Q\2\2\u0340\u0342\5.\30\2\u0341\u0340\3\2\2\2\u0342\u0345\3\2\2\2\u0343"+
 		"\u0341\3\2\2\2\u0343\u0344\3\2\2\2\u0344\u0346\3\2\2\2\u0345\u0343\3\2"+
@@ -6593,29 +6604,29 @@ public class KalangParser extends Parser {
 		"\u02ea\3\2\2\2\u0348\u031b\3\2\2\2\u0348\u031d\3\2\2\2\u0348\u0322\3\2"+
 		"\2\2\u0348\u0324\3\2\2\2\u0348\u0326\3\2\2\2\u0348\u0328\3\2\2\2\u0348"+
 		"\u033b\3\2\2\2\u0349\u039d\3\2\2\2\u034a\u034b\f\22\2\2\u034b\u034c\t"+
-		"\n\2\2\u034c\u039c\5R*\23\u034d\u034e\f\21\2\2\u034e\u034f\t\7\2\2\u034f"+
+		"\13\2\2\u034c\u039c\5R*\23\u034d\u034e\f\21\2\2\u034e\u034f\t\b\2\2\u034f"+
 		"\u039c\5R*\22\u0350\u0358\f\20\2\2\u0351\u0352\7[\2\2\u0352\u0359\7[\2"+
 		"\2\u0353\u0354\7Z\2\2\u0354\u0355\7Z\2\2\u0355\u0359\7Z\2\2\u0356\u0357"+
 		"\7Z\2\2\u0357\u0359\7Z\2\2\u0358\u0351\3\2\2\2\u0358\u0353\3\2\2\2\u0358"+
 		"\u0356\3\2\2\2\u0359\u035a\3\2\2\2\u035a\u039c\5R*\21\u035b\u035c\f\17"+
-		"\2\2\u035c\u035d\t\13\2\2\u035d\u039c\5R*\20\u035e\u035f\f\r\2\2\u035f"+
-		"\u0360\t\f\2\2\u0360\u039c\5R*\16\u0361\u0362\f\f\2\2\u0362\u0363\7n\2"+
+		"\2\2\u035c\u035d\t\f\2\2\u035d\u039c\5R*\20\u035e\u035f\f\r\2\2\u035f"+
+		"\u0360\t\r\2\2\u0360\u039c\5R*\16\u0361\u0362\f\f\2\2\u0362\u0363\7n\2"+
 		"\2\u0363\u039c\5R*\r\u0364\u0365\f\13\2\2\u0365\u0366\7p\2\2\u0366\u039c"+
 		"\5R*\f\u0367\u0368\f\n\2\2\u0368\u0369\7o\2\2\u0369\u039c\5R*\13\u036a"+
 		"\u036b\f\t\2\2\u036b\u036c\7f\2\2\u036c\u039c\5R*\n\u036d\u036e\f\b\2"+
 		"\2\u036e\u036f\7g\2\2\u036f\u039c\5R*\t\u0370\u0371\f\7\2\2\u0371\u0372"+
 		"\7\20\2\2\u0372\u039c\5R*\b\u0373\u0374\f\6\2\2\u0374\u0375\7^\2\2\u0375"+
 		"\u0376\5R*\2\u0376\u0377\7_\2\2\u0377\u0378\5R*\7\u0378\u039c\3\2\2\2"+
-		"\u0379\u037a\f\3\2\2\u037a\u037b\t\r\2\2\u037b\u039c\5R*\3\u037c\u037d"+
-		"\f\36\2\2\u037d\u037e\t\16\2\2\u037e\u037f\t\17\2\2\u037f\u0388\7O\2\2"+
+		"\u0379\u037a\f\3\2\2\u037a\u037b\t\16\2\2\u037b\u039c\5R*\3\u037c\u037d"+
+		"\f\36\2\2\u037d\u037e\t\17\2\2\u037e\u037f\t\20\2\2\u037f\u0388\7O\2\2"+
 		"\u0380\u0385\5R*\2\u0381\u0382\7V\2\2\u0382\u0384\5R*\2\u0383\u0381\3"+
 		"\2\2\2\u0384\u0387\3\2\2\2\u0385\u0383\3\2\2\2\u0385\u0386\3\2\2\2\u0386"+
 		"\u0389\3\2\2\2\u0387\u0385\3\2\2\2\u0388\u0380\3\2\2\2\u0388\u0389\3\2"+
 		"\2\2\u0389\u038a\3\2\2\2\u038a\u039c\7P\2\2\u038b\u038c\f\35\2\2\u038c"+
-		"\u038d\t\20\2\2\u038d\u039c\t\17\2\2\u038e\u038f\f\33\2\2\u038f\u0390"+
+		"\u038d\t\21\2\2\u038d\u039c\t\20\2\2\u038e\u038f\f\33\2\2\u038f\u0390"+
 		"\7S\2\2\u0390\u0391\5R*\2\u0391\u0392\7T\2\2\u0392\u039c\3\2\2\2\u0393"+
 		"\u0394\f\30\2\2\u0394\u0395\7\3\2\2\u0395\u039c\7~\2\2\u0396\u0397\f\26"+
-		"\2\2\u0397\u039c\t\b\2\2\u0398\u0399\f\16\2\2\u0399\u039a\7-\2\2\u039a"+
+		"\2\2\u0397\u039c\t\t\2\2\u0398\u0399\f\16\2\2\u0399\u039a\7-\2\2\u039a"+
 		"\u039c\7~\2\2\u039b\u034a\3\2\2\2\u039b\u034d\3\2\2\2\u039b\u0350\3\2"+
 		"\2\2\u039b\u035b\3\2\2\2\u039b\u035e\3\2\2\2\u039b\u0361\3\2\2\2\u039b"+
 		"\u0364\3\2\2\2\u039b\u0367\3\2\2\2\u039b\u036a\3\2\2\2\u039b\u036d\3\2"+
@@ -6630,7 +6641,7 @@ public class KalangParser extends Parser {
 		"\3\2\2\2\u03ad\u03ae\3\2\2\2\u03ae\u03af\7W\2\2\u03af\u03b2\7\34\2\2\u03b0"+
 		"\u03b2\7N\2\2\u03b1\u03a0\3\2\2\2\u03b1\u03a1\3\2\2\2\u03b1\u03a2\3\2"+
 		"\2\2\u03b1\u03a3\3\2\2\2\u03b1\u03a4\3\2\2\2\u03b1\u03a5\3\2\2\2\u03b1"+
-		"\u03a8\3\2\2\2\u03b1\u03b0\3\2\2\2\u03b2U\3\2\2\2\u03b3\u03b5\t\21\2\2"+
+		"\u03a8\3\2\2\2\u03b1\u03b0\3\2\2\2\u03b2U\3\2\2\2\u03b3\u03b5\t\22\2\2"+
 		"\u03b4\u03b3\3\2\2\2\u03b5\u03b6\3\2\2\2\u03b6\u03b4\3\2\2\2\u03b6\u03b7"+
 		"\3\2\2\2\u03b7W\3\2\2\2\177[djuw}\u0081\u008a\u008f\u0092\u0095\u0099"+
 		"\u00a1\u00a4\u00ac\u00af\u00b6\u00bd\u00c0\u00c4\u00cb\u00d2\u00d5\u00d7"+

@@ -269,7 +269,7 @@ expression
             ('(' (lambdaParams+=Identifier (',' lambdaParams+=Identifier)*)? ')' )
             | lambdaParams+=Identifier
          )
-         '=>'
+         ( '=>' | '->' )
          (blockStmt | expression)
       ) #lambdaExpr
     | ( '<' keyType=Identifier ',' valueType=Identifier '>' )? ( '['  keys+=expression ':' values+=expression ( ',' keys+=expression ':' values+=expression)*  ','? ']'

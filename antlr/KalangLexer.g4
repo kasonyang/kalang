@@ -476,6 +476,8 @@ UNTERMINATED_STRING: '"' ('\\"' | ~["])*? ('\r'|'\n');
 
 UNTERMINATED_MULTILINE_STRING: '\'\'\'' MultiLineStringCharacters*? ('\'' | '\'\'')? EOF;
 
+UNCLOSED_COMMENT: '/*' (~[*/] | '*'~[/] | ~[*]'/')*? '*'? EOF ;
+
 UNKNOWN_CHAR: .+?;
 
 mode STRING;
