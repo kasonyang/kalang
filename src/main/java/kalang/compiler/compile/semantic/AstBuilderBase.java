@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Function;
 
 import static kalang.compiler.util.AstUtil.findGetterByPropertyName;
 import static kalang.compiler.util.AstUtil.findSetterByPropertyName;
@@ -483,10 +484,52 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
 
 
     @Nullable
-    protected ClassNode resolveNamedClass(String id,ClassNode topClass,ClassNode currentClass){
+    protected ClassNode resolveNamedClass(String id){
         TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
-        String resolvedName = typeNameResolver.resolve(id, topClass, currentClass);
+        String resolvedName = typeNameResolver.resolve(id, getTopClass(), getCurrentClass());
         return resolvedName==null ? null : getAst(resolvedName);
+    }
+
+    @Nullable
+    protected ClassNode resolveQualifiedNamedClass(List<Token> nameTokens, Function<String, ClassNode> nameResolver, boolean reportError) {
+        Queue<Token> names = new LinkedList<>(nameTokens);
+        StringBuilder nameBuilder = new StringBuilder();
+        ClassNode clazzNode;
+        for (;;) {
+            if (nameBuilder.length() > 0) {
+                nameBuilder.append(".");
+            }
+            Token token = names.peek();
+            assert token != null;
+            nameBuilder.append(token.getText());
+            clazzNode = nameResolver.apply(nameBuilder.toString());
+            if (clazzNode != null) {
+                names.poll();
+                break;
+            }
+            if (names.size() <= 1) {
+                break;
+            }
+            names.poll();
+        }
+        if (clazzNode != null) {
+            while (!names.isEmpty()) {
+                List<ClassNode> subclasses = clazzNode.classes;
+                Token symbol = names.peek();
+                String expectedName = clazzNode.getName() + "$" + symbol.getText();
+                clazzNode = CollectionMixin.find(subclasses, it -> expectedName.equals(it.getName()));
+                if (clazzNode == null) {
+                    break;
+                }
+                names.poll();
+            }
+        }
+        if (clazzNode == null && reportError) {
+            Token token = names.peek();
+            assert token != null;
+            handleSyntaxError("Cannot resolve symbol '" + token.getText() + "'", offset(token));
+        }
+        return clazzNode;
     }
 
     protected ClassType parseLambdaType(KalangParser.LambdaTypeContext ctx) {
@@ -555,23 +598,27 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         if (lambdaType != null) {
             return this.parseLambdaType(lambdaType);
         }
-        Token rawTypeToken = ctx.rawClass;
-        List<String> classNameParts = new LinkedList<>();
-        for (Token p : ctx.paths) {
-            classNameParts.add(p.getText());
+        List<Token> names = ctx.qualifiedName().names;
+        if (names.size() == 1) {
+            Token name = names.get(0);
+            assert name != null;
+            GenericType[] allGenericTypes = getCurrentClass().getGenericTypes();
+            if (methodCtx != null) {
+                allGenericTypes = CollectionMixin.concat(allGenericTypes, methodCtx.method.getGenericTypes());
+            }
+            GenericType gt = CollectionMixin.find(
+                    allGenericTypes,
+                    it -> name.getText().equals(it.getName())
+            );
+            if (gt != null) {
+                return gt;
+            }
         }
-        classNameParts.add(rawTypeToken.getText());
-        String rawType = String.join(".", classNameParts);
-        GenericType[] allGenericTypes = getCurrentClass().getGenericTypes();
-        if (methodCtx != null) {
-            allGenericTypes = CollectionMixin.concat(allGenericTypes, methodCtx.method.getGenericTypes());
+        ClassNode clazzNode = resolveQualifiedNamedClass(names, this::resolveNamedClass, true);
+        if (clazzNode == null) {
+            return Types.getRootType(NullableKind.UNKNOWN);
         }
-        GenericType gt = CollectionMixin.find(allGenericTypes, it -> rawType.equals(it.getName()));
-        if (gt != null) {
-            return gt;
-        }
-        ObjectType clazzType = requireClassType(rawType, rawTypeToken);
-        ClassNode clazzNode = clazzType.getClassNode();
+        ObjectType clazzType = Types.getClassType(clazzNode);
         GenericType[] clzDeclaredGenericTypes = clazzNode.getGenericTypes();
         boolean isRawType = ctx.typeArgsPrefix == null;
         if (isRawType) {
@@ -621,7 +668,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         if (fullname) {
             ast = getAst(id);
         } else {
-            ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
+            ast = resolveNamedClass(id);
         }
         if(ast == null){
             diagnosisReporter.error("class not found:" + id, offset(token));
@@ -641,7 +688,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         if (fullName) {
             ast = getAst(id);
         } else {
-            ast = resolveNamedClass(id, getTopClass(), getCurrentClass());
+            ast = resolveNamedClass(id);
         }
         if (ast == null) {
             throw new NodeException("class not found:" + id, offset);
@@ -1014,7 +1061,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
     }
 
     @Nullable
-    private ClassNode getAst(String className) {
+    protected ClassNode getAst(String className) {
         return compilationUnit.getCompileContext().getClassNodeLoader().getClassNode(className);
     }
 

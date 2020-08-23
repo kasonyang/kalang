@@ -1287,9 +1287,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitImportDecl(ImportDeclContext ctx) {
-        String name = ctx.name.getText();
-        String delim = ctx.delim.getText();
-        StringBuilder prefix = new StringBuilder();
+        List<Token> names = ctx.qualifiedName().names;
         String importMode = ctx.importMode != null ? ctx.importMode.getText() : "";
         boolean isImportStatic = false;
         boolean isImportMixin = false;
@@ -1300,47 +1298,46 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         } else if (!importMode.isEmpty()) {
             throw Exceptions.unexpectedValue(importMode);
         }
-        if("\\".equals(delim)){
-            boolean relative = ctx.root == null || ctx.root.getText().length() == 0;
-            String packageName = this.getPackageName();
-            if (relative && packageName.length() > 0) {
-                prefix = new StringBuilder(packageName + ".");
-            }
-        }
-        if (ctx.path != null) {
-            for (Token p : ctx.path) {
-                prefix.append(p.getText()).append(".");
-            }
-        }
         TypeNameResolver typeNameResolver = compilationUnit.getTypeNameResolver();
-        if (name.equals("*")) {
-            String location = prefix.substring(0, prefix.length() - 1);
+        if (ctx.star != null) {
+            //import all
             if (isImportStatic || isImportMixin) {
-                ClassNode locationCls = requireAst(location, ctx.stop,true);
+                ClassNode locationCls = resolveQualifiedNamedClass(names, this::getAst, true);
+                if (locationCls == null) {
+                    return null;
+                }
                 if (isImportStatic) {
                     importStaticMember(locationCls);
                 } else {
                     importMixinMethod(locationCls);
                 }
             } else {
-                typeNameResolver.importPackage(location);
+                typeNameResolver.importPackage(ctx.qualifiedName().getText());
             }
-
         } else {
-            String key = name;
-            if (ctx.alias != null) {
-                key = ctx.alias.getText();
-            }
+            String alias = ctx.alias == null ? null : ctx.alias.getText();
             if (isImportStatic || isImportMixin) {
-                String location = prefix.substring(0,prefix.length()-1);
-                ClassNode locationCls = requireAst(location, ctx.stop,true);
+                LinkedList<Token> clsTokens = new LinkedList<>(names);
+                Token memberToken = clsTokens.pollLast();
+                assert memberToken != null;
+                ClassNode locationCls = resolveQualifiedNamedClass(clsTokens, this::getAst, true);
+                if (locationCls == null) {
+                    return null;
+                }
+                String name = memberToken.getText();
+                String key = alias == null ? name : alias;
                 if (isImportStatic) {
                     importStaticMember(locationCls,name, key);
                 } else {
                     importMixinMethod(locationCls, name, key);
                 }
-            }else{
-                typeNameResolver.importClass(prefix + name,key);
+            } else {
+                ClassNode cls = resolveQualifiedNamedClass(names, this::getAst, true);
+                if (cls == null) {
+                    return null;
+                }
+                String key = alias != null ? alias : names.get(names.size() - 1).getText();
+                typeNameResolver.importClass(cls.getName(), key);
             }
         }        
         return null;
@@ -1372,9 +1369,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             mapAst(newExpr,ctx);
             return newExpr;
         } catch (MethodNotFoundException ex) {
-            throw createMethodNotFoundException(offset(ctx.classType().rawClass), clsType.getName(), "<init>", params);
+            throw createMethodNotFoundException(offset(ctx.classType()), clsType.getName(), "<init>", params);
         } catch(AmbiguousMethodException ex){
-            throw new NodeException(ex.getMessage(), offset(ctx.classType().rawClass));
+            throw new NodeException(ex.getMessage(), offset(ctx.classType()));
         }
     }
 

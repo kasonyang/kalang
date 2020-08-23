@@ -31,9 +31,9 @@ public class JvmClassNode extends ClassNode {
             , annotationInitialized
             ;
 
-    private Map<TypeVariable, GenericType> genericTypeMap = null;
+    private Map<TypeVariable<?>, GenericType> genericTypeMap = null;
 
-    public JvmClassNode(Class clazz, JvmClassNodeLoader classNodeLoader) {
+    public JvmClassNode(Class<?> clazz, JvmClassNodeLoader classNodeLoader) {
         this.classNodeLoader = classNodeLoader;
         this.clazz = clazz;
         this.isStructureFinished = true;
@@ -93,7 +93,7 @@ public class JvmClassNode extends ClassNode {
                 Type mType;
                 String mName;
                 int mModifier;
-                HashMap<TypeVariable,GenericType> gTypeMap = new HashMap<>(getGenericTypeMap());
+                HashMap<TypeVariable<?>,GenericType> gTypeMap = new HashMap<>(getGenericTypeMap());
                 ConstExpr defaultValue = null;
                 if (m instanceof Method) {
                     mType = getType(((Method) m).getGenericReturnType(), gTypeMap , ((Method) m).getReturnType(), nullable);
@@ -145,7 +145,7 @@ public class JvmClassNode extends ClassNode {
     }
 
     @Nullable
-    private Type[] transType(java.lang.reflect.Type[] ts, Map<TypeVariable, GenericType> genericTypes) {
+    private Type[] transType(java.lang.reflect.Type[] ts, Map<TypeVariable<?>, GenericType> genericTypes) {
         Type[] ret = new Type[ts.length];
         for (int i = 0; i < ret.length; i++) {
             ret[i] = transType(ts[i], genericTypes);
@@ -156,9 +156,9 @@ public class JvmClassNode extends ClassNode {
         return ret;
     }
 
-    private Type transType(java.lang.reflect.Type t, Map<TypeVariable, GenericType> genericTypes) {
+    private Type transType(java.lang.reflect.Type t, Map<TypeVariable<?>, GenericType> genericTypes) {
         if (t instanceof TypeVariable) {
-            TypeVariable typeVar = (TypeVariable) t;
+            TypeVariable<?> typeVar = (TypeVariable<?>) t;
             NullableKind nullable = getNullable(typeVar.getAnnotations());
             GenericType vt = genericTypes.get(typeVar);
             if (vt==null) {
@@ -199,7 +199,7 @@ public class JvmClassNode extends ClassNode {
         }
     }
 
-    private Type getType(java.lang.reflect.Type t, Map<TypeVariable, GenericType> genericTypes, Class defaultClass, NullableKind nullable) {
+    private Type getType(java.lang.reflect.Type t, Map<TypeVariable<?>, GenericType> genericTypes, Class<?> defaultClass, NullableKind nullable) {
         Type type = this.transType(t, genericTypes);
         if (type == null) {
             type = transType(defaultClass, genericTypes);
@@ -227,12 +227,12 @@ public class JvmClassNode extends ClassNode {
         return NullableKind.UNKNOWN;
     }
 
-    private Map<TypeVariable, GenericType> getGenericTypeMap() {
+    private Map<TypeVariable<?>, GenericType> getGenericTypeMap() {
         if (this.genericTypeMap == null) {
-            Map<TypeVariable, GenericType> gTypesMap = new HashMap<>();
-            TypeVariable[] typeParameters = clazz.getTypeParameters();
+            Map<TypeVariable<?>, GenericType> gTypesMap = new HashMap<>();
+            TypeVariable<?>[] typeParameters = clazz.getTypeParameters();
             if (typeParameters.length > 0) {
-                for (TypeVariable pt : typeParameters) {
+                for (TypeVariable<?> pt : typeParameters) {
                     GenericType gt = this.transTypeVariableToGenericType(pt, gTypesMap);
                     gTypesMap.put(pt, gt);
                     declareGenericType(gt);
@@ -254,7 +254,7 @@ public class JvmClassNode extends ClassNode {
         return cts;
     }
 
-    private GenericType transTypeVariableToGenericType(TypeVariable pt,Map<TypeVariable,GenericType> gTypesMap){
+    private GenericType transTypeVariableToGenericType(TypeVariable<?> pt,Map<TypeVariable<?>,GenericType> gTypesMap){
         NullableKind nullable = getNullable(pt.getAnnotations());
         GenericType genericClassType = new GenericType(pt.getName(), Types.getRootType(NullableKind.UNKNOWN), new ObjectType[0], nullable);
         ClassNode classNode = genericClassType.getClassNode();

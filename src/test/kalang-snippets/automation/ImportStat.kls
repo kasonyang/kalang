@@ -1,0 +1,7 @@
+import java.util.Map.Entry;
+
+protected void test() {
+    val map = new HashMap<String,Integer>();
+    Set<Map.Entry<String,Integer>> entries = map.entrySet();
+    Set<Entry> es = entries;
+}

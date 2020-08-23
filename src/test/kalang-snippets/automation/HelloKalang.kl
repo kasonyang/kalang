@@ -1,4 +1,4 @@
-import test.kalang.automation.SnippetsTest as ST;
+import test.kalang.compiler.automation.SnippetsTest as ST;
 class<T>{
     class InnerClass{
         int test(){

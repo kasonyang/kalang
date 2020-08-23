@@ -66,25 +66,12 @@ classDef:
 ;
 
 importDecl:
-   (
-        'import' (importMode=('static' | 'mixin') )? (root='\\')?
-        path+=Identifier ('\\' path+=Identifier)*
-        delim='\\' ( 
-            (name=Identifier ('as' alias=Identifier)? )
-            |(name='*')
-        ) 
-    |
-        'import' (importMode=('static' | 'mixin') )?
-        path+=Identifier ('.' path+=Identifier)*
-        delim='.' ( 
-            (name=Identifier ('as' alias=Identifier)? )
-            |(name='*')
-        )
-    )
+    'import' (importMode=('static' | 'mixin') )?
+    qualifiedName ('.' star='*' | AS alias = Identifier)?
     ';'
 ;
 qualifiedName:
-   Identifier ('.' Identifier)*
+   ( names += Identifier '.')* names += Identifier
 ;
 classBody:
   ( fieldDecl | methodDecl | classDef )*
@@ -130,7 +117,7 @@ type:
     |  type '[' ']' (nullable='?')?
 ;
 classType:
-     ( paths +=Identifier '\\')* rawClass=Identifier
+    qualifiedName
         (typeArgsPrefix='<'
             (
                 parameterTypes+=parameterizedElementType

@@ -4,9 +4,11 @@ import kalang.compiler.compile.DefaultClassNodeLoader;
 import kalang.compiler.compile.ClassNodeNotFoundException;
 import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.ClassNodeLoader;
+import kalang.mixin.CollectionMixin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -60,9 +62,16 @@ public class JvmClassNodeLoader extends DefaultClassNodeLoader {
      * @throws ClassNodeNotFoundException
      */
     @Nonnull
-    private ClassNode buildFromClass(@Nonnull Class clz) throws ClassNodeNotFoundException {
+    private ClassNode buildFromClass(@Nonnull Class<?> clz) throws ClassNodeNotFoundException {
         ClassNode cn = new JvmClassNode(clz, this);
         loadedClasses.put(clz.getName(), cn);
+        cn.classes.addAll(Arrays.asList(
+                CollectionMixin.map(
+                        clz.getClasses(),
+                        ClassNode.class,
+                        it -> findAst(it.getName())
+                )
+        ));
         return cn;
     }
 
