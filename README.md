@@ -45,8 +45,8 @@ Windows:
  Run the following commands in Command Prompt(cmd.exe)
     
 ```bat
-> assoc .kls=KalangScript 
-> ftype KalangScript=kalangsh.bat "%1" %*
+assoc .kls=KalangScript 
+ftype KalangScript=kalangsh.bat "%1" %*
 ```
 
 # Syntax
@@ -58,13 +58,13 @@ See [Syntax](docs/syntax.md)
 ## Launch kalang scripts
 
 ```
-> kalangsh YOUR_SCRIPT_FILE YOUR_SCRIPT_ARGUMENTS
+kalangsh YOUR_SCRIPT_FILE YOUR_SCRIPT_ARGUMENTS
 ```
 
 ## Launch kalang compiler
 
 ```
-> kalangc SOURCE_FILE
+kalangc SOURCE_FILE
 ```
 
 For example:`kalangc Helloworld.kl` would compile `Helloworld.kl` in the current directory.
@@ -72,9 +72,9 @@ For example:`kalangc Helloworld.kl` would compile `Helloworld.kl` in the current
 ## Get more usages
 
 ```
->kalangsh --help
->kalangc --help
->kalangeditor --help
+kalangsh --help
+kalangc --help
+kalangeditor --help
 ```
 
 # HelloWorld Example
@@ -104,7 +104,19 @@ Requirements:
 
 Clone the source,and run
 
-    >./gradlew build
+    ./gradlew build
+    
+# Projects writing in kalang
+
+* [dbutil](https://github.com/kasonyang/dbutil)
+* [ksh](https://github.com/kasonyang/ksh)
+* [fhc](https://github.com/kasonyang/fhc)
+* [Kailer](https://github.com/kasonyang/kailer)
+* [ColorConsole](https://github.com/kasonyang/color-console)
+
+# Gist
+
+* [serve static content](https://gist.github.com/kasonyang/f3d8364161144b0c49f9caf3a7b42272)
 
 #IDE/Editor plugin support
 

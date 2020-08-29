@@ -45,8 +45,8 @@ Windows:
  在命令提示符(cmd.exe)下执行如下命令
     
 ```bat
-> assoc .kls=KalangScript 
-> ftype KalangScript=kalangsh.bat "%1" %*
+assoc .kls=KalangScript 
+ftype KalangScript=kalangsh.bat "%1" %*
 ```
 
 # 语法
@@ -58,13 +58,13 @@ Windows:
 ## 运行kalang脚本文件
 
 ```
-> kalangsh YOUR_SCRIPT_FILE YOUR_SCRIPT_ARGUMENTS
+kalangsh YOUR_SCRIPT_FILE YOUR_SCRIPT_ARGUMENTS
 ```
 
 ## 编译kalang源文件
 
 ```
-> kalangc SOURCE_FILE
+kalangc SOURCE_FILE
 ```
 
 例如:`kalangc Helloworld.kl` 将编译当前目录下的 `Helloworld.kl`文件.
@@ -72,9 +72,9 @@ Windows:
 ## 获取更多用法
 
 ```
->kalangsh --help
->kalangc --help
->kalangeditor --help
+kalangsh --help
+kalangc --help
+kalangeditor --help
 ```
 
 # HelloWorld 例子
@@ -104,7 +104,19 @@ console.info("Hello,world!");
 
 克隆代码到本地，并执行
 
-    >./gradlew build
+    ./gradlew build
+    
+# 使用kalang编写的项目
+
+* [dbutil](https://github.com/kasonyang/dbutil)
+* [ksh](https://github.com/kasonyang/ksh)
+* [fhc](https://github.com/kasonyang/fhc)
+* [Kailer](https://github.com/kasonyang/kailer)
+* [ColorConsole](https://github.com/kasonyang/color-console)
+
+# Gist
+
+* [serve static content](https://gist.github.com/kasonyang/f3d8364161144b0c49f9caf3a7b42272)
 
 #编辑器/IDE支持
 
