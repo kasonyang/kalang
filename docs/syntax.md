@@ -1,15 +1,8 @@
-title=Kalang syntax
-date=2018-10-27
-type=post
-tags=
-status=published
-~~~~~~
-
 # Base Syntax
 
 ## Package and class name
 
-You don't have to declare package name and class name in the code.Kalang use the directory name as package name and the file name as class name.For example,the file `/src/foo/bar/Helloworld.kl` means that the package name is `foo.bar` , the main class name is `Helloworld` and the full class name is `foo.bar.Helloworld`,if the source root is `/src`.
+It's unnecessary to declare package name and class name in the code.Kalang use the directory name as package name and use the file name as class name.For example,the file `/src/foo/bar/Helloworld.kl` means that the package name is `foo.bar` , the main class name is `Helloworld` and the full class name is `foo.bar.Helloworld`,if the source root is `/src`.
 
 ## Keywords
 
