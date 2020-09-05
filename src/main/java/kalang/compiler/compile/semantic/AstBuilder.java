@@ -130,16 +130,16 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ParserRuleContext cunit = buildCompilationUnitContext();
         Profiler.getInstance().endSpan(span);
         this.compilationContext = cunit;
-        List<ImportDeclContext> importDecls = cunit.getRuleContexts(ImportDeclContext.class);
-        for(ImportDeclContext ic : importDecls){
-            this.visitImportDecl(ic);
-        }
         this.classNodeInitializer = new ClassNodeInitializer(this.compilationUnit);
         topClass = classNodeInitializer.build(cunit);
     }
 
     public void parseMemberDeclaration(ClassNodeLoader classNodeLoader) {
         setupClassNodeLoader(classNodeLoader);
+        List<ImportDeclContext> importDecls = compilationContext.getRuleContexts(ImportDeclContext.class);
+        for(ImportDeclContext ic : importDecls){
+            this.visitImportDecl(ic);
+        }
         this.classNodeStructureBuilder = new ClassNodeStructureBuilder(this.compilationUnit, parser);
         buildClassNodeMeta(topClass);
     }
