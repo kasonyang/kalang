@@ -1,4 +1,4 @@
-import model.*;
+import model.ClassA;
 class {
 
     boolean test() {
