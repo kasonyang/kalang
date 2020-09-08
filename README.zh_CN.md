@@ -21,15 +21,15 @@ Kalang是一门基于JVM的静态类型安全、语法灵活的编程语言。
 
 ### Linux/Mac用户:
 
-    wget -O kalang-compiler-1.9.2.tar http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.9.2/kalang-compiler-1.9.2.tar
-    tar -xvf kalang-compiler-1.9.2.tar
-    ln -s `pwd`/kalang-compiler-1.9.2/bin/kalangc /usr/local/bin/kalangc
-    ln -s `pwd`/kalang-compiler-1.9.2/bin/kalangsh /usr/local/bin/kalangsh
-    ln -s `pwd`/kalang-compiler-1.9.2/bin/kalangeditor /usr/local/bin/kalangeditor
+    wget -O kalang-compiler-1.10.0.tar http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.10.0/kalang-compiler-1.10.0.tar
+    tar -xvf kalang-compiler-1.10.0.tar
+    ln -s `pwd`/kalang-compiler-1.10.0/bin/kalangc /usr/local/bin/kalangc
+    ln -s `pwd`/kalang-compiler-1.10.0/bin/kalangsh /usr/local/bin/kalangsh
+    ln -s `pwd`/kalang-compiler-1.10.0/bin/kalangeditor /usr/local/bin/kalangeditor
 
 ### Windows用户:
 
-1. 下载最新的二进制包:[http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.9.2/kalang-compiler-1.9.2.zip](http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.9.2/kalang-compiler-1.9.2.zip)
+1. 下载最新的二进制包:[http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.10.0/kalang-compiler-1.10.0.zip](http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.10.0/kalang-compiler-1.10.0.zip)
 2. 对下载下来的二进制包进行解压缩。
 3. 将解压后的`bin`目录添加到`PATH`系统环境变量里。
 
@@ -48,6 +48,17 @@ Windows:
 assoc .kls=KalangScript 
 ftype KalangScript=kalangsh.bat "%1" %*
 ```
+
+# Hello World
+
+创建`hello.kls`文件，并输入如下内容:
+ 
+     println("Hello,world!");
+
+然后在终端中执行:
+
+    kalangsh hello.kls
+
 
 # 语法
 
@@ -76,11 +87,6 @@ kalangsh --help
 kalangc --help
 kalangeditor --help
 ```
-
-# HelloWorld 例子
-
-    var s = "Hello,world!";
-    println(s);
 
 # 依赖管理
 

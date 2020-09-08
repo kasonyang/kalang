@@ -21,15 +21,15 @@ Kalang is a static type-safe language base on jvm with flexible syntax.
 
 ### For Linux/Mac users:
 
-    wget -O kalang-compiler-1.9.2.tar http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.9.2/kalang-compiler-1.9.2.tar
-    tar -xvf kalang-compiler-1.9.2.tar
-    ln -s `pwd`/kalang-compiler-1.9.2/bin/kalangc /usr/local/bin/kalangc
-    ln -s `pwd`/kalang-compiler-1.9.2/bin/kalangsh /usr/local/bin/kalangsh
-    ln -s `pwd`/kalang-compiler-1.9.2/bin/kalangeditor /usr/local/bin/kalangeditor
+    wget -O kalang-compiler-1.10.0.tar http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.10.0/kalang-compiler-1.10.0.tar
+    tar -xvf kalang-compiler-1.10.0.tar
+    ln -s `pwd`/kalang-compiler-1.10.0/bin/kalangc /usr/local/bin/kalangc
+    ln -s `pwd`/kalang-compiler-1.10.0/bin/kalangsh /usr/local/bin/kalangsh
+    ln -s `pwd`/kalang-compiler-1.10.0/bin/kalangeditor /usr/local/bin/kalangeditor
 
 ### For Windows users:
 
-1. Download the latest binary distribution:[http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.9.2/kalang-compiler-1.9.2.zip](http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.9.2/kalang-compiler-1.9.2.zip)
+1. Download the latest binary distribution:[http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.10.0/kalang-compiler-1.10.0.zip](http://search.maven.org/remotecontent?filepath=site/kason/kalang/kalang-compiler/1.10.0/kalang-compiler-1.10.0.zip)
 2. Unzip the downloaded zip file
 3. Add the absolute path of the `bin` directory to the `PATH` environment variable
 
@@ -48,6 +48,16 @@ Windows:
 assoc .kls=KalangScript 
 ftype KalangScript=kalangsh.bat "%1" %*
 ```
+
+# Hello World
+
+Created the file named `hello.kls` with the follow content:
+ 
+     println("Hello,world!");
+
+Then run in the terminal:
+
+    kalangsh hello.kls
 
 # Syntax
 
@@ -76,11 +86,6 @@ kalangsh --help
 kalangc --help
 kalangeditor --help
 ```
-
-# HelloWorld Example
-
-    var s = "Hello,world!";
-    println(s);
 
 # Dependency manage
 
