@@ -113,11 +113,11 @@ Clone the source,and run
     
 # Projects writing in kalang
 
-* [dbutil](https://github.com/kasonyang/dbutil)
-* [ksh](https://github.com/kasonyang/ksh)
-* [fhc](https://github.com/kasonyang/fhc)
-* [Kailer](https://github.com/kasonyang/kailer)
-* [ColorConsole](https://github.com/kasonyang/color-console)
+* [dbutil](https://github.com/kasonyang/dbutil) - database utilities
+* [ksh](https://github.com/kasonyang/ksh) - script helpers
+* [fhc](https://github.com/kasonyang/fhc) - A http client library with fluent api
+* [kailer](https://github.com/kasonyang/kailer) - a mailer
+* [color-console](https://github.com/kasonyang/color-console) - make output in console colorful
 
 # Gist
 

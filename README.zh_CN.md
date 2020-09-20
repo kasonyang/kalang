@@ -114,15 +114,15 @@ console.info("Hello,world!");
     
 # 使用kalang编写的项目
 
-* [dbutil](https://github.com/kasonyang/dbutil)
-* [ksh](https://github.com/kasonyang/ksh)
-* [fhc](https://github.com/kasonyang/fhc)
-* [Kailer](https://github.com/kasonyang/kailer)
-* [ColorConsole](https://github.com/kasonyang/color-console)
+* [dbutil](https://github.com/kasonyang/dbutil) - 数据库工具类
+* [ksh](https://github.com/kasonyang/ksh) - 脚本帮助类
+* [fhc](https://github.com/kasonyang/fhc) - 链式API的Http客户端
+* [kailer](https://github.com/kasonyang/kailer) - 邮件发送器
+* [color-console](https://github.com/kasonyang/color-console) - 控制台支持颜色文字
 
 # Gist
 
-* [serve static content](https://gist.github.com/kasonyang/f3d8364161144b0c49f9caf3a7b42272)
+* [静态内容伺服器](https://gist.github.com/kasonyang/f3d8364161144b0c49f9caf3a7b42272)
 
 #编辑器/IDE支持
 
