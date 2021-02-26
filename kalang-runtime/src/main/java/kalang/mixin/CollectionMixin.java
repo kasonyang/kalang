@@ -339,6 +339,30 @@ public class CollectionMixin {
         return (List<T>) Arrays.asList(data);
     }
 
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    @MixinMethod
+    public static <T> List<T> sort(List<T> list, Function<T,Comparable<?>> keyExtractor, Function<T,Comparable<?>>... otherKeyExtractors) {
+        Object[] data = list.toArray();
+        Function<T,Comparable<?>>[] keyExtractors = new Function[otherKeyExtractors.length + 1];
+        keyExtractors[0] = keyExtractor;
+        if (otherKeyExtractors.length > 0) {
+            System.arraycopy(otherKeyExtractors, 0, keyExtractors,1, otherKeyExtractors.length);
+        }
+        Arrays.sort(data, (e1, e2) -> {
+            for (Function<T, Comparable<?>> ke : keyExtractors) {
+                Comparable k1 = ke.apply((T) e1);
+                Comparable k2 = ke.apply((T) e2);
+                int cmp = k1.compareTo(k2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+            }
+            return 0;
+        });
+        return (List<T>) Arrays.asList(data);
+    }
+
     /**
      * Sorts list in reverse order
      * @param list the original list to sort
