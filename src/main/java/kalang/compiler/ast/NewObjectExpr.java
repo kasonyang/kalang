@@ -3,12 +3,17 @@ package kalang.compiler.ast;
 
 import kalang.compiler.compile.semantic.AmbiguousMethodException;
 import kalang.compiler.compile.semantic.MethodNotFoundException;
+import kalang.compiler.core.ClassType;
 import kalang.compiler.core.ObjectType;
 import kalang.compiler.core.Type;
+import kalang.compiler.core.Types;
+import kalang.compiler.util.MethodUtil;
+import kalang.compiler.util.ParameterizedUtil;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 /**
  *
@@ -34,8 +39,21 @@ public class NewObjectExpr extends ExprNode{
     }
     
     public NewObjectExpr(ObjectType objectType,ExprNode[] args,@Nullable ClassNode caller) throws MethodNotFoundException, AmbiguousMethodException {
+        if (objectType instanceof ClassType) {
+            ClassType clsType = (ClassType) objectType;
+            if (clsType.getTypeArguments().length <= 0) {
+                ClassNode cn = clsType.getClassNode();
+                objectType = Types.getClassType(cn, cn.getGenericTypes(), clsType.getNullable());
+            }
+        }
         this.objectType = objectType;
         initDefaultConstructor(args, caller);
+        if (objectType instanceof ClassType) {
+            Type[] decTypes = MethodUtil.getParameterTypes(constructor.getMethod().getMethodNode());
+            Type[] actTypes = constructor.getArgumentTypes();
+            Map<ClassNode, Type> gTypeMap = ParameterizedUtil.getGenericTypeMap(decTypes, actTypes);
+            this.objectType = ((ClassType) objectType).toParameterized(gTypeMap);
+        }
     }
     
     private void initDefaultConstructor(ExprNode[] args,@Nullable ClassNode caller) throws MethodNotFoundException, AmbiguousMethodException{

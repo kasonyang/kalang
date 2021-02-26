@@ -1,0 +1,4 @@
+boolean test() {
+    val ref = new Ref(true);
+    return ref.get();
+}
