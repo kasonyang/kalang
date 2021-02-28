@@ -1351,28 +1351,50 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
 
     @Override
     public AstNode visitNewExpr(NewExprContext ctx) {
-        ObjectType clsType = parseClassType(ctx.classType());
         List<Object> paramExprsList = visitAll(ctx.params);
         if (paramExprsList.contains(null)) {
             return null;
         }
         ExprNode[] params = paramExprsList.toArray(new ExprNode[0]);
-        List<ExprNode> paramList = new LinkedList<>(Arrays.asList(params));
-        NewObjectExpr newExpr;
-        try {
-            if(this.isNonStaticInnerClass(clsType.getClassNode())){
-                paramList.add(0,new ThisExpr(this.getThisType()));
+        return createNewExpr(ctx.classType(), params, offset(ctx));
+    }
+
+    @Override
+    public Object visitStructuringNewExpr(StructuringNewExprContext ctx) {
+        NewObjectExpr newExpr = createNewExpr(ctx.classType(), new ExprNode[0], offset(ctx));
+        ClassType objType = (ClassType) newExpr.getType();
+        LocalVarNode tmpVar = declareTempLocalVar(objType);
+        List<Statement> initStmts = new LinkedList<>();
+        initStmts.add(new VarDeclStmt(tmpVar));
+        initStmts.add(new ExprStmt(new AssignExpr(new VarExpr(tmpVar), newExpr)));
+        for (OptionalKeyValueContext kvc: ctx.keyValues) {
+            OffsetRange propOffset = offset(kvc.Identifier().getSymbol());
+            String propName = kvc.Identifier().getText();
+            ExprNode propVal;
+            if (kvc.expression() == null) {
+                AstNode idVal = this.accessNamedNode(propName, propOffset, null, null);
+                if (!(idVal instanceof ExprNode)) {
+                    throw new NodeException("expression expected", propOffset);
+                }
+                propVal = (ExprNode) idVal;
+            } else {
+                propVal = visitExpression(kvc.expression());
             }
-            params = paramList.toArray(new ExprNode[0]);
-            newExpr = new NewObjectExpr(clsType,params,thisClazz);
-            onInvocationExpr(newExpr.getConstructor());
-            mapAst(newExpr,ctx);
-            return newExpr;
-        } catch (MethodNotFoundException ex) {
-            throw createMethodNotFoundException(offset(ctx.classType()), clsType.getName(), "<init>", params);
-        } catch(AmbiguousMethodException ex){
-            throw new NodeException(ex.getMessage(), offset(ctx.classType()));
+            MethodDescriptor setter = AstUtil.findOneSetterByPropertyName(
+                    objType, propName, propVal.getType(), thisClazz, propOffset
+            );
+            if (setter == null) {
+                handleSyntaxError("no setter found for name:" + propName, propOffset);
+                continue;
+            }
+            propVal = requireImplicitCast(setter.getParameterTypes()[0], propVal, OffsetRange.NONE);
+            InvocationExpr ie = onInvocationExpr(new ObjectInvokeExpr(new VarExpr(tmpVar), setter, propVal));
+            mapAst(ie, offset(kvc));
+            initStmts.add(new ExprStmt(ie));
         }
+        MultiStmtExpr mse = new MultiStmtExpr(initStmts, new VarExpr(tmpVar));
+        mapAst(mse, offset(ctx));
+        return mse;
     }
 
     @Override
@@ -2409,6 +2431,26 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             } finally {
                 thisClazz = oldThisClazz;
             }
+        }
+    }
+
+    private NewObjectExpr createNewExpr(ClassTypeContext classTypeCtx, ExprNode[] params, OffsetRange offset) {
+        ObjectType clsType = parseClassType(classTypeCtx);
+        List<ExprNode> paramList = new LinkedList<>(Arrays.asList(params));
+        NewObjectExpr newExpr;
+        try {
+            if(this.isNonStaticInnerClass(clsType.getClassNode())){
+                paramList.add(0,new ThisExpr(this.getThisType()));
+            }
+            params = paramList.toArray(new ExprNode[0]);
+            newExpr = new NewObjectExpr(clsType,params,thisClazz);
+            onInvocationExpr(newExpr.getConstructor());
+            mapAst(newExpr, offset);
+            return newExpr;
+        } catch (MethodNotFoundException ex) {
+            throw createMethodNotFoundException(offset(classTypeCtx), clsType.getName(), "<init>", params);
+        } catch(AmbiguousMethodException ex){
+            throw new NodeException(ex.getMessage(), offset(classTypeCtx));
         }
     }
 

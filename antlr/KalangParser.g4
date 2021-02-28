@@ -277,6 +277,9 @@ expression
     |   ( 'new' type ( '[' sizes+=expression ']' )+ ( suffix+='[' ']' )*
             | 'new' type '[' ']' '{' (initExpr+=expression (','  initExpr += expression)*)? '}' //TODO support multi dimensions
         )    #newArrayExpr
+    |   'new' classType '(' '{'
+            keyValues += optionalKeyValue (',' keyValues += optionalKeyValue )* ','?
+        '}' ')' #structuringNewExpr
     |   expression '::' Identifier  #methodRefExpr
     |   '(' type ')' expression #castExpr
     |   expression op=('++' | '--') #incExpr
@@ -318,6 +321,10 @@ expression
         |   '%='
         )
         expression #assignExpr
+;
+
+optionalKeyValue:
+    Identifier (':' expression)?
 ;
 
 literal:

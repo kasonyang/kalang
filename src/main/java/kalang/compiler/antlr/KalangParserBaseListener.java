@@ -616,6 +616,18 @@ public class KalangParserBaseListener implements KalangParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterStructuringNewExpr(KalangParser.StructuringNewExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStructuringNewExpr(KalangParser.StructuringNewExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterUnaryExpr(KalangParser.UnaryExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -803,6 +815,18 @@ public class KalangParserBaseListener implements KalangParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitIdentifierExpr(KalangParser.IdentifierExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOptionalKeyValue(KalangParser.OptionalKeyValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOptionalKeyValue(KalangParser.OptionalKeyValueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

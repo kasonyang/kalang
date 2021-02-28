@@ -528,6 +528,18 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitParenExpr(KalangParser.ParenExprContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code structuringNewExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterStructuringNewExpr(KalangParser.StructuringNewExprContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code structuringNewExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitStructuringNewExpr(KalangParser.StructuringNewExprContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code unaryExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree
@@ -719,6 +731,16 @@ public interface KalangParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIdentifierExpr(KalangParser.IdentifierExprContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link KalangParser#optionalKeyValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterOptionalKeyValue(KalangParser.OptionalKeyValueContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#optionalKeyValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitOptionalKeyValue(KalangParser.OptionalKeyValueContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KalangParser#literal}.
 	 * @param ctx the parse tree

@@ -5,6 +5,7 @@ import kalang.compiler.compile.OffsetRange;
 import kalang.compiler.compile.semantic.AmbiguousMethodException;
 import kalang.compiler.compile.semantic.InvocationResolver;
 import kalang.compiler.compile.semantic.MethodNotFoundException;
+import kalang.compiler.compile.semantic.NodeException;
 import kalang.compiler.core.*;
 import kalang.mixin.CollectionMixin;
 
@@ -13,6 +14,8 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
+import static kalang.mixin.CollectionMixin.map;
 
 public class AstUtil {
 
@@ -141,6 +144,17 @@ public class AstUtil {
         VarExpr setterArg = new VarExpr(new LocalVarNode(type, null));
         List<InvocationResolver.Resolution> res = methodResolver.resolveArgs(methods, setterArg);
         return CollectionMixin.map(res, r -> r.method);
+    }
+
+    public static MethodDescriptor findOneSetterByPropertyName(ClassType clazz, String propName, Type type, ClassNode caller, OffsetRange offset) {
+        List<MethodDescriptor> setters = findSetterByPropertyName(clazz, propName, type, caller);
+        if (setters.size() > 1) {
+            List<String> settersDesc = map(setters, it -> MethodUtil.toString(it.getMethodNode()));
+            throw new NodeException("setter is ambiguous:\n" + String.join("\n", settersDesc), offset);
+        } else if (setters.size() == 1) {
+            return setters.get(0);
+        }
+        return null;
     }
 
     @Nullable

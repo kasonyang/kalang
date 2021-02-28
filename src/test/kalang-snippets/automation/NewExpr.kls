@@ -1,0 +1,21 @@
+static class Person {
+    String id;
+    String name;
+    Integer age;
+}
+
+boolean structuringNew() {
+    val p = new Person({
+        id: "p1",
+        name: "test",
+        age: 18,
+    });
+    return p.getId() == "p1" && p.getName() == "test" && p.getAge() == 18;
+}
+
+boolean structuringNew2() {
+    val name = "test";
+    val age = 18;
+    val p = new Person({name, age});
+    return p.getName() == "test" && p.getAge() == 18;
+}
