@@ -1,0 +1,7 @@
+interface MyInterface {
+    String NAME = new String("MyInterface");
+}
+
+boolean test() {
+    return "MyInterface" == MyInterface.NAME;
+}

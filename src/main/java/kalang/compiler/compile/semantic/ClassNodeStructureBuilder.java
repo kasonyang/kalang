@@ -207,6 +207,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         for(KalangParser.VarDeclContext vd:ctx.varDecl()){
             AstBuilder.VarInfo varInfo = varDecl(vd, Types.getRootType());
             varInfo.modifier |= fieldModifier;
+            if (ModifierUtil.isInterface(thisClazz.getModifier())) {
+                varInfo.modifier |= Modifier.STATIC | Modifier.FINAL;
+            }
             FieldNode fieldNode = thisClazz.createField(varInfo.type, varInfo.name,varInfo.modifier);
             mapAst(fieldNode, offset(ctx));
             KalangParser.ExpressionContext initExpr = vd.expression();
