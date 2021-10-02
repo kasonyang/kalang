@@ -628,6 +628,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     }
 
     @Override
+    public Object visitUnterminatedStmt(UnterminatedStmtContext ctx) {
+        handleSyntaxError("';' expected", offset(ctx));
+        return super.visitUnterminatedStmt(ctx);
+    }
+
+    @Override
     public AstNode visitExprStat(ExprStatContext ctx) {
         ExprNode expr = visitExpression(ctx.expression());
         ExprStmt es = new ExprStmt(expr);

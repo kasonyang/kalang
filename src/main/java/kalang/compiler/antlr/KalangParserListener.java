@@ -238,6 +238,16 @@ public interface KalangParserListener extends ParseTreeListener {
 	 */
 	void exitStat(KalangParser.StatContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link KalangParser#unterminatedStmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnterminatedStmt(KalangParser.UnterminatedStmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link KalangParser#unterminatedStmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnterminatedStmt(KalangParser.UnterminatedStmtContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link KalangParser#emptyStat}.
 	 * @param ctx the parse tree
 	 */

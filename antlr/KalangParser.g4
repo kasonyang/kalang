@@ -174,6 +174,10 @@ stat:
     |tryStat
     |throwStat
     |assertStmt
+    |unterminatedStmt
+;
+unterminatedStmt:
+    expression '.' Identifier?
 ;
 emptyStat:
     ';'
