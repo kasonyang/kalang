@@ -744,11 +744,11 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         } else if (ctx.BooleanLiteral() != null) {
             ce = new ConstExpr(Boolean.valueOf(t));
         } else if (ctx.CharacterLiteral() != null) {
-            ce = new ConstExpr(StringLiteralUtil.parse(t).charAt(1));
+            ce = new ConstExpr(parseStringLiteral(ctx.CharacterLiteral(), 1, 1).charAt(0));
         } else if (ctx.StringLiteral() != null) {
-            ce = new ConstExpr(StringLiteralUtil.parse(t.substring(1, t.length() - 1)));
+            ce = new ConstExpr(parseStringLiteral(ctx.StringLiteral(), 1,1));
         } else if (ctx.MultiLineStringLiteral()!=null){
-            ce = new ConstExpr(StringLiteralUtil.parse(t.substring(3,t.length()-3)));
+            ce = new ConstExpr(parseStringLiteral(ctx.MultiLineStringLiteral(), 3,3));
         } else if (ctx.Identifier() != null || ctx.primitiveType() != null){
             boolean isArray = ctx.arrayPrefix != null;
             Type type;
@@ -778,6 +778,15 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         }
         mapAst(ce,ctx);
         return ce;
+    }
+
+    protected String parseStringLiteral(TerminalNode node, int leftWrapperLen, int rightWrapperLen) {
+        String text = node.getText();
+        try {
+            return StringLiteralUtil.parse(text.substring(leftWrapperLen, text.length() - rightWrapperLen));
+        } catch (IllegalArgumentException ex) {
+            throw new NodeException(ex.getMessage(), offset(node.getSymbol()));
+        }
     }
 
 

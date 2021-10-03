@@ -309,7 +309,7 @@ MultiLineStringCharacters
 
 fragment
 StringCharacter
-    :   ~["\\$]
+    :   ~["\\$\r\n]
     |  '$' ~[{]
     |   EscapeSequence
     ;
@@ -326,7 +326,7 @@ MultiLineStringCharacter
 
 fragment
 EscapeSequence
-    :   '\\' [btnfr"'\\]
+    :   '\\' .
     //|   OctalEscape
     |   UnicodeEscape
     ;

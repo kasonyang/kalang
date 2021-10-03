@@ -690,8 +690,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (to.Identifier() != null) {
             fname = to.Identifier().getText();
         } else {
-            String strLiteral = to.StringLiteral().getText();
-            fname = StringLiteralUtil.parse(strLiteral.substring(1, strLiteral.length() - 1));
+            fname = parseStringLiteral(to.StringLiteral(), 1,1);
         }
         AstNode expr = (AstNode) visit(exp);
         Objects.requireNonNull(expr);
@@ -1062,8 +1061,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if (ctx.Identifier() != null) {
             mdName = ctx.Identifier().getText();
         } else {
-            String strLiteral = ctx.StringLiteral().getText();
-            mdName = StringLiteralUtil.parse(strLiteral.substring(1, strLiteral.length() - 1));
+            mdName = parseStringLiteral(ctx.StringLiteral(), 1,1);
         }
         Function0<ExprNode[]> paramsBuilder = () ->  map(ctx.params, this::visitExpression).toArray(new ExprNode[0]);
         Function1<ExprNode, ExprNode> createDotInvoke = (invokeTarget) -> getObjectInvokeExpr(invokeTarget, mdName, ctx.params, offsetRange);
@@ -1871,10 +1869,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 String text;
                 switch(t){
                     case KalangLexer.InterpolationPreffixString:
-                        text = rawText.substring(1,rawText.length()-2);
+                        text = parseStringLiteral((TerminalNode)c, 1, 2);
                         break;
                     case KalangLexer.INTERPOLATION_STRING:
-                        text = rawText;
+                        text = parseStringLiteral((TerminalNode)c, 0, 0);
                         break;
                     case KalangLexer.RBRACE:
                     case KalangLexer.INTERPOLATION_END:
@@ -1885,7 +1883,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                     default :
                         throw Exceptions.unexpectedValue(t);
                 }
-                exprs[i]=new ConstExpr(StringLiteralUtil.parse(text));
+                exprs[i]=new ConstExpr(text);
             }else if(c instanceof ExpressionContext){
                 exprs[i] = this.visitExpression((ExpressionContext) c);
             }else{

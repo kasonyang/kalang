@@ -44,7 +44,7 @@ public class StringLiteralUtil {
                         sb.append('\\');
                         break;
                     default:
-                        throw Exceptions.unexpectedValue(nc);
+                        throw new IllegalArgumentException("illegal escape character '" + nc + "' in string literal");
                 }
             } else {
                 sb.append(c);
