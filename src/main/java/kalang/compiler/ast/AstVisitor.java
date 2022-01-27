@@ -248,5 +248,11 @@ public class AstVisitor<T> extends AbstractAstVisitor<T>{
         return null;
     }
 
+    @Override
+    public T visitYieldStmt(YieldStmt node) {
+        visitChildren(node);
+        return null;
+    }
+
 
 }

@@ -16,6 +16,10 @@ import java.util.List;
  */
 public class MethodUtil {
 
+    public static Type getExpectedReturnType(MethodNode method) {
+        return method.isGenerator() ? GeneratorUtil.getGeneratorResultType(method) : method.getType();
+    }
+
     public static String getDeclarationKey(String name, String... paramTypes) {
         return name + "(" + String.join(",", paramTypes) + ")";
     }

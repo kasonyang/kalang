@@ -76,6 +76,9 @@ VOLATILE      : 'volatile';
 WHILE         : 'while';
 MIXIN         : 'mixin';
 WITH          : 'with';
+ASYNC         : 'async';
+AWAIT         : 'await';
+YIELD         : 'yield';
 
 // §3.10.1 Integer Literals
 

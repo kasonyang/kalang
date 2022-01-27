@@ -1,8 +1,10 @@
 package kalang.compiler.util;
 
 import kalang.compiler.ast.*;
+import kalang.compiler.compile.OffsetRange;
 import kalang.compiler.compile.semantic.AmbiguousMethodException;
 import kalang.compiler.compile.semantic.MethodNotFoundException;
+import kalang.compiler.compile.semantic.NodeException;
 import kalang.compiler.core.*;
 
 import javax.annotation.Nonnull;
@@ -92,6 +94,21 @@ public class BoxUtil {
             default:
                 throw new IllegalStateException("unknown cast type:" + fromType + "=>" + toType);
         }
+    }
+
+    @Nonnull
+    public static ExprNode requireImplicitCast(Type resultType, ExprNode expr, OffsetRange offset) {
+        Type exprType = expr.getType();
+        ExprNode result = assign(expr, exprType, resultType);
+        if (result == null) {
+            throw new NodeException(String.format("%s cannot be converted to %s", exprType,resultType), offset);
+        }
+        return result;
+    }
+
+    @Nonnull
+    public static ExprNode requireImplicitCast(Type resultType, ExprNode expr) {
+        return requireImplicitCast(resultType, expr, expr.offset);
     }
 
     public static int getCastMethod(ExprNode from, Type toType) {

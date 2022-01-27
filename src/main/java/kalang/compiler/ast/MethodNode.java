@@ -37,6 +37,8 @@ public class MethodNode extends AstNode implements Annotationable{
     private final List<Type> exceptionTypes = new LinkedList<>();
     
     private final ClassNode classNode;
+
+    private boolean isGenerator;
     
     protected MethodNode(ClassNode classNode,Type type,String name,int modifier, BlockStmt body){
         this.classNode = classNode;
@@ -172,4 +174,12 @@ public class MethodNode extends AstNode implements Annotationable{
         this.type = type;
     }
 
+    public boolean isGenerator() {
+        return isGenerator;
+    }
+
+    public MethodNode setGenerator(boolean generator) {
+        isGenerator = generator;
+        return this;
+    }
 }

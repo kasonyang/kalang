@@ -27,6 +27,7 @@ import java.util.function.Function;
 
 import static kalang.compiler.util.AstUtil.findGetterByPropertyName;
 import static kalang.compiler.util.AstUtil.findSetterByPropertyName;
+import static kalang.compiler.util.BoxUtil.requireImplicitCast;
 import static kalang.mixin.CollectionMixin.map;
 
 public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
@@ -390,16 +391,6 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
             ret = ObjectInvokeExpr.create(ret, "append", new ExprNode[]{exprNode});
         }
         return ObjectInvokeExpr.create(ret,"toString",new ExprNode[0]);
-    }
-
-    @Nonnull
-    protected ExprNode requireImplicitCast(Type resultType, ExprNode expr,OffsetRange offset) {
-        Type exprType = expr.getType();
-        ExprNode result = BoxUtil.assign(expr, exprType, resultType);
-        if (result == null) {
-            throw new NodeException(String.format("%s cannot be converted to %s", exprType,resultType), offset);
-        }
-        return result;
     }
 
     @Nonnull

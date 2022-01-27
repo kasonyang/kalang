@@ -85,7 +85,7 @@ methodDecl:
    (
      (
        ('<' typeParam+=typeParameter (',' typeParam+=typeParameter)* '>')?
-       returnType=type name=Identifier
+       generatorSymbol='*'? returnType=type name=Identifier
      )|(
         prefix='constructor'
      )
@@ -171,6 +171,7 @@ stat:
     |breakStat
     |continueStat
     |returnStat
+    |yieldStat
     |tryStat
     |throwStat
     |assertStmt
@@ -207,6 +208,9 @@ tryStat:
 ;
 returnStat:
     'return' expression? ';'
+;
+yieldStat:
+    'yield' expression ';'
 ;
 varDeclStat:
   localVarDecl ';'

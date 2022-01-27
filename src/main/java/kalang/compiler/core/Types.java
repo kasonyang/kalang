@@ -2,9 +2,14 @@
 package kalang.compiler.core;
 
 import kalang.compiler.ast.ClassNode;
-import kalang.compiler.compile.DefaultClassNodeLoader;
 import kalang.compiler.compile.ClassNodeNotFoundException;
+import kalang.compiler.compile.DefaultClassNodeLoader;
 import kalang.compiler.util.Exceptions;
+import kalang.coroutine.AsyncResult;
+import kalang.coroutine.impl.ExecuteContext;
+import kalang.coroutine.impl.GeneratorImpl;
+import kalang.lang.Generator;
+import kalang.lang.Script;
 import kalang.type.Function;
 import kalang.type.FunctionClasses;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -75,7 +80,7 @@ public class Types {
 
     public static final String ROOT_CLASS_NAME = "java.lang.Object";
     
-    public static final String SCRIPT_CLASS_NAME = "kalang.Script";
+    public static final String SCRIPT_CLASS_NAME = Script.class.getName();
     
     public static final String MAP_IMPL_CLASS_NAME = "java.util.LinkedHashMap";
     
@@ -85,7 +90,15 @@ public class Types {
     public final static String CLASS_CLASS_NAME = "java.lang.Class";
     
     public final static String ITERABLE_CLASS_NAME = "java.lang.Iterable";
-    
+
+    public final static String ASYNC_RESULT_CLASS_NAME = AsyncResult.class.getName();
+
+    public final static String GENERATOR_CLASS_NAME = Generator.class.getName();
+
+    public final static String EXECUTE_CONTEXT_CLASS_NAME = ExecuteContext.class.getName();
+
+    public final static String GENERATOR_IMPL_CLASS_NAME = GeneratorImpl.class.getName();
+
     public final static String ASSERTION_ERROR_CLASS_NAME = AssertionError.class.getName()
             ,FUNCTION_CLASS_NAME = Function.class.getName()
             ;
@@ -428,6 +441,26 @@ public class Types {
      */
     public static ObjectType getClassClassType() {
         return requireClassType(CLASS_CLASS_NAME);
+    }
+
+    public static ObjectType getAsyncResultType() {
+        return requireClassType(ASYNC_RESULT_CLASS_NAME);
+    }
+
+    public static ObjectType getGeneratorClassType() {
+        return requireClassType(GENERATOR_CLASS_NAME);
+    }
+
+    public static ObjectType getExecuteContextClassType() {
+        return requireClassType(EXECUTE_CONTEXT_CLASS_NAME);
+    }
+
+    public static ObjectType getGeneratorImplClassType() {
+        return requireClassType(GENERATOR_IMPL_CLASS_NAME);
+    }
+
+    public static ObjectType getClassType(Class<?> clazz) {
+        return requireClassType(clazz.getName());
     }
 
     /**

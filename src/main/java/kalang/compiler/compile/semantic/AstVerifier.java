@@ -5,6 +5,7 @@ import kalang.compiler.core.PrimitiveType;
 import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
 import kalang.compiler.util.Exceptions;
+import kalang.compiler.util.MethodUtil;
 
 import java.util.Objects;
 
@@ -31,7 +32,8 @@ public class AstVerifier extends AstVisitor {
                 throw new MalformedAstException("missing return value", node);
             }
         }else{
-            checkAssignable(node.getExpr(), method.getType(), node);
+            Type expectedType = MethodUtil.getExpectedReturnType(method);
+            checkAssignable(node.getExpr(), expectedType, node);
         }
         return super.visitReturnStmt(node);
     }

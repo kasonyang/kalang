@@ -11,6 +11,7 @@ import kalang.compiler.core.Type;
 import kalang.compiler.core.*;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
+import kalang.coroutine.impl.NextExecutor;
 import kalang.mixin.CollectionMixin;
 import org.objectweb.asm.*;
 
@@ -25,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static kalang.compiler.core.Types.*;
+import static kalang.compiler.util.BoxUtil.requireImplicitCast;
 import static kalang.compiler.util.TypeUtil.getTypeDescriptor;
 import static org.objectweb.asm.Opcodes.*;
 /**
@@ -47,7 +49,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     
     private Map<Integer, LabelOp> lineLabels = new HashMap<>();
     
-    private Map<AssignableObject,Integer> varIds = new HashMap<>();
+    private LinkedHashMap<VarObject,Integer> varIds = new LinkedHashMap<>();
     
     private Stack<Integer> varStartIndexOfFrame = new Stack<>();
     
@@ -56,6 +58,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private VarTable<Integer,LocalVarNode> varTables = new VarTable<>();
     
     private int varIdCounter = 0;
+
+    private ParameterNode gnCtxParamNode;
+
+    private int gnNextCounter = 1;
+
+    private int gnNameCounter = 1;
+
+    private Map<Integer, LabelOp> gnNextLabelMap = new LinkedHashMap<>();
 
     private Map<LoopStmt, LabelOp> breakLabelMap = new HashMap<>();
     private Map<LoopStmt, LabelOp> continueLabelMap = new HashMap<>();
@@ -278,6 +288,46 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visitMethodNode(MethodNode node) {
+        String generatorMdName = "generator$" + node.getName() + "$" + gnNameCounter++;
+        if (node.isGenerator()) {
+            String mDesc = "(" + getTypeDescriptor(Types.getExecuteContextClassType()) + ")V";
+            MethodNode gMethodNode = node.getClassNode().createMethodNode(VOID_TYPE, generatorMdName, node.getModifier(), node.getBody());
+            MethodVisitor method = classWriter.visitMethod(node.getModifier() | ACC_SYNTHETIC, generatorMdName, mDesc, mDesc, null);
+            gnCtxParamNode = gMethodNode.createParameter(0, Types.getExecuteContextClassType(), "context");
+            gnCtxParamNode.offset = OffsetRange.NONE;
+            gnNextCounter = 1;
+            gnNextLabelMap = new LinkedHashMap<>();
+            opCollector = new OpCollector();
+            parentAnalyzer = new ParentAnalyzer();
+            parentAnalyzer.analyse(node);
+            if(AstUtil.isStatic(node.getModifier())){
+                varIdCounter = 0;
+            }else{
+                varIdCounter = 1;
+            }
+            varIds = new LinkedHashMap<>();
+            method.visitParameter(gnCtxParamNode.getName(), gnCtxParamNode.getModifier());
+            this.declareNewVar(gnCtxParamNode);
+            for (ParameterNode p : node.getParameters()) {
+                this.declareNewVar(p);
+            }
+            assignVarsFromContextVars(node.getParameters()); 
+            BlockStmt body = node.getBody();
+            assert body != null;
+            visit(body);
+            opCollector.visitInsn(RETURN);
+            makeStatesJumpOps();
+            //opCollector.visitLabel(methodEndLabel);
+            applyOp(method, opCollector);
+            try{
+                method.visitMaxs(0, 0);
+            }catch(Exception ex){
+                ex.printStackTrace(System.err);
+                //throw new RuntimeException("exception when visit method:" + node.name, ex);
+            }
+            method.visitEnd();
+        }
+        gnCtxParamNode = null;
         int access = node.getModifier();
         MethodVisitor method = classWriter.visitMethod(access, internalName(node.getName()), getMethodDescriptor(node), methodSignature(node), internalName(node.getExceptionTypes()));
         opCollector = new OpCollector();
@@ -294,6 +344,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }else{
             varIdCounter = 1;
         }
+        varIds = new LinkedHashMap<>();
         BlockStmt body = node.getBody();
         ParameterNode[] parameters = node.getParameters();
         for(int i=0;i<parameters.length;i++){
@@ -308,16 +359,66 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }
         }
         //opCollector.visitLabel(methodStartLabel);
-        if(body!=null){
-            visit(body);
-            if(node.getType().equals(VOID_TYPE)){
-                opCollector.visitInsn(RETURN);
+        if (body != null) {
+            if (node.isGenerator()) {
+                LocalVarNode tmpVar = new LocalVarNode(getExecuteContextClassType(), null);
+                visitVarDeclStmt(new VarDeclStmt(tmpVar));
+                NewObjectExpr ctx = new NewObjectExpr(getExecuteContextClassType());
+                visit(new ExprStmt(new AssignExpr(new VarExpr(tmpVar), ctx)));
+                assignContextVarsFromVars(tmpVar, node.getParameters());
+                boolean isStatic = ModifierUtil.isStatic(node.getModifier());
+                visit(new VarExpr(tmpVar));
+                List<Type> invokeTypes = new ArrayList<>(1);
+                if (!isStatic) {
+                    visit(new ThisExpr(clazz));
+                    invokeTypes.add(Types.getClassType(clazz));
+                }
+                String invokeMdDesc = getMethodDescriptor(Types.getClassType(NextExecutor.class), invokeTypes.toArray(new Type[0]));
+                String metafactoryDesc = org.objectweb.asm.Type.getMethodDescriptor(
+                        org.objectweb.asm.Type.getType(CallSite.class)
+                        , org.objectweb.asm.Type.getType(MethodHandles.Lookup.class)
+                        , org.objectweb.asm.Type.getType(String.class)
+                        , org.objectweb.asm.Type.getType(MethodType.class)
+                        , org.objectweb.asm.Type.getType(MethodType.class)
+                        , org.objectweb.asm.Type.getType(MethodHandle.class)
+                        , org.objectweb.asm.Type.getType(MethodType.class)
+                );
+                int invokeTag;
+                if (isStatic) {
+                    invokeTag = H_INVOKESTATIC;
+                } else {
+                    invokeTag = H_INVOKESPECIAL;
+                }
+                String itfMdDesc = "(" + getTypeDescriptor(getExecuteContextClassType()) + ")V";
+                Object[] bootstrapArgs = new Object[] {
+                        org.objectweb.asm.Type.getMethodType(itfMdDesc)
+                        , new Handle(invokeTag, internalName(clazz), generatorMdName, getMethodDescriptor(VOID_TYPE, new Type[]{Types.getExecuteContextClassType()}), false)
+                        , org.objectweb.asm.Type.getMethodType(itfMdDesc)
+                };
+                Handle bootstrapMd = new Handle(H_INVOKESTATIC, internalName(LambdaMetafactory.class.getName()), "metafactory", metafactoryDesc, false);
+                opCollector.visitInvokeDynamicInsn("executeNext", invokeMdDesc, bootstrapMd, bootstrapArgs);
+                opCollector.visitMethodInsn(
+                        INVOKESTATIC,
+                        internalName(Types.getGeneratorImplClassType()),
+                        "create",
+                        getMethodDescriptor(Types.getGeneratorImplClassType(), new Type[]{
+                                Types.getExecuteContextClassType(),
+                                Types.getClassType(NextExecutor.class)
+                        }),
+                        false
+                );
+                opCollector.visitInsn(ARETURN);
+            } else {
+                visit(body);
+                if (node.getType().equals(VOID_TYPE)) {
+                    opCollector.visitInsn(RETURN);
+                }
             }
             //opCollector.visitLabel(methodEndLabel);
             applyOp(method, opCollector);
-            try{
+            try {
                 method.visitMaxs(0, 0);
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 ex.printStackTrace(System.err);
                 //throw new RuntimeException("exception when visit method:" + node.name, ex);
             }
@@ -346,7 +447,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return vid;
     }
     
-    private void declareNewVar(AssignableObject vo){
+    private void declareNewVar(VarObject vo){
         int vid = varIdCounter;
         int vSize = asmType(vo.getType()).getSize();
         if(vSize==0){
@@ -513,12 +614,21 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         int lnsn = RETURN;
         int returnVar = -1;
         Type returnType = null;
-        if(node.getExpr() !=null){
-            visit(node.getExpr());
-            returnType = node.getExpr().getType();
-            lnsn = asmType(returnType).getOpcode(IRETURN);
-            returnVar = declareNewVar(returnType);
-            opCollector.visitVarInsn(asmType(returnType).getOpcode(ISTORE), returnVar);
+        if (node.getExpr() != null) {
+            if (gnCtxParamNode != null) {
+                // return in generator
+                assignContextResult(node.getExpr());
+                visit(new ExprStmt(new AssignExpr(
+                        ObjectFieldExpr.create(new VarExpr(gnCtxParamNode), "isDone", clazz),
+                        new ConstExpr(true)
+                )));
+            } else {
+                visit(node.getExpr());
+                returnType = node.getExpr().getType();
+                lnsn = asmType(returnType).getOpcode(IRETURN);
+                returnVar = declareNewVar(returnType);
+                opCollector.visitVarInsn(asmType(returnType).getOpcode(ISTORE), returnVar);
+            }
         }
         @SuppressWarnings("unchecked")
         LinkedList<TryStmt> outerTryStmts = (LinkedList) parentAnalyzer.getParents(node, it -> it instanceof TryStmt);
@@ -1252,13 +1362,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
 
     @Override
     public Object visit(AstNode node) {
-        if (node.offset == null) {
-            AstNode parent = parentAnalyzer.getParent(node, AstNode.class);
-            OffsetRange parentOffset = parent == null ? null : parent.offset;
-            int line = parentOffset == null ? -1 : parentOffset.startLine;
-            throw new IllegalArgumentException("offset is null:" + node + ",parent=" + parent + ",line=" + line);
-        }
-        int lineNum = node.offset.startLine;
+//        if (node.offset == null) {
+//            AstNode parent = parentAnalyzer.getParent(node, AstNode.class);
+//            OffsetRange parentOffset = parent == null ? null : parent.offset;
+//            int line = parentOffset == null ? -1 : parentOffset.startLine;
+//            throw new IllegalArgumentException("offset is null:" + node + ",parent=" + parent + ",line=" + line);
+//        }
+        int lineNum = node.offset == null ? -1 : node.offset.startLine;
         if(lineNum>0 && (node instanceof Statement || node instanceof ExprNode) &&  !lineLabels.containsKey(lineNum)){
             LabelOp lb = new LabelOp();
             opCollector.visitLabel(lb);
@@ -1444,6 +1554,65 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         return null;
     }
 
+    @Override
+    public Object visitYieldStmt(YieldStmt node) {
+        VarObject[] vars = varIds.keySet().toArray(new VarObject[0]);
+        assignContextResult(node.getExpr());
+        assignContextVarsFromVars(gnCtxParamNode, vars);
+        int nextState = gnNextCounter++;
+        visit(new ExprStmt(new AssignExpr(
+                ObjectFieldExpr.create(new VarExpr(gnCtxParamNode), "next", clazz),
+                new ConstExpr(nextState)
+        )));
+        opCollector.visitInsn(RETURN);
+        LabelOp nextLabel = new LabelOp();
+        gnNextLabelMap.put(nextState, nextLabel);
+        opCollector.visitLabel(nextLabel);
+        // restore vars
+        assignVarsFromContextVars(vars);
+        return null;
+    }
+
+    private void assignContextVarsFromVars(VarObject ctxVar, VarObject[] vars) {
+        visit(new ExprStmt(new AssignExpr(
+                ObjectFieldExpr.create(new VarExpr(ctxVar), "vars", clazz),
+                new NewArrayExpr(Types.getRootType(NullableKind.UNKNOWN), new ConstExpr(vars.length))
+        )));
+        for (int i = 0; i < vars.length; i++) {
+            ElementExpr ele = new ElementExpr(ObjectFieldExpr.create(new VarExpr(ctxVar), "vars", clazz), new ConstExpr(i));
+            ExprNode from = requireImplicitCast(ele.getType(), new VarExpr(vars[i]));
+            visit(new ExprStmt(new AssignExpr(ele, from)));
+        }
+    }
+
+    private void assignContextResult(ExprNode expr) {
+        FieldExpr resFieldExpr = ObjectFieldExpr.create(
+                new VarExpr(gnCtxParamNode), "result", clazz
+        );
+        visit(new ExprStmt(new AssignExpr(
+                resFieldExpr,
+                requireImplicitCast(resFieldExpr.getType(), expr)
+        )));
+    }
+
+    private void assignVarsFromContextVars(VarObject[] vars) {
+        for (int i = 0; i < vars.length; i++) {
+            VarExpr ctxExprNode = new VarExpr(gnCtxParamNode);
+            VarExpr to = new VarExpr(vars[i]);
+            ExprNode from = new ElementExpr(
+                    ObjectFieldExpr.create(ctxExprNode, "vars", clazz),
+                    new ConstExpr(i)
+            );
+            Type castType = to.getType();
+            if (castType instanceof PrimitiveType) {
+                castType = getClassType((PrimitiveType) castType);
+            }
+            from = new CastExpr(castType, from);
+            from = requireImplicitCast(to.getType(), from);
+            visit(new ExprStmt(new AssignExpr(to, from)));
+        }
+    }
+
     private boolean tryIncUsingIincOp(IncExpr incExpr) {
         AssignableObject varObj = incExpr.getVar();
         ExprNode increment = incExpr.getIncrement();
@@ -1554,6 +1723,20 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 return t1.getName().replace('.', '/');
             }
         }
+    }
+
+    private void makeStatesJumpOps() {
+        OpCollector oldOpCollector = opCollector;
+        opCollector = new OpCollector();
+        VarExpr ctxVarExpr = new VarExpr(gnCtxParamNode);
+        visitFieldExpr(ObjectFieldExpr.create(ctxVarExpr, "next", clazz));
+        gnNextLabelMap.forEach((k, v) -> {
+            constX(k);
+            opCollector.visitJumpInsn(IF_ICMPEQ, v);
+        });
+        //TODO check ctx.result == zero
+        oldOpCollector.addAll(0, opCollector);
+        opCollector = oldOpCollector;
     }
 
     private void applyOp(MethodVisitor mv, OpCollector opCollector) {

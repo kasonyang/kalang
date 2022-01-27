@@ -93,6 +93,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         }
         int modifier = parseModifier(ctx.varModifier());
         boolean isOverriding = ctx.OVERRIDE() != null;
+        boolean isGenerator = ctx.generatorSymbol != null;
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();
         if(blockStmt==null){
             if(ModifierUtil.isInterface(thisClazz.getModifier())){
@@ -110,6 +111,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         }
         //TODO simplify createMethod method
         MethodNode method = thisClazz.createMethodNode(Types.getRootType(NullableKind.UNKNOWN), name, modifier, methodBody);
+        method.setGenerator(isGenerator);
         enterMethod(method, () -> {
             //check method duplicated before generate java stub
             if (ctx.typeParam != null) {
@@ -117,11 +119,11 @@ public class ClassNodeStructureBuilder extends AstBuilder {
                     method.declareGenericType(parseGenericType(tpc));
                 }
             }
-            if (ctx.returnType == null) {
-                method.setType(Types.VOID_TYPE);
-            } else {
-                method.setType(parseType(ctx.returnType));
+            Type returnType = ctx.returnType == null ? Types.VOID_TYPE : parseType(ctx.returnType);
+            if (isGenerator) {
+                returnType = Types.getClassType(Types.getGeneratorClassType().getClassNode(), new Type[]{returnType});
             }
+            method.setType(returnType);
             List<KalangParser.ParamDeclContext> params = ctx.params;
             for (int i = 0; i < params.size(); i++) {
                 KalangParser.ParamDeclContext p = params.get(i);

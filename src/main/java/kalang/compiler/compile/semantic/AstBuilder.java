@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static kalang.compiler.util.BoxUtil.requireImplicitCast;
 import static kalang.mixin.CollectionMixin.map;
 
 /**
@@ -443,7 +444,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         mapAst(rs,ctx);
         if (ctx.expression() != null) {
             ExprNode expr = visitExpression(ctx.expression());
-            rs.setExpr(requireImplicitCast(methodCtx.method.getType(), expr, offset(ctx)));
+            MethodNode method = methodCtx.method;
+            Type expectedType = MethodUtil.getExpectedReturnType(method);
+            rs.setExpr(requireImplicitCast(expectedType, expr, offset(ctx)));
         } else if (methodCtx.method.getType().equals(Types.getVoidClassType())) {
             ConstExpr nullExpr = new ConstExpr(null);
             nullExpr.offset = offset(ctx);
@@ -1926,6 +1929,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         mapAst(e, ctx);
         thisVar = oldThisVar;
         return e;
+    }
+
+    @Override
+    public Object visitYieldStat(YieldStatContext ctx) {
+        MethodNode method = methodCtx.method;
+        if (!method.isGenerator()) {
+            throw new NodeException("yield keyword is only allow in generator methods", offset(ctx));
+        }
+        Type genResultType = MethodUtil.getExpectedReturnType(method);
+        ExprNode expr = visitExpression(ctx.expression());
+        expr = requireImplicitCast(genResultType, expr, expr.offset);
+        YieldStmt ye = new YieldStmt(expr);
+        mapAst(ye, ctx);
+        return ye;
     }
 
     private void createLambdaForMethodRef(LambdaExpr lambdaExpr, MethodRefExprContext ctx, ClassType lambdaType) {
