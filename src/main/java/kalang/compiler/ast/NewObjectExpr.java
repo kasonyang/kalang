@@ -67,6 +67,11 @@ public class NewObjectExpr extends ExprNode{
     }
 
     @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        doUpdateChildren(constructor.getArguments(), childUpdater);
+    }
+
+    @Override
     public Type getType() {
         return getObjectType();
     }

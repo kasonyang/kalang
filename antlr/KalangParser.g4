@@ -290,6 +290,7 @@ expression
         '}' ')' #structuringNewExpr
     |   expression '::' Identifier  #methodRefExpr
     |   '(' type ')' expression #castExpr
+    |   'await' expression #awaitExpr
     |   expression op=('++' | '--') #incExpr
     |   ( '+' | '-' ) expression #unaryExpr
     |   op=( '++' | '--' ) expression #preIncExpr
@@ -345,4 +346,4 @@ literal:
     |   (primitiveType | Identifier) (arrayPrefix='[' ']')? '.' 'class'
     |   'null' 
     ;
-varModifier:('static'|'final'|'private'|'public'|'protected'|'synchronized'|'abstract'|'native'|'transient'|'volatile')+;
+varModifier:('static'|'final'|'private'|'public'|'protected'|'synchronized'|'abstract'|'native'|'transient'|'volatile'|'async')+;

@@ -2,6 +2,7 @@ package kalang.compiler.util;
 
 import kalang.compiler.ast.MethodNode;
 import kalang.compiler.ast.ParameterNode;
+import kalang.compiler.core.ExtendModifiers;
 import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.Type;
 
@@ -17,7 +18,17 @@ import java.util.List;
 public class MethodUtil {
 
     public static Type getExpectedReturnType(MethodNode method) {
-        return method.isGenerator() ? GeneratorUtil.getGeneratorResultType(method) : method.getType();
+        int em = method.getExtendModifier();
+        boolean isGenerator = ExtendModifiers.isGenerator(em);
+        boolean isAsync = ExtendModifiers.isAsync(em);
+        Type expectedType = method.getType();
+        if (isAsync) {
+            expectedType = AsyncUtil.getAsyncResultType(expectedType);
+        }
+        if (isGenerator) {
+            expectedType = AsyncUtil.getGeneratorResultType(expectedType);
+        }
+        return expectedType;
     }
 
     public static String getDeclarationKey(String name, String... paramTypes) {

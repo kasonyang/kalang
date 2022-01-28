@@ -150,6 +150,10 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return OffsetRangeHelper.getOffsetRange(token);
     }
 
+    protected OffsetRange offset(TerminalNode terminalNode) {
+        return OffsetRangeHelper.getOffsetRange(terminalNode.getSymbol());
+    }
+
 
     protected ExprNode getObjectFieldLikeExpr(
             ExprNode expr,String fieldName, OffsetRange offset, @Nullable ExprNode assignValue, boolean allowGetterOrSetter
@@ -433,7 +437,7 @@ public abstract class AstBuilderBase extends KalangParserBaseVisitor<Object> {
         return (T) type;
     }
 
-    protected int parseModifier(KalangParser.VarModifierContext modifier) {
+    protected long parseModifier(KalangParser.VarModifierContext modifier) {
         int defaultModifier = Modifier.PUBLIC;
         if (modifier == null) {
             return defaultModifier;

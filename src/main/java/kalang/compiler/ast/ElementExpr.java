@@ -32,6 +32,12 @@ public class ElementExpr extends AssignableExpr{
     }
 
     @Override
+    public void updateChildren(ChildUpdater childMapper) {
+        arrayExpr = doUpdateChild(arrayExpr, childMapper);
+        index = doUpdateChild(index, childMapper);
+    }
+
+    @Override
     public Type getType() {
         Type arrayType = getType(getArrayExpr());
         if(arrayType==null) return Types.VOID_TYPE;

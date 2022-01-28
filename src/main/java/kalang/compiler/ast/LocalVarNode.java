@@ -18,4 +18,8 @@ public class LocalVarNode extends VarObject {
         super(modifier, type, name);
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+
+    }
 }

@@ -5,7 +5,6 @@ import kalang.compiler.core.Type;
 import kalang.compiler.core.Types;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 /**
@@ -48,7 +47,11 @@ public class ArrayLengthExpr extends ExprNode{
 
     @Override
     public List<AstNode> getChildren() {
-        return Collections.singletonList(arrayExpr);
+        return noNullChildren(arrayExpr);
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        arrayExpr = doUpdateChild(arrayExpr, childUpdater);
+    }
 }

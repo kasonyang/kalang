@@ -18,4 +18,8 @@ public class BreakStmt extends Statement{
         return Collections.emptyList();
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childMapper) {
+
+    }
 }

@@ -54,9 +54,15 @@ public abstract class BinaryExpr extends ExprNode{
     @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        addChild(ls, getExpr1());
-        addChild(ls, getExpr2());
+        addChild(ls, expr1);
+        addChild(ls, expr2);
         return ls;
+    }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        expr1 = doUpdateChild(expr1, childUpdater);
+        expr2 = doUpdateChild(expr2, childUpdater);
     }
 
     /**

@@ -417,6 +417,13 @@ public interface KalangParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBinaryExpr(KalangParser.BinaryExprContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code awaitExpr}
+	 * labeled alternative in {@link KalangParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAwaitExpr(KalangParser.AwaitExprContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code getArrayElementExpr}
 	 * labeled alternative in {@link KalangParser#expression}.
 	 * @param ctx the parse tree

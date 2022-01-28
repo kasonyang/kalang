@@ -1,6 +1,6 @@
 /*
 
-*/
+ */
 package kalang.compiler.ast;
 
 import kalang.compiler.core.Type;
@@ -9,26 +9,32 @@ import javax.annotation.Nonnull;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-public class AssignExpr extends ExprNode{
-    
+
+public class AssignExpr extends ExprNode {
+
     @Nonnull
     protected AssignableExpr to;
-    
+
     @Nonnull
     protected ExprNode from;
-    
-    public AssignExpr(@Nonnull AssignableExpr to,@Nonnull ExprNode from){
-            this.to = to;
-            this.from = from;
+
+    public AssignExpr(@Nonnull AssignableExpr to, @Nonnull ExprNode from) {
+        this.to = to;
+        this.from = from;
     }
-    
 
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        addChild(ls, getTo());
-        addChild(ls, getFrom());
+        addChild(ls, to);
+        addChild(ls, from);
         return ls;
+    }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        to = doUpdateChild(to, childUpdater);
+        from = doUpdateChild(from, childUpdater);
     }
 
     @Override

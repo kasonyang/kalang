@@ -24,4 +24,8 @@ public class FieldNode extends AssignableObject implements FieldDescriptor{
         return classNode;
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+
+    }
 }

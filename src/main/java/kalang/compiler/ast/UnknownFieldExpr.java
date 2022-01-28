@@ -42,6 +42,11 @@ public class UnknownFieldExpr extends AssignableExpr{
         return Collections.singletonList(target);
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        target = doUpdateChild(target, childUpdater);
+    }
+
     public ClassNode getSpecialClass() {
         return specialClass;
     }

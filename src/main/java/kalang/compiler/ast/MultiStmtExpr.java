@@ -29,6 +29,12 @@ public class MultiStmtExpr extends ExprNode {
     }
 
     @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        doUpdateChildren(stmts, childUpdater);
+        reference = doUpdateChild(reference, childUpdater);
+    }
+
+    @Override
     public Type getType() {
         return reference == null ? Types.VOID_TYPE : getType(reference);
     }

@@ -17,6 +17,11 @@ public class ThrowStmt extends Statement{
     }
 
     @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        expr = doUpdateChild(expr, childUpdater);
+    }
+
+    @Override
     public String toString() {
         return "throw " + expr;
     }

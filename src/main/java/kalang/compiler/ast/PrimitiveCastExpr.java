@@ -27,6 +27,11 @@ public class PrimitiveCastExpr extends ExprNode{
     }
 
     @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        expr = doUpdateChild(expr, childUpdater);
+    }
+
+    @Override
     public Type getType() {
         return getToType();
     }

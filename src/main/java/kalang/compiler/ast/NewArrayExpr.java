@@ -60,4 +60,9 @@ public class NewArrayExpr extends ExprNode{
     public List<AstNode> getChildren() {
         return Arrays.asList(sizes);
     }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        doUpdateChildren(sizes, childUpdater);
+    }
 }

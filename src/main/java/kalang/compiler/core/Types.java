@@ -5,7 +5,6 @@ import kalang.compiler.ast.ClassNode;
 import kalang.compiler.compile.ClassNodeNotFoundException;
 import kalang.compiler.compile.DefaultClassNodeLoader;
 import kalang.compiler.util.Exceptions;
-import kalang.coroutine.AsyncResult;
 import kalang.coroutine.impl.ExecuteContext;
 import kalang.coroutine.impl.GeneratorImpl;
 import kalang.lang.Generator;
@@ -90,8 +89,6 @@ public class Types {
     public final static String CLASS_CLASS_NAME = "java.lang.Class";
     
     public final static String ITERABLE_CLASS_NAME = "java.lang.Iterable";
-
-    public final static String ASYNC_RESULT_CLASS_NAME = AsyncResult.class.getName();
 
     public final static String GENERATOR_CLASS_NAME = Generator.class.getName();
 
@@ -443,10 +440,6 @@ public class Types {
         return requireClassType(CLASS_CLASS_NAME);
     }
 
-    public static ObjectType getAsyncResultType() {
-        return requireClassType(ASYNC_RESULT_CLASS_NAME);
-    }
-
     public static ObjectType getGeneratorClassType() {
         return requireClassType(GENERATOR_CLASS_NAME);
     }
@@ -461,6 +454,10 @@ public class Types {
 
     public static ObjectType getClassType(Class<?> clazz) {
         return requireClassType(clazz.getName());
+    }
+
+    public static ObjectType getClassType(Class<?> clazz, Type... typeArgs) {
+        return getClassType(getClassType(clazz).getClassNode(), typeArgs);
     }
 
     /**

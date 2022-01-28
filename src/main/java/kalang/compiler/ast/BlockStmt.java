@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 public class BlockStmt extends Statement{
     
-    public final List<Statement> statements = new LinkedList<>();
+    public List<Statement> statements = new LinkedList<>();
     protected final List<LocalVarNode> vars = new LinkedList();
     
     public BlockStmt(){
@@ -24,5 +24,9 @@ public class BlockStmt extends Statement{
         addChild(ls,statements);
         return ls;
     }
-    
+
+    @Override
+    public void updateChildren(ChildUpdater childMapper) {
+        doUpdateChildren(statements, childMapper);
+    }
 }

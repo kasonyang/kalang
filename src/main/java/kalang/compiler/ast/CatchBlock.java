@@ -22,4 +22,9 @@ public class CatchBlock extends AstNode {
         return ls;
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childMapper) {
+        catchVar = doUpdateChild(catchVar, childMapper);
+        execStmt = doUpdateChild(execStmt, childMapper);
+    }
 }

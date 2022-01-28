@@ -45,4 +45,9 @@ public class IncExpr extends ExprNode {
     public List<AstNode> getChildren() {
         return Collections.singletonList(increment);
     }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        increment = doUpdateChild(increment, childUpdater);
+    }
 }

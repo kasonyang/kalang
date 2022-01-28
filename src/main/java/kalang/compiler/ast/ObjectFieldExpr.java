@@ -54,6 +54,11 @@ public class ObjectFieldExpr extends FieldExpr{
     }
 
     @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        target = doUpdateChild(target, childUpdater);
+    }
+
+    @Override
     public String toString() {
         return target + "." +getField();
     }

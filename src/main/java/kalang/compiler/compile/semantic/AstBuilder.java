@@ -13,6 +13,7 @@ import kalang.compiler.core.*;
 import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
+import kalang.lang.Completable;
 import kalang.mixin.CollectionMixin;
 import kalang.runtime.dynamic.FieldVisitor;
 import kalang.runtime.dynamic.MethodDispatcher;
@@ -1934,8 +1935,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
     @Override
     public Object visitYieldStat(YieldStatContext ctx) {
         MethodNode method = methodCtx.method;
-        if (!method.isGenerator()) {
-            throw new NodeException("yield keyword is only allow in generator methods", offset(ctx));
+        if (!ExtendModifiers.isGenerator(method.getExtendModifier())) {
+            throw new NodeException("yield keyword is only allowed in generator methods", offset(ctx.YIELD()));
         }
         Type genResultType = MethodUtil.getExpectedReturnType(method);
         ExprNode expr = visitExpression(ctx.expression());
@@ -1943,6 +1944,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         YieldStmt ye = new YieldStmt(expr);
         mapAst(ye, ctx);
         return ye;
+    }
+
+    @Override
+    public Object visitAwaitExpr(AwaitExprContext ctx) {
+        MethodNode method = methodCtx.method;
+        if (!ExtendModifiers.isAsync(method.getExtendModifier())) {
+            throw new NodeException("await keyword is only allowed in async method", offset(ctx.AWAIT()));
+        }
+        ExprNode expr = visitExpression(ctx.expression());
+        ObjectType completableType = Types.getClassType(Completable.class);
+        expr = requireImplicitCast(completableType, expr);
+        AwaitExpr ae = new AwaitExpr(expr);
+        mapAst(ae, offset(ctx));
+        return ae;
     }
 
     private void createLambdaForMethodRef(LambdaExpr lambdaExpr, MethodRefExprContext ctx, ClassType lambdaType) {

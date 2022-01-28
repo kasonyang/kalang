@@ -39,4 +39,8 @@ public class InstanceOfExpr extends ExprNode{
         return Collections.singletonList(expr);
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        expr = doUpdateChild(expr, childUpdater);
+    }
 }

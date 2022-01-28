@@ -784,6 +784,18 @@ public class KalangParserBaseListener implements KalangParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAwaitExpr(KalangParser.AwaitExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAwaitExpr(KalangParser.AwaitExprContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterGetArrayElementExpr(KalangParser.GetArrayElementExprContext ctx) { }
 	/**
 	 * {@inheritDoc}

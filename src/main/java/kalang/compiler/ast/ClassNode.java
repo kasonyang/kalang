@@ -73,6 +73,12 @@ public class ClassNode extends AstNode implements Annotationable{
         return ls;
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childMapper) {
+        doUpdateChildren(fields, childMapper);
+        doUpdateChildren(methods, childMapper);
+        doUpdateChildren(classes, childMapper);
+    }
 
     public FieldNode createField(Type type, String name, int modifier){
         FieldNode fieldNode =new FieldNode(this,type,name,modifier);

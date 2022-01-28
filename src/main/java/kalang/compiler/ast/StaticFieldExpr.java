@@ -43,4 +43,8 @@ public class StaticFieldExpr extends FieldExpr{
         return Collections.emptyList();
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        
+    }
 }

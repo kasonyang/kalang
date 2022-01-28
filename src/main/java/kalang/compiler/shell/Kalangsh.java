@@ -88,7 +88,7 @@ public class Kalangsh extends ShellBase {
             System.err.println(ex.getMessage());
             return Constant.ERR_COMPILE_ERROR;
         } catch (CodeGenerationException ex) {
-            System.err.println(ex.getMessage());
+            ex.printStackTrace(System.err);
             System.err.println(AstOutputUtil.toString(ex.getClassNode()));
             return Constant.ERR_UNKNOWN_EXCEPTION;
         } catch (Throwable ex) {

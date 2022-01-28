@@ -1,13 +1,38 @@
 package kalang.compiler.compile.codegen.op;
 
+import kalang.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author KasonYang
  */
-public class OpBase {
+public abstract class OpBase {
 
     public int opcode = -1;
 
-    public final static String[] OPC_DESC = new String[200];
+    public final static String[] OPC_DESC = new String[512];
+
+    public final static String ST_BOOLEAN = "Z";
+    public final static String ST_BYTE = "B";
+    public final static String ST_SHORT = "S";
+
+    public final static String ST_CHAR = "C";
+
+    public final static String ST_INT = "I";
+    public final static String ST_LONG = "J";
+    public final static String ST_FLOAT = "F";
+    public final static String ST_DOUBLE = "D";
+    public final static String ST_ANY = "a";
+    public final static String ST_ELEMENT = "e";
+
+    public final static String ST_STRING = "Ljava/lang/String;";
+    public final static String ST_OBJECT = "Ljava/lang/Object;";
+
+    protected final static String[] TYPES_NONE = new String[0];
+
+    public final static int TEMP_OP_YIELD = 511;
 
     static {
         OPC_DESC[0] = "NOP";
@@ -167,6 +192,105 @@ public class OpBase {
         OPC_DESC[197] = "MULTIANEWARRAY";
         OPC_DESC[198] = "IFNULL";
         OPC_DESC[199] = "IFNONNULL";
+
+        // temp opcode
+        OPC_DESC[TEMP_OP_YIELD] = "YIELD";
+    }
+
+    /**
+     * Get Input/Output types
+     * @return [[inputTypes...], [outputTypes...]]
+     */
+    public abstract String[][] getIoTypes();
+    
+    static String[][] getIoTypesByMethodDescriptor(String descriptor, @Nullable String targetOwner) {
+        List<String> paramTypes = new ArrayList<>(32);
+        String[] outType = new String[0];
+        char[] chars = descriptor.toCharArray();
+        if (chars.length == 0) {
+            throw new IllegalArgumentException("empty descriptor");
+        }
+        if (chars[0] != '(') {
+            throw new IllegalArgumentException("illegal start character:" + chars[0]);
+        }
+        if (targetOwner != null) {
+            paramTypes.add("L" + targetOwner + ";");
+        }
+        int p = 1;
+        for (;;) {
+            if (chars[p] == ')') {
+                if (chars[p + 1] != 'V') {
+                    String result = readOneType(chars, p + 1);
+                    outType = new String[]{result};
+                }
+                break;
+            }
+            String result = readOneType(chars, p);
+            paramTypes.add(result);
+            p += result.length();
+        }
+        return ioTypes(paramTypes.toArray(new String[0]), outType);
+    }
+
+    static String[][] noTypes() {
+        return ioTypes(TYPES_NONE, TYPES_NONE);
+    }
+
+    static String[][] ioTypes(String inType, String outType) {
+        return ioTypes(new String[]{inType}, new String[]{outType});
+    }
+
+    static String[][] ioTypes(String[] inTypes, String[] outTypes) {
+        return new String[][]{inTypes, outTypes};
+    }
+
+    static String[][] outTypes(String... types) {
+        return ioTypes(TYPES_NONE, types);
+    }
+
+    static String[][] inTypes(String... types) {
+        return ioTypes(types, TYPES_NONE);
+    }
+
+    static String[] types(String... types) {
+        return types;
+    }
+
+    static RuntimeException unsupportedOpcode(int opcode) {
+        throw new IllegalArgumentException("unsupported opcode:" + opcode);
+    }
+
+    /**
+     *
+     * @param descriptor the descriptor
+     * @param start the start offset
+     * @return [slotType, consumeBytes]
+     */
+    private static String readOneType(char[] descriptor, int start) {
+        char c = descriptor[start];
+        if (c == '[') {
+            return "[" + readOneType(descriptor, start + 1);
+        } else if (c == 'L') {
+            int p = start + 1;
+            while (descriptor[p] != ';') {
+                p++;
+            }
+            return new String(descriptor, start, p - start + 1);
+        } else {
+            switch (c) {
+                case 'Z':
+                case 'I':
+                case 'C':
+                case 'S':
+                case 'B':
+                case 'J':
+                case 'F':
+                case 'D':
+                    return new String(descriptor, start, 1);
+                default:
+                    throw new IllegalArgumentException("unknown character:" + c);
+            }
+        }
     }
 
 }

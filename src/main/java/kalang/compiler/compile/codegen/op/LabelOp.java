@@ -1,5 +1,9 @@
 package kalang.compiler.compile.codegen.op;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @author KasonYang
  */
@@ -9,12 +13,49 @@ public class LabelOp extends OpBase {
 
     private int id;
 
+    private List<LabelOp> successors = new LinkedList<>();
+
+    private List<LabelOp> predecessors = new LinkedList<>();
+
+    /**
+     * jump or return operator
+     */
+    private OpBase lastOp = this;
+
     public LabelOp() {
         this.id = labelIdCounter ++;
+    }
+
+    @Override
+    public String[][] getIoTypes() {
+        return noTypes();
     }
 
     @Override
     public String toString() {
         return "Label_" + id;
     }
+
+    public void addSuccessor(LabelOp successor) {
+        successors.add(successor);
+        successor.predecessors.add(this);
+    }
+
+    public Collection<LabelOp> getSuccessors() {
+        return successors;
+    }
+
+    public Collection<LabelOp> getPredecessors() {
+        return predecessors;
+    }
+
+    public LabelOp setLastOp(OpBase lastOp) {
+        this.lastOp = lastOp;
+        return this;
+    }
+
+    public OpBase getLastOp() {
+        return lastOp;
+    }
+
 }

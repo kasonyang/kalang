@@ -23,4 +23,9 @@ public class FinallyBlock extends AstNode {
     public List<AstNode> getChildren() {
         return Collections.singletonList(execStmt);
     }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        execStmt = doUpdateChild(execStmt, childUpdater);
+    }
 }

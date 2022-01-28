@@ -16,10 +16,10 @@ public class LoopStmt extends Statement{
     private BlockStmt updateStmt;
     
     @Nullable
-    private final ExprNode preConditionExpr;
+    private ExprNode preConditionExpr;
     
     @Nullable
-    private final ExprNode postConditionExpr;
+    private ExprNode postConditionExpr;
 
     public LoopStmt(ExprNode preConditionExpr, ExprNode postConditionExpr) {
         this(preConditionExpr, postConditionExpr, null,null);
@@ -46,6 +46,14 @@ public class LoopStmt extends Statement{
         addChild(ls,updateStmt);
         addChild(ls,postConditionExpr);
         return ls;
+    }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        preConditionExpr = doUpdateChild(preConditionExpr, childUpdater);
+        loopBody = doUpdateChild(loopBody, childUpdater);
+        updateStmt = doUpdateChild(updateStmt, childUpdater);
+        postConditionExpr = doUpdateChild(postConditionExpr, childUpdater);
     }
 
     @Nonnull

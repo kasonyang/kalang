@@ -67,7 +67,7 @@ public class ClassNodeInitializer extends AstBuilderBase {
     public Object visitClassDef(KalangParser.ClassDefContext ctx) {
         ClassNode oldClass = thisClazz;
         Token nameIdentifier = ctx.name;
-        int modifier = parseModifier(ctx.varModifier());
+        int modifier = (int) parseModifier(ctx.varModifier());
         if (inScriptMode) {
             modifier |= Modifier.STATIC;
         }

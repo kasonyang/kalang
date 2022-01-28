@@ -22,4 +22,9 @@ public class YieldStmt extends Statement {
     public List<AstNode> getChildren() {
         return Collections.singletonList(expr);
     }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        expr = doUpdateChild(expr, childUpdater);
+    }
 }

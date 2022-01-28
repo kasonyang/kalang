@@ -1,5 +1,7 @@
 package kalang.compiler.compile.codegen.op;
 
+import static org.objectweb.asm.Opcodes.*;
+
 /**
  * @author KasonYang
  */
@@ -14,6 +16,23 @@ public class FieldInsnOp extends OpBase {
         this.owner = owner;
         this.name = name;
         this.descriptor = descriptor;
+    }
+
+    @Override
+    public String[][] getIoTypes() {
+        switch (opcode) {
+            case GETFIELD:
+                return ioTypes(owner, descriptor);
+            case GETSTATIC:
+                return outTypes(descriptor);
+            case PUTFIELD:
+                return inTypes(owner, descriptor);
+            case PUTSTATIC:
+                return inTypes(descriptor);
+            default:
+                throw unsupportedOpcode(opcode);
+        }
+
     }
 
     @Override

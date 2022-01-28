@@ -28,8 +28,13 @@ public class UnaryExpr extends ExprNode{
     @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        addChild(ls, getExpr());
+        addChild(ls, expr);
         return ls;
+    }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        expr = doUpdateChild(expr, childUpdater);
     }
 
     @Override

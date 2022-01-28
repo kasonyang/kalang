@@ -1,8 +1,10 @@
 package kalang.compiler.util;
 
+import kalang.compiler.core.ExtendModifiers;
 import kalang.compiler.core.ModifierConstant;
 
 import java.lang.reflect.Modifier;
+import java.util.StringJoiner;
 
 /**
  *
@@ -64,26 +66,26 @@ public class ModifierUtil {
      * @return modifier value
      * @throws InvalidModifierException
      */
-    public static int parse(String modifierString,int defaultAccess) throws InvalidModifierException {
+    public static long parse(String modifierString,int defaultAccess) throws InvalidModifierException {
         if (modifierString.isEmpty()) {
             throw new InvalidModifierException("modifier could not be empty");
         }
-        int m = 0;
+        long m = 0;
         for (String s : modifierString.split(" ")) {
             m = addModifier(m, parseSingleModfier(s));
         }
-        boolean isPublic = Modifier.isPublic(m);
-        boolean isPrivate = Modifier.isPrivate(m);
-        boolean isProtected = Modifier.isProtected(m);
+        boolean isPublic = Modifier.isPublic((int)m);
+        boolean isPrivate = Modifier.isPrivate((int)m);
+        boolean isProtected = Modifier.isProtected((int)m);
         if(!isPrivate && !isProtected && !isPublic)  m|=defaultAccess;
         return m;
     }
     
-        public static int parse(String modifierString) throws InvalidModifierException {
+        public static long parse(String modifierString) throws InvalidModifierException {
             return parse(modifierString,Modifier.PUBLIC);
         }
 
-    private static int parseSingleModfier(String s) throws InvalidModifierException {
+    private static long parseSingleModfier(String s) throws InvalidModifierException {
         switch (s) {
             case "public":
                 return Modifier.PUBLIC;
@@ -105,19 +107,21 @@ public class ModifierUtil {
                 return Modifier.TRANSIENT;
             case "volatile":
                 return Modifier.VOLATILE;
+            case "async":
+                return (long)ExtendModifiers.ASYNC << 32;
             default:
                 throw new InvalidModifierException("unrecognized modifier:" + s);
         }
     }
 
-    private static int addModifier(int modifiers, int singleModifier) throws InvalidModifierException {
+    private static long addModifier(long modifiers, long singleModifier) throws InvalidModifierException {
         if ((modifiers & singleModifier) > 0) {
-            throw new InvalidModifierException("repeat modifiers:" + Modifier.toString(singleModifier));
+            throw new InvalidModifierException("repeat modifiers:" + toString(singleModifier));
         }
-        int result = modifiers | singleModifier;
-        boolean isPublic = Modifier.isPublic(result);
-        boolean isPrivate = Modifier.isPrivate(result);
-        boolean isProtected = Modifier.isProtected(result);
+        long result = modifiers | singleModifier;
+        boolean isPublic = isPublic(result);
+        boolean isPrivate = isPrivate(result);
+        boolean isProtected = isProtected(result);
         if (isPublic && isPrivate) {
             throw new InvalidModifierException("invalid combination of modifiers:public private");
         }
@@ -128,6 +132,28 @@ public class ModifierUtil {
             throw new InvalidModifierException("invalid combination of modifiers:protected private");
         }
         return result;
+    }
+
+    public static boolean isPublic(long mod) {
+        return (mod & Modifier.PUBLIC) != 0;
+    }
+
+    public static boolean isPrivate(long mod) {
+        return (mod & Modifier.PRIVATE) != 0;
+    }
+
+    public static boolean isProtected(long mod) {
+        return (mod & Modifier.PROTECTED) != 0;
+    }
+
+    public static String toString(long mod) {
+        StringJoiner sj = new StringJoiner(" ");
+        int extendMod = (int) (mod >> 32);
+        if (ExtendModifiers.isAsync(extendMod)) {
+            sj.add("async");
+        }
+        sj.add(Modifier.toString((int)mod));
+        return sj.toString();
     }
 
 }

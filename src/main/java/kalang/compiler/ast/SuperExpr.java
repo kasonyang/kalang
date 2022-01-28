@@ -39,4 +39,8 @@ public class SuperExpr extends ExprNode{
         return Collections.emptyList();
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+
+    }
 }

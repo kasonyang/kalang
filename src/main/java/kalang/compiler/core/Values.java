@@ -10,6 +10,8 @@ public class Values {
 
     private static boolean DEFAULT_BOOLEAN_VALUE;
 
+    private static byte DEFAULT_BYTE_VALUE;
+
     private static char DEFAULT_CHAR_VALUE;
 
     private static short DEFAULT_SHORT_VALUE;
@@ -26,6 +28,8 @@ public class Values {
     public static ConstExpr getDefaultValue(Type type) {
         if (Types.BOOLEAN_TYPE.equals(type)) {
             return new ConstExpr(DEFAULT_BOOLEAN_VALUE);
+        } else if (Types.BYTE_TYPE.equals(type)) {
+            return new ConstExpr(DEFAULT_BYTE_VALUE);
         } else if (Types.CHAR_TYPE.equals(type)) {
             return new ConstExpr(DEFAULT_CHAR_VALUE);
         } else if (Types.SHORT_TYPE.equals(type)) {

@@ -1,0 +1,24 @@
+private async Integer getValue() {
+    return 3;
+}
+
+private async Integer awaitValue() {
+    return await getValue();
+}
+
+private async Integer awaitSum() {
+    val v1 = awaitValue();
+    val v2 = awaitValue();
+    return (await v1) + (await v2);
+}
+
+boolean test() {
+    val value = new Ref(0);
+    val thread = AsyncThread.run(() -> {
+        awaitSum().completed(v -> {
+            value.set(v);
+        });
+    });
+    thread.join();
+    return value.get() == 6;
+}

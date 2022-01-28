@@ -18,6 +18,11 @@ public class IincOp extends OpBase {
     }
 
     @Override
+    public String[][] getIoTypes() {
+        return noTypes();
+    }
+
+    @Override
     public String toString() {
         return OPC_DESC[opcode] + " " + varId + "," + increment;
     }

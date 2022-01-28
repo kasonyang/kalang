@@ -23,4 +23,9 @@ public class ClassReference extends AstNode{
     public String toString() {
         return Objects.toString(referencedClassNode);
     }
+
+    @Override
+    public void updateChildren(ChildUpdater childMapper) {
+
+    }
 }

@@ -20,10 +20,15 @@ public class CastExpr extends ExprNode{
     
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        addChild(ls, getExpr());
+        addChild(ls, expr);
         return ls;
     }
-    
+
+    @Override
+    public void updateChildren(ChildUpdater childMapper) {
+        expr = doUpdateChild(expr, childMapper);
+    }
+
     @Override
     public Type getType() {
         return getToType();

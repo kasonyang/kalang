@@ -11,6 +11,8 @@ public class ExecuteContext {
 
     public Object[] vars;
 
+    public Object[] stack;
+
     public int next;
 
 }

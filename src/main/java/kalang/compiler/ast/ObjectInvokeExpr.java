@@ -63,7 +63,10 @@ public class ObjectInvokeExpr extends InvocationExpr{
         addChild(list, arguments);
         return list;
     }
-    
-    
-    
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        invokeTarget = doUpdateChild(invokeTarget, childUpdater);
+        doUpdateChildren(arguments, childUpdater);
+    }
 }

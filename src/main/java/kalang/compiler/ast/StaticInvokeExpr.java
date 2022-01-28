@@ -56,7 +56,10 @@ public class StaticInvokeExpr extends InvocationExpr{
         addChild(list, arguments);
         return list;
     }
-    
-    
-    
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        invokeClass = doUpdateChild(invokeClass, childUpdater);
+        doUpdateChildren(arguments, childUpdater);
+    }
 }

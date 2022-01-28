@@ -51,7 +51,10 @@ public class UnknownInvocationExpr extends ExprNode{
         ls.addAll(Arrays.asList(arguments));
         return ls;
     }
-    
-    
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        target = doUpdateChild(target, childUpdater);
+        doUpdateChildren(arguments, childUpdater);
+    }
 }

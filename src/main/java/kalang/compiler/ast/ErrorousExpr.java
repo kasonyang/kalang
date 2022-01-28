@@ -24,6 +24,11 @@ public class ErrorousExpr extends ExprNode{
     }
 
     @Override
+    public void updateChildren(ChildUpdater childMapper) {
+        doUpdateChildren(children, childMapper);
+    }
+
+    @Override
     public Type getType() {
         return Types.getRootType();
     }

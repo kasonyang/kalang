@@ -53,4 +53,8 @@ public class VarExpr extends AssignableExpr{
         return Collections.emptyList();
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+
+    }
 }

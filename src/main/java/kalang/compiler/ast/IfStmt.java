@@ -9,9 +9,9 @@ public class IfStmt extends Statement{
     
     protected ExprNode conditionExpr;
     
-    protected final BlockStmt trueBody;
+    protected BlockStmt trueBody;
     
-    protected final BlockStmt falseBody;
+    protected BlockStmt falseBody;
 
     public IfStmt(ExprNode conditionExpr,@Nullable BlockStmt trueBody,@Nullable BlockStmt falseBody) {
         if(trueBody==null) trueBody = new BlockStmt();
@@ -32,6 +32,13 @@ public class IfStmt extends Statement{
         addChild(ls, trueBody);
         addChild(ls, falseBody);
         return ls;
+    }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        conditionExpr = doUpdateChild(conditionExpr, childUpdater);
+        trueBody = doUpdateChild(trueBody, childUpdater);
+        falseBody = doUpdateChild(falseBody, childUpdater);
     }
 
     /**

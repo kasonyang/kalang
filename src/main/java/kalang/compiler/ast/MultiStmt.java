@@ -20,5 +20,9 @@ public class MultiStmt extends Statement{
         addChild(ls,statements);
         return ls;
     }
-    
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        doUpdateChildren(statements, childUpdater);
+    }
 }

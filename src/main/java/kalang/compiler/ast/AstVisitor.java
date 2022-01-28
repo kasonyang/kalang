@@ -254,5 +254,9 @@ public class AstVisitor<T> extends AbstractAstVisitor<T>{
         return null;
     }
 
-
+    @Override
+    public T visitAwaitExpr(AwaitExpr node) {
+        visitChildren(node);
+        return null;
+    }
 }

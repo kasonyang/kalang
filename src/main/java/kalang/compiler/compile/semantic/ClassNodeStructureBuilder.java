@@ -8,6 +8,7 @@ import kalang.compiler.core.*;
 import kalang.compiler.util.AstUtil;
 import kalang.compiler.util.Exceptions;
 import kalang.compiler.util.ModifierUtil;
+import kalang.lang.Completable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
@@ -91,9 +92,13 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         } else {
             name = ctx.name.getText();
         }
-        int modifier = parseModifier(ctx.varModifier());
+        long modifierAndExtModifier = parseModifier(ctx.varModifier());
+        int modifier = (int) modifierAndExtModifier;
+
         boolean isOverriding = ctx.OVERRIDE() != null;
         boolean isGenerator = ctx.generatorSymbol != null;
+        int extendModifier = (int) (modifierAndExtModifier >> 32)
+                | (isGenerator ? ExtendModifiers.GENERATOR : 0);
         KalangParser.BlockStmtContext blockStmt = ctx.blockStmt();
         if(blockStmt==null){
             if(ModifierUtil.isInterface(thisClazz.getModifier())){
@@ -111,7 +116,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         }
         //TODO simplify createMethod method
         MethodNode method = thisClazz.createMethodNode(Types.getRootType(NullableKind.UNKNOWN), name, modifier, methodBody);
-        method.setGenerator(isGenerator);
+        method.setExtendModifier(extendModifier);
         enterMethod(method, () -> {
             //check method duplicated before generate java stub
             if (ctx.typeParam != null) {
@@ -122,6 +127,9 @@ public class ClassNodeStructureBuilder extends AstBuilder {
             Type returnType = ctx.returnType == null ? Types.VOID_TYPE : parseType(ctx.returnType);
             if (isGenerator) {
                 returnType = Types.getClassType(Types.getGeneratorClassType().getClassNode(), new Type[]{returnType});
+            }
+            if (ExtendModifiers.isAsync(extendModifier)) {
+                returnType = Types.getClassType(Completable.class, returnType);
             }
             method.setType(returnType);
             List<KalangParser.ParamDeclContext> params = ctx.params;
@@ -205,7 +213,7 @@ public class ClassNodeStructureBuilder extends AstBuilder {
     
     @Override
     public Void visitFieldDecl(KalangParser.FieldDeclContext ctx) {
-        int fieldModifier = parseModifier(ctx.varModifier());
+        int fieldModifier = (int) parseModifier(ctx.varModifier());
         for(KalangParser.VarDeclContext vd:ctx.varDecl()){
             AstBuilder.VarInfo varInfo = varDecl(vd, Types.getRootType());
             varInfo.modifier |= fieldModifier;

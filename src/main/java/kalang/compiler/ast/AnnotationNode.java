@@ -2,6 +2,7 @@
 package kalang.compiler.ast;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,7 +22,14 @@ public class AnnotationNode extends AstNode{
     public ClassNode getAnnotationType() {
         return annotationType;
     }
-    
-    
 
+    @Override
+    public List<AstNode> getChildren() {
+        return noChildren();
+    }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+
+    }
 }

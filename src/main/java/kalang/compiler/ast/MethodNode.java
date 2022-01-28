@@ -11,6 +11,8 @@ import java.util.*;
 public class MethodNode extends AstNode implements Annotationable{
     
     private int modifier;
+
+    private int extendModifier;
     
     private Type type;
     
@@ -32,13 +34,11 @@ public class MethodNode extends AstNode implements Annotationable{
     private final List<GenericType> genericTypes = new LinkedList<>();
     
     @Nullable
-    private final BlockStmt body;
+    private BlockStmt body;
     
     private final List<Type> exceptionTypes = new LinkedList<>();
     
     private final ClassNode classNode;
-
-    private boolean isGenerator;
     
     protected MethodNode(ClassNode classNode,Type type,String name,int modifier, BlockStmt body){
         this.classNode = classNode;
@@ -99,6 +99,12 @@ public class MethodNode extends AstNode implements Annotationable{
     }
 
     @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        doUpdateChildren(parameters, childUpdater);
+        body = doUpdateChild(body, childUpdater);
+    }
+
+    @Override
     public AnnotationNode[] getAnnotations() {
         return annotations.toArray(new AnnotationNode[0]);
     }
@@ -130,6 +136,14 @@ public class MethodNode extends AstNode implements Annotationable{
 
     public int getModifier() {
         return modifier;
+    }
+
+    public int getExtendModifier() {
+        return extendModifier;
+    }
+
+    public void setExtendModifier(int extendModifier) {
+        this.extendModifier = extendModifier;
     }
 
     public void addModifier(int modifier) {
@@ -174,12 +188,4 @@ public class MethodNode extends AstNode implements Annotationable{
         this.type = type;
     }
 
-    public boolean isGenerator() {
-        return isGenerator;
-    }
-
-    public MethodNode setGenerator(boolean generator) {
-        isGenerator = generator;
-        return this;
-    }
 }

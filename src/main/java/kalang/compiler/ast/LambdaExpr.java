@@ -4,10 +4,7 @@ import kalang.compiler.core.MethodDescriptor;
 import kalang.compiler.core.Type;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -40,6 +37,11 @@ public class LambdaExpr extends ExprNode{
     @Override
     public List<AstNode> getChildren() {
         return new LinkedList<>(captureArguments);
+    }
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        doUpdateChildren(captureArguments, childUpdater);
     }
 
     public MethodDescriptor getInterfaceMethod() {

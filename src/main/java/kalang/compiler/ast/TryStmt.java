@@ -28,6 +28,13 @@ public class TryStmt extends Statement{
         return ls;
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        execStmt = doUpdateChild(execStmt, childUpdater);
+        doUpdateChildren(catchStmts, childUpdater);
+        finallyBlock = doUpdateChild(finallyBlock, childUpdater);
+    }
+
     /**
      * @return the execStmt
      */

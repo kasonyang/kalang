@@ -22,4 +22,8 @@ public class ParameterNode extends VarObject {
         return method;
     }
 
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+
+    }
 }

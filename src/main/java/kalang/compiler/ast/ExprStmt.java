@@ -18,10 +18,15 @@ public class ExprStmt extends Statement{
     @Override
     public List<AstNode> getChildren(){
         List<AstNode> ls = new LinkedList();
-        addChild(ls, getExpr());
+        addChild(ls, expr);
         return ls;
     }
-    
+
+    @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        expr = doUpdateChild(expr, childUpdater);
+    }
+
     /**
      * @return the expr
      */

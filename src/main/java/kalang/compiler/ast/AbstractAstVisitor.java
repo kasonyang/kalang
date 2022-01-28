@@ -170,6 +170,9 @@ public abstract class AbstractAstVisitor<T> implements IAstVisitor<T>{
         if (node instanceof YieldStmt) {
             return visitYieldStmt((YieldStmt) node);
         }
+        if (node instanceof AwaitExpr) {
+            return visitAwaitExpr((AwaitExpr) node);
+        }
         
         throw new IllegalArgumentException("BUG!Unknown node type:"+node.getClass());
     }

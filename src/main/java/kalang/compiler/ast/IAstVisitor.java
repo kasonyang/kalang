@@ -84,6 +84,8 @@ public interface IAstVisitor<T> {
 
     T visitIncExpr(IncExpr node);
 
+    T visitAwaitExpr(AwaitExpr node);
+
     T visitYieldStmt(YieldStmt node);
 
 }

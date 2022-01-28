@@ -21,4 +21,9 @@ public class InvokeDynamicInsnOp extends OpBase {
         this.bootstrapMethodHandle = bootstrapMethodHandle;
         this.bootstrapMethodArguments = bootstrapMethodArguments;
     }
+
+    @Override
+    public String[][] getIoTypes() {
+        return getIoTypesByMethodDescriptor(descriptor, null);
+    }
 }

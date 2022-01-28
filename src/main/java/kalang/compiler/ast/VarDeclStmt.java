@@ -24,6 +24,11 @@ public class VarDeclStmt extends Statement{
     }
 
     @Override
+    public void updateChildren(ChildUpdater childUpdater) {
+        doUpdateChildren(vars, childUpdater);
+    }
+
+    @Override
     public String toString() {
         List<String> vs = CollectionMixin.map(vars, (v) -> v.getType() + " " + v.getName());
         return String.join(",", vs);
