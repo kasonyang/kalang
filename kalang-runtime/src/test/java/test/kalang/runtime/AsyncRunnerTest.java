@@ -2,7 +2,7 @@ package test.kalang.runtime;
 
 import kalang.coroutine.AsyncRunner;
 import kalang.lang.Completable;
-import kalang.coroutine.impl.Deferred;
+import kalang.lang.Deferred;
 import kalang.lang.Generator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,11 +17,11 @@ public class AsyncRunnerTest {
         AsyncRunner<Integer> runner = new AsyncRunner<>();
         TestGenerator testGenerator = new TestGenerator();
         Completable<Integer> result = runner.submit(testGenerator);
-        result.completed(value -> {
+        result.onCompleted(value -> {
             Assert.assertEquals(6, testGenerator.i);
             Assert.assertEquals(5, (int) value);
         });
-        result.failed(e -> Assert.fail());
+        result.onFailed(e -> Assert.fail());
         runner.run();
     }
 

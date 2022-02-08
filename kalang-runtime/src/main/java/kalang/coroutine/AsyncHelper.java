@@ -1,8 +1,6 @@
 package kalang.coroutine;
 
-import kalang.coroutine.impl.ExecuteContext;
-import kalang.coroutine.impl.GeneratorImpl;
-import kalang.coroutine.impl.NextExecutor;
+import kalang.lang.AsyncExecuteThread;
 import kalang.lang.Completable;
 
 /**

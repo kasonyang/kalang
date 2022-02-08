@@ -1,7 +1,7 @@
 package kalang.coroutine;
 
-import kalang.coroutine.impl.Deferred;
 import kalang.lang.Completable;
+import kalang.lang.Deferred;
 import kalang.lang.Generator;
 
 import java.util.LinkedList;
@@ -25,7 +25,7 @@ public class AsyncRunner<T> {
                 Generator<Completable<T>> g = task.generator;
                 Deferred<T> d = task.deferred;
                 Completable<T> result = g.next();
-                result.completed(c -> {
+                result.onCompleted(c -> {
                     if (g.isDone()) {
                         removeTask(task);
                         d.complete(c);
@@ -33,7 +33,7 @@ public class AsyncRunner<T> {
                         addReady(task);
                     }
                 });
-                result.failed(e -> {
+                result.onFailed(e -> {
                     removeTask(task);
                     d.fail(e);
                 });

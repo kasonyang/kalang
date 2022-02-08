@@ -1,7 +1,4 @@
-package kalang.coroutine;
-
-import kalang.lang.Completable;
-import kalang.lang.Generator;
+package kalang.lang;
 
 /**
  * @author KasonYang

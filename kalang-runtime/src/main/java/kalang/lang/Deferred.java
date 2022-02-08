@@ -1,6 +1,4 @@
-package kalang.coroutine.impl;
-
-import kalang.lang.Completable;
+package kalang.lang;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -57,7 +55,7 @@ public class Deferred<T> {
     public Completable<T> completable() {
         return new Completable<T>() {
             @Override
-            public void completed(Consumer<T> handler) {
+            public void onCompleted(Consumer<T> handler) {
                 if (state == STATE_PENDING) {
                     completeHandlers.add(handler);
                 } else if (state == STATE_COMPLETED) {
@@ -66,7 +64,7 @@ public class Deferred<T> {
             }
 
             @Override
-            public void failed(Consumer<Throwable> handler) {
+            public void onFailed(Consumer<Throwable> handler) {
                 if (state == STATE_PENDING) {
                     exceptionHandlers.add(handler);
                 } else if (state == STATE_FAILED) {
@@ -75,7 +73,7 @@ public class Deferred<T> {
             }
 
             @Override
-            public void done(Runnable handler) {
+            public void onDone(Runnable handler) {
                 if (state == STATE_PENDING) {
                     doneHandlers.add(handler);
                 } else {
@@ -116,9 +114,15 @@ public class Deferred<T> {
         };
     }
 
-    public static <D> Completable<D> completed(D value) {
+    public static <D> Completable<D> completedOf(D value) {
         Deferred<D> d = new Deferred<>();
         d.complete(value);
+        return d.completable();
+    }
+
+    public static <D> Completable<D> failedOf(Throwable error) {
+        Deferred<D> d = new Deferred<>();
+        d.fail(error);
         return d.completable();
     }
 

@@ -15,7 +15,7 @@ private async Integer awaitSum() {
 boolean test() {
     val value = new Ref(0);
     val thread = AsyncThread.run(() -> {
-        awaitSum().completed(v -> {
+        awaitSum().onCompleted(v -> {
             value.set(v);
         });
     });

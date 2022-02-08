@@ -7,11 +7,11 @@ import java.util.function.Consumer;
  */
 public interface Completable<T> {
 
-    void completed(Consumer<T> handler);
+    void onCompleted(Consumer<T> handler);
 
-    void failed(Consumer<Throwable> handler);
+    void onFailed(Consumer<Throwable> handler);
 
-    void done(Runnable handler);
+    void onDone(Runnable handler);
 
     T getValue();
 

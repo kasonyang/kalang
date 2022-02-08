@@ -1,8 +1,6 @@
 package kalang.lang;
 
-import kalang.coroutine.AsyncExecuteThread;
 import kalang.coroutine.AsyncRunner;
-import kalang.coroutine.impl.Deferred;
 
 /**
  * @author KasonYang

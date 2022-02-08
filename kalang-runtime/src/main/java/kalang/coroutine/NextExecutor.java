@@ -1,4 +1,4 @@
-package kalang.coroutine.impl;
+package kalang.coroutine;
 
 /**
  * @author KasonYang

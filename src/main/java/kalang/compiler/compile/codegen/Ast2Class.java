@@ -13,10 +13,10 @@ import kalang.compiler.core.*;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
 import kalang.coroutine.AsyncHelper;
-import kalang.coroutine.impl.Deferred;
-import kalang.coroutine.impl.ExecuteContext;
-import kalang.coroutine.impl.GeneratorImpl;
-import kalang.coroutine.impl.NextExecutor;
+import kalang.lang.Deferred;
+import kalang.coroutine.ExecuteContext;
+import kalang.coroutine.GeneratorImpl;
+import kalang.coroutine.NextExecutor;
 import kalang.lang.Completable;
 import kalang.mixin.CollectionMixin;
 import org.objectweb.asm.*;
@@ -646,7 +646,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 boolean isAsync = ExtendModifiers.isAsync(method.getExtendModifier());
                 if (isAsync) {
                     ClassReference cl = new ClassReference(getClassType(Deferred.class).getClassNode());
-                    expr = StaticInvokeExpr.create(cl, "completed", new ExprNode[] {expr});
+                    expr = StaticInvokeExpr.create(cl, "completedOf", new ExprNode[] {expr});
                 }
                 assignContextResult(expr);
                 visit(new ExprStmt(new AssignExpr(
