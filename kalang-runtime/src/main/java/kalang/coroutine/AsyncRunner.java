@@ -24,19 +24,24 @@ public class AsyncRunner<T> {
                 Task<T> task = readyQueue.poll();
                 Generator<Completable<T>> g = task.generator;
                 Deferred<T> d = task.deferred;
-                Completable<T> result = g.next();
-                result.onCompleted(c -> {
-                    if (g.isDone()) {
-                        removeTask(task);
-                        d.complete(c);
-                    } else {
-                        addReady(task);
-                    }
-                });
-                result.onFailed(e -> {
+                try {
+                    Completable<T> result = g.next();
+                    result.onDone(() -> {
+                        if (g.isDone()) {
+                            removeTask(task);
+                            if (result.isCompleted()) {
+                                d.complete(result.getValue());
+                            } else {
+                                d.fail(result.getError());
+                            }
+                        } else {
+                            addReady(task);
+                        }
+                    });
+                } catch (Throwable ex) {
                     removeTask(task);
-                    d.fail(e);
-                });
+                    d.fail(ex);
+                }
             }
             if (!tasks.isEmpty()) {
                 synchronized (readyQueue) {

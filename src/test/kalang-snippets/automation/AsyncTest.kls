@@ -12,13 +12,39 @@ private async Integer awaitSum() {
     return (await v1) + (await v2);
 }
 
-boolean test() {
-    val value = new Ref(0);
+private async Integer throwError() {
+    throw new Exception("exception in async method");
+}
+
+private async Integer catchError() {
+    try {
+        await this.throwError();
+        return 1;
+    } catch (Exception ex) {
+        return 6;
+    }
+}
+
+private Object doTest(&Completable() supplier) {
+    val value = new Ref<Object>("");
     val thread = AsyncThread.run(() -> {
-        awaitSum().onCompleted(v -> {
-            value.set(v);
-        });
+        val completable = supplier();
+        completable.onCompleted(v -> value.set(v));
+        completable.onFailed(e -> value.set(e));
     });
     thread.join();
-    return value.get() == 6;
+    return value.get();
+}
+
+boolean test() {
+    return doTest(() -> awaitSum()).equals(6);
+}
+
+boolean testEx() {
+    val ex = (Exception) doTest(() -> throwError());
+    return ex.getMessage() == "exception in async method";
+}
+
+boolean testCatch() {
+    return doTest(() -> catchError()).equals(6);
 }

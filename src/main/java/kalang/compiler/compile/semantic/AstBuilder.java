@@ -2041,7 +2041,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             methodName = "constructor";
         }
         String lambdaName = "lambda$" + methodName + "$" + ++oldMethodCtx.lambdaMethodCounter;
-        int modifier = Modifier.PUBLIC | (oldMethodCtx.method.getModifier() & Modifier.STATIC);
+        int modifier = Modifier.PRIVATE | (oldMethodCtx.method.getModifier() & Modifier.STATIC);
         BlockStmt methodNodeBody = new BlockStmt();
         methodNodeBody.offset = offset(ctx);
         MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , modifier, methodNodeBody);

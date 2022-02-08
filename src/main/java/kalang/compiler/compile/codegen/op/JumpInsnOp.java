@@ -17,6 +17,7 @@ public class JumpInsnOp extends OpBase {
     @Override
     public String[][] getIoTypes() {
         switch (opcode) {
+            case IFEQ:
             case IFNE:
             case IFLT:
             case IFGE:

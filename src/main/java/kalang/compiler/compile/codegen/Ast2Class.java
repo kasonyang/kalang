@@ -406,6 +406,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 };
                 Handle bootstrapMd = new Handle(H_INVOKESTATIC, internalName(LambdaMetafactory.class.getName()), "metafactory", metafactoryDesc, false);
                 opCollector.visitInvokeDynamicInsn("executeNext", invokeMdDesc, bootstrapMd, bootstrapArgs);
+                opCollector.visitLdcInsn(generatorMdName);
                 ObjectType factoryType = getClassType(isGenerator ? GeneratorImpl.class : AsyncHelper.class);
                 String methodName = isGenerator ? "create" : "submit";
                 Type returnType = getClassType(isGenerator ? GeneratorImpl.class : Completable.class);
@@ -415,7 +416,8 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                         methodName,
                         getMethodDescriptor(returnType, new Type[]{
                                 Types.getExecuteContextClassType(),
-                                Types.getClassType(NextExecutor.class)
+                                Types.getClassType(NextExecutor.class),
+                                Types.getStringClassType()
                         }),
                         false
                 );
@@ -1616,9 +1618,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     public Object visitAwaitExpr(AwaitExpr node) {
         ExprNode expr = node.getExpr();
         visit(new YieldStmt(expr));
-        //TODO check completable.isDone();
+        //TODO check isFailed or isCompleted;
         ExprNode resultExpr = ObjectFieldExpr.create(new VarExpr(gnCtxParamNode), "result", clazz);
         resultExpr = new CastExpr(expr.getType(), resultExpr);
+        ObjectInvokeExpr isFailedExpr = ObjectInvokeExpr.create(resultExpr, "isFailed", new ExprNode[0]);
+        IfStmt ifStmt = new IfStmt(isFailedExpr, new BlockStmt(new Statement[]{
+                new ThrowStmt(ObjectInvokeExpr.create(resultExpr, "getError", new ExprNode[0]))
+        }), null);
+        visit(ifStmt);
         ObjectInvokeExpr valueExpr = ObjectInvokeExpr.create(resultExpr, "getValue", new ExprNode[0]);
         visit(new CastExpr(node.getType(), valueExpr));
         return null;
