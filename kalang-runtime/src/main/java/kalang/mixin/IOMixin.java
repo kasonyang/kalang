@@ -1,11 +1,13 @@
 package kalang.mixin;
 
 import kalang.annotation.MixinMethod;
+import kalang.io.*;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.Charset;
+import java.nio.file.StandardOpenOption;
 import java.util.function.Consumer;
 
 public class IOMixin {
@@ -91,6 +93,30 @@ public class IOMixin {
         try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(file))) {
             writeFrom(os, is);
         }
+    }
+
+    @MixinMethod
+    public static AsyncReadChannel newAsyncReadChannel(File file) throws IOException {
+        return new AsyncFileChannel(file, StandardOpenOption.READ);
+    }
+
+    @MixinMethod
+    public static AsyncReader newAsyncReader(File file) throws IOException {
+        return new AsyncChannelReader(newAsyncReadChannel(file));
+    }
+
+    @MixinMethod
+    public static AsyncWriteChannel newAsyncWriteChannel(File file, boolean append) throws IOException {
+        if (append) {
+            return new AsyncFileChannel(file, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+        } else {
+            return new AsyncFileChannel(file, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        }
+    }
+
+    @MixinMethod
+    public static AsyncWriter newAsyncWriter(File file, boolean append) throws IOException {
+        return new AsyncChannelWriter(newAsyncWriteChannel(file, append));
     }
 
     @MixinMethod

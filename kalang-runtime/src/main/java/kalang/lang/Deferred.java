@@ -126,6 +126,11 @@ public class Deferred<T> {
         return d.completable();
     }
 
+    public void delegate(Completable<T> target) {
+        target.onCompleted(this::complete);
+        target.onFailed(this::fail);
+    }
+
     private void notifyCompleted(List<Consumer<T>> handlers) {
         for (Consumer<T> h : handlers) {
             h.accept(value);
