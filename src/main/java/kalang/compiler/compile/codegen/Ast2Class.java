@@ -5,6 +5,8 @@ import kalang.compiler.ast.*;
 import kalang.compiler.compile.*;
 import kalang.compiler.compile.codegen.analyse.StackUtil;
 import kalang.compiler.compile.codegen.op.*;
+import kalang.compiler.compile.codegen.op.Attribute;
+import kalang.compiler.compile.codegen.util.OpcodeUtil;
 import kalang.compiler.compile.semantic.MalformedAstException;
 import kalang.compiler.compile.semantic.analyzer.ParentAnalyzer;
 import kalang.compiler.compile.semantic.analyzer.TerminalStatementAnalyzer;
@@ -1801,11 +1803,13 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private void applyOp(MethodVisitor mv, OpCollector opCollector) {
         //new OpOptimizer().optimize(opCollector);
         //System.out.println(OpUtil.toString(opCollector));
+        opCollector.optimize(new DefaultOpcodeOptimizer());
         Map<LabelOp, Label> labelMap = new HashMap<>();
         Function<LabelOp, Label> labelMapper = lb -> labelMap.computeIfAbsent(lb, (k) -> new Label());
         LabelOp lastLabel = null;
         makeStatesJumpOps(mv, labelMapper);
-        for (OpBase code : opCollector) {
+        List<OpBase> opcodes = opCollector.getOpcodes();
+        for (OpBase code : opcodes) {
             if (code instanceof FieldInsnOp) {
                 FieldInsnOp fio = (FieldInsnOp) code;
                 mv.visitFieldInsn(fio.opcode, fio.owner, fio.name, fio.descriptor);
@@ -1842,26 +1846,31 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 mv.visitIincInsn(op.varId, op.increment);
             } else if (code instanceof YieldOp) {
                 YieldOp yo = (YieldOp) code;
-                String[] currentStack = StackUtil.getStack(opCollector, lastLabel, code);
+                String[] currentStack = StackUtil.getStack(opcodes, lastLabel, code);
                 transformYieldOp(mv, currentStack, yo.getContextVarId(),yo.getNextVarId(), labelMapper.apply(yo.getLabel()));
             } else {
                 throw Exceptions.unexpectedValue(code);
             }
         }
-        for (LocalVariable lv: opCollector.getLocalVariables()) {
-            mv.visitLocalVariable(lv.name, lv.descriptor, lv.signature, labelMapper.apply(lv.start), labelMapper.apply(lv.end), lv.index);
-        }
-        for (LineNumber ln : opCollector.getLineNumbers()) {
-            mv.visitLineNumber(ln.lineNum, labelMapper.apply(ln.label));
-        }
-        for (TryCatchBlock tcb : opCollector.getTryCatchBlocks()) {
-            if (!opCollector.isSamePosition(tcb.start, tcb.end)) {
-                mv.visitTryCatchBlock(
-                        labelMapper.apply(tcb.start),
-                        labelMapper.apply(tcb.end),
-                        labelMapper.apply(tcb.handler),
-                        tcb.type
-                );
+        for (Attribute attr : opCollector.getAttributes()) {
+            if (attr instanceof LocalVariableAttr) {
+                LocalVariableAttr lv = (LocalVariableAttr) attr;
+                mv.visitLocalVariable(lv.name, lv.descriptor, lv.signature, labelMapper.apply(lv.start), labelMapper.apply(lv.end), lv.index);
+            } else if (attr instanceof LineNumberAttr) {
+                LineNumberAttr ln = (LineNumberAttr) attr;
+                mv.visitLineNumber(ln.lineNum, labelMapper.apply(ln.label));
+            } else if (attr instanceof CatchAttr) {
+                CatchAttr tcb = (CatchAttr) attr;
+                if (!OpcodeUtil.isSamePosition(opcodes, tcb.start, tcb.end)) {
+                    mv.visitTryCatchBlock(
+                            labelMapper.apply(tcb.start),
+                            labelMapper.apply(tcb.end),
+                            labelMapper.apply(tcb.handler),
+                            tcb.type
+                    );
+                }
+            } else {
+                throw Exceptions.unsupportedTypeException(attr);
             }
         }
     }

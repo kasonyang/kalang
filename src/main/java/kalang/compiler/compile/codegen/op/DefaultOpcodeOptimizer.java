@@ -1,6 +1,8 @@
 package kalang.compiler.compile.codegen.op;
 
+import kalang.compiler.compile.codegen.util.OpcodeUtil;
 import kalang.compiler.util.Exceptions;
+import kalang.mixin.CollectionMixin;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -12,14 +14,16 @@ import static org.objectweb.asm.Opcodes.*;
 /**
  * @author KasonYang
  */
-public class OpOptimizer {
+public class DefaultOpcodeOptimizer implements OpcodeOptimizer {
 
-    public void optimize(OpCollector opCollector) {
-        OpBase[] ops = opCollector.toArray(new OpBase[0]);
+    @Override
+    public void optimize(List<OpBase> opcodes, List<Attribute> attributes) {
+        OpBase[] ops = opcodes.toArray(new OpBase[0]);
+        List<CatchAttr> tryCatchBlocks = getTryCatchBlocks(attributes);
         int opsLen = ops.length;
         for (;;) {
             int newOpsLen = opsLen;
-            newOpsLen = removeUnreachableOp(ops, newOpsLen, opCollector.getTryCatchBlocks());
+            newOpsLen = removeUnreachableOp(ops, newOpsLen, tryCatchBlocks);
             newOpsLen = removeUnnecessaryLoadPop(ops, newOpsLen);
             if (newOpsLen > opsLen) {
                 throw Exceptions.unexpectedException("fail to optimize");
@@ -28,13 +32,29 @@ public class OpOptimizer {
             }
             opsLen = newOpsLen;
         }
-        opCollector.clear();
-        opCollector.addAll(Arrays.asList(ops).subList(0, opsLen));
-        opCollector.getLineNumbers().removeIf(it -> !opCollector.contains(it.label) || opCollector.isEndLabel(it.label));
-        opCollector.getLocalVariables().removeIf(it -> opCollector.isSamePosition(it.start, it.end));
+        opcodes.clear();
+        opcodes.addAll(Arrays.asList(ops).subList(0, opsLen));
+        attributes.removeIf(e -> {
+            if (e instanceof LineNumberAttr) {
+                LineNumberAttr it = (LineNumberAttr) e;
+                return !opcodes.contains(it.label) || OpcodeUtil.isEndLabel(opcodes, it.label);
+            } else if (e instanceof LocalVariableAttr) {
+                LocalVariableAttr it = (LocalVariableAttr) e;
+                return OpcodeUtil.isSamePosition(opcodes, it.start, it.end);
+            } else if (e instanceof CatchAttr) {
+                return false;
+            } else {
+                throw Exceptions.unsupportedTypeException(e);
+            }
+        });
     }
 
-    private int removeUnreachableOp(OpBase[] ops, int len, List<TryCatchBlock> tryCatchBlocks) {
+    private List<CatchAttr> getTryCatchBlocks(List<Attribute> attributes) {
+        attributes = CollectionMixin.findAll(attributes, it -> it instanceof CatchAttr);
+        return CollectionMixin.map(attributes, it -> (CatchAttr) it);
+    }
+
+    private int removeUnreachableOp(OpBase[] ops, int len, List<CatchAttr> tryCatchBlocks) {
         Set<LabelOp> entryLabels = getEntryLabels(tryCatchBlocks, ops, len);
         int w;
         startLoop:
@@ -110,7 +130,7 @@ public class OpOptimizer {
         }
     }
 
-    private Set<LabelOp> getEntryLabels(List<TryCatchBlock> tryCatchBlocks, OpBase[] ops, int opsLen) {
+    private Set<LabelOp> getEntryLabels(List<CatchAttr> tryCatchBlocks, OpBase[] ops, int opsLen) {
         Set<LabelOp> result = new HashSet<>();
         for (int i = 0; i < opsLen; i++) {
             OpBase op = ops[i];
@@ -118,7 +138,7 @@ public class OpOptimizer {
                 result.add(((JumpInsnOp) op).label);
             }
         }
-        for (TryCatchBlock tcb : tryCatchBlocks) {
+        for (CatchAttr tcb : tryCatchBlocks) {
             result.add(tcb.handler);
         }
         return result;

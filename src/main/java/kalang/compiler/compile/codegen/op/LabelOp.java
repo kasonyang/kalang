@@ -17,11 +17,6 @@ public class LabelOp extends OpBase {
 
     private List<LabelOp> predecessors = new LinkedList<>();
 
-    /**
-     * jump or return operator
-     */
-    private OpBase lastOp = this;
-
     public LabelOp() {
         this.id = labelIdCounter ++;
     }
@@ -47,15 +42,6 @@ public class LabelOp extends OpBase {
 
     public Collection<LabelOp> getPredecessors() {
         return predecessors;
-    }
-
-    public LabelOp setLastOp(OpBase lastOp) {
-        this.lastOp = lastOp;
-        return this;
-    }
-
-    public OpBase getLastOp() {
-        return lastOp;
     }
 
 }

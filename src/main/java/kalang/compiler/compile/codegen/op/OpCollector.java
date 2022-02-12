@@ -2,27 +2,26 @@ package kalang.compiler.compile.codegen.op;
 
 
 import kalang.compiler.compile.codegen.util.OpcodeUtil;
-import kalang.compiler.util.Exceptions;
 import org.objectweb.asm.Handle;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * @author KasonYang
  */
-public class OpCollector extends LinkedList<OpBase> {
+public class OpCollector {
 
-    private List<LocalVariable> localVariables = new LinkedList<>();
+    private List<Attribute> attributes = new LinkedList<>();
 
-    private List<LineNumber> lineNumbers = new LinkedList<>();
-
-    private List<TryCatchBlock> tryCatchBlocks = new LinkedList<>();
+    private List<OpBase> opcodes = new LinkedList<>();
 
     private LabelOp firstBasicBlock = new LabelOp();
 
     private LabelOp currentBasicBlock;
+
+    private OpBase prevOp;
 
     public OpCollector() {
         currentBasicBlock = firstBasicBlock;
@@ -40,7 +39,7 @@ public class OpCollector extends LinkedList<OpBase> {
     public void visitLabel(LabelOp label) {
         LabelOp prevBasicBlock = currentBasicBlock;
         currentBasicBlock = label;
-        int exitCode = prevBasicBlock.getLastOp().opcode;
+        int exitCode = prevOp.opcode;
         if (!OpcodeUtil.isReturn(exitCode) && !OpcodeUtil.isUnconditionalJump(exitCode)) {
             prevBasicBlock.addSuccessor(currentBasicBlock);
         }
@@ -54,7 +53,7 @@ public class OpCollector extends LinkedList<OpBase> {
     }
 
     public void visitTryCatchBlock(LabelOp start, LabelOp end, LabelOp handler, String type) {
-        tryCatchBlocks.add(new TryCatchBlock(start, end, handler, type));
+        attributes.add(new CatchAttr(start, end, handler, type));
     }
 
     public void visitLdcInsn(Object v) {
@@ -94,51 +93,34 @@ public class OpCollector extends LinkedList<OpBase> {
     }
 
     public void visitLocalVariable(String name, String descriptor, String signature, LabelOp start, LabelOp end, int index) {
-        localVariables.add(new LocalVariable(name, descriptor, signature, start, end, index));
+        attributes.add(new LocalVariableAttr(name, descriptor, signature, start, end, index));
     }
 
     public void visitLineNumber(int lineNum, LabelOp label) {
-        lineNumbers.add(new LineNumber(lineNum, label));
+        attributes.add(new LineNumberAttr(lineNum, label));
     }
 
-    public List<LocalVariable> getLocalVariables() {
-        return localVariables;
+    public List<Attribute> getAttributes() {
+        return attributes;
     }
 
-    public List<LineNumber> getLineNumbers() {
-        return lineNumbers;
+    public List<OpBase> getOpcodes() {
+        return opcodes;
     }
 
-    public List<TryCatchBlock> getTryCatchBlocks() {
-        return tryCatchBlocks;
-    }
-
-    public boolean isEndLabel(LabelOp label) {
-        OpBase lastOp = getLast();
-        if (!(lastOp instanceof LabelOp)) {
-            return false;
+    public void optimize(OpcodeOptimizer... optimizers) {
+        List<OpBase> tmpOpcodes = new ArrayList<>(opcodes);
+        List<Attribute> tmpAttributes = new ArrayList<>(attributes);
+        for (OpcodeOptimizer optimizer : optimizers) {
+            optimizer.optimize(tmpOpcodes, tmpAttributes);
         }
-        return isSamePosition(label, (LabelOp)lastOp);
-    }
-
-    public boolean isSamePosition(LabelOp start, LabelOp end) {
-        int startPos = indexOf(start);
-        ListIterator<OpBase> iter = listIterator(startPos);
-        while (iter.hasNext()) {
-            OpBase next = iter.next();
-            if (next == end) {
-                return true;
-            } else if (next instanceof LabelOp) {
-                continue;
-            }
-            return false;
-        }
-        throw Exceptions.illegalArgument("end label not found");
+        opcodes = new ArrayList<>(tmpOpcodes);
+        attributes = new ArrayList<>(tmpAttributes);
     }
 
     private <T extends OpBase> T addOp(T opcode) {
-        currentBasicBlock.setLastOp(opcode);
-        add(opcode);
+        prevOp = opcode;
+        opcodes.add(opcode);
         return opcode;
     }
 

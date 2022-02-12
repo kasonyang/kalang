@@ -3,7 +3,7 @@ package kalang.compiler.compile.codegen.op;
 /**
  * @author KasonYang
  */
-public class TryCatchBlock {
+public class CatchAttr extends Attribute {
 
     public LabelOp start;
 
@@ -13,7 +13,7 @@ public class TryCatchBlock {
 
     public String type;
 
-    public TryCatchBlock(LabelOp start, LabelOp end, LabelOp handler, String type) {
+    public CatchAttr(LabelOp start, LabelOp end, LabelOp handler, String type) {
         this.start = start;
         this.end = end;
         this.handler = handler;
