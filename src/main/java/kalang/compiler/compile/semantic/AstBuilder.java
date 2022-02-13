@@ -307,7 +307,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         if(ctx.initExpr.isEmpty()){
             ExprNode[] sizeNodes = new ExprNode[ctx.sizes.size()];
             for (int i = 0; i < sizeNodes.length; i++){
-                sizeNodes[i] = visitExpression(ctx.sizes.get(i));
+                sizeNodes[i] = requireImplicitCast(Types.INT_TYPE, visitExpression(ctx.sizes.get(i)));
             }
             int dimensions = sizeNodes.length + ctx.suffix.size();
             for (int i = 0; i < dimensions - 1; i++) {
