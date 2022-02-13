@@ -5,9 +5,9 @@ import kalang.coroutine.AsyncRunner;
 /**
  * @author KasonYang
  */
-public class AsyncThread extends Thread implements AsyncExecuteThread {
+public class AsyncThread extends Thread implements AsyncTaskExecutor, CallbackExecutor {
 
-    private AsyncRunner asyncRunner = new AsyncRunner();
+    private final AsyncRunner asyncRunner = new AsyncRunner();
 
     private final boolean keepAlive;
 
@@ -21,11 +21,15 @@ public class AsyncThread extends Thread implements AsyncExecuteThread {
 
     @Override
     public <T> Completable<T> submitAsyncTask(Generator<Completable<T>> task) {
-        Completable<T> result = asyncRunner.submit(task);
-        synchronized (asyncRunner) {
-            asyncRunner.notify();
-        }
+        Completable<T> result = asyncRunner.submitTask(task);
+        notifyAsyncRunner();
         return result;
+    }
+
+    @Override
+    public void submitCallback(Runnable callback) {
+        asyncRunner.submitCallback(callback);
+        notifyAsyncRunner();
     }
 
     @Override
@@ -54,7 +58,7 @@ public class AsyncThread extends Thread implements AsyncExecuteThread {
             @Override
             public Completable<Void> next() {
                 isDone = true;
-                Deferred<Void> d = new Deferred<>();
+                Deferred<Void> d = new Deferred<>(thread);
                 try {
                     runnable.run();
                     d.complete(null);
@@ -71,6 +75,12 @@ public class AsyncThread extends Thread implements AsyncExecuteThread {
         });
         thread.start();
         return thread;
+    }
+
+    private void notifyAsyncRunner() {
+        synchronized (asyncRunner) {
+            asyncRunner.notify();
+        }
     }
 
 }

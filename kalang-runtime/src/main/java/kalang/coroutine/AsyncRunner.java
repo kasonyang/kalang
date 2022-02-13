@@ -1,5 +1,7 @@
 package kalang.coroutine;
 
+import kalang.annotation.Nullable;
+import kalang.lang.CallbackExecutor;
 import kalang.lang.Completable;
 import kalang.lang.Deferred;
 import kalang.lang.Generator;
@@ -12,7 +14,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 /**
  * @author KasonYang
  */
-public class AsyncRunner<T> {
+public class AsyncRunner<T> implements CallbackExecutor {
 
     private final Queue<Task<T>> readyQueue = new ConcurrentLinkedDeque<>();
 
@@ -22,25 +24,10 @@ public class AsyncRunner<T> {
         while (!tasks.isEmpty()) {
             while (!readyQueue.isEmpty()) {
                 Task<T> task = readyQueue.poll();
-                Generator<Completable<T>> g = task.generator;
-                Deferred<T> d = task.deferred;
-                try {
-                    Completable<T> result = g.next();
-                    result.onDone(() -> {
-                        if (g.isDone()) {
-                            removeTask(task);
-                            if (result.isCompleted()) {
-                                d.complete(result.getValue());
-                            } else {
-                                d.fail(result.getError());
-                            }
-                        } else {
-                            addReady(task);
-                        }
-                    });
-                } catch (Throwable ex) {
-                    removeTask(task);
-                    d.fail(ex);
+                if (task.callback != null) {
+                    processCallback(task);
+                } else {
+                    processAsyncTask(task);
                 }
             }
             if (!tasks.isEmpty()) {
@@ -56,14 +43,53 @@ public class AsyncRunner<T> {
 
     }
 
-    public Completable<T> submit(Generator<Completable<T>> generator) {
-        Deferred<T> deferred = new Deferred<>();
+    public Completable<T> submitTask(Generator<Completable<T>> generator) {
+        Deferred<T> deferred = new Deferred<>(this);
         Task<T> task = new Task<>();
         task.deferred = deferred;
         task.generator = generator;
         addTask(task);
         addReady(task);
         return deferred.completable();
+    }
+
+    @Override
+    public void submitCallback(Runnable callback) {
+        Task<T> task = new Task<>();
+        task.callback = callback;
+        addReady(task);
+    }
+
+    private void processAsyncTask(Task<T> task) {
+        Generator<Completable<T>> g = task.generator;
+        Deferred<T> d = task.deferred;
+        try {
+            Completable<T> result = g.next();
+            result.onDone(() -> {
+                if (g.isDone()) {
+                    removeTask(task);
+                    if (result.isCompleted()) {
+                        d.complete(result.getValue());
+                    } else {
+                        d.fail(result.getError());
+                    }
+                } else {
+                    addReady(task);
+                }
+            });
+        } catch (Throwable ex) {
+            removeTask(task);
+            d.fail(ex);
+        }
+    }
+
+    private void processCallback(Task<T> task) {
+        try {
+            task.callback.run();
+        } catch (Throwable ex) {
+            System.err.print("Uncaught Exception ");
+            ex.printStackTrace();
+        }
     }
 
     private void addTask(Task<T> task) {
@@ -86,8 +112,9 @@ public class AsyncRunner<T> {
     }
 
     private static class Task<T> {
-        Generator<Completable<T>> generator;
-        Deferred<T> deferred;
+        @Nullable Runnable callback;
+        @Nullable Generator<Completable<T>> generator;
+        @Nullable Deferred<T> deferred;
     }
 
 }

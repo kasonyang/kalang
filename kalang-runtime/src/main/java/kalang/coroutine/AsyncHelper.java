@@ -1,6 +1,6 @@
 package kalang.coroutine;
 
-import kalang.lang.AsyncExecuteThread;
+import kalang.lang.AsyncTaskExecutor;
 import kalang.lang.Completable;
 
 /**
@@ -10,10 +10,10 @@ public class AsyncHelper {
 
     public static <T> Completable<T> submit(ExecuteContext context, NextExecutor executor, String name) {
         Thread thread = Thread.currentThread();
-        if (!(thread instanceof AsyncExecuteThread)) {
-            throw new IllegalStateException("async methods is allow to invoke in AsyncExecuteThread only");
+        if (!(thread instanceof AsyncTaskExecutor)) {
+            throw new IllegalStateException("async methods is allow to invoke in the thread implemented AsyncTaskExecutor");
         }
-        AsyncExecuteThread at = (AsyncExecuteThread) thread;
+        AsyncTaskExecutor at = (AsyncTaskExecutor) thread;
         GeneratorImpl<Completable<T>> generator = GeneratorImpl.create(context, executor, name);
         return at.submitAsyncTask(generator);
     }

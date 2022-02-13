@@ -16,7 +16,7 @@ public class AsyncRunnerTest {
     public void test() throws InterruptedException {
         AsyncRunner<Integer> runner = new AsyncRunner<>();
         TestGenerator testGenerator = new TestGenerator();
-        Completable<Integer> result = runner.submit(testGenerator);
+        Completable<Integer> result = runner.submitTask(testGenerator);
         result.onCompleted(value -> {
             Assert.assertEquals(6, testGenerator.i);
             Assert.assertEquals(5, (int) value);

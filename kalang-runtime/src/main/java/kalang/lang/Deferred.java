@@ -18,6 +18,8 @@ public class Deferred<T> {
 
     private int state = STATE_PENDING;
 
+    private final CallbackExecutor callbackExecutor;
+
     private List<Consumer<T>> completeHandlers = new LinkedList<>();
 
     private List<Consumer<Throwable>> exceptionHandlers = new LinkedList<>();
@@ -27,6 +29,14 @@ public class Deferred<T> {
     private T value;
 
     private Throwable error;
+
+    public Deferred() {
+        this.callbackExecutor = getExecutorByThread();
+    }
+
+    public Deferred(CallbackExecutor callbackExecutor) {
+        this.callbackExecutor = callbackExecutor;
+    }
 
     public void complete(T value) {
         if (state != STATE_PENDING) {
@@ -115,13 +125,22 @@ public class Deferred<T> {
     }
 
     public static <D> Completable<D> completedOf(D value) {
-        Deferred<D> d = new Deferred<>();
+        return completedOf(value, getExecutorByThread());
+    }
+
+
+    public static <D> Completable<D> completedOf(D value, CallbackExecutor callbackExecutor) {
+        Deferred<D> d = new Deferred<>(callbackExecutor);
         d.complete(value);
         return d.completable();
     }
 
     public static <D> Completable<D> failedOf(Throwable error) {
-        Deferred<D> d = new Deferred<>();
+        return failedOf(error);
+    }
+
+    public static <D> Completable<D> failedOf(Throwable error, CallbackExecutor callbackExecutor) {
+        Deferred<D> d = new Deferred<>(callbackExecutor);
         d.fail(error);
         return d.completable();
     }
@@ -132,21 +151,31 @@ public class Deferred<T> {
     }
 
     private void notifyCompleted(List<Consumer<T>> handlers) {
+        final T v = value;
         for (Consumer<T> h : handlers) {
-            h.accept(value);
+            callbackExecutor.submitCallback(() -> h.accept(v));
         }
     }
 
     private void notifyFailed(List<Consumer<Throwable>> handlers) {
+        Throwable e = error;
         for (Consumer<Throwable> h : handlers) {
-            h.accept(error);
+            callbackExecutor.submitCallback(() -> h.accept(e));
         }
     }
 
     private void notifyDone(List<Runnable> handlers) {
         for (Runnable h : handlers) {
-            h.run();
+            callbackExecutor.submitCallback(h);
         }
+    }
+
+    private static CallbackExecutor getExecutorByThread() {
+        Thread thread = Thread.currentThread();
+        if (!(thread instanceof CallbackExecutor)) {
+            throw new IllegalStateException("Deferred should be creating in the thread implemented CallbackExecutor");
+        }
+        return (CallbackExecutor) thread;
     }
 
 }

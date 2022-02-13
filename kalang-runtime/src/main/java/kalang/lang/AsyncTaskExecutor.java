@@ -3,7 +3,7 @@ package kalang.lang;
 /**
  * @author KasonYang
  */
-public interface AsyncExecuteThread {
+public interface AsyncTaskExecutor {
 
     <T> Completable<T> submitAsyncTask(Generator<Completable<T>> task);
 
