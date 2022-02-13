@@ -13,6 +13,11 @@ public interface Completable<T> {
 
     void onDone(Runnable handler);
 
+    default void onDone(Consumer<T> completedHandler, Consumer<Throwable> failedHandler) {
+        this.onCompleted(completedHandler);
+        this.onFailed(failedHandler);
+    }
+
     T getValue();
 
     Throwable getError();
