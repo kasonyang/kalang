@@ -1,7 +1,6 @@
 package kalang.io;
 
 import kalang.lang.Completable;
-import kalang.lang.Deferred;
 
 import java.io.Closeable;
 import java.io.EOFException;
@@ -36,19 +35,18 @@ public interface AsyncReadChannel extends Closeable {
     }
 
     default Completable<Void> readFully(long position, byte[] buffer, int offset, int length) {
-        Deferred<Void> def = new Deferred<>();
-        Completable<Integer> readResult = read(position, buffer, offset, length);
-        readResult.onCompleted(result -> {
+        if (length <= 0) {
+            throw new IllegalArgumentException("invalid length");
+        }
+        return read(position, buffer, offset, length).onCompleted(result -> {
             if (result == length) {
-                def.complete(null);
+                return Completable.resolve(null);
             } else if (result == -1) {
-                def.fail(new EOFException(""));
+                throw new EOFException("");
             } else {
-                def.delegate(readFully(position + result, buffer, offset + result, length - result));
+                return readFully(position + result, buffer, offset + result, length - result);
             }
         });
-        readResult.onFailed(def::fail);
-        return def.completable();
     }
 
 }

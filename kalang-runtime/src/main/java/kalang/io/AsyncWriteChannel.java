@@ -1,7 +1,6 @@
 package kalang.io;
 
 import kalang.lang.Completable;
-import kalang.lang.Deferred;
 
 import java.io.Closeable;
 
@@ -37,17 +36,13 @@ public interface AsyncWriteChannel extends Closeable {
     }
 
     default Completable<Void> writeFully(long position, byte[] buffer, int offset, int length) {
-        Deferred<Void> def = new Deferred<>();
-        Completable<Integer> writeResult = write(position, buffer, offset, length);
-        writeResult.onCompleted(result -> {
-            if (result == length) {
-                def.complete(null);
+        return write(position, buffer, offset, length).onCompleted(writeSize -> {
+            if (writeSize == length) {
+                return Completable.resolve(null);
             } else {
-                def.delegate(writeFully(position + result, buffer, offset + result, length - result));
+                return writeFully(position + writeSize, buffer, offset + writeSize, length - writeSize);
             }
         });
-        writeResult.onFailed(def::fail);
-        return def.completable();
     }
 
 }

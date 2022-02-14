@@ -1,7 +1,6 @@
 package kalang.io;
 
 import kalang.lang.Completable;
-import kalang.lang.Deferred;
 
 import java.io.IOException;
 
@@ -14,7 +13,7 @@ public class AsyncChannelWriter implements AsyncWriter {
 
     private long position;
 
-    private Deferred<Integer> currentDef;
+    private boolean isWriting;
 
     public AsyncChannelWriter(AsyncWriteChannel writeChannel) {
         this.writeChannel = writeChannel;
@@ -22,18 +21,16 @@ public class AsyncChannelWriter implements AsyncWriter {
 
     @Override
     public Completable<Integer> write(byte[] buffer, int offset, int length) {
-        if (currentDef != null) {
+        if (isWriting) {
             throw new IllegalStateException("previous write is not completed");
         }
-        Deferred<Integer> def = currentDef = new Deferred<>();
-        Completable<Integer> result = writeChannel.write(position, buffer, offset, length);
-        result.onCompleted(len -> {
-            position += len;
-            def.complete(len);
-        });
-        result.onFailed(def::fail);
-        result.onDone(() -> currentDef = null);
-        return def.completable();
+        isWriting = true;
+        return writeChannel.write(position, buffer, offset, length)
+                .onCompleted(len -> {
+                    position += len;
+                    return Completable.resolve(len);
+                })
+                .onFinally(() -> isWriting = false);
     }
 
     @Override

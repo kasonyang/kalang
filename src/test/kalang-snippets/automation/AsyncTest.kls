@@ -27,12 +27,17 @@ private async Integer catchError() {
 
 private Object doTest(&Completable() supplier) {
     val value = new Ref<Object>("");
-    val thread = AsyncThread.run(() -> {
-        val completable = supplier();
-        completable.onCompleted(v -> value.set(v));
-        completable.onFailed(e -> value.set(e));
-    });
-    thread.join();
+    AsyncThread.run((thread) -> {
+        val completable = supplier().onSettled(result -> {
+            if (result.isFailed()) {
+                value.set(result.getError());
+            } else {
+                value.set(result.getValue());
+            }
+            thread.interrupt();
+            return null;
+        });
+    }).join();
     return value.get();
 }
 

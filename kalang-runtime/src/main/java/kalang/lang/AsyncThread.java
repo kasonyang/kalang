@@ -2,55 +2,32 @@ package kalang.lang;
 
 import kalang.coroutine.AsyncRunner;
 
+import java.util.function.Consumer;
+
 /**
  * @author KasonYang
  */
-public class AsyncThread extends Thread implements AsyncTaskExecutor, CallbackExecutor {
+public class AsyncThread extends Thread implements AsyncTaskExecutor, TaskExecutor {
 
     private final AsyncRunner asyncRunner = new AsyncRunner();
 
-    private final boolean keepAlive;
-
-    public AsyncThread(boolean keepAlive) {
-        this.keepAlive = keepAlive;
-    }
-
-    public AsyncThread() {
-        this(true);
-    }
-
     @Override
     public <T> Completable<T> submitAsyncTask(Generator<Completable<T>> task) {
-        Completable<T> result = asyncRunner.submitTask(task);
-        notifyAsyncRunner();
-        return result;
+        return asyncRunner.submitAsyncTask(task);
     }
 
     @Override
-    public void submitCallback(Runnable callback) {
-        asyncRunner.submitCallback(callback);
-        notifyAsyncRunner();
+    public void submitTask(Runnable runnable) {
+        asyncRunner.submitTask(runnable);
     }
 
     @Override
     public void run() {
-        for (;; ) {
-            asyncRunner.run();
-            if (!keepAlive) {
-                return;
-            }
-            try {
-                synchronized (asyncRunner) {
-                    asyncRunner.wait();
-                }
-            } catch (InterruptedException e) {
-                return;
-            }
-        }
+        asyncRunner.run();
     }
 
-    public static AsyncThread run(Runnable runnable) {
-        AsyncThread thread = new AsyncThread(false);
+    public static AsyncThread run(Consumer<AsyncThread> consumer) {
+        AsyncThread thread = new AsyncThread();
         thread.submitAsyncTask(new Generator<Completable<Void>>() {
 
             private boolean isDone = false;
@@ -58,14 +35,14 @@ public class AsyncThread extends Thread implements AsyncTaskExecutor, CallbackEx
             @Override
             public Completable<Void> next() {
                 isDone = true;
-                Deferred<Void> d = new Deferred<>(thread);
-                try {
-                    runnable.run();
-                    d.complete(null);
-                } catch (Throwable ex) {
-                    d.fail(ex);
-                }
-                return d.completable();
+                return new Completable<>(thread, callback -> {
+                    try {
+                        consumer.accept(thread);
+                        callback.resolve(null);
+                    } catch (Throwable ex) {
+                        callback.reject(ex);
+                    }
+                });
             }
 
             @Override
@@ -75,12 +52,6 @@ public class AsyncThread extends Thread implements AsyncTaskExecutor, CallbackEx
         });
         thread.start();
         return thread;
-    }
-
-    private void notifyAsyncRunner() {
-        synchronized (asyncRunner) {
-            asyncRunner.notify();
-        }
     }
 
 }

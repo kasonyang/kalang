@@ -73,6 +73,8 @@ public class SnippetsTest {
             Object ret;
             try {
                 if (m.getParameterCount() > 0) continue;
+                System.out.print("executing [" + fullMethodName + "]:");
+                System.out.flush();
                 if (Modifier.isStatic(m.getModifiers())) {
                     ret = m.invoke(null, (Object[]) null);
                 } else {
@@ -83,7 +85,7 @@ public class SnippetsTest {
                 fail("Exception in method:" + m.getName());
                 continue;
             }
-            System.out.println("result of method[" + fullMethodName + "]:" + ret);
+            System.out.println(ret);
             if (ret instanceof Boolean) {
                 assertTrue("result of method[" + fullMethodName + "] should be true", (Boolean) ret);
             } else {

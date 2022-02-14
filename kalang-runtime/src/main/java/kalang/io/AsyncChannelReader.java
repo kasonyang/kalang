@@ -1,7 +1,6 @@
 package kalang.io;
 
 import kalang.lang.Completable;
-import kalang.lang.Deferred;
 
 import java.io.IOException;
 
@@ -14,7 +13,7 @@ public class AsyncChannelReader implements AsyncReader {
 
     private long position;
 
-    private Deferred<Integer> currentDef;
+    private boolean isReading;
 
     public AsyncChannelReader(AsyncReadChannel readChannel) {
         this.readChannel = readChannel;
@@ -22,18 +21,15 @@ public class AsyncChannelReader implements AsyncReader {
 
     @Override
     public Completable<Integer> read(byte[] buffer, int offset, int length) {
-        if (currentDef != null) {
+        if (isReading) {
             throw new IllegalStateException("previous read is not completed");
         }
-        Deferred<Integer> def = currentDef = new Deferred<>();
-        Completable<Integer> result = readChannel.read(position, buffer, offset, length);
-        result.onCompleted(len -> {
-            position += len;
-            def.complete(len);
-        });
-        result.onFailed(def::fail);
-        result.onDone(() -> currentDef = null);
-        return def.completable();
+        isReading = true;
+        return readChannel.read(position, buffer, offset, length)
+                .onCompleted(len -> {
+                    position += length;
+                    return Completable.resolve(len);
+                }).onFinally(() -> isReading = false);
     }
 
     @Override

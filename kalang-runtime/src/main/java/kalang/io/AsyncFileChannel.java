@@ -1,7 +1,6 @@
 package kalang.io;
 
 import kalang.lang.Completable;
-import kalang.lang.Deferred;
 
 import java.io.Closeable;
 import java.io.File;
@@ -25,36 +24,36 @@ public class AsyncFileChannel implements Closeable, AsyncReadChannel, AsyncWrite
 
     @Override
     public Completable<Integer> read(long position, byte[] buffer, int offset, int length) {
-        Deferred<Integer> def = new Deferred<>();
-        fileChannel.read(ByteBuffer.wrap(buffer, offset, length), position, null, new CompletionHandler<Integer, Object>() {
-            @Override
-            public void completed(Integer result, Object attachment) {
-                def.complete(result);
-            }
+        return new Completable<>(callback -> {
+            fileChannel.read(ByteBuffer.wrap(buffer, offset, length), position, null, new CompletionHandler<Integer, Object>() {
+                @Override
+                public void completed(Integer result, Object attachment) {
+                    callback.resolve(result);
+                }
 
-            @Override
-            public void failed(Throwable exc, Object attachment) {
-                def.fail(exc);
-            }
+                @Override
+                public void failed(Throwable exc, Object attachment) {
+                    callback.reject(exc);
+                }
+            });
         });
-        return def.completable();
     }
 
     @Override
     public Completable<Integer> write(long position, byte[] buffer, int offset, int length) {
-        Deferred<Integer> deferred = new Deferred<>();
-        fileChannel.write(ByteBuffer.wrap(buffer, offset, length), position, null, new CompletionHandler<Integer, Object>() {
-            @Override
-            public void completed(Integer result, Object attachment) {
-                deferred.complete(result);
-            }
+        return new Completable<>(callback -> {
+            fileChannel.write(ByteBuffer.wrap(buffer, offset, length), position, null, new CompletionHandler<Integer, Object>() {
+                @Override
+                public void completed(Integer result, Object attachment) {
+                    callback.resolve(result);
+                }
 
-            @Override
-            public void failed(Throwable exc, Object attachment) {
-                deferred.fail(exc);
-            }
+                @Override
+                public void failed(Throwable exc, Object attachment) {
+                    callback.reject(exc);
+                }
+            });
         });
-        return deferred.completable();
     }
 
     @Override
