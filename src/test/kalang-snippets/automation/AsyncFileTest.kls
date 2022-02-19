@@ -2,7 +2,7 @@ import org.junit.Assert;
 
 private Object doTest(&Completable() supplier) {
     val value = new Ref<Object>("");
-    AsyncThread.run((thread) -> {
+    AsyncThread.create((thread) -> {
         val completable = supplier().onSettled(result -> {
             if (result.isFailed()) {
                 value.set(result.getError());

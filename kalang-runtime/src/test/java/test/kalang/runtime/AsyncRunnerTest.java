@@ -12,7 +12,7 @@ public class AsyncRunnerTest {
     @Test(timeout = 1000)
     public void test() throws InterruptedException {
         Ref<Boolean> obj = new Ref<>(false);
-        AsyncThread.run((asyncThread) -> {
+        AsyncThread.create((asyncThread) -> {
             TestGenerator testGenerator = new TestGenerator();
             asyncThread.submitAsyncTask(testGenerator).onCompleted(value -> {
                 Assert.assertEquals(6, testGenerator.i);

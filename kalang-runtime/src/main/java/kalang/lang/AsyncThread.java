@@ -26,7 +26,13 @@ public class AsyncThread extends Thread implements AsyncTaskExecutor, TaskExecut
         asyncRunner.run();
     }
 
-    public static AsyncThread run(Consumer<AsyncThread> consumer) {
+    public static AsyncThread create() {
+        AsyncThread thread = new AsyncThread();
+        thread.start();
+        return thread;
+    }
+
+    public static AsyncThread create(Consumer<AsyncThread> consumer) {
         AsyncThread thread = new AsyncThread();
         thread.submitAsyncTask(new Generator<Completable<Void>>() {
 
