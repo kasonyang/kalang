@@ -15,7 +15,7 @@ public class Completable<T> {
     }
 
     public interface Executor<V> {
-        void execute(Resolver<V> resolver);
+        void execute(Resolver<V> resolver) throws Throwable;
     }
 
     public interface FailedHandler<R> {
