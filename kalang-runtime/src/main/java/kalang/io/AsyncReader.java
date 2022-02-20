@@ -4,11 +4,16 @@ import kalang.lang.Completable;
 
 import java.io.Closeable;
 import java.io.EOFException;
+import java.nio.BufferOverflowException;
 
 /**
  * @author KasonYang
  */
 public interface AsyncReader extends Closeable {
+
+    interface StopReadPredicate {
+        boolean shouldStopRead(int newReceive, int totalReceive);
+    }
 
 
     /**
@@ -40,6 +45,34 @@ public interface AsyncReader extends Closeable {
                 throw new EOFException("");
             } else {
                 return readFully(buffer, offset + result, length - result);
+            }
+        });
+    }
+
+    default Completable<Integer> readUntil(byte[] buffer, StopReadPredicate predicate) {
+        return readUntil(buffer, 0, buffer.length, predicate);
+    }
+
+    default Completable<Integer> readUntil(byte[] buffer, int offset, int length, StopReadPredicate predicate) {
+        return new Completable<>(new Completable.Executor<Integer>() {
+            private int receiveSize = 0;
+
+            @Override
+            public void execute(Completable.Resolver<Integer> resolver) {
+                read(buffer, offset + receiveSize, length - receiveSize).onCompleted(len -> {
+                    receiveSize += len;
+                    if (predicate.shouldStopRead(len, receiveSize)) {
+                        resolver.resolve(receiveSize);
+                    } else if (receiveSize == length) {
+                        resolver.reject(new BufferOverflowException());
+                    } else {
+                        this.execute(resolver);
+                    }
+                    return null;
+                }).onFailed(error -> {
+                    resolver.reject(error);
+                    return null;
+                });
             }
         });
     }
