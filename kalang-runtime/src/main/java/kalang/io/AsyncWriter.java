@@ -2,12 +2,12 @@ package kalang.io;
 
 import kalang.lang.Completable;
 
-import java.io.Closeable;
-
 /**
  * @author KasonYang
  */
-public interface AsyncWriter extends Closeable {
+public abstract class AsyncWriter implements AsyncCloseable {
+
+    private boolean isWriting;
 
     /**
      * Write bytes
@@ -15,7 +15,7 @@ public interface AsyncWriter extends Closeable {
      * @param buffer the bytes that will be written
      * @return Completable
      */
-    default Completable<Integer> write(byte[] buffer) {
+    public Completable<Integer> write(byte[] buffer) {
         return write(buffer, 0, buffer.length);
     }
 
@@ -27,13 +27,22 @@ public interface AsyncWriter extends Closeable {
      * @param length the length of buffer
      * @return Completable
      */
-    Completable<Integer> write(byte[] buffer, int offset, int length);
+    public Completable<Integer> write(byte[] buffer, int offset, int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("positive length is required");
+        }
+        if (isWriting) {
+            throw new IllegalArgumentException("previous write is not completed");
+        }
+        isWriting = true;
+        return handleWrite(buffer, offset, length).onFinally(() -> isWriting = false);
+    }
 
-    default Completable<Void> writeFully(byte[] buffer) {
+    public Completable<Void> writeFully(byte[] buffer) {
         return writeFully(buffer, 0, buffer.length);
     }
 
-    default Completable<Void> writeFully(byte[] buffer, int offset, int length) {
+    public Completable<Void> writeFully(byte[] buffer, int offset, int length) {
         return write(buffer, offset, length).onCompleted(result -> {
             if (result == length) {
                 return Completable.resolve(null);
@@ -42,5 +51,7 @@ public interface AsyncWriter extends Closeable {
             }
         });
     }
+
+    protected abstract Completable<Integer> handleWrite(byte[] buffer, int offset, int length);
 
 }

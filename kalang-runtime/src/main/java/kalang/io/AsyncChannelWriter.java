@@ -7,35 +7,32 @@ import java.io.IOException;
 /**
  * @author KasonYang
  */
-public class AsyncChannelWriter implements AsyncWriter {
+public class AsyncChannelWriter extends AsyncWriter {
 
     private final AsyncWriteChannel writeChannel;
 
     private long position;
-
-    private boolean isWriting;
 
     public AsyncChannelWriter(AsyncWriteChannel writeChannel) {
         this.writeChannel = writeChannel;
     }
 
     @Override
-    public Completable<Integer> write(byte[] buffer, int offset, int length) {
-        if (isWriting) {
-            throw new IllegalStateException("previous write is not completed");
-        }
-        isWriting = true;
+    protected Completable<Integer> handleWrite(byte[] buffer, int offset, int length) {
         return writeChannel.write(position, buffer, offset, length)
                 .onCompleted(len -> {
                     position += len;
                     return Completable.resolve(len);
-                })
-                .onFinally(() -> isWriting = false);
+                });
     }
 
     @Override
-    public void close() throws IOException {
-        writeChannel.close();
+    public Completable<Void> close() {
+        try {
+            writeChannel.close();
+            return Completable.resolve(null);
+        } catch (IOException e) {
+            return Completable.reject(e);
+        }
     }
-
 }

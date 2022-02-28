@@ -7,34 +7,37 @@ import java.io.IOException;
 /**
  * @author KasonYang
  */
-public class AsyncChannelReader implements AsyncReader {
+public class AsyncChannelReader extends AsyncReader {
 
     private final AsyncReadChannel readChannel;
 
     private long position;
-
-    private boolean isReading;
 
     public AsyncChannelReader(AsyncReadChannel readChannel) {
         this.readChannel = readChannel;
     }
 
     @Override
-    public Completable<Integer> read(byte[] buffer, int offset, int length) {
-        if (isReading) {
-            throw new IllegalStateException("previous read is not completed");
+    protected Completable<Integer> handleRead(byte[] buffer, int offset, int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("positive length is required");
         }
-        isReading = true;
         return readChannel.read(position, buffer, offset, length)
                 .onCompleted(len -> {
                     position += length;
                     return Completable.resolve(len);
-                }).onFinally(() -> isReading = false);
+                });
     }
 
+
     @Override
-    public void close() throws IOException {
-        readChannel.close();
+    public Completable<Void> close() {
+        try {
+            readChannel.close();
+            return Completable.resolve(null);
+        } catch (IOException e) {
+            return Completable.reject(e);
+        }
     }
 
 }
