@@ -1,0 +1,31 @@
+import org.junit.Assert;
+import base.AsyncTestBase;
+
+class extends AsyncTestBase {
+
+    private async Boolean doTestRead() {
+        val file = new File("gradle/wrapper/gradle-wrapper.jar");
+        val fileLen = (int) file.length();
+        val bytes = file..readToBytes();
+        val buffer = new byte[4096];
+        val asyncReader = file..newAsyncReader();
+        var r = 0;
+        var position = 0;
+        var result = true;
+        while ((r = await asyncReader.read(buffer)) > 0) {
+            val arr1 = Arrays.copyOfRange(bytes, position, position + r);
+            val arr2 = Arrays.copyOfRange(buffer, 0, r);
+            result = result && Arrays.equals(arr1, arr2);
+            //println("==> ${result} ${position}");
+            position += r;
+        }
+        return result && position == fileLen;
+    }
+
+    boolean testRead() {
+        return doTest(() -> doTestRead()) == true;
+    }
+
+}
+
+

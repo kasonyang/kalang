@@ -1,10 +1,12 @@
 package kalang.compiler.compile.codegen.op;
 
 
+import kalang.compiler.ast.VarObject;
 import kalang.compiler.compile.codegen.util.OpcodeUtil;
 import org.objectweb.asm.Handle;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -88,8 +90,8 @@ public class OpCollector {
         addOp(new IincOp(varId, increment));
     }
 
-    public YieldOp visitYieldOp(int contextVarId, int varCounter) {
-        return addOp(new YieldOp(contextVarId, varCounter));
+    public YieldOp visitYieldOp(int contextVarId, LinkedHashMap<VarObject, Integer> vars, int varCounter) {
+        return addOp(new YieldOp(contextVarId, vars, varCounter));
     }
 
     public void visitLocalVariable(String name, String descriptor, String signature, LabelOp start, LabelOp end, int index) {

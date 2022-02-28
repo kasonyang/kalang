@@ -4,8 +4,8 @@ package kalang.compiler.compile.codegen;
 import kalang.compiler.ast.*;
 import kalang.compiler.compile.*;
 import kalang.compiler.compile.codegen.analyse.StackUtil;
-import kalang.compiler.compile.codegen.op.*;
 import kalang.compiler.compile.codegen.op.Attribute;
+import kalang.compiler.compile.codegen.op.*;
 import kalang.compiler.compile.codegen.util.OpcodeUtil;
 import kalang.compiler.compile.semantic.MalformedAstException;
 import kalang.compiler.compile.semantic.analyzer.ParentAnalyzer;
@@ -15,10 +15,10 @@ import kalang.compiler.core.*;
 import kalang.compiler.tool.OutputManager;
 import kalang.compiler.util.*;
 import kalang.coroutine.AsyncHelper;
-import kalang.lang.Completable;
 import kalang.coroutine.ExecuteContext;
 import kalang.coroutine.GeneratorImpl;
 import kalang.coroutine.NextExecutor;
+import kalang.lang.Completable;
 import kalang.mixin.CollectionMixin;
 import org.objectweb.asm.*;
 
@@ -89,6 +89,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private ClassNode clazz;
     private TerminalStatementAnalyzer terminalStmtAnalyzer = new TerminalStatementAnalyzer(true);
     private String classInternalName;
+    private List<Runnable> finallyTasks;
 
 
     public Ast2Class(OutputManager outputManager, ClassNodeLoader classNodeLoader, CompilationUnit compilationUnit) {
@@ -304,6 +305,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             MethodNode gMethodNode = node.getClassNode().createMethodNode(VOID_TYPE, generatorMdName, node.getModifier(), node.getBody());
             gMethodNode.setExtendModifier(node.getExtendModifier());
             MethodVisitor method = classWriter.visitMethod(node.getModifier() | ACC_SYNTHETIC, generatorMdName, mDesc, mDesc, null);
+            finallyTasks = new LinkedList<>();
             gnCtxParamNode = gMethodNode.createParameter(0, Types.getExecuteContextClassType(), "context");
             gnCtxParamNode.offset = OffsetRange.NONE;
             gnNextCounter = 1;
@@ -322,13 +324,14 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             for (ParameterNode p : node.getParameters()) {
                 this.declareNewVar(p);
             }
-            assignVarsFromContextVars(node.getParameters()); 
+            assignVarsFromContextVars(node.getParameters());
             BlockStmt body = node.getBody();
             assert body != null;
             visit(body);
             opCollector.visitInsn(RETURN);
             //opCollector.visitLabel(methodEndLabel);
             applyOp(method, opCollector);
+            applyFinally();
             try{
                 method.visitMaxs(0, 0);
             }catch(Exception ex){
@@ -340,6 +343,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         gnCtxParamNode = null;
         int access = node.getModifier();
         MethodVisitor method = classWriter.visitMethod(access, internalName(node.getName()), getMethodDescriptor(node), methodSignature(node), internalName(node.getExceptionTypes()));
+        finallyTasks = new LinkedList<>();
         opCollector = new OpCollector();
         parentAnalyzer = new ParentAnalyzer();
         parentAnalyzer.analyse(node);
@@ -431,6 +435,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             }
             //opCollector.visitLabel(methodEndLabel);
             applyOp(method, opCollector);
+            applyFinally();
             try {
                 method.visitMaxs(0, 0);
             } catch (Exception ex) {
@@ -468,6 +473,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
     private void declareNewVar(VarObject vo){
         int vid = varIdCounter;
         Type type = vo.getType();
+        if (NULL_TYPE.equals(type)) {
+            type = Types.getRootType(NullableKind.NULLABLE);
+        }
         int vSize = asmType(type).getSize();
         if(vSize==0){
             throw Exceptions.unexpectedException("");
@@ -1608,10 +1616,9 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
                 ObjectFieldExpr.create(new VarExpr(gnCtxParamNode), "next", clazz),
                 new ConstExpr(nextState)
         )));
-        YieldOp yieldOp = opCollector.visitYieldOp(getVarId(gnCtxParamNode), varIdCounter);
+        LinkedHashMap<VarObject, Integer> varsMap = new LinkedHashMap<>(varIds);
+        YieldOp yieldOp = opCollector.visitYieldOp(getVarId(gnCtxParamNode),varsMap , varIdCounter);
         gnNextLabelMap.put(nextState, yieldOp);
-        // restore vars
-        assignVarsFromContextVars(vars);
         return null;
     }
 
@@ -1654,6 +1661,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         )));
     }
 
+    // TODO remove unused
     private void assignVarsFromContextVars(VarObject[] vars) {
         for (int i = 0; i < vars.length; i++) {
             VarExpr ctxExprNode = new VarExpr(gnCtxParamNode);
@@ -1846,7 +1854,7 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             } else if (code instanceof YieldOp) {
                 YieldOp yo = (YieldOp) code;
                 String[] currentStack = StackUtil.getStack(opcodes, lastLabel, code);
-                transformYieldOp(mv, currentStack, yo.getContextVarId(),yo.getNextVarId(), labelMapper.apply(yo.getLabel()));
+                transformYieldOp(mv, currentStack, yo.getContextVarId(),yo.getNextVarId(), labelMapper.apply(yo.getLabel()), yo.getVars());
             } else {
                 throw Exceptions.unexpectedValue(code);
             }
@@ -1874,7 +1882,31 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         }
     }
 
-    private void transformYieldOp(MethodVisitor mv, String[] stackTypes, int contextVarId, int stackVarIdStart, Label label) {
+    private void storeStack(MethodVisitor mv, int varId, Type varType) {
+        int code = asmType(varType).getOpcode(ISTORE);
+        mv.visitVarInsn(code, varId);
+    }
+
+    private void castObjectTo(MethodVisitor mv, Type toType) {
+        if (toType instanceof PrimitiveType) {
+            String clsName = internalName(getClassType((PrimitiveType) toType));
+            mv.visitTypeInsn(CHECKCAST, clsName);
+            mv.visitMethodInsn(INVOKEVIRTUAL, clsName, toType.getName() + "Value", "()" + internalName(toType), false);
+        } else {
+            mv.visitTypeInsn(CHECKCAST, internalName(toType));
+        }
+    }
+
+    private void executeFinally(Runnable executor) {
+        this.finallyTasks.add(executor);
+    }
+
+    private void applyFinally() {
+        finallyTasks.forEach(Runnable::run);
+        finallyTasks = null;
+    }
+
+    private void transformYieldOp(MethodVisitor mv, String[] stackTypes, int contextVarId, int stackVarIdStart, Label label, LinkedHashMap<VarObject, Integer> varsMap) {
         //save stack as local variables
         ObjectType intClsType = getIntClassType();
         ObjectType longClsType = getLongClassType();
@@ -1905,7 +1937,6 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
         mv.visitLdcInsn(stackTypes.length);
         mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
         mv.visitFieldInsn(PUTFIELD, ctxType, "stack", "[Ljava/lang/Object;");
-        ClassType objClsType = getClassType(Object.class.getName());
         for (int i = stackTypes.length - 1; i >= 0; i--) {
             mv.visitVarInsn(ALOAD, contextVarId);
             mv.visitFieldInsn(GETFIELD, ctxType, "stack", "[Ljava/lang/Object;");
@@ -1914,31 +1945,53 @@ public class Ast2Class extends AbstractAstVisitor<Object> implements CodeGenerat
             mv.visitInsn(AASTORE);
         }
         mv.visitInsn(RETURN);
-        mv.visitLabel(label);
-        for (int i = 0; i < stackTypes.length; i++) {
+        Label backLabel = new Label();
+        mv.visitLabel(backLabel);
+        executeFinally(() -> {
+            mv.visitLabel(label);
+            // restore vars
             mv.visitVarInsn(ALOAD, contextVarId);
-            mv.visitFieldInsn(GETFIELD, ctxType, "stack", "[Ljava/lang/Object;");
-            mv.visitLdcInsn(i);
-            mv.visitInsn(AALOAD);
-            switch (stackTypes[i]) {
-                case ST_INT:
-                    mv.visitTypeInsn(CHECKCAST, internalName(intClsType));
-                    mv.visitMethodInsn(INVOKEVIRTUAL, internalName(intClsType), "intValue", "()I", false);
-                    break;
-                case ST_LONG:
-                    mv.visitTypeInsn(CHECKCAST, internalName(longClsType));
-                    mv.visitMethodInsn(INVOKEVIRTUAL, internalName(longClsType), "longValue", "()J", false);
-                    break;
-                case ST_FLOAT:
-                    mv.visitTypeInsn(CHECKCAST, internalName(floatClsType));
-                    mv.visitMethodInsn(INVOKEVIRTUAL, internalName(floatClsType), "floatValue", "()F", false);
-                    break;
-                case ST_DOUBLE:
-                    mv.visitTypeInsn(CHECKCAST, internalName(doubleClsType));
-                    mv.visitMethodInsn(INVOKEVIRTUAL, internalName(doubleClsType), "doubleValue", "()D", false);
-                    break;
+            mv.visitFieldInsn(GETFIELD, ctxType, "vars", "[Ljava/lang/Object;");
+            List<Map.Entry<VarObject, Integer>> vars = new ArrayList<>(varsMap.entrySet());
+            for (int i = 0; i < vars.size(); i++) {
+                VarObject varObj = vars.get(i).getKey();
+                int varId = vars.get(i).getValue();
+                if (i != vars.size() - 1) {
+                    mv.visitInsn(DUP);
+                }
+                mv.visitLdcInsn(i);
+                mv.visitInsn(AALOAD);
+                castObjectTo(mv, varObj.getType());
+                storeStack(mv, varId, varObj.getType());
             }
-        }
+            // restore stack
+            for (int i = 0; i < stackTypes.length; i++) {
+                mv.visitVarInsn(ALOAD, contextVarId);
+                mv.visitFieldInsn(GETFIELD, ctxType, "stack", "[Ljava/lang/Object;");
+                mv.visitLdcInsn(i);
+                mv.visitInsn(AALOAD);
+                //TODO reuse castObjectTo method
+                switch (stackTypes[i]) {
+                    case ST_INT:
+                        mv.visitTypeInsn(CHECKCAST, internalName(intClsType));
+                        mv.visitMethodInsn(INVOKEVIRTUAL, internalName(intClsType), "intValue", "()I", false);
+                        break;
+                    case ST_LONG:
+                        mv.visitTypeInsn(CHECKCAST, internalName(longClsType));
+                        mv.visitMethodInsn(INVOKEVIRTUAL, internalName(longClsType), "longValue", "()J", false);
+                        break;
+                    case ST_FLOAT:
+                        mv.visitTypeInsn(CHECKCAST, internalName(floatClsType));
+                        mv.visitMethodInsn(INVOKEVIRTUAL, internalName(floatClsType), "floatValue", "()F", false);
+                        break;
+                    case ST_DOUBLE:
+                        mv.visitTypeInsn(CHECKCAST, internalName(doubleClsType));
+                        mv.visitMethodInsn(INVOKEVIRTUAL, internalName(doubleClsType), "doubleValue", "()D", false);
+                        break;
+                }
+            }
+            mv.visitJumpInsn(GOTO, backLabel);
+        });
     }
 
     private void processFinallyBlock(TryStmt tryStmt) {

@@ -68,11 +68,7 @@ public interface AsyncReader extends Closeable {
                     } else {
                         this.execute(resolver);
                     }
-                    return null;
-                }).onFailed(error -> {
-                    resolver.reject(error);
-                    return null;
-                });
+                }).onFailed(resolver::reject);
             }
         });
     }

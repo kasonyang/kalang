@@ -1,0 +1,23 @@
+class {
+
+    protected async Void runAsync(Completable<Object> completable, AsyncThread thread, Ref<Object> ref) {
+        try {
+            val result = await completable;
+            ref.set(result);
+        } catch (Throwable ex) {
+            ref.set(ex);
+        }
+        thread.interrupt();
+        return null;
+    }
+
+    protected Object doTest(&Completable() supplier) {
+        val value = new Ref<Object>("");
+        AsyncThread.create((thread) -> {
+            runAsync(supplier(), thread, value);
+        }).join();
+        return value.get();
+    }
+
+
+}

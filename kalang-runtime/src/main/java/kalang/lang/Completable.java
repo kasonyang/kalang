@@ -3,6 +3,7 @@ package kalang.lang;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 /**
  * @author KasonYang
@@ -24,16 +25,28 @@ public class Completable<T> {
 
     }
 
+    public interface FailedConsumer {
+        void consumeFailed(Throwable error) throws Throwable;
+    }
+
     public interface CompletedHandler<R, V> {
 
         Completable<R> handleCompleted(V value) throws Throwable;
 
     }
 
+    public interface CompletedConsumer<V> {
+        void consumeCompleted(V value) throws Throwable;
+    }
+
     public interface SettledHandler<R, V> {
 
         Completable<R> handleSettled(Completable<V> completable) throws Throwable;
 
+    }
+
+    public interface SettledConsumer<V> {
+        void consumeSettled(Completable<V> completable) throws Throwable;
     }
 
     public interface FinallyHandler {
@@ -93,9 +106,18 @@ public class Completable<T> {
         this(getExecutorByThread(), executor);
     }
 
-    public  <D> Completable<D> onSettled(SettledHandler<D, T> settledHandler) {
-        return onCompleted(value -> settledHandler.handleSettled(this), error -> settledHandler.handleSettled(this));
-    };
+    public <D> Completable<D> onSettled(SettledHandler<D, T> settledHandler) {
+        return onCompleted(value -> {
+            return settledHandler.handleSettled(this);
+        }, error -> settledHandler.handleSettled(this));
+    }
+
+    public Completable<Void> onSettled(SettledConsumer<T> settledConsumer) {
+        return onSettled(completable -> {
+            settledConsumer.consumeSettled(completable);
+            return Completable.resolve(null);
+        });
+    }
 
     public <D> Completable<D> onCompleted(CompletedHandler<D, T> completedHandler, FailedHandler<D> failedHandler) {
         return new Completable<D>(resolver -> {
@@ -130,9 +152,32 @@ public class Completable<T> {
         });
     }
 
+    public Completable<Void> onCompleted(CompletedConsumer<T> completedConsumer, FailedConsumer failedConsumer) {
+        return onCompleted(value -> {
+            completedConsumer.consumeCompleted(value);
+            return Completable.resolve(null);
+        }, error -> {
+            failedConsumer.consumeFailed(error);
+            return Completable.resolve(null);
+        });
+    }
+
+    public Completable<Void> onCompleted(CompletedConsumer<T> completedConsumer) {
+        return onCompleted(value -> {
+            completedConsumer.consumeCompleted(value);
+            return Completable.resolve(null);
+        });
+    }
 
     public Completable<T> onFailed(FailedHandler<T> failedHandler) {
         return onCompleted(Completable::resolve, failedHandler);
+    }
+
+    public Completable<Void> onFailed(FailedConsumer failedConsumer) {
+        return onCompleted(value -> Completable.resolve(null), error -> {
+            failedConsumer.consumeFailed(error);
+            return Completable.resolve(null);
+        });
     }
 
     public Completable<T> onFinally(FinallyHandler finallyHandler) {
@@ -167,7 +212,7 @@ public class Completable<T> {
         return state == STATE_FAILED;
     }
 
-    public boolean isDone() {
+    public boolean isSettled() {
         return state != STATE_PENDING;
     }
 
@@ -192,14 +237,18 @@ public class Completable<T> {
     }
 
     private static <D> void delegate(Resolver<D> resolver, Completable<D> completable) {
-        completable.onSettled(r -> {
+        Consumer<Completable<D>> settledConsumer = r -> {
             if (r.isFailed()) {
                 resolver.reject(r.getError());
             } else {
                 resolver.resolve(r.getValue());
             }
-            return null;
-        });
+        };
+        if (completable.isSettled()) {
+            settledConsumer.accept(completable);
+        } else {
+            completable.onSettled(settledConsumer::accept);
+        }
     }
 
     private static TaskExecutor getExecutorByThread() {

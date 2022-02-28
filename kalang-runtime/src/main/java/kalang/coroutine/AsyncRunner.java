@@ -63,7 +63,6 @@ public class AsyncRunner<T> implements TaskExecutor {
                 } else {
                     appendQueue(task);
                 }
-                return null;
             });
         } catch (Throwable ex) {
             resolver.reject(ex);

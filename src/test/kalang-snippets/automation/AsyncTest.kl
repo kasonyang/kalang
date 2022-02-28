@@ -1,0 +1,47 @@
+import base.AsyncTestBase;
+
+class extends AsyncTestBase {
+
+    private async Integer getValue() {
+        return 3;
+    }
+
+    private async Integer awaitValue() {
+        return await getValue();
+    }
+
+    private async Integer awaitSum() {
+        val v1 = awaitValue();
+        val v2 = awaitValue();
+        return (await v1) + (await v2);
+    }
+
+    private async Integer throwError() {
+        throw new Exception("exception in async method");
+    }
+
+    private async Integer catchError() {
+        try {
+            await this.throwError();
+            return 1;
+        } catch (Exception ex) {
+            return 6;
+        }
+    }
+
+
+    boolean test() {
+        return doTest(() -> awaitSum()).equals(6);
+    }
+
+    boolean testEx() {
+        val ex = (Exception) doTest(() -> throwError());
+        return ex.getMessage() == "exception in async method";
+    }
+
+    boolean testCatch() {
+        return doTest(() -> catchError()).equals(6);
+    }
+
+}
+
