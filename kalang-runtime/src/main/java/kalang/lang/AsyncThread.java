@@ -2,6 +2,8 @@ package kalang.lang;
 
 import kalang.coroutine.AsyncRunner;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.Consumer;
 
 /**
@@ -10,6 +12,8 @@ import java.util.function.Consumer;
 public class AsyncThread extends Thread implements AsyncTaskExecutor, TaskExecutor {
 
     private final AsyncRunner asyncRunner = new AsyncRunner();
+
+    private final static Timer TIMER = new Timer();
 
     @Override
     public <T> Completable<T> submitAsyncTask(Generator<Completable<T>> task) {
@@ -58,6 +62,27 @@ public class AsyncThread extends Thread implements AsyncTaskExecutor, TaskExecut
         });
         thread.start();
         return thread;
+    }
+
+    public static Completable<Void> delay(long millis) {
+        return new Completable<>(resolver -> {
+            TIMER.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    currentAsyncThread().submitTask(() -> {
+                        resolver.resolve(null);
+                    });
+                }
+            }, millis);
+        });
+    }
+
+    private static AsyncThread currentAsyncThread() {
+        Thread thread = Thread.currentThread();
+        if (!(thread instanceof AsyncThread)) {
+            throw new IllegalStateException("current thread is not an async thread");
+        }
+        return (AsyncThread) thread;
     }
 
 }
