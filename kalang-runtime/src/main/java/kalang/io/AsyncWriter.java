@@ -35,7 +35,12 @@ public abstract class AsyncWriter implements AsyncCloseable {
             throw new IllegalArgumentException("previous write is not completed");
         }
         isWriting = true;
-        return handleWrite(buffer, offset, length).onFinally(() -> isWriting = false);
+        return handleWrite(buffer, offset, length).onCompleted(n -> {
+            if (n <= 0) {
+                throw new IndexOutOfBoundsException(String.valueOf(n));
+            }
+            return Completable.resolve(n);
+        }).onFinally(() -> isWriting = false);
     }
 
     public Completable<Void> writeFully(byte[] buffer) {

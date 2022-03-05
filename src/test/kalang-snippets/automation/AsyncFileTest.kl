@@ -23,7 +23,11 @@ class extends AsyncTestBase {
     }
 
     boolean testRead() {
-        return doTest(() -> doTestRead()) == true;
+        val result = doTest(() -> doTestRead());
+        if (result instanceof Exception) {
+            result.printStackTrace();
+        }
+        return result == true;
     }
 
 }

@@ -37,7 +37,12 @@ public abstract class AsyncReader implements AsyncCloseable {
             throw new IllegalArgumentException("previous read is not completed");
         }
         isReading = true;
-        return handleRead(buffer, offset, length).onFinally(() -> isReading = false);
+        return handleRead(buffer, offset, length).onCompleted(n -> {
+            if (n != -1 && n <= 0) {
+                throw new IndexOutOfBoundsException(String.valueOf(n));
+            }
+            return Completable.resolve(n);
+        }).onFinally(() -> isReading = false);
     }
 
     public Completable<Void> readFully(byte[] buffer) {
