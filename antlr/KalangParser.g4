@@ -260,7 +260,7 @@ expression
     |   ref=('this'|'super') #selfRefExpr
     |   literal #literalExpr
     | (
-         (
+         async='async'? (
             ('(' (lambdaParams+=Identifier (',' lambdaParams+=Identifier)*)? ')' )
             | lambdaParams+=Identifier
          )

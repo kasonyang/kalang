@@ -1,7 +1,6 @@
 import org.junit.Assert;
-import base.AsyncTestBase;
 
-class extends AsyncTestBase {
+class {
 
     private async Boolean doTestRead() {
         val file = new File("gradle/wrapper/gradle-wrapper.jar");
@@ -23,11 +22,7 @@ class extends AsyncTestBase {
     }
 
     boolean testRead() {
-        val result = doTest(() -> doTestRead());
-        if (result instanceof Exception) {
-            result.printStackTrace();
-        }
-        return result == true;
+        return AsyncThread.execute(async() -> await doTestRead());
     }
 
 }

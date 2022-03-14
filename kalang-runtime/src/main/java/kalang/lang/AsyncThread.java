@@ -64,6 +64,18 @@ public class AsyncThread extends Thread implements AsyncTaskExecutor, TaskExecut
         return thread;
     }
 
+    public static <T> T execute(AsyncCallable<T> supplier) throws Throwable {
+        Ref<T> value = new Ref<>();
+        Ref<Throwable> errorRef = new Ref<>();
+        create(asyncThread -> {
+            supplier.call().onCompleted(value::set, errorRef::set).onFinally(asyncThread::interrupt);
+        }).join();
+        if (errorRef.get() != null) {
+            throw errorRef.get();
+        }
+        return value.get();
+    }
+
     public static Completable<Void> delay(long millis) {
         return new Completable<>(resolver -> {
             TIMER.schedule(new TimerTask() {

@@ -2045,6 +2045,9 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         BlockStmt methodNodeBody = new BlockStmt();
         methodNodeBody.offset = offset(ctx);
         MethodNode methodNode = thisClazz.createMethodNode(returnType, lambdaName , modifier, methodNodeBody);
+        if (ctx.async != null) {
+            methodNode.setExtendModifier(ExtendModifiers.ASYNC);
+        }
         mapAst(methodNode, ctx.start);
         enterMethod(methodNode, ()-> {
             Map<String, AssignableObject> accessibleVars = lambdaExpr.getAccessibleVarObjects();
@@ -2083,7 +2086,8 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 if (bodyExprCtx != null) {
                     ExprNode bodyExpr = visitExpression(bodyExprCtx);
                     if (!returnType.equals(Types.VOID_TYPE)) {
-                        bodyExpr = requireImplicitCast(methodCtx.method.getType(), bodyExpr, offset(bodyExprCtx));
+                        Type expectedReturnType = MethodUtil.getExpectedReturnType(methodCtx.method);
+                        bodyExpr = requireImplicitCast(expectedReturnType, bodyExpr, offset(bodyExprCtx));
                         ReturnStmt retStmt = new ReturnStmt(bodyExpr);
                         retStmt.offset = bodyExpr.offset;
                         bsStatements.add(onReturnStmt(retStmt));

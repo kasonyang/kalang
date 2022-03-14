@@ -1,6 +1,5 @@
-import base.AsyncTestBase;
 
-class extends AsyncTestBase {
+class {
 
     private async Integer getValue() {
         return 3;
@@ -31,16 +30,20 @@ class extends AsyncTestBase {
 
 
     boolean test() {
-        return doTest(() -> awaitSum()).equals(6);
+        return AsyncThread.execute(() -> awaitSum()).equals(6);
     }
 
     boolean testEx() {
-        val ex = (Exception) doTest(() -> throwError());
-        return ex.getMessage() == "exception in async method";
+        try {
+            AsyncThread.execute(() -> throwError());
+            return false;
+        } catch (Throwable ex) {
+            return ex.getMessage() == "exception in async method";
+        }
     }
 
     boolean testCatch() {
-        return doTest(() -> catchError()).equals(6);
+        return AsyncThread.execute(() -> catchError()).equals(6);
     }
 
 }
