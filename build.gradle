@@ -65,4 +65,9 @@ tasks.withType(Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
+build {
+  doLast {
+    println("version:${project.version}");
+  }
+}
 

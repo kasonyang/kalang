@@ -178,7 +178,7 @@ stat:
     |unterminatedStmt
 ;
 unterminatedStmt:
-    expression '.' Identifier?
+    expression ('.'|'..'|'*.'|'?.'|'?..'|'::') Identifier?
 ;
 emptyStat:
     ';'
