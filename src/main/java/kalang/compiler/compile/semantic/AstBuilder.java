@@ -1231,7 +1231,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         ParameterNode paramNode = methodCtx==null ? null : methodCtx.getNamedParameter(name);
         if(paramNode!=null){
             ExprNode result;
-            VarExpr ve = new VarExpr(paramNode,methodCtx.getVarObjectType(paramNode, paramNode.getType()));
+            VarExpr ve = new VarExpr(paramNode);
             mapAst(ve, offset);
             if (assignValue != null) {
                 result = new AssignExpr(ve, assignValue);

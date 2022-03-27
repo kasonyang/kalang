@@ -1,0 +1,20 @@
+class {
+    private int length(Object obj) {
+        if (obj instanceof String) {
+            return obj.length();
+        }
+        return 0;
+    }
+
+    private boolean testInIfCondition(Object obj, int length) {
+        if (obj instanceof String && obj.length() == length) {
+            return true;
+        }
+        return false;
+    }
+
+    boolean test() {
+        return length("test") == 4 && testInIfCondition("test", 4);
+    }
+
+}
