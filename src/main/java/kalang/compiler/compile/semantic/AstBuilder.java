@@ -142,7 +142,7 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
         for(ImportDeclContext ic : importDecls){
             this.visitImportDecl(ic);
         }
-        this.classNodeStructureBuilder = new ClassNodeStructureBuilder(this.compilationUnit, parser);
+        classNodeStructureBuilder = createStructureBuilder(compilationUnit, parser);
         buildClassNodeMeta(topClass);
     }
 
@@ -810,6 +810,10 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
                 throw new NodeException("expression is not assignable", offset(toCtx));
             }
         }
+    }
+
+    protected ClassNodeStructureBuilder createStructureBuilder(CompilationUnit unit, KalangParser parser) {
+        return new ClassNodeStructureBuilder(unit, parser);
     }
 
     @Nonnull

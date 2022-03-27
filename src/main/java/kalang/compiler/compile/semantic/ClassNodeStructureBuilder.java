@@ -89,8 +89,12 @@ public class ClassNodeStructureBuilder extends AstBuilder {
         String name;
         if (ctx.prefix != null && ctx.prefix.getText().equals("constructor")) {
             name = "<init>";
-        } else {
+        } else if (ctx.name != null) {
             name = ctx.name.getText();
+        } else {
+            //TODO next offset
+            diagnosisReporter.error("Identifier expected", offset(ctx.type()));
+            return null;
         }
         long modifierAndExtModifier = parseModifier(ctx.varModifier());
         int modifier = (int) modifierAndExtModifier;
