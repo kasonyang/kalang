@@ -1,11 +1,12 @@
-import java.text.SimpleDateFormat
-
 apply plugin:'java'
 repositories {
   mavenCentral()
 }
 dependencies {
+  compileOnly 'org.projectlombok:lombok:1.18.8'
+  annotationProcessor 'org.projectlombok:lombok:1.18.8'
   testCompile 'junit:junit:4.12'
+  testCompile 'commons-codec:commons-codec:1.10'
 }
 
 apply from:"../gradle/maven-publish.gradle"
