@@ -313,7 +313,7 @@ MultiLineStringCharacters
 fragment
 StringCharacter
     :   ~["\\$\r\n]
-    |  '$' ~[{]
+    |  '$' ~[{"]
     |   EscapeSequence
     ;
 
@@ -475,7 +475,7 @@ LINE_COMMENT
 
 PACKAGE_DELIMITER : '\\';
 
-UNTERMINATED_STRING: '"' ('\\"' | ~["])*? ('\r'|'\n');
+UNTERMINATED_STRING: '"' StringCharacters? '$'* ('\r'|'\n');
 
 UNTERMINATED_MULTILINE_STRING: '\'\'\'' MultiLineStringCharacters*? ('\'' | '\'\'')? EOF;
 

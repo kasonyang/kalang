@@ -5,3 +5,7 @@ boolean testUnicode() {
 boolean test() {
     return "$".charAt(0) == 36;
 }
+
+boolean testSlashEnd() {
+    return "a\\".length() == 2;
+}
