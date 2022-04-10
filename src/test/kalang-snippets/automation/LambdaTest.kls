@@ -24,16 +24,16 @@ boolean consumerTest() {
 }
 
 boolean compareTest() {
-    val list = <Integer>[1,3,2].asList();
+    val list = <Integer>[1,3,2]..asList();
     list.sort((e1,e2) => e1.compareTo(e2));
-    return list.equals(<Integer>[1,2,3].asList());
+    return list.equals(<Integer>[1,2,3]..asList());
 }
 
 boolean mapTest() {
     val list = new StringList();
     list.add("test");
-    val lengthList = list.map(it => it.length());
-    return <Object>[4].asList().equals(lengthList);
+    val lengthList = list..map(it => it.length());
+    return <Object>[4]..asList().equals(lengthList);
 }
 
 boolean nullCheck() {
@@ -53,11 +53,21 @@ boolean thisVarTest() {
 }
 
 boolean lambdaInLambda() {
-    val list = ["a"].asList();
-    val result = list.map(it => {
-        return [it].asList().map(el => String.valueOf(el.length()));
+    val list = ["a"]..asList();
+    val result = list..map(it => {
+        return [it]..asList()..map(el => String.valueOf(el.length()));
     });
     return result.get(0).get(0).length() == 1;
+}
+
+int testSelfReference() {
+    val self as &Integer(Integer) = (value) -> {
+        if (value == 6) {
+            return value;
+        }
+        return self.call(value + 1);
+    };
+    return self.call(3);
 }
 
 static boolean lambdaInStaticMethod() {

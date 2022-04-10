@@ -14,6 +14,7 @@ import kalang.compiler.profile.Profiler;
 import kalang.compiler.profile.Span;
 import kalang.compiler.util.*;
 import kalang.lang.Completable;
+import kalang.lang.Ref;
 import kalang.mixin.CollectionMixin;
 import kalang.runtime.dynamic.FieldVisitor;
 import kalang.runtime.dynamic.MethodDispatcher;
@@ -1237,12 +1238,20 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ExprNode result;
             VarExpr ve = new VarExpr(paramNode);
             mapAst(ve, offset);
+            final boolean isRef = ExtendModifiers.isRef(paramNode.getExtendModifier());
             if (assignValue != null) {
+                if (isRef) {
+                    throw new NodeException("Cannot assign a value to final variable '" + paramNode.getName() + "'", offset);
+                }
                 result = new AssignExpr(ve, assignValue);
                 mapAst(result, exprOffset);
                 methodCtx.onAssign(ve, assignValue);
             } else {
-                result = ve;
+                if (isRef) {
+                    result = getObjectInvokeExpr(ve, "get", new ExprNode[0], offset);
+                } else {
+                    result = ve;
+                }
             }
             return result;
         }
@@ -1507,13 +1516,31 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             ms.statements.add(vds);
             if(initExpr!=null){
                 initExpr = requireImplicitCast(localVar.getType(), initExpr, offset(ctx));
+                LocalVarNode lambdaRef = null;
                 if (initExpr instanceof LambdaExpr) {
-                    inferLambdaIfNeed((LambdaExpr)initExpr,  localVar.getType());
+                    LambdaExpr le = (LambdaExpr) initExpr;
+                    boolean isUnknownLambdaType = localVar.getType() instanceof LambdaType;
+                    if (!isUnknownLambdaType) {
+                        ObjectType refClassType = Types.getClassType(Ref.class, localVar.getType());
+                        lambdaRef = declareTempLocalVar(refClassType);
+                        lambdaRef.setExtendModifier(ExtendModifiers.REF);
+                        ms.statements.add(new VarDeclStmt(lambdaRef));
+                        ms.statements.add(new ExprStmt(new AssignExpr(
+                                new VarExpr(lambdaRef),
+                                new NewObjectExpr(refClassType, new ExprNode[0])
+                        )));
+                        le.putAccessibleVarObject(localVar.getName(), lambdaRef);
+                    }
+                    inferLambdaIfNeed(le, localVar.getType());
                 }
                 AssignExpr assignExpr = new AssignExpr(new VarExpr(localVar), initExpr);
                 methodCtx.onAssign(assignExpr.getTo(), initExpr);
                 mapAst(assignExpr, v);
                 ms.statements.add(new ExprStmt(assignExpr));
+                if (lambdaRef != null) {
+                    ExprNode[] setArgs = new ExprNode[]{new VarExpr(localVar)};
+                    ms.statements.add(new ExprStmt(getObjectInvokeExpr(new VarExpr(lambdaRef), "set", setArgs, offset(ctx))));
+                }
             }
             mapAst(localVar,ctx);
         }
@@ -2058,11 +2085,12 @@ public class AstBuilder extends AstBuilderBase implements KalangParserVisitor<Ob
             for( Map.Entry<String, AssignableObject> v:accessibleVars.entrySet()) {
                 String name = v.getKey();
                 AssignableObject var = v.getValue();
-                methodNode.createParameter(
+                ParameterNode pn = methodNode.createParameter(
                         TypeUtil.normalizeForMethod(var.getType()),
                         name,
                         Modifier.FINAL | ModifierConstant.SYNTHETIC
                 );
+                pn.setExtendModifier(var.getExtendModifier());
             }
             List<Token> lambdaParams = ctx.lambdaParams;
             if (paramTypes.length < lambdaParams.size()) {

@@ -5,6 +5,8 @@ import kalang.compiler.core.Types;
 public abstract class AssignableObject extends AstNode{
     
     private int modifier;
+
+    private int extendModifier;
     
     private final Type type;
     
@@ -36,5 +38,13 @@ public abstract class AssignableObject extends AstNode{
 
     public void setModifier(int modifier) {
         this.modifier = modifier;
+    }
+
+    public void setExtendModifier(int extendModifier) {
+        this.extendModifier = extendModifier;
+    }
+
+    public int getExtendModifier() {
+        return extendModifier;
     }
 }
